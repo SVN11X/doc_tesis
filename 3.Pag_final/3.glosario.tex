@@ -1,0 +1,198 @@
+\newglossaryentry{slam}
+{
+    name=SLAM,
+    description={Simultaneous Localization and Mapping. Técnica que permite a un robot construir un mapa de un entorno desconocido mientras se localiza a sí mismo dentro de él.}
+}
+
+\newglossaryentry{distancia_euclidiana}
+{
+    name=Distancia euclidiana,
+    description={La distancia euclidiana es la medida de distancia entre dos puntos en un espacio euclídeo, definida como la longitud del segmento de línea recta que une los dos puntos.}
+}
+
+
+\newglossaryentry{ROS2}
+{
+    name=ROS~2,
+    description={Robot Operating System 2 es un conjunto de bibliotecas y herramientas de código abierto para desarrollar software de robótica de forma modular y distribuida.}
+}
+
+\newglossaryentry{RaspberryPi}
+{
+    name=Raspberry Pi,
+    description={Raspberry Pi es una serie de ordenadores de placa única de bajo costo y alta versatilidad, muy usados en educación, investigación y robótica.}
+}
+
+\newglossaryentry{Arduino}
+{
+    name=Arduino,
+    description={Arduino es una plataforma de hardware y software de código abierto para crear proyectos electrónicos interactivos, pensada para ser fácil de usar y muy extendida en robótica.}
+}
+
+\newglossaryentry{LIDAR}
+{
+    name=LIDAR,
+    description={Light Detection and Ranging. Sensor que utiliza pulsos de luz láser para medir distancias y generar representaciones 2D/3D del entorno con alta precisión.}
+}
+
+\newglossaryentry{DC}
+{
+    name=Corriente continua (DC),
+    description={Tipo de corriente eléctrica de polaridad constante en el tiempo. Los motores de DC convierten energía eléctrica en energía mecánica rotacional.}
+}
+
+\newglossaryentry{PWM}
+{
+    name=PWM,
+    description={Pulse Width Modulation. Técnica de control que regula la potencia promedio entregada a una carga variando el ciclo útil de un pulso periódico.}
+}
+
+\newglossaryentry{PID}
+{
+    name=PID,
+    description={Control Proporcional–Integral–Derivativo. Estrategia de control retroalimentado que combina acciones P, I y D para seguir consignas reduciendo error y sobreimpulso.}
+}
+
+\newglossaryentry{IMU}
+{
+    name=IMU,
+    description={Inertial Measurement Unit. Unidad inercial que integra acelerómetros, giroscopios (y a veces magnetómetros) para estimar orientación y movimiento.}
+}
+
+\newglossaryentry{EKF}
+{
+    name=EKF,
+    description={Extended Kalman Filter. Variante del filtro de Kalman para sistemas no lineales mediante linealización local.}
+}
+
+\newglossaryentry{UKF}
+{
+    name=UKF,
+    description={Unscented Kalman Filter. Filtro de Kalman no lineal que usa transformaciones insesgadas (unscented transform) sin requerir derivadas explícitas.}
+}
+
+\newglossaryentry{URDF}
+{
+    name=URDF,
+    description={Unified Robot Description Format. Formato basado en XML para describir la estructura cinemática y visual de un robot.}
+}
+
+\newglossaryentry{Xacro}
+{
+    name=Xacro,
+    description={XML Macros para URDF. Extensión que permite generar URDF de forma más compacta y reutilizable usando macros.}
+}
+
+\newglossaryentry{DDS}
+{
+    name=DDS,
+    description={Data Distribution Service. Middleware de comunicación orientado a datos usado por ROS~2 para publicación/suscripción distribuida.}
+}
+
+\newglossaryentry{Foxy}
+{
+    name=Foxy,
+    description={Foxy Fitzroy. Distribución de ROS~2 orientada a estabilidad a largo plazo, común en entornos productivos y educativos.}
+}
+
+\newglossaryentry{ToF}
+{
+    name=ToF,
+    description={Time of Flight. Tecnología de medición de distancia basada en el tiempo de vuelo de la luz entre el emisor y el objeto.}
+}
+
+\newglossaryentry{spawner}{
+name=spawner,
+description={Ejecutable del \texttt{controller\_manager} que carga y activa controladores
+de \texttt{ros2\_control}. En algunas distribuciones se llama \texttt{spawner.py}.}
+}
+
+%% === Glosario: entorno de ejecución ROS~2 y simulación ===
+
+\newglossaryentry{so-kernel}{
+name={SO / Kernel},
+description={Sistema operativo y núcleo del sistema. Define la interfaz 
+binaria de aplicación (ABI), los controladores de dispositivos y la 
+temporización del sistema. En este proyecto se utilizan Ubuntu 20.04 LTS 
+(x86\_64 y aarch64) con kernels 5.15 y 5.4 respectivamente.}
+}
+
+\newglossaryentry{ros-distro}{
+name={Distribución de ROS~2 (\texttt{ROS\_DISTRO})},
+description={Conjunto versionado de paquetes de ROS~2 con APIs y 
+dependencias mutuamente compatibles. Este proyecto utiliza Foxy Fitzroy 
+(\texttt{foxy}), sexta distribución de ROS~2, con soporte para 
+Ubuntu 20.04.}
+}
+\newglossaryentry{rmw-dds}{
+name={Middleware RMW/DDS},
+description={Capa de comunicación de ROS~2 basada en el estándar 
+Data Distribution Service (DDS). La variable 
+\texttt{RMW\_IMPLEMENTATION} selecciona el proveedor; en este 
+proyecto se utiliza Fast~DDS (eProsima) por defecto.}
+}
+
+\newglossaryentry{ros-domain-id}{
+name={\texttt{ROS\_DOMAIN\_ID}},
+description={Identificador numérico que segmenta lógicamente los 
+grafos de comunicación de ROS~2 en una misma red física, evitando 
+el cruce de tópicos entre sistemas independientes.}
+}
+
+\newglossaryentry{gazebo-ros}{
+name={Pila Gazebo y puente Gazebo--ROS},
+description={Conjunto de paquetes (\texttt{gazebo\_ros\_pkgs}, 
+\texttt{gazebo\_ros2\_control}) que conectan el simulador Gazebo 
+con ROS~2, permitiendo la publicación de sensores, reloj y 
+controladores simulados.}
+}
+
+\newglossaryentry{estado-red}{
+name={Estado de red},
+description={Configuración de direcciones IP, enlace y 
+descubrimiento que condiciona la comunicación DDS/RTPS entre 
+nodos de ROS~2 distribuidos en múltiples máquinas.}
+}
+
+\newglossaryentry{repo-git}{
+name={Repositorio Git},
+description={Sistema de control de versiones distribuido que 
+permite rastrear cambios en el código fuente y sincronizar 
+el \textit{workspace} entre múltiples equipos de desarrollo.}
+}
+
+\newglossaryentry{cpr}{
+  name={CPR (Counts Per Revolution)},
+  description={Cantidad de cuentas que entrega un encoder incremental por cada vuelta completa del eje. Se ocupa para convertir pulsos de encoder en ángulo o velocidad angular.}
+}
+
+\newglossaryentry{pcint}{
+  name={PCINT (Pin Change Interrupt)},
+  description={Tipo de interrupción en microcontroladores AVR que se activa ante cualquier cambio de estado lógico en ciertos pines digitales, permitiendo usar más pines como fuentes de interrupción externa.}
+}
+
+\newglossaryentry{modo_pwm_abierto}{
+  name={Modo PWM abierto},
+  description={Estrategia de control en la que se envía directamente el ciclo de trabajo PWM al puente H sin realimentación de la velocidad del motor. Se utiliza principalmente para pruebas en banco y verificación de hardware.}
+}
+
+\newglossaryentry{modo_velocidad_cerrada}{
+  name={Modo de velocidad cerrada},
+  description={Estrategia de control en la que un controlador PID ajusta el ciclo de trabajo PWM para que la velocidad de la rueda siga una referencia de velocidad angular establecida.}
+}
+
+\newglossaryentry{encoder_incremental}{
+name={encoder incremental},
+text={encoder incremental},
+plural={encoders incrementales},
+description={Sensor rotativo que entrega dos canales en cuadratura (A y B)
+para medir conteos por vuelta, sentido de giro y estimar velocidad angular.
+La dirección se obtiene comparando la fase entre canales, y la velocidad a partir
+del número de pulsos en un intervalo de muestreo. Algunos modelos incluyen un
+canal Z (index) para referencia de vuelta.}
+}
+
+\newglossaryentry{AMCL}{
+  name = {AMCL},
+  description = {\textit{Adaptive Monte Carlo Localization}. Algoritmo de localización probabilística basado en filtro de partículas que estima la pose del robot sobre un mapa de ocupación. En este proyecto se emplea el nodo \texttt{amcl} de Nav2 con modelo de movimiento diferencial.}
+}

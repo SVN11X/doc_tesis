@@ -1,0 +1,169 @@
+\chapter*{CONCLUSIONES}
+\phantomsection
+\addcontentsline{toc}{chapter}{CONCLUSIONES}
+
+El presente trabajo de titulación tuvo como objetivo general diseñar e implementar un prototipo de robot móvil diferencial capaz de generar un mapa bidimensional de su entorno y navegar de forma autónoma hacia destinos seleccionados por el usuario, utilizando el \textit{middleware} \gls{ROS2} (distribución Foxy) como plataforma de integración de software. A lo largo de los capítulos anteriores se documentó el proceso completo —desde la revisión del estado del arte y la fundamentación teórica, pasando por el diseño, la construcción y la programación del sistema, hasta la validación experimental en simulación y hardware real— y los resultados obtenidos permiten formular las siguientes conclusiones, organizadas por dimensión del proyecto.
+
+% -------------------------------------------------------------------
+\section*{Sobre la implementación de la plataforma física}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre la implementación de la plataforma física}
+
+En relación con el objetivo \autoref{oe1}, se construyó una plataforma diferencial con dos ruedas motrices y una rueda loca (\textit{caster}), cuyo sensor principal de percepción es un RPLidar A1. El control de bajo nivel se delegó a un \gls{Arduino} con driver L298N, que gestiona la velocidad de los motores de corriente continua mediante señales \gls{PWM} y retroalimenta al sistema a través de encoders de cuadratura Hall con una resolución efectiva de 1980 cuentas por vuelta en el eje de salida.
+
+Esta separación entre cómputo de alto nivel (Raspberry Pi) y control de bajo nivel (\gls{Arduino}) resultó coherente con la arquitectura de \texttt{ros2\_control}, permitiendo que el \texttt{diff\_drive\_controller} consuma odometría de encoders sin depender de estimaciones abiertas. La elección del \gls{Arduino}, fundamentada en su compatibilidad eléctrica directa a 5 V con el L298N y la disponibilidad de interrupciones de hardware para la decodificación de cuadratura, se validó como adecuada para el alcance del proyecto, manteniendo abierta la posibilidad de migración futura a plataformas compatibles con \textit{micro-ROS}.
+
+El diseño mecánico del chasis, fabricado mediante impresión 3D en PLA+, permitió iterar rápidamente sobre la disposición de componentes y la distribución de peso. La topología de alimentación en estrella, con separación de dominios de potencia (12 V) y lógica (5 V), resultó eficaz para mitigar perturbaciones electromagnéticas generadas por los motores durante transitorios de arranque.
+
+% -------------------------------------------------------------------
+\section*{Sobre el firmware y el controlador PID}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre el firmware y el controlador PID}
+
+En relación con el objetivo \autoref{oe2}, el firmware implementado en el \gls{Arduino} integra de forma modular la lectura de encoders por interrupciones, el protocolo de comunicación serial bidireccional y un controlador PID diferencial que opera a 30 Hz. La arquitectura modular del firmware —con separación entre el \textit{parser} serial, las rutinas de interrupción y el ciclo de control— facilita el diagnóstico y la extensión del código.
+
+La sintonización de las ganancias PID mediante un procedimiento híbrido que combina optimización por enjambre de partículas (PSO) con refinamiento experimental iterativo constituye una de las contribuciones técnicas del proyecto. El procedimiento, implementado en \emph{scripts} de Python, identifica primero un modelo de primer orden con retardo (FODT) para cada rueda y luego optimiza las ganancias $K_p$, $K_i$ y $K_d$ minimizando una función de costo compuesta que penaliza fuertemente el sobreimpulso ($w_{\text{OS}} = 3$). Las ganancias sugeridas por el PSO se validan experimentalmente sobre el hardware real, ajustándose iterativamente hasta obtener un seguimiento satisfactorio del escalón de velocidad. Este enfoque produjo ganancias asimétricas entre la rueda izquierda ($K_p = 16.00$, $K_d = 20.30$, $K_i = 0.075$) y la derecha ($K_p = 16.42$, $K_d = 20.05$, $K_i = 0.001$) que compensan eficazmente las diferencias mecánicas del tren motriz, lo cual se refleja en la reducción de la desviación lateral durante trayectorias rectas documentada en el Capítulo~\ref{ch:resultados}.
+
+La comparación con sintonía Lambda mostró que las ganancias obtenidas mediante el enfoque híbrido (PSO + ajuste experimental) logran menor sobreimpulso con un tiempo de establecimiento comparable, validando tanto la elección de una metaheurística como punto de partida como la necesidad del refinamiento sobre la planta real. Es importante señalar que las ganancias Lambda se calcularon sobre el mismo modelo FODT identificado en lazo abierto que utilizó el PSO (archivo \texttt{step\_response\_velocity\_lazo\_abierto.npy}), por lo que la comparación es metodológicamente equitativa: ambos métodos parten de idéntica identificación de la planta sin controlador.
+
+% -------------------------------------------------------------------
+\section*{Sobre el gemelo digital y la simulación}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre el gemelo digital y la simulación}
+
+En relación con el objetivo \autoref{oe3}, se desarrolló un modelo URDF/xacro parametrizado que actúa como fuente de verdad geométrica y cinemática del proyecto. La estructura modular adoptada, con argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}, permitió alternar entre el plugin diferencial de Gazebo y \texttt{ros2\_control} sin modificar los parámetros de control ni los nombres de tópicos. La validación en Gazebo previa al despliegue físico permitió identificar y corregir desalineaciones de signos, escalas y latencias en los controladores antes de operar sobre el robot real.
+
+Durante la simulación se identificaron dos comportamientos que condicionaron decisiones de diseño: (i) la frecuencia del reloj de Gazebo por defecto afecta la continuidad de la odometría, mitigándose mediante \texttt{gazebo\_params.yaml} con una tasa de publicación de reloj elevada; y (ii) el modelado de colisión cilíndrica de las ruedas produce deslizamientos sutiles en giros, reduciéndose al sustituir la geometría de colisión por una esfera. Estos hallazgos ilustran el valor del gemelo digital como herramienta de diagnóstico: ambos problemas fueron detectados y resueltos antes de la transferencia al hardware, evitando ciclos de depuración costosos sobre la plataforma física.
+
+Los resultados experimentales del Capítulo~\ref{ch:resultados} confirman que la odometría en simulación presenta un error medio de 3.39\% en trayectorias rectas de 2 m (Tabla~\ref{tab:odom_recta_sim}), con valores individuales entre 1.40\% y 6.69\%. Este nivel de precisión valida la correcta implementación de la cadena de cálculo del controlador diferencial y establece una línea base cuantificada contra la cual se mide la brecha simulación–realidad respecto al hardware real (error medio de 3.63\%, Tabla~\ref{tab:odom_recta_real}).
+
+% -------------------------------------------------------------------
+\section*{Sobre la gestión del workspace}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre la gestión del workspace}
+
+Si bien la organización del \textit{workspace} no constituye un objetivo específico del proyecto, su diseño fue instrumental para el cumplimiento de los objetivos \autoref{oe3} (paridad entre gemelo digital y hardware real) y \autoref{oe7} (validación experimental comparada entre simulación y hardware), ya que la estrategia de configuración adoptada determinó la viabilidad de la transferencia simulación--hardware.
+
+El \textit{workspace} \texttt{tesis\_black\_robot} se organizó con paridad simulación–hardware, usando \texttt{colcon build --symlink-install} para iteración rápida y control de versiones Git por SSH entre la estación de trabajo y la Raspberry Pi. La red de comunicación entre ambas máquinas se estableció mediante un \textit{travel router} con direcciones estáticas y \texttt{ROS\_DOMAIN\_ID=0} como dominio de producción, estabilizando el descubrimiento DDS/RTPS en entorno inalámbrico.
+
+La estrategia de mantener archivos de configuración YAML con la mayor paridad posible entre simulación y hardware —cambiando únicamente \texttt{use\_sim\_time}, el dispositivo serial y las rutas locales— redujo significativamente el esfuerzo de transferencia y permitió diagnosticar problemas comparando directamente los comportamientos en ambos entornos. Cabe señalar que los archivos de configuración de Nav2 difieren entre ambos entornos en parámetros cinemáticos (límites de velocidad y aceleración), de planificación (algoritmo, tolerancia) y de costmaps (huella, radio de inflación), como se detalla en la Tabla~\ref{tab:nav2_diff_sim_real}. Estas diferencias son necesarias para adaptar la navegación a las restricciones del hardware real. Esta paridad parcial de configuración es, a juicio del autor, una de las prácticas más valiosas adoptadas en el proyecto, y se recomienda como patrón de diseño para futuros trabajos con \gls{ROS2}.
+
+% -------------------------------------------------------------------
+\section*{Sobre el mapeo con \texttt{slam\_toolbox}}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre el mapeo con slam\_toolbox}
+
+En relación con el objetivo \autoref{oe4}, el mapeo del entorno se realizó con \texttt{slam\_toolbox} en modo asíncrono en línea, con optimización de grafo mediante el solver Ceres (Levenberg–Marquardt) y cierre de lazo activado. Esta configuración permitió construir mapas de ocupación 2D con resolución de 0.05 m/celda en tiempo real, tanto en simulación como en el entorno físico.
+
+En simulación, los mapas presentan paredes con bordes nítidos, obstáculos correctamente representados y consistencia global tras el cierre de lazo, gracias a la ausencia de ruido sensorial y a la odometría ideal de Gazebo. En hardware real, la calidad del mapa se degrada proporcionalmente a la velocidad de operación: a velocidades moderadas el mapa es coherente y utilizable para navegación, pero velocidades elevadas producen distorsiones visibles debido a la acumulación de errores odométricos antes de que el optimizador del grafo pueda corregirlos. El cierre de lazo funcionó correctamente en ambos entornos cuando el robot regresó a zonas previamente mapeadas, corrigiendo la deriva global del mapa de forma automática.
+
+Estas observaciones confirman que \texttt{slam\_toolbox} constituye una solución robusta y accesible para mapeo 2D con \gls{LIDAR} en robots diferenciales de bajo costo, siempre que la velocidad de operación se mantenga dentro de los límites impuestos por la precisión de la odometría.
+
+% -------------------------------------------------------------------
+\section*{Sobre la navegación autónoma con Nav2}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre la navegación autónoma con Nav2}
+
+En relación con el objetivo \autoref{oe5}, la navegación autónoma se implementó con la pila Nav2, utilizando \texttt{slam\_toolbox} como fuente simultánea de mapa y localización (transformación \texttt{map} $\rightarrow$ \texttt{odom}), el planificador global NavFn con A*, el controlador local DWB y un árbol de comportamiento con replanificación de ruta global a 4~Hz (\texttt{RateController}) y seguimiento local continuo, más una secuencia de recuperación de siete acciones ordenadas por costo creciente (limpieza de costmaps local a 1.0~m y global a 1.5~m, \texttt{BackUp}, \texttt{Spin}, replaneación alternativa y \texttt{Wait}), reintentada hasta 6 veces antes de declarar fallo de navegación; si el objetivo se actualiza durante la secuencia (\texttt{GoalUpdated}), el árbol se reinicia desde el inicio.
+
+Las pruebas de navegación realizadas muestran que la combinación NavFn + DWB logra alcanzar metas en escenarios de trayectoria directa y con obstáculo intermedio, mientras que los escenarios de pasillo o puerta —donde el ancho disponible se aproxima al radio de inflación del costmap— concentran la mayoría de los fallos. Los resultados cuantitativos (tasas de éxito, tiempos medios y dispersión) se reportan en las Tablas~\ref{tab:nav_sim} y~\ref{tab:nav_real}. Las estrategias de recuperación del árbol de comportamiento resuelven la mayor parte de las situaciones de bloqueo, aunque los giros \texttt{Spin} en espacios confinados pueden agravar el problema al desplazar al robot hacia los obstáculos laterales en lugar de alejarlo de ellos.
+
+La teleoperación mediante mando inalámbrico con \textit{dead-man switch}, gestionada por \texttt{twist\_mux} con dos niveles de prioridad, demostró ser un mecanismo de seguridad fiable: en todas las pruebas documentadas, el operador pudo retomar el control del robot de forma inmediata al presionar el botón de habilitación, interrumpiendo la navegación autónoma sin conflictos.
+
+% -------------------------------------------------------------------
+\section*{Sobre la exploración autónoma de fronteras}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre la exploración autónoma de fronteras}
+
+En relación con el objetivo \autoref{oe6}, la integración del módulo de exploración de fronteras (\texttt{explore\_server}) permitió que el robot generara sus propias metas de navegación hacia zonas no exploradas del mapa sin intervención humana continua. En simulación, la exploración autónoma logró cubrir la mayor parte del entorno de pruebas de forma sistemática. En hardware real, el rendimiento dependió de la calidad del mapa construido en tiempo real y de la capacidad de Nav2 para alcanzar las metas generadas.
+
+La principal limitación observada fue la selección de fronteras pequeñas o de difícil acceso, que generan metas de navegación cercanas a obstáculos y provocan ciclos de replaneación. El parámetro \texttt{min\_frontier\_size} mitiga parcialmente este comportamiento, pero su ajuste óptimo resultó específico del entorno, lo que sugiere la conveniencia de un mecanismo adaptativo en futuras versiones.
+
+% -------------------------------------------------------------------
+\section*{Sobre la brecha simulación–realidad}
+\phantomsection
+\addcontentsline{toc}{section}{Sobre la brecha simulación–realidad}
+
+En relación con el objetivo \autoref{oe7}, la validación comparada entre simulación y hardware real permitió cuantificar la brecha de transferencia (\textit{sim-to-real gap}) en tres dimensiones críticas. En primer lugar, el \textbf{ruido sensorial}: el RPLidar A1 real produce mediciones con ruido y reflexiones espurias en superficies reflectantes o aristas agudas que el sensor simulado en Gazebo no reproduce, afectando la nitidez del mapa y la estabilidad del \emph{scan matching}. En segundo lugar, el \textbf{deslizamiento de ruedas}: en el hardware real, los giros rápidos sobre superficies con menor adherencia generan discrepancias entre la odometría reportada y el movimiento real que son prácticamente inexistentes en simulación. En tercer lugar, las \textbf{latencias de comunicación}: la cadena serial Arduino–Raspberry Pi introduce latencias variables que afectan la sincronización entre odometría y barridos láser, degradando la calidad del SLAM a velocidades elevadas.
+
+No obstante estas diferencias, la estrategia de paridad de configuración adoptada en el proyecto —mismos archivos YAML, mismos nombres de tópicos, misma cadena de transformaciones— permitió que la transferencia de simulación a hardware se completara sin modificar la lógica del sistema, cambiando únicamente parámetros de dispositivo y reloj. Este resultado valida el enfoque de desarrollo primero en simulación como método eficaz para reducir el tiempo y el riesgo de la puesta en marcha de robots con \gls{ROS2}.
+
+% -------------------------------------------------------------------
+\section*{Cumplimiento de los objetivos específicos}
+\phantomsection
+\addcontentsline{toc}{section}{Cumplimiento de los objetivos específicos}
+
+A continuación se evalúa el grado de cumplimiento de cada objetivo específico planteado en la Introducción:
+
+\begin{description}
+\item[\autoref{oe1} — Plataforma mecánica y electrónica:] \textit{Cumplido.} Se diseñó y construyó la plataforma diferencial completa con todos los componentes especificados. El diseño se documentó en el Capítulo~\ref{ch:componentes} y el esquema eléctrico en el Capítulo~\ref{chap:robot_real} y el Anexo~\ref{anx:esquema_electrico}.
+
+\item[\autoref{oe2} — Firmware de control con PID sintonizado por PSO:] \textit{Cumplido.} El firmware se implementó con arquitectura modular (Capítulo~\ref{ch:setup_arduino}), incluyendo protocolo serial, lectura de encoders por interrupciones y control PID diferencial. La sintonización por PSO produjo ganancias que minimizan el sobreimpulso y compensan asimetrías mecánicas.
+
+\item[\autoref{oe3} — Modelo digital URDF/Xacro con validación en Gazebo:] \textit{Cumplido.} El modelo parametrizado se desarrolló en el Capítulo~\ref{ch:robot_digital}, con conmutación entre backends de simulación y hardware real. La validación en Gazebo confirmó la correcta implementación de cinemática, odometría y control diferencial.
+
+\item[\autoref{oe4} — Mapeo con \texttt{slam\_toolbox}:] \textit{Cumplido.} El paquete se configuró y desplegó exitosamente en modo asíncrono en línea (Capítulo~\ref{chap:app_control_nav}), produciendo mapas 2D coherentes tanto en simulación como en hardware real, con cierre de lazo funcional.
+
+\item[\autoref{oe5} — Navegación autónoma con Nav2:] \textit{Cumplido.} La pila Nav2 se integró con NavFn, DWB y árbol de comportamiento (Capítulo~\ref{chap:app_control_nav}), logrando navegación autónoma funcional hacia metas definidas por el usuario en ambos entornos, con recuperación automática ante bloqueos. Los resultados cuantitativos se reportan en las Tablas~\ref{tab:nav_sim} y~\ref{tab:nav_real}.
+
+\item[\autoref{oe6} — Exploración autónoma de fronteras:] \textit{Cumplido.} El módulo \texttt{explore\_server} se integró exitosamente (Capítulo~\ref{chap:app_control_nav}), permitiendo al robot generar metas hacia zonas no exploradas. Los indicadores de desempeño se reportan en las Tablas~\ref{tab:explore_sim} y~\ref{tab:explore_real}.
+
+\item[\autoref{oe7} — Validación experimental:] \textit{Cumplido.} El Capítulo~\ref{ch:resultados} documentó pruebas cuantitativas de odometría (Tablas~\ref{tab:odom_recta_sim}--\ref{tab:odom_giro}), control PID (Tabla~\ref{tab:pid_performance}), mapeo (Tabla~\ref{tab:slam_sim_indicadores}), navegación y exploración, con comparación integral entre simulación y hardware real (Sección~\ref{sec:comparacion_sim_real}).
+\end{description}
+
+En consecuencia, se concluye que el \textbf{objetivo general} del proyecto fue alcanzado: se desarrolló un prototipo funcional de robot móvil diferencial capaz de generar mapas 2D y navegar de forma autónoma, utilizando \gls{ROS2} Foxy como plataforma de integración.
+
+% -------------------------------------------------------------------
+\section*{Limitaciones observadas}
+\phantomsection
+\addcontentsline{toc}{section}{Limitaciones observadas}
+
+Durante el desarrollo y la validación experimental se identificaron las siguientes limitaciones que condicionan el desempeño del sistema:
+
+\begin{itemize}
+\item \textbf{Deriva odométrica:} la odometría basada exclusivamente en encoders acumula deriva en trayectorias largas, especialmente en giros cerrados y superficies irregulares. Las pruebas experimentales mostraron que la deriva angular por giro completo es significativamente mayor en hardware real que en simulación, confirmando la necesidad de fusión sensorial con \gls{IMU} para aplicaciones que requieran precisión sostenida.
+
+\item \textbf{Desfase temporal en simulación:} se documentó un desfase entre datos de sensores y transformaciones \texttt{tf} al usar \texttt{ros2\_control} con Gazebo en escenarios de rotación, cuya causa de fondo permanece en investigación. Este comportamiento afecta la fidelidad de la simulación como predictor del rendimiento real en maniobras de giro.
+
+\item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy alcanzó su fin de vida (\textit{end-of-life}) en mayo de 2023, lo que limita el acceso a actualizaciones de seguridad y a nuevas funcionalidades del ecosistema Nav2, \texttt{ros2\_control} y \texttt{slam\_toolbox}.
+
+\item \textbf{Navegación en espacios estrechos:} los escenarios con pasillos o puertas cuyo ancho se aproxima al radio de inflación del costmap concentraron la mayoría de los fallos de navegación, evidenciando la necesidad de ajustar los parámetros de inflación según el entorno o emplear controladores locales más avanzados.
+
+\item \textbf{Recursos computacionales:} si bien la Raspberry Pi 4 (8 GB) resultó suficiente para la operación combinada de SLAM y Nav2, la ejecución simultánea de algoritmos más demandantes (como SLAM visual con RTAB-Map) no es viable sin degradación de rendimiento, lo que restringe la escalabilidad del sistema sobre el mismo hardware.
+\end{itemize}
+
+% -------------------------------------------------------------------
+\section*{Trabajo futuro}
+\phantomsection
+\addcontentsline{toc}{section}{Trabajo futuro}
+
+A partir de los resultados obtenidos y las limitaciones identificadas, se proponen las siguientes líneas de trabajo, ordenadas por prioridad e impacto esperado:
+
+\begin{enumerate}
+\item \textbf{Fusión sensorial con \gls{IMU}:} integrar una unidad de medición inercial con el paquete \texttt{robot\_localization} (filtro de Kalman extendido) para reducir la deriva odométrica en trayectorias largas. El diseño mecánico del chasis ya contempla espacio físico para este sensor, y la arquitectura de \texttt{ros2\_control} facilita la incorporación de fuentes adicionales de odometría. Esta mejora tendría impacto directo en la calidad del mapeo SLAM y en la precisión de la navegación autónoma.
+
+\item \textbf{Migración de distribución:} portar el sistema a \gls{ROS2} Humble o Jazzy para acceder a versiones mantenidas de Nav2, \texttt{ros2\_control} y \texttt{slam\_toolbox}, así como a controladores locales más avanzados (\texttt{MPPIController}, \texttt{SmacPlanner2D}) que podrían mejorar el rendimiento en espacios estrechos.
+
+\item \textbf{Validación en entornos más complejos:} extender las pruebas a pasillos de múltiples habitaciones y escenarios con obstáculos dinámicos para evaluar la robustez del cierre de lazo y las recuperaciones de Nav2 en condiciones más exigentes.
+
+\item \textbf{Navegación semántica:} explorar la incorporación de una cámara Raspberry Pi en la pila de navegación para detección de zonas prohibidas, categorización de espacios o, eventualmente, SLAM visual con RTAB-Map.
+
+\item \textbf{Interfaz de usuario remota:} desarrollar una interfaz basada en \texttt{rosbridge\_suite} y \texttt{web\_video\_server} —ambos ya incluidos en el \textit{workspace}— para que el usuario envíe destinos de navegación y supervise el robot desde un dispositivo móvil sin necesidad de RViz en una estación de trabajo.
+
+\item \textbf{Optimización del explorador de fronteras:} implementar un criterio adaptativo de selección de fronteras que considere no solo el tamaño de la frontera sino también la accesibilidad y la distancia de navegación estimada, reduciendo los ciclos de replaneación observados ante fronteras pequeñas o de difícil acceso.
+
+\item \textbf{Migración del microcontrolador a \textit{micro-ROS}:} reemplazar el protocolo serial propietario por \textit{micro-ROS} sobre un microcontrolador compatible (\gls{Arduino} RP2040, ESP32 o Teensy), eliminando la capa de traducción del plugin \texttt{DiffDriveArduino} y permitiendo que el microcontrolador participe directamente como nodo en el grafo de \gls{ROS2}.
+
+\item \textbf{Evaluación de planificadores alternativos:} el proyecto actual utiliza NavfnPlanner con A* como planificador global, referenciado de forma consistente como \texttt{GridBased} tanto en \texttt{nav2\_params.yaml} como en el árbol de comportamiento XML. En distribuciones posteriores a Foxy, Nav2 ofrece planificadores potencialmente más eficientes para espacios estrechos, como \texttt{SmacPlanner2D} o \texttt{ThetaStarPlanner}, cuya evaluación comparativa en el entorno del prototipo constituye una línea de trabajo futura relevante.
+\end{enumerate}
+
+% -------------------------------------------------------------------
+\section*{Reflexión final}
+\phantomsection
+\addcontentsline{toc}{section}{Reflexión final}
+
+El desarrollo de este proyecto permitió constatar que la construcción de un robot móvil autónomo funcional con componentes accesibles y herramientas de código abierto es viable en el contexto de un trabajo de titulación de ingeniería electrónica, aunque demanda un esfuerzo de integración multidisciplinario considerable. La principal dificultad no reside en la complejidad individual de cada subsistema —el control PID, el modelo URDF, la configuración de SLAM o la pila Nav2— sino en la articulación coherente de todos ellos dentro de un sistema que debe operar en tiempo real sobre hardware con recursos limitados.
+
+La estrategia de validación incremental adoptada —verificar primero la odometría, luego el control, después el mapeo, a continuación la navegación y finalmente la exploración— resultó fundamental para gestionar esta complejidad, permitiendo aislar y resolver problemas en la capa más básica antes de agregar funcionalidad. Se recomienda esta metodología como patrón de desarrollo para futuros proyectos de robótica móvil con \gls{ROS2}.
+
+Finalmente, la documentación detallada de todo el proceso —incluyendo el firmware de bajo nivel, los archivos de configuración YAML, los procedimientos de sintonización y la guía de puesta en marcha— busca que este trabajo no sea solo un ejercicio académico cerrado, sino un recurso de referencia que facilite a futuros estudiantes e investigadores la reproducción, extensión y mejora del sistema desarrollado.

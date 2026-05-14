@@ -1,0 +1,44 @@
+\usepackage{listings}
+
+\definecolor{arduinoBlue}{HTML}{007AFF}
+\definecolor{arduinoGreen}{HTML}{37B34A}
+\definecolor{arduinoGray}{HTML}{A7A7A7}
+\definecolor{arduinoOrange}{HTML}{FFA600}
+
+\lstdefinestyle{arduino}{
+  language=C++,
+  basicstyle=\ttfamily\footnotesize,
+  numbers=left,
+  numberstyle=\tiny\color{arduinoGray},
+  stepnumber=1,
+  numbersep=5pt,
+  backgroundcolor=\color{white},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=single,
+  rulecolor=\color{black},
+  tabsize=2,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  keywordstyle=\color{arduinoBlue},
+  commentstyle=\color{arduinoGreen},
+  stringstyle=\color{arduinoOrange},
+  morekeywords={setup, loop, pinMode, digitalWrite, digitalRead, analogWrite, analogRead, delay, Serial},
+  deletekeywords={byte, boolean, int, long, float, double, char, unsigned, void, volatile, size_t},
+  emphstyle=\color{arduinoBlue},
+  emph={HIGH, LOW, INPUT, OUTPUT, INPUT_PULLUP, LED_BUILTIN},
+  frame=shadowbox,
+  rulesepcolor=\color{arduinoGreen},
+  xleftmargin=15pt,
+  xrightmargin=15pt,
+  framexleftmargin=8pt,
+  framexrightmargin=8pt,
+  framextopmargin=8pt,
+  framexbottommargin=8pt,
+}
+
+\lstnewenvironment{arduino}[1][]
+  {\lstset{style=arduino,#1}}
+  {}

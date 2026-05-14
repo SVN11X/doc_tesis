@@ -1,0 +1,249 @@
+\relax 
+\providecommand\zref@newlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}Dise'no conceptual y descripci'on del robot digital}{127}{chapter.5}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\newlabel{ch:robot_digital}{{5}{127}{Dise'no conceptual y descripci'on del robot digital}{chapter.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces Entorno de simulaci'on en Gazebo con elementos de prueba y el robot diferencial.}}{128}{figure.caption.99}\protected@file@percent }
+\newlabel{fig:sim_entorno_general}{{5.1}{128}{Entorno de simulaci'on en Gazebo con elementos de prueba y el robot diferencial}{figure.caption.99}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Comparaci'on visual entre el prototipo f'isico (izquierda) y su gemelo digital en Gazebo (derecha).}}{128}{figure.caption.100}\protected@file@percent }
+\newlabel{fig:comparacion_fisico_virtual}{{5.2}{128}{\tempCaption }{figure.caption.100}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Principio de sincronizaci'on con la plataforma f'isica}{129}{section.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.3}{\ignorespaces Flujo bidireccional de sincronizaci'on entre prototipo f'isico y gemelo digital: las medidas reales actualizan el modelo, y los par'ametros del modelo se propagan a simulaci'on, control y navegaci'on.}}{130}{figure.caption.101}\protected@file@percent }
+\newlabel{fig:flujo_sincronizacion}{{5.3}{130}{Flujo bidireccional de sincronizaci'on entre prototipo f'isico y gemelo digital: las medidas reales actualizan el modelo, y los par'ametros del modelo se propagan a simulaci'on, control y navegaci'on}{figure.caption.101}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Resumen de par'ametros y trazabilidad}{130}{section.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces Resumen de parámetros del gemelo digital y su trazabilidad.}}{131}{table.caption.102}\protected@file@percent }
+\newlabel{tab:parametros_robot}{{5.1}{131}{Resumen de parámetros del gemelo digital y su trazabilidad}{table.caption.102}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.4}{\ignorespaces Cotas principales del gemelo digital: vista lateral (superior izquierda), vista frontal (superior derecha) y vista planta (inferior izquierda) con dimensiones en metros.}}{132}{figure.caption.103}\protected@file@percent }
+\newlabel{fig:cotas_gemelo_digital}{{5.4}{132}{Cotas principales del gemelo digital: vista lateral (superior izquierda), vista frontal (superior derecha) y vista planta (inferior izquierda) con dimensiones en metros}{figure.caption.103}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}URDF y xacro como contrato estructural}{132}{section.5.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.5}{\ignorespaces Modelo digital del robot: ubicaci'on de sensor l'aser y ruedas (vista cercana).}}{134}{figure.caption.104}\protected@file@percent }
+\newlabel{fig:urdf_closeup}{{5.5}{134}{Modelo digital del robot: ubicaci'on de sensor l'aser y ruedas (vista cercana)}{figure.caption.104}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Validaci'on estructural del URDF}{134}{subsection.5.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.6}{\ignorespaces 'Arbol de transformaciones \texttt  {tf} generado con \texttt  {ros2 run tf2\_tools view\_frames}, mostrando la cadena completa de marcos de referencia del robot.}}{135}{figure.caption.105}\protected@file@percent }
+\newlabel{fig:tf_tree}{{5.6}{135}{'Arbol de transformaciones \texttt {tf} generado con \texttt {ros2 run tf2\_tools view\_frames}, mostrando la cadena completa de marcos de referencia del robot}{figure.caption.105}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Estructura URDF confirmada por auditor'ia.}}{135}{table.caption.106}\protected@file@percent }
+\newlabel{tab:urdf_tree_evidencia}{{5.2}{135}{Estructura URDF confirmada por auditor'ia}{table.caption.106}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces Conteo de links y joints del URDF.}}{136}{table.caption.107}\protected@file@percent }
+\newlabel{tab:urdf_counts}{{5.3}{136}{Conteo de links y joints del URDF}{table.caption.107}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Composici'on modular y selecci'on de backend}{136}{section.5.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.4}{\ignorespaces Combinaciones de argumentos y backend resultante.}}{136}{table.caption.108}\protected@file@percent }
+\newlabel{tab:xacro_args_backend}{{5.4}{136}{Combinaciones de argumentos y backend resultante}{table.caption.108}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.7}{\ignorespaces L'ogica de inclusi'on de archivos xacro y selecci'on de backend de control seg'un los argumentos de compilaci'on.}}{137}{figure.caption.109}\protected@file@percent }
+\newlabel{fig:xacro_decision_tree}{{5.7}{137}{L'ogica de inclusi'on de archivos xacro y selecci'on de backend de control seg'un los argumentos de compilaci'on}{figure.caption.109}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.8}{\ignorespaces Relaci'on entre archivos de descripci'on del robot y selecci'on de backend de control.}}{138}{figure.caption.110}\protected@file@percent }
+\newlabel{fig:xacro-relations}{{5.8}{138}{Relaci'on entre archivos de descripci'on del robot y selecci'on de backend de control}{figure.caption.110}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.5}Convenciones de marcos y cadena de transformaciones}{139}{section.5.5}\protected@file@percent }
+\newlabel{sec:tf-convenciones}{{5.5}{139}{Convenciones de marcos y cadena de transformaciones}{section.5.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.9}{\ignorespaces Ubicaci'on y orientaci'on de los marcos de referencia sobre el modelo del robot}}{140}{figure.caption.111}\protected@file@percent }
+\newlabel{fig:frames_sobre_robot}{{5.9}{140}{\tempCaption }{figure.caption.111}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}Publicaci'on de transformaciones: requisitos operativos}{141}{subsection.5.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.5}{\ignorespaces T'opicos esenciales y acciones correctivas.}}{141}{table.caption.112}\protected@file@percent }
+\newlabel{tab:pub_state}{{5.5}{141}{T'opicos esenciales y acciones correctivas}{table.caption.112}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}T'opicos y marcos clave}{141}{subsection.5.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.6}{\ignorespaces Mapa de marcos y t'opicos del sistema.}}{141}{table.caption.113}\protected@file@percent }
+\newlabel{tab:topics_frames}{{5.6}{141}{Mapa de marcos y t'opicos del sistema}{table.caption.113}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.10}{\ignorespaces Captura de RViz mostrando el modelo del robot con marcos TF activos y barrido l'aser superpuesto sobre el entorno de simulaci'on.}}{142}{figure.caption.114}\protected@file@percent }
+\newlabel{fig:rviz_tf_scan_validacion}{{5.10}{142}{Captura de RViz mostrando el modelo del robot con marcos TF activos y barrido l'aser superpuesto sobre el entorno de simulaci'on}{figure.caption.114}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.6}Modelado del sensor l'aser en simulaci'on}{142}{section.5.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.11}{\ignorespaces Comparaci'on visual de los rayos de LIDAR entre Gazebo y RViz}}{143}{figure.caption.115}\protected@file@percent }
+\newlabel{fig:comparacion_rayos_lidar}{{5.11}{143}{\tempCaption }{figure.caption.115}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.7}Control diferencial: \texttt  {ros2\_control} y backend de simulaci'on}{144}{section.5.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.12}{\ignorespaces Flujo de datos del control diferencial: desde el comando de velocidad hasta la odometr'ia, en hardware real y en simulaci'on.}}{144}{figure.caption.116}\protected@file@percent }
+\newlabel{fig:flujo_control_diferencial}{{5.12}{144}{Flujo de datos del control diferencial: desde el comando de velocidad hasta la odometr'ia, en hardware real y en simulaci'on}{figure.caption.116}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7.1}Interfaz de control para hardware real}{146}{subsection.5.7.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.7}{\ignorespaces Interfaces de hardware expuestas por el sistema \texttt  {ros2\_control} para cada rueda motriz (declaraci'on en \texttt  {ros2\_control.xacro}). Las interfaces son id'enticas para el backend de hardware real (\texttt  {DiffDriveArduino}) y el de simulaci'on (\texttt  {GazeboSystem}).}}{147}{table.caption.117}\protected@file@percent }
+\newlabel{tab:interfaces_ros2_control}{{5.7}{147}{Interfaces de hardware expuestas por el sistema \texttt {ros2\_control} para cada rueda motriz (declaraci'on en \texttt {ros2\_control.xacro}). Las interfaces son id'enticas para el backend de hardware real (\texttt {DiffDriveArduino}) y el de simulaci'on (\texttt {GazeboSystem})}{table.caption.117}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7.2}Backend de simulaci\'on (Gazebo)}{147}{subsection.5.7.2}\protected@file@percent }
+\newlabel{sec:ros2ctrl_gazebo_sub}{{5.7.2}{147}{Backend de simulaci\'on (Gazebo)}{subsection.5.7.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.13}{\ignorespaces Flujo de comandos de velocidad hacia el plugin diferencial de Gazebo y publicaci'on de odometr'ia.}}{148}{figure.caption.118}\protected@file@percent }
+\newlabel{fig:gazebo_diffdrive_pipeline}{{5.13}{148}{Flujo de comandos de velocidad hacia el plugin diferencial de Gazebo y publicaci'on de odometr'ia}{figure.caption.118}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7.3}Carga de controladores}{148}{subsection.5.7.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.14}{\ignorespaces Secuencia de arranque de controladores: hardware real (izquierda) y simulaci'on (derecha).}}{149}{figure.caption.119}\protected@file@percent }
+\newlabel{fig:secuencia_arranque_controladores}{{5.14}{149}{Secuencia de arranque de controladores: hardware real (izquierda) y simulaci'on (derecha)}{figure.caption.119}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.8}Criterios de aceptaci'on y m'etrica reproducible}{150}{section.5.8}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.15}{\ignorespaces Giro de 360°: vista cenital mostrando la trayectoria circular del robot}}{152}{figure.caption.120}\protected@file@percent }
+\newlabel{fig:pruebas_giro_360}{{5.15}{152}{\tempCaption }{figure.caption.120}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.16}{\ignorespaces Avance rectil'ineo: vista lateral mostrando la trayectoria recta}}{153}{figure.caption.121}\protected@file@percent }
+\newlabel{fig:pruebas_avance_rectilineo}{{5.16}{153}{\tempCaption }{figure.caption.121}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.17}{\ignorespaces Recorrido combinado: trayectoria completa tipo "L" o "U"}}{154}{figure.caption.122}\protected@file@percent }
+\newlabel{fig:pruebas_recorrido_combinado}{{5.17}{154}{\tempCaption }{figure.caption.122}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.8}{\ignorespaces Resumen de criterios de aceptaci'on, m'etricas objetivo y herramientas de verificaci'on para el gemelo digital.}}{155}{table.caption.123}\protected@file@percent }
+\newlabel{tab:criterios_aceptacion_resumen}{{5.8}{155}{Resumen de criterios de aceptaci'on, m'etricas objetivo y herramientas de verificaci'on para el gemelo digital}{table.caption.123}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.8.1}Procedimiento de pruebas (paso a paso)}{156}{subsection.5.8.1}\protected@file@percent }
+\newlabel{subsec:procedimiento_pruebas}{{5.8.1}{156}{Procedimiento de pruebas (paso a paso)}{subsection.5.8.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.18}{\ignorespaces Diagrama de flujo del procedimiento de validaci'on incremental del gemelo digital.}}{157}{figure.caption.124}\protected@file@percent }
+\newlabel{fig:flowchart_validacion}{{5.18}{157}{Diagrama de flujo del procedimiento de validaci'on incremental del gemelo digital}{figure.caption.124}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.8.2}Lista de verificaci'on r'apida (previo a SLAM y navegaci'on)}{158}{subsection.5.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.9}Riesgos y mitigaciones}{159}{section.5.9}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.9}{\ignorespaces An'alisis de riesgos de divergencia simulaci'on--realidad y estrategias de mitigaci'on asociadas.}}{160}{table.caption.125}\protected@file@percent }
+\newlabel{tab:riesgos_mitigaciones}{{5.9}{160}{An'alisis de riesgos de divergencia simulaci'on--realidad y estrategias de mitigaci'on asociadas}{table.caption.125}{}}
+\@setckpt{2.Texto/6.robot_digital}{
+\setcounter{page}{161}
+\setcounter{equation}{0}
+\setcounter{enumi}{2}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{footnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{part}{0}
+\setcounter{chapter}{5}
+\setcounter{section}{9}
+\setcounter{subsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{paragraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{figure}{18}
+\setcounter{table}{9}
+\setcounter{float@type}{16}
+\setcounter{LT@tables}{2}
+\setcounter{LT@chunks}{3}
+\setcounter{caption@flags}{2}
+\setcounter{continuedfloat}{0}
+\setcounter{subfigure}{0}
+\setcounter{subtable}{0}
+\setcounter{lstnumber}{13}
+\setcounter{tcbbreakpart}{0}
+\setcounter{tcblayer}{0}
+\setcounter{tcolorbox@number}{0}
+\setcounter{mdf@globalstyle@cnt}{0}
+\setcounter{mdfcountframes}{0}
+\setcounter{mdf@env@i}{0}
+\setcounter{mdf@env@ii}{0}
+\setcounter{mdf@zref@counter}{0}
+\setcounter{@pps}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{parentequation}{0}
+\setcounter{tabx@nest}{0}
+\setcounter{listtotal}{0}
+\setcounter{listcount}{0}
+\setcounter{liststart}{0}
+\setcounter{liststop}{0}
+\setcounter{citecount}{0}
+\setcounter{citetotal}{0}
+\setcounter{multicitecount}{0}
+\setcounter{multicitetotal}{0}
+\setcounter{instcount}{0}
+\setcounter{maxnames}{2}
+\setcounter{minnames}{1}
+\setcounter{maxitems}{999}
+\setcounter{minitems}{1}
+\setcounter{citecounter}{0}
+\setcounter{maxcitecounter}{0}
+\setcounter{savedcitecounter}{0}
+\setcounter{uniquelist}{0}
+\setcounter{uniquename}{0}
+\setcounter{refsection}{0}
+\setcounter{refsegment}{0}
+\setcounter{maxextratitle}{0}
+\setcounter{maxextratitleyear}{0}
+\setcounter{maxextraname}{0}
+\setcounter{maxextradate}{0}
+\setcounter{maxextraalpha}{0}
+\setcounter{abbrvpenalty}{50}
+\setcounter{highnamepenalty}{50}
+\setcounter{lownamepenalty}{25}
+\setcounter{maxparens}{3}
+\setcounter{parenlevel}{0}
+\setcounter{blx@maxsection}{0}
+\setcounter{mincomprange}{10}
+\setcounter{maxcomprange}{100000}
+\setcounter{mincompwidth}{1}
+\setcounter{afterword}{0}
+\setcounter{savedafterword}{0}
+\setcounter{annotator}{0}
+\setcounter{savedannotator}{0}
+\setcounter{author}{0}
+\setcounter{savedauthor}{0}
+\setcounter{bookauthor}{0}
+\setcounter{savedbookauthor}{0}
+\setcounter{commentator}{0}
+\setcounter{savedcommentator}{0}
+\setcounter{editor}{0}
+\setcounter{savededitor}{0}
+\setcounter{editora}{0}
+\setcounter{savededitora}{0}
+\setcounter{editorb}{0}
+\setcounter{savededitorb}{0}
+\setcounter{editorc}{0}
+\setcounter{savededitorc}{0}
+\setcounter{foreword}{0}
+\setcounter{savedforeword}{0}
+\setcounter{holder}{0}
+\setcounter{savedholder}{0}
+\setcounter{introduction}{0}
+\setcounter{savedintroduction}{0}
+\setcounter{namea}{0}
+\setcounter{savednamea}{0}
+\setcounter{nameb}{0}
+\setcounter{savednameb}{0}
+\setcounter{namec}{0}
+\setcounter{savednamec}{0}
+\setcounter{translator}{0}
+\setcounter{savedtranslator}{0}
+\setcounter{shortauthor}{0}
+\setcounter{savedshortauthor}{0}
+\setcounter{shorteditor}{0}
+\setcounter{savedshorteditor}{0}
+\setcounter{narrator}{0}
+\setcounter{savednarrator}{0}
+\setcounter{execproducer}{0}
+\setcounter{savedexecproducer}{0}
+\setcounter{execdirector}{0}
+\setcounter{savedexecdirector}{0}
+\setcounter{with}{0}
+\setcounter{savedwith}{0}
+\setcounter{labelname}{0}
+\setcounter{savedlabelname}{0}
+\setcounter{institution}{0}
+\setcounter{savedinstitution}{0}
+\setcounter{lista}{0}
+\setcounter{savedlista}{0}
+\setcounter{listb}{0}
+\setcounter{savedlistb}{0}
+\setcounter{listc}{0}
+\setcounter{savedlistc}{0}
+\setcounter{listd}{0}
+\setcounter{savedlistd}{0}
+\setcounter{liste}{0}
+\setcounter{savedliste}{0}
+\setcounter{listf}{0}
+\setcounter{savedlistf}{0}
+\setcounter{location}{0}
+\setcounter{savedlocation}{0}
+\setcounter{organization}{0}
+\setcounter{savedorganization}{0}
+\setcounter{origlocation}{0}
+\setcounter{savedoriglocation}{0}
+\setcounter{origpublisher}{0}
+\setcounter{savedorigpublisher}{0}
+\setcounter{publisher}{0}
+\setcounter{savedpublisher}{0}
+\setcounter{language}{0}
+\setcounter{savedlanguage}{0}
+\setcounter{origlanguage}{0}
+\setcounter{savedoriglanguage}{0}
+\setcounter{citation}{0}
+\setcounter{savedcitation}{0}
+\setcounter{pageref}{0}
+\setcounter{savedpageref}{0}
+\setcounter{textcitecount}{0}
+\setcounter{textcitetotal}{0}
+\setcounter{textcitemaxnames}{0}
+\setcounter{biburlbigbreakpenalty}{100}
+\setcounter{biburlbreakpenalty}{200}
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{200}
+\setcounter{biburllcpenalty}{100}
+\setcounter{smartand}{0}
+\setcounter{bbx:relatedcount}{0}
+\setcounter{bbx:relatedtotal}{0}
+\setcounter{section@level}{0}
+\setcounter{Item}{55}
+\setcounter{Hfootnote}{2}
+\setcounter{bookmark@seq@number}{170}
+\setcounter{lstlisting}{0}
+}

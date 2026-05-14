@@ -1,0 +1,196 @@
+% =========================
+% CAPÍTULO: Workspace
+% =========================
+
+\chapter{Espacio de trabajo (\textit{workspace}) de \texorpdfstring{\protect\gls{ROS2}}{ROS 2}}
+\label{ch:workspace}
+
+Este capítulo define el \textit{workspace} para el robot diferencial orientado a \gls{slam} y navegación en \gls{ROS2} (Foxy). Se organiza en tres partes: (i) estado final del entorno y compatibilidad, (ii) paquetes propios y estructura del \textit{workspace}, y (iii) pruebas y validación de conectividad y arranque. El objetivo es facilitar la transición simulación $\rightarrow$ hardware y las pruebas de humo con \texttt{colcon}.
+
+% =====================================================
+\section{Estado del entorno y compatibilidad (definitivo)}
+\label{sec:ws_env_state}
+% =====================================================
+
+Este apartado fija las \textbf{versiones finales} y los componentes que condicionan la compilación, la simulación en Gazebo y la comunicación entre nodos \gls{ROS2}.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Resumen de compatibilidad del entorno de ejecución.}
+\label{tab:ws_env_final}
+\begin{tabular}{l p{9.5cm}}
+\toprule
+\textbf{Atributo} & \textbf{Valor y Especificación} \\ 
+\midrule
+SO (Estación base)   & Ubuntu 20.04.6 LTS, x86\_64, Kernel 5.15.0-xx-generic \\
+SO (Raspberry Pi 4)  & Ubuntu 20.04.6 LTS, aarch64, Kernel 5.4.0-1xxx-raspi \\ \addlinespace
+\gls{ROS2}                & \texttt{foxy} (Foxy Fitzroy), \texttt{ROS\_VERSION=2}, \texttt{PYTHON\_VERSION=3} \\
+\texttt{DOMAIN\_ID}  & 0 (valor por defecto; sin segmentación de red) \\ \addlinespace
+Gazebo               & \texttt{gazebo11} (11.10.2) + \texttt{libgazebo11-dev} \\
+Puente Gazebo--ROS   & \texttt{gazebo\_ros\_pkgs} (3.5.2) y \texttt{gazebo\_ros2\_control} \\ \addlinespace
+DDS / RTPS           & FastDDS (eProsima Fast-RTPS), implementación por defecto \\
+Repositorio Git      & \url{https://github.com/SVN11X/tesis_black_robot} (acceso vía SSH) \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Red y descubrimiento DDS/RTPS (entorno definitivo)}
+\label{sec:red_dds}
+
+La comunicación entre estación base y robot se realiza en una \textbf{red inalámbrica dedicada} mediante un \textit{travel router} configurado en modo AP privado. Se fijan direcciones estáticas (Netplan), un \texttt{ROS\_DOMAIN\_ID} de producción y ajustes DDS/RTPS (multidifusión habilitada y sin \emph{client isolation}). Esto estabiliza el descubrimiento (\emph{discovery}) y reduce la pérdida de paquetes en Wi-Fi.
+
+\utemFigure{2.Texto/Imag/travel_router.png}{0.45\textwidth}
+{Travel Router GL-MT300N-V2}{glinet_router}{fig:travel_router}
+
+\paragraph{Criterios y topología}
+\begin{itemize}
+  \item \textbf{Aislamiento lógico}: dominios distintos para simulación, banco de pruebas y robot.
+  \item \textbf{Predecibilidad}: SSID y direcciones estables; evitar DHCP ajeno.
+  \item \textbf{Descubrimiento DDS}: multidifusión habilitada; sin aislamiento de clientes.
+  \item \textbf{Latencia/pérdida}: \textit{QoS} por tópico (no global), según tipo de tráfico.
+\end{itemize}
+
+\paragraph{\texttt{ROS\_DOMAIN\_ID}}
+Segmenta grafos lógicos en el mismo medio físico. Definir dominios por escenario evita cruces de tópicos. Se declara de forma persistente en el entorno del \textit{workspace}.
+
+\paragraph{DDS/RTPS y firewall}
+Permitir multidifusión en el AP, desactivar \emph{client isolation}, abrir el tráfico \texttt{UDP} relevante en el cortafuegos y evitar VLAN/IGMP que filtren la multidifusión.
+
+\paragraph{Perfiles \textit{QoS} (orientativos)}
+Los perfiles de calidad de servicio (\textit{QoS}) por tópico se configuran según el tipo de tráfico: datos sensoriales como \texttt{/scan} operan en modo \texttt{best\_effort}, mientras que tópicos de control (\texttt{/cmd\_vel}, \texttt{/odom}, \texttt{/tf}) requieren \texttt{reliable}. La configuración detallada se presenta en la Sección~\ref{sec:qos_profiles} del Capítulo~\ref{chap:robot_real}.
+% =====================================================
+\section{Paquetes propios y estructura del \textit{workspace}}
+% =====================================================
+
+La carpeta de trabajo \texttt{tesis\_black\_robot} mantiene paridad simulación--hardware (mismos marcos \texttt{TF}, sensores y controladores), modularidad y trazabilidad (código, configuraciones y lanzadores versionados).
+
+\subsection{Principios de organización}
+\begin{itemize}
+  \item \textbf{Paridad sim--hardware}: un paquete principal conserva el URDF/\texttt{xacro}, parámetros y lanzadores.
+  \item \textbf{Separación de responsabilidades}: carpetas \texttt{description/}, \texttt{config/}, \texttt{launch/}, \texttt{worlds/} desacopladas.
+  \item \textbf{Reproducibilidad}: se utiliza \texttt{colcon build --symlink-install} para iteración rápida.
+  \item \textbf{Extensibilidad}: integración de teleoperación, SLAM, Nav2 y drivers sin afectar a \texttt{robot\_state\_publisher} ni a \texttt{diff\_drive\_controller}.
+\end{itemize}
+
+\subsection{Plantilla del paquete y control de versiones}
+Se parte de la plantilla pública \texttt{my\_bot}, renombrando el paquete a \texttt{articubot\_one} y actualizando las referencias internas y el archivo \texttt{package.xml} con los datos del proyecto (autor, correo electrónico, descripción). El control de versiones sigue una rama principal con etiquetas que marcan los hitos clave: simulación base funcional, primer \textit{bringup} en hardware real e integración del sensor \gls{LIDAR}.
+
+La estrategia de \textit{single source of truth} —mantener el mismo paquete sincronizado en la estación de trabajo y en el robot mediante \texttt{git pull}— simplifica la transferencia de configuraciones entre entornos y reduce la probabilidad de inconsistencias entre los archivos YAML de simulación y hardware real.
+
+\utemFigurePropia{2.Texto/Imag/template_folder.png}{0.85\textwidth}
+{Esquema de sincronización del paquete \texttt{articubot\_one} entre estación de trabajo y robot móvil}{fig:template_folder}
+
+\subsection{Inventario local en \texttt{src/}}
+\begin{itemize}
+  \item \texttt{articubot\_one}: chasis diferencial y escenarios de simulación.
+  \item \texttt{diffdrive\_arduino}: puente ROS $\leftrightarrow$ MCU (encoders + L298N) y odometría.
+  \item \texttt{serial}, \texttt{serial\_motor\_demo}, \texttt{joy\_tester}: utilidades de E/S y validación.
+  \item \texttt{ros2\_control}, \texttt{ros2\_control\_demos}, \texttt{ros2\_controllers}: control diferencial (\texttt{diff\_drive\_controller}, \texttt{joint\_state\_broadcaster}).
+\end{itemize}
+
+\subsection{Estructura y roles de carpetas del paquete principal}
+\begin{table}[H]
+\centering
+\small
+\caption{Estructura y propósito de las carpetas del paquete de \gls{ROS2}.}
+\label{tab:ws_roles}
+\begin{tabular}{>{\ttfamily}P{0.30\textwidth} P{0.65\textwidth}}
+    \toprule
+    \textbf{Carpeta / Archivo} & \textbf{Rol y relevancia en el sistema} \\ 
+    \midrule
+    description/ & Contiene los archivos URDF/Xacro, mallas (\textit{meshes}) y definiciones de transformaciones (\textit{TF}). Establece el árbol cinemático \texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link}. \\ \addlinespace
+    config/      & Almacena archivos YAML para controladores, SLAM, \textit{costmaps} y navegación. Define el comportamiento del sistema sin recompilar. \\ \addlinespace
+    launch/      & Scripts de lanzamiento en Python (\texttt{.launch.py}). Orquestan el encendido (\textit{bringup}) coordinado de sensores, controladores y nodos de visión. \\ \addlinespace
+    worlds/      & Definiciones de entornos para Gazebo. Permiten validar la respuesta de sensores y la cinemática del robot bajo condiciones controladas de fricción y ruido. \\ \addlinespace
+    CMakeLists.txt \newline package.xml & Archivos de metadatos de \textit{colcon}. Definen dependencias del sistema, reglas de exportación e instalación de recursos en el espacio de trabajo. \\ 
+    \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Dependencias para simulación y control}
+\begin{itemize}
+  \item \texttt{ros-foxy-gazebo-ros-pkgs}, \texttt{ros-foxy-gazebo-ros}, \texttt{ros-foxy-gazebo-plugins}.
+  \item \texttt{ros-foxy-gazebo-ros2-control} para probar controladores en simulación.
+  \item \texttt{ros-foxy-geometry2}, \texttt{ros-foxy-geometry-msgs} para \texttt{tf} y tipos de mensajes.
+\end{itemize}
+
+\subsection{Flujo de trabajo con \texttt{colcon} y superposiciones}
+\begin{enumerate}
+  \item \texttt{colcon build --symlink-install} para reducir ciclos de iteración.
+  \item \texttt{source install/setup.bash}. Con \emph{overlays}, cargar primero el \emph{underlay} y luego el \emph{overlay}.
+  \item Verificar que la carpeta \texttt{share/<pkg>} contenga los URDF, YAML y lanzadores esperados.
+\end{enumerate}
+
+\subsection{Sincronización PC--robot (Git por SSH)}
+Se genera una clave \texttt{ed25519}, se añade al agente, se registra en GitHub, se prueba la conexión y se clona en \texttt{tesis\_black\_robot/src}. Con ambas máquinas apuntando al mismo remoto, los cambios de URDF/parámetros se propagan de forma controlada.
+
+% =====================================================
+\section{Pruebas y validación}
+% =====================================================
+
+\subsection{Pruebas de conectividad y descubrimiento}
+\begin{enumerate}
+  \item \textbf{IP y enlace}: ejecutar \texttt{ping 192.168.8.1} y verificar conectividad bidireccional host $\leftrightarrow$ robot.
+  \item \textbf{Multidifusión}: los dispositivos del AP deben verse entre sí (sin \emph{client isolation}).
+  \item \textbf{\gls{ROS2}}: en ambos extremos, ejecutar \texttt{ros2 daemon stop} y luego \texttt{ros2 node list}; verificar que aparecen nodos remotos en el dominio configurado.
+  \item \textbf{QoS}: comprobar que \texttt{/cmd\_vel}, \texttt{/odom} y \texttt{/tf} sean confiables (\textit{reliable}) y que \texttt{/scan} e \texttt{/image} toleren pérdidas (\textit{best\_effort}).
+\end{enumerate}
+
+\subsection{Prueba rápida de humo}
+\begin{verbatim}
+cd ~/tesis_black_robot
+colcon build --symlink-install
+source install/setup.bash
+ros2 launch articubot_one <tu_launch>.launch.py
+\end{verbatim}
+
+Criterios de verificación: presencia del tópico \texttt{/clock} en simulación, publicación de \texttt{/tf} y \texttt{/scan}, coherencia de la odometría en rectas y giros. En hardware, confirmar los puertos serie (\texttt{/dev/ttyUSB*}) y la sincronización temporal.
+
+\subsection{Buenas prácticas de parametrización}
+\begin{itemize}
+  \item \textbf{Desacople por archivos}: YAML separados para SLAM, \textit{costmaps}, control y \textit{behavior trees}.
+  \item \textbf{Variables clave en \texttt{xacro}}: geometría de ruedas, \texttt{track\_width} y \textit{offsets} de sensores como constantes reutilizables.
+\item \textbf{Nombres canónicos}: 
+      \verb|map| $\rightarrow$ \verb|odom| $\rightarrow$ \verb|base_link| 
+      y \verb|base_link| $\rightarrow$ \verb|laser_frame| para depuración en \texttt{rviz2}.
+\end{itemize}
+
+% =====================================================
+\section{Atribución de código y componentes de terceros}
+\label{sec:atribucion}
+ 
+El \textit{workspace} del proyecto integra paquetes de distinto origen: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La Tabla~\ref{tab:atribucion} identifica cada paquete, su origen, la licencia bajo la cual se distribuye, las modificaciones realizadas y la naturaleza de la contribución del autor. Esta transparencia permite distinguir el aporte original de la tesis respecto del trabajo previo de la comunidad de código abierto.
+ 
+\begin{table}[H]
+\centering
+\caption{Atribución de paquetes del \textit{workspace} \texttt{tesis\_black\_robot/src}.}
+\label{tab:atribucion}
+\footnotesize
+\begin{tabular}{P{2.5cm} P{2.2cm} P{1.2cm} P{7.0cm}}
+    \toprule
+    \textbf{Paquete} & \textbf{Origen} & \textbf{Lic.} & \textbf{Modificaciones realizadas} \\ 
+    \midrule
+    \texttt{articubot\_one} & Basado en \texttt{my\_bot} \cite{NewansMyBot} & BSD & \textbf{Desarrollo principal.} Rediseño total de la descripción (\texttt{.xacro}) con dimensiones reales. Creación de archivos de configuración (\texttt{.yaml}), árboles de comportamiento (\texttt{.xml}), escenarios de lanzamiento y el mundo de simulación. Se conservó únicamente la estructura base. \\
+    \midrule
+    \texttt{ROSArduinoBridge} & \textit{Fork} de \cite{ROSArduinoBridge} & BSD & Adición de comandos seriales específicos: \texttt{SET\_VEL\_MPS}, \texttt{READ\_VEL\_MPS}, \texttt{READ\_PIDS} y \texttt{UPDATE\_PID\_LR}. Implementación de conversión \textit{ticks/frame} y ganancias PID asimétricas optimizadas vía PSO. Reconfiguración de pines para L298N. \\
+    \midrule
+    \texttt{pid\_config/} & Desarrollo propio & --- & \textbf{Original.} Suite de herramientas en Python y C++ para captura de respuesta al escalón, identificación FODT, implementación del algoritmo PSO y comunicación serial asíncrona. \\
+    \midrule
+    \texttt{diffdrive\_arduino} & \textit{Fork} de \cite{NewansDiffDrive} & BSD & Modificación del método \texttt{start()} para delegar la sintonización al firmware (ganancias PSO). Ajuste de parámetros en \texttt{xacro}: \textit{counts per rev} (1980), dispositivo y frecuencia de lazo (30 Hz). \\
+    \midrule
+    \texttt{m-explore-ros2} & Dependencia \cite{MExploreROS2} & BSD & Sin cambios en el código. Configuración centralizada en el paquete principal para exploración autónoma compatible con Foxy. \\
+    \midrule
+    \texttt{gazebo\_ros2\_control} & Dependencia (ros-controls) & Apache & Compilación desde fuente para asegurar compatibilidad con el controlador diferencial en la distribución Foxy. \\
+    \bottomrule
+\end{tabular}
+\end{table}
+ 
+\noindent
+En síntesis, el aporte original del autor comprende: (a) el diseño completo del modelo URDF/Xacro y la parametrización de todo el sistema de control, SLAM y navegación en \texttt{articubot\_one}; (b) la extensión del protocolo serial del firmware con comandos en unidades físicas y ganancias asimétricas; (c) el desarrollo íntegro de la cadena de sintonización automática PID por PSO; y (d) la integración, configuración y validación del sistema completo. Los paquetes de terceros proporcionaron infraestructura reutilizable (interfaz de hardware, biblioteca serial, explorador de fronteras), que fue configurada y adaptada según los requerimientos del prototipo.
+
+% =====================================================
+\section*{Conclusión del capítulo}
+% =====================================================
+
+En este capítulo se ha definido el \textit{workspace} de \gls{ROS2}, incluyendo el estado del entorno (SO, versión de ROS, Gazebo, DDS), la configuración de red para comunicación inalámbrica dedicada, la organización de los paquetes propios y de terceros en el \textit{workspace} \texttt{tesis\_black\_robot}, y las pruebas de validación y buenas prácticas. La estrategia de mantener un único paquete sincronizado entre la estación de trabajo y el robot, junto con el uso de archivos YAML separados para simulación y hardware, garantiza la trazabilidad y facilita la transición entre ambos entornos. Este \textit{workspace} constituye la base sobre la cual se construyen los gemelos digitales, el firmware y la arquitectura de navegación descritos en los capítulos siguientes.

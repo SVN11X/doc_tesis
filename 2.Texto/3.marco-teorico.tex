@@ -1,0 +1,233 @@
+\chapter{Marco Teórico}
+\label{marco_teorico}
+
+Este capítulo presenta los fundamentos teóricos que sustentan el diseño del robot móvil diferencial. Se abordan la odometría y el modelo cinemático, el modelado de sistemas de primer orden con retardo (FODT), las bases del control PID, los métodos de sintonización (Lambda y optimización por enjambre de partículas), y los principios de SLAM (localización y mapeo simultáneos). Estos conceptos se vinculan directamente con la implementación en \gls{ROS2} y el firmware del \gls{Arduino}.
+
+%------------------------------------------------------------------
+\section{Odometría}
+
+La odometría estima la posición y orientación de un robot a partir del desplazamiento de sus ruedas (método \textit{dead-reckoning}) \citep{thrun2005probabilistic, borenstein1996}. Su principal ventaja es la simplicidad computacional y bajo costo, pero acumula deriva por errores sistemáticos (calibración de radios, distancia entre ejes) y aleatorios (ruido, deslizamiento) \citep{siciliano2010robotics, corke2017}. En este trabajo, la odometría proporciona la transformación \texttt{odom} $\rightarrow$ \texttt{base\_link} a 30~Hz, utilizada por \texttt{slam\_toolbox} (como estimación inicial para \textit{scan matching}) y por los costmaps de Nav2.
+
+\subsection{Modelo cinemático del robot diferencial}
+
+Considérese un robot con dos ruedas motrices de radio $r$, separadas por una distancia $L$. La pose del centro del eje de ruedas es $q = (x, y, \theta)$. Las velocidades angulares de las ruedas se obtienen de los encoders:
+
+\begin{equation}
+\omega_{R,L} = \frac{2\pi \, n_{R,L}}{N_e \, T_s}
+\label{eq:w_ruedas}
+\end{equation}
+
+donde $N_e$ es la resolución del encoder (pulsos/vuelta, equivalente a CPR), $T_s$ el período de muestreo y $n_{R,L}$ los pulsos detectados en el intervalo. La velocidad lineal de cada rueda es $v_{R,L} = r \, \omega_{R,L}$. La velocidad lineal $v$ y angular $\omega$ del robot son:
+
+\begin{align}
+v &= \frac{r}{2}(\omega_R + \omega_L) \label{eq:v_lineal} \\
+\omega &= \frac{r}{L}(\omega_R - \omega_L) \label{eq:v_angular}
+\end{align}
+
+En tiempo discreto, la pose se actualiza mediante:
+
+\begin{align}
+x_{k+1} &= x_k + T_s \, v_k \cos\theta_k \label{eq:pose_x} \\
+y_{k+1} &= y_k + T_s \, v_k \sin\theta_k \label{eq:pose_y} \\
+\theta_{k+1} &= \theta_k + T_s \, \omega_k \label{eq:pose_theta}
+\end{align}
+
+\subsection{Implementación en ROS2}
+
+En ROS2, la odometría se publica en el tópico \texttt{/odom} (mensaje \texttt{nav\_msgs/Odometry}). El controlador \texttt{diff\_drive\_controller} convierte los comandos \texttt{/cmd\_vel} en velocidades de rueda y actualiza la odometría a partir de los encoders. La información puede fusionarse con otros sensores mediante \texttt{robot\_localization} (filtro EKF/UKF).
+
+\subsection{Limitaciones y correcciones}
+
+La odometría sufre errores sistemáticos (calibración de $r$ y $L$, desgaste) y aleatorios (ruido, deslizamiento). Para mitigarlos se utilizan calibración experimental, fusión sensorial (IMU, \gls{LIDAR}) y cierre de lazo en SLAM \citep{grisetti2010tutorial, fox1999monte}.
+
+%------------------------------------------------------------------
+\section{Sistemas de primer orden con retardo (FODT)}
+
+Para sintonizar controladores PID es común identificar un modelo de primer orden con retardo (FODT, \textit{First Order Plus Dead Time}) a partir de la respuesta del sistema ante un escalón \citep{ogata2003ingenieria}. La función de transferencia en Laplace es:
+
+\begin{equation}
+G(s) = \frac{K}{1 + \tau s} e^{-L s}
+\label{eq:fodt}
+\end{equation}
+
+donde $K$ es la ganancia estática, $\tau$ la constante de tiempo y $L$ el retardo puro. En tiempo discreto, para un escalón de amplitud $\Delta u$:
+
+\begin{equation}
+y(k) = \begin{cases}
+0, & k T_s \leq L \\[4pt]
+K \left(1 - e^{-(k T_s - L)/\tau}\right) \Delta u, & k T_s \geq L
+\end{cases}
+\label{eq:fodt_discreto}
+\end{equation}
+
+Este modelo se identifica experimentalmente capturando la velocidad de las ruedas ante un escalón de PWM (lazo abierto). Los parámetros $(K, \tau, L)$ se obtienen minimizando el error cuadrático medio entre la respuesta real y la simulada (mediante PSO, como se describe más adelante).
+
+%------------------------------------------------------------------
+\section{Control PID}
+
+\subsection{Ecuación continua y discreta}
+
+Un controlador PID en su forma paralela (no interactuante) se expresa como:
+
+\begin{equation}
+u(t) = K_p \, e(t) + K_i \int_0^t e(\tau) d\tau + K_d \frac{d e(t)}{dt}
+\label{eq:pid_continuo}
+\end{equation}
+
+donde $e(t) = r(t) - y(t)$ es el error. Para su implementación digital se utiliza la forma discreta (aproximación por diferencias finitas y regla del trapecio para la integral):
+
+\begin{equation}
+u[k] = u[k-1] + K_p (e[k] - e[k-1]) + K_i T_s \frac{e[k] + e[k-1]}{2} + K_d \frac{e[k] - 2e[k-1] + e[k-2]}{T_s}
+\label{eq:pid_discreto}
+\end{equation}
+
+\subsection{Implementación en el firmware del Arduino}
+
+El firmware del robot utiliza una variante con ganancias independientes y derivada sobre la medición (evita el \textit{derivative kick}). La ecuación implementada en \texttt{doPID()} es:
+
+\begin{equation}
+u[k] = u[k-1] + \frac{K_p \cdot e[k] - K_d \bigl(\Delta_{\text{in}}[k] - \Delta_{\text{in}}[k-1]\bigr) + I[k]}{K_o}
+\label{eq:pid_firmware}
+\end{equation}
+
+donde $\Delta_{\text{in}}[k]$ es el cambio en la velocidad medida, $I[k]$ es el término integral (actualizado solo si la salida no está saturada, proporcionando \textit{anti-windup}), y $K_o$ es un divisor de escala para operar con ganancias enteras mayores. La relación con las ganancias efectivas es: $k_{p,\text{ef}} = K_p / K_o$, $k_{d,\text{ef}} = K_d / K_o$, $k_{i,\text{ef}} = K_i / K_o$.
+
+%------------------------------------------------------------------
+\section{Sintonía Lambda}
+\label{sec:lambda}
+
+La sintonía Lambda es un método analítico para controladores PID basado en el modelo FODT. Consiste en cancelar los polos del proceso con los ceros del controlador, dejando un único polo en lazo cerrado ubicado en $s = -1/\lambda$, donde $\lambda$ ajusta la velocidad de respuesta \citep{ogata2003ingenieria}. Para el modelo de la Ec.~\ref{eq:fodt} y un controlador serie interactuante, las reglas de sintonía son:
+
+\begin{equation}
+k_c = \frac{\tau}{K (L/2 + \lambda)}, \quad k_i = \tau, \quad k_d = \frac{L}{2}
+\label{eq:lambda_serie}
+\end{equation}
+
+Para un controlador paralelo (forma estándar $K_p$, $T_i$, $T_d$), las ganancias 
+de la forma serie se transforman mediante:
+
+\begin{equation}
+K_p = k_c \,\frac{k_i + k_d}{k_i}, \quad T_i = k_i + k_d, \quad T_d = \frac{k_i \, k_d}{k_i + k_d}
+\label{eq:lambda_paralelo}
+\end{equation}
+
+\noindent donde $k_c$, $k_i$ y $k_d$ son las ganancias de la forma serie definidas en la Ec.~\ref{eq:lambda_serie}.
+
+En este trabajo se utiliza $\lambda = 3\tau$ (sintonía robusta) y se comparan los resultados con los obtenidos mediante optimización PSO.
+
+%------------------------------------------------------------------
+\section{Optimización por enjambre de partículas (PSO)}
+\label{sec:pso_marco}
+
+\subsection{Concepto e intuición}
+
+El PSO (\textit{Particle Swarm Optimization}) es una metaheurística bioinspirada que modela el comportamiento de bandadas \citep{KE1995_marco}. Cada partícula representa una solución candidata y se mueve en el espacio de búsqueda combinando su mejor experiencia individual ($\mathbf{p}_i$) y la mejor experiencia global del enjambre ($\mathbf{p}^*$). Es útil cuando la función de costo es no lineal, discontinua o costosa de evaluar, como ocurre en la sintonización de controladores PID sobre plantas reales.
+
+\subsection{Formulación matemática}
+
+Para un problema de minimización en $n$ dimensiones, cada partícula $i$ actualiza su velocidad y posición en la generación $g$ mediante:
+
+\begin{align}
+\mathbf{v}_i^{g+1} &= w^g \mathbf{v}_i^{g} + c_1 \mathbf{r}_1 \odot (\mathbf{p}_i - \mathbf{x}_i^{g}) + c_2 \mathbf{r}_2 \odot (\mathbf{p}^* - \mathbf{x}_i^{g}) \label{eq:pso_vel_marco_teorico} \\
+\mathbf{x}_i^{g+1} &= \mathbf{x}_i^{g} + \mathbf{v}_i^{g+1} \label{eq:pso_pos_marco_teorico}
+\end{align}
+
+donde $w^g$ es el factor de inercia (decreciente linealmente), $c_1$, $c_2$ son constantes de aceleración (cognitiva y social), y $\mathbf{r}_1$, $\mathbf{r}_2$ son vectores de números aleatorios uniformes en $[0,1]$. Para garantizar la convergencia se emplea el factor de constricción de Clerc–Kennedy \citep{CK2002}:
+
+\begin{equation}
+\chi = \frac{2}{\left|2 - \varphi - \sqrt{\varphi^2 - 4\varphi}\right|}, \quad \varphi = c_1 + c_2 > 4
+\label{eq:constriccion}
+\end{equation}
+
+con $\chi \approx 0.7298$ para la parametrización canónica $c_1 = c_2 = 2.05$ \citep{CK2002}. En el presente trabajo se adopta una variante con leve asimetría cognitiva: $c_1 = 2.05$ y $c_2 = 4 - c_1 = 1.95$, manteniendo $\chi = 0.7298$ como valor empíricamente validado. La justificación de esta elección se detalla en la Sección~\ref{subsec:pso_hiperparametros}.
+
+\subsection{Función de costo para sintonización PID}
+
+La calidad de un conjunto de ganancias se evalúa mediante la función:
+
+\begin{equation}
+J(\mathbf{x}) = w_{\text{mse}} \cdot \text{MSE}(e) + w_{\text{OS}} \cdot (\text{sobrepaso})^2
+\label{eq:costo_pso}
+\end{equation}
+
+donde $\text{MSE}(e)$ es el error cuadrático medio entre la respuesta controlada y la referencia, y el sobrepaso se penaliza cuadráticamente. En este trabajo se utilizan $w_{\text{mse}} = 1$ y $w_{\text{OS}} = 3$ para priorizar un bajo sobreimpulso.
+
+El PSO se aplica en dos etapas: primero identifica los parámetros del modelo FODT (optimizando $K$, $\tau$, $L$) y luego optimiza las ganancias PID ($K_p$, $K_i$, $K_d$) simulando la respuesta en lazo cerrado. Las ganancias obtenidas se refinan experimentalmente sobre el hardware real, ya que el modelo FODT no captura no linealidades como fricción de Coulomb o zona muerta del driver.
+
+%------------------------------------------------------------------
+\section{SLAM: Localización y Mapeo Simultáneos}
+
+La odometría pura acumula deriva, por lo que se requiere un método que estime conjuntamente la trayectoria del robot y el mapa del entorno (\textit{Simultaneous Localization and Mapping}, SLAM) \citep{thrun2005probabilistic, bailey2006slam}. El problema se formula como la distribución de probabilidad conjunta:
+
+\begin{equation}
+p(X_{1:t}, M \mid Z_{1:t}, U_{1:t})
+\label{eq:slam_prob}
+\end{equation}
+
+donde $X_{1:t}$ es la trayectoria, $M$ el mapa, $Z_{1:t}$ las observaciones y $U_{1:t}$ los comandos de control.
+
+\subsection{Arquitecturas principales}
+
+Existen dos enfoques predominantes:
+
+\begin{itemize}
+  \item \textbf{Basado en filtros}: utiliza filtros de Kalman extendidos (EKF) o filtros de partículas (FastSLAM). Son de naturaleza incremental pero pueden tener dificultades con cierres de lazo grandes \citep{montemerlo2002fastslam}.
+  \item \textbf{Basado en grafos}: construye un grafo donde los nodos son poses y las aristas representan restricciones relativas (odometría, cierres de lazo). El problema se resuelve mediante optimización no lineal (Gauss-Newton, Levenberg–Marquardt), logrando mayor consistencia global \citep{grisetti2010tutorial}.
+\end{itemize}
+
+En este proyecto se utiliza \texttt{slam\_toolbox} con optimización de grafos (solver Ceres) y modo asíncrono en línea, el cual proporciona tanto el mapa incremental como la transformación $\text{map} \rightarrow \text{odom}$ necesaria para la navegación autónoma con Nav2 \citep{macenski2020slamtoolbox}.
+
+\subsection{Sensores y cierre de lazo}
+
+El sensor principal es un \gls{LIDAR} 2D (RPLidar A1) montado en el marco \texttt{laser\_frame} (12~cm por delante de \texttt{base\_link}). Sus lecturas ($360^\circ$, $5$--$10$~Hz) permiten construir el mapa y detectar obstáculos. El \textit{cierre de lazo} corrige la deriva acumulada cuando el robot reconoce una zona previamente visitada, ajustando globalmente el grafo de poses y mejorando la consistencia del mapa.
+
+\section{Planificación de trayectorias y control local}
+\label{sec:nav_marco}
+
+\subsection{Algoritmo A* para planificación global}
+
+El planificador global calcula una ruta óptima desde la posición actual del robot hasta la meta sobre un mapa de costos discretizado en celdas. El algoritmo A* \citep{lavalle2006planning} explora nodos expandiendo primero aquellos con menor función de evaluación:
+
+\begin{equation}
+f(n) = g(n) + h(n)
+\label{eq:astar}
+\end{equation}
+
+\noindent donde $g(n)$ es el costo acumulado desde el nodo inicial hasta $n$, y $h(n)$ es una heurística admisible que estima el costo restante hasta la meta. En Nav2, el planificador NavFn utiliza la distancia euclidiana como heurística, garantizando optimalidad si $h(n)$ no sobreestima el costo real. La ruta resultante es una secuencia de celdas del mapa de costos global que el controlador local debe seguir.
+
+\subsection{Controlador local DWB (\textit{Dynamic Window-Based})}
+
+El controlador DWB genera comandos de velocidad instantáneos evaluando trayectorias candidatas dentro de una ventana dinámica definida por las restricciones cinemáticas del robot \citep{macenski2020nav2}. Para cada par $(v, \omega)$ admisible, se simula la trayectoria durante un horizonte temporal $t_{\text{sim}}$ y se evalúa una función objetivo compuesta por múltiples críticos:
+
+\begin{equation}
+J(v, \omega) = \sum_{k} w_k \cdot C_k(v, \omega)
+\label{eq:dwb_cost}
+\end{equation}
+
+\noindent donde $C_k$ son funciones de costo individuales (distancia a la ruta global, distancia a la meta, proximidad a obstáculos, entre otras) y $w_k$ son pesos configurables. El par $(v, \omega)$ que minimiza $J$ se selecciona como comando. Las restricciones cinemáticas del robot diferencial limitan la ventana de búsqueda:
+
+\begin{align}
+v &\in [v_{\min},\; v_{\max}] \cap [v_{\text{actual}} - a_{\max} \Delta t,\; v_{\text{actual}} + a_{\max} \Delta t] \label{eq:dwb_v} \\
+\omega &\in [\omega_{\min},\; \omega_{\max}] \cap [\omega_{\text{actual}} - \alpha_{\max} \Delta t,\; \omega_{\text{actual}} + \alpha_{\max} \Delta t] \label{eq:dwb_w}
+\end{align}
+
+\subsection{Mapas de costo (\textit{costmaps})}
+
+Los costmaps son representaciones en cuadrícula donde cada celda almacena un valor entre 0 (libre) y 254 (obstáculo letal), con valores intermedios que representan zonas de riesgo creciente. Nav2 emplea dos costmaps: uno global (construido a partir del mapa SLAM, para planificación de ruta) y uno local (ventana móvil alrededor del robot, actualizado en tiempo real con datos del \gls{LIDAR}, para evasión de obstáculos).
+
+La capa de inflación extiende el costo de los obstáculos de forma radial mediante una función exponencial decreciente:
+
+\begin{equation}
+\text{costo}(d) = \begin{cases}
+254 & \text{si } d \leq r_{\text{inscrito}} \\
+\lfloor 253 \cdot e^{-\alpha(d - r_{\text{inscrito}})} \rfloor & \text{si } r_{\text{inscrito}} < d \leq r_{\text{inflación}} \\
+0 & \text{si } d > r_{\text{inflación}}
+\end{cases}
+\label{eq:inflation}
+\end{equation}
+
+\noindent donde $d$ es la distancia al obstáculo más cercano, $r_{\text{inscrito}}$ es el radio del robot (dentro del cual toda celda es letal), $r_{\text{inflación}}$ es el radio máximo de influencia y $\alpha$ controla la tasa de decaimiento. En este proyecto, $r_{\text{inflación}} = 0.55$~m en simulación y $0.18$~m en hardware real.
+
+\section*{Conclusión del capítulo}
+
+En este capítulo se han presentado los fundamentos teóricos del proyecto: el modelo cinemático del robot diferencial y su implementación como odometría discreta, la identificación de sistemas mediante modelos FODT, el control PID y su sintonización tanto analítica (Lambda) como por metaheurística (PSO), los principios del SLAM basado en grafos, y la planificación de trayectorias con A* y el controlador local DWB sobre mapas de costo. Estos conceptos constituyen la base sobre la cual se diseñan, implementan y validan los subsistemas descritos en los capítulos siguientes.

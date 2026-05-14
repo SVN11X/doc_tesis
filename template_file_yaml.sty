@@ -1,0 +1,49 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{template_file_yaml}[2025/08/15 Estilo YAML tipo terminal Ubuntu]
+
+% Paquetes necesarios
+% \RequirePackage{xcolor}
+\RequirePackage{listings}
+
+% Colores Ubuntu
+\definecolor{ubuntugray}{HTML}{2C313C}
+\definecolor{ubuntoline}{HTML}{3F444A}
+\definecolor{codekw}{HTML}{86D9CA}   % Claves
+\definecolor{codestr}{HTML}{E6DB74}  % Strings
+\definecolor{codenum}{HTML}{AE81FF}  % Números
+\definecolor{codecmt}{HTML}{75715E}  % Comentarios
+
+% Definir lenguaje YAML
+\lstdefinelanguage{YAML}{
+  keywords={true,false,null,yes,no},
+  keywordstyle=\color{codekw}\bfseries,
+  sensitive=false,
+  comment=[l]{\#},
+  commentstyle=\color{codecmt}\itshape,
+  morestring=[b]',
+  morestring=[b]",
+  stringstyle=\color{codestr},
+}
+
+% Definir estilo ubuntuYAML
+\lstdefinestyle{ubuntuYAMLstyle}{
+  language=YAML,
+  backgroundcolor=\color{ubuntugray},
+  basicstyle=\ttfamily\small\color{white},
+  numbers=left,
+  numberstyle=\tiny\color{white!70},
+  stepnumber=1,
+  numbersep=10pt,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{ubuntoline},
+  columns=fullflexible,
+  showstringspaces=false,
+}
+
+% Crear entorno ubuntuYAML
+\lstnewenvironment{ubuntuYAML}[1][]{
+  \lstset{style=ubuntuYAMLstyle,#1}
+}{}
+
+\endinput

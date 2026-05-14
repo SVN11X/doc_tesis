@@ -1,0 +1,1118 @@
+\renewcommand{\appendixname}{ANEXO}
+\renewcommand{\appendixtocname}{ANEXOS}
+\renewcommand{\appendixpagename}{ANEXOS}
+
+\renewcommand{\thesection}{Anexo \arabic{section}.}
+
+\clearpage
+\appendix
+\addappheadtotoc
+\appendixpage
+
+\begin{appendices}
+
+
+% ===================================================================
+% ANEXO 1: ESQUEMA ELéCTRICO COMPLETO
+% ===================================================================
+\section{Esquema eléctrico completo del robot}
+\label{anx:esquema_electrico}
+
+El presente anexo contiene el diagrama esquemático integral de las conexiones eléctricas y de datos del prototipo. El esquema complementa la descripción narrativa de la Sección~\ref{sec:criterios_potencia} y la Figura~\ref{fig:esquema_conexiones} del Capítulo~\ref{chap:robot_real}, proporcionando el nivel de detalle necesario para la reproducción y verificación del cableado.
+
+\subsection*{Dominio de potencia (12\,V y 5\,V)}
+
+% >>> INSERTAR IMAGEN: Diagrama esquemático del dominio de potencia.
+% Debe mostrar:
+%   Batería Li-ion 3S (10,8 V nom.) --> Fusible mini blade (rama 12V)
+%     --> Interruptor general (16 mm, LANBOO)
+%       --> L298N VIN (alimentación de motores)
+%       --> Regulador buck DFRobot DFR0205 (entrada 12V)
+%           --> Salida 5V --> Raspberry Pi 4 (USB-C, 5V/3A)
+%           --> Salida 5V --> RPLidar A1 (vía hub USB alimentado)
+%   Batería GND --> Estrella de masas
+%
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_esquema_potencia.pdf}{0.95\textwidth}
+%             {Esquema eléctrico del dominio de potencia: distribución 12\,V y 5\,V.}
+%             {fig:anx_potencia}{}
+
+El bus de 12\,V parte desde el paquete de batería Li-ion 3S (tensión nominal 10.8\,V, plena carga 12.6\,V) a través de un fusible de protección tipo \textit{mini blade} dimensionado según el presupuesto de potencia de la Tabla~\ref{tab:power_budget_filled}. El interruptor general (tipo pulsante 16\,mm con retención) permite inhabilitar la actuación sin apagar la lógica, dado que solo seciona el riel de 12\,V previo al L298N. El regulador \textit{buck} DFRobot DFR0205, basado en el convertidor GS2678, reduce la tensión a 5\,V estables con eficiencia superior al 90\% para alimentar la Raspberry~Pi~4 y los periféricos USB. La topología de masas sigue un esquema en estrella, convergiendo los retornos de potencia y lógica en un punto común próximo al terminal negativo de la batería.
+
+\subsection*{Dominio de control y señales}
+
+% >>> INSERTAR IMAGEN: Diagrama esquemático del dominio de señales.
+% Debe mostrar:
+%   Arduino Nano V3 (ATmega328P):
+%     D2 (INT0)  <-- Encoder izq. canal A
+%     D3 (INT1)  <-- Encoder izq. canal B
+%     A4 (PCINT) <-- Encoder der. canal A
+%     A5 (PCINT) <-- Encoder der. canal B
+%     D6 (PWM)   --> L298N ENA (motor izq.)
+%     D10 (PWM)  --> L298N ENB (motor der.)
+%     D7         --> L298N IN1
+%     D8         --> L298N IN2
+%     D12        --> L298N IN3
+%     D13        --> L298N IN4
+%     USB (serial 57600 baud) <--> Raspberry Pi 4 (/dev/arduino)
+%   Raspberry Pi 4:
+%     USB port 1 <--> Arduino Nano (serial)
+%     USB port 2 <--> RPLidar A1 (/dev/rplidar o by-path)
+%     USB port 3 <--> Receptor mando inalámbrico (joy)
+%     CSI        <--> Cámara Raspberry Pi v2 (no integrada en pila nav.)
+%
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_esquema_senales.pdf}{0.95\textwidth}
+%             {Esquema eléctrico del dominio de señales y comunicaciones.}
+%             {fig:anx_senales}{}
+
+Las conexiones de señales se organizan en dos niveles. El primer nivel conecta el Arduino~Nano con los encoders de cuadratura y el driver de motores: los canales A y B del encoder izquierdo se conectan a los pines D3 (PD3) y D2 (PD2), respectivamente, utilizando interrupciones por cambio de pin (PCINT2, vector del puerto D), mientras que los canales del encoder derecho se conectan a A4 y A5 (interrupciones por cambio de pin, PCINT). Los pines de habilitación del L298N (ENA en D13, ENB en D12) se mantienen en estado HIGH permanente, mientras que la velocidad y dirección de cada motor se regulan mediante señales PWM aplicadas directamente a los pines de entrada IN1--IN4 (D6, D10, D9, D5), como se describe en el Capítulo~\ref{ch:setup_arduino}. El segundo nivel conecta la Raspberry~Pi~4 con el Arduino~Nano mediante enlace serial USB a 57\,600~baud, con el RPLidar~A1 mediante un segundo puerto USB, y con el receptor del mando inalámbrico en un tercer puerto.
+
+\subsection*{Tabla de asignación de pines del Arduino Nano}
+
+\begin{table}[H]
+\centering
+\caption{Asignación de pines del \gls{Arduino} V3 en el prototipo.}
+\label{tab:anx_pinout}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Pin Arduino} & \textbf{Función} & \textbf{Destino} & \textbf{Tipo} \\
+\midrule
+\multicolumn{4}{l}{\textit{Control de motores}} \\  \addlinespace
+D6 (PWM)    & PWM avance izq.\ (\texttt{LEFT\_MOTOR\_FORWARD})   & L298N IN1  & Salida, \texttt{analogWrite} \\
+D10 (PWM)   & PWM retroceso izq.\ (\texttt{LEFT\_MOTOR\_BACKWARD}) & L298N IN2  & Salida, \texttt{analogWrite} \\
+D13         & Habilitación izq.\ (\texttt{LEFT\_MOTOR\_ENABLE})   & L298N ENA  & Salida digital (HIGH fijo) \\  \addlinespace
+D9 (PWM)    & PWM avance der.\ (\texttt{RIGHT\_MOTOR\_FORWARD})  & L298N IN3  & Salida, \texttt{analogWrite} \\
+D5 (PWM)    & PWM retroceso der.\ (\texttt{RIGHT\_MOTOR\_BACKWARD}) & L298N IN4  & Salida, \texttt{analogWrite} \\
+D12         & Habilitación der.\ (\texttt{RIGHT\_MOTOR\_ENABLE})  & L298N ENB  & Salida digital (HIGH fijo) \\
+\midrule
+\multicolumn{4}{l}{\textit{Lectura de encoders}} \\  \addlinespace
+D3 (PD3)    & Canal A enc.\ izq.\ (\texttt{LEFT\_ENC\_PIN\_A})    & Encoder Hall izq. & Entrada, PCINT2 \\
+D2 (PD2)    & Canal B enc.\ izq.\ (\texttt{LEFT\_ENC\_PIN\_B})    & Encoder Hall izq. & Entrada, PCINT2 \\  \addlinespace
+A4 (PC4)    & Canal A enc.\ der.\ (\texttt{RIGHT\_ENC\_PIN\_A})   & Encoder Hall der. & Entrada, PCINT1 \\
+A5 (PC5)    & Canal B enc.\ der.\ (\texttt{RIGHT\_ENC\_PIN\_B})   & Encoder Hall der. & Entrada, PCINT1 \\
+\midrule
+\multicolumn{4}{l}{\textit{Comunicación y alimentación}} \\  \addlinespace
+USB (TX/RX) & Comunicación serial  & Raspberry Pi 4 & Serial, 57\,600 baud \\
+5V          & Alimentación         & Encoder VCC    & --- \\
+GND         & Referencia           & Estrella de masas & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ===================================================================
+% ANEXO 2: LISTA DE MATERIALES (BOM)
+% ===================================================================
+\clearpage
+\section{Lista de materiales (\textit{Bill of Materials})}
+\label{anx:bom}
+
+La siguiente tabla consolida todos los componentes utilizados en la construcción del prototipo. Los costos son aproximados y corresponden a precios de mercado local e internacional al momento de la adquisición. Esta lista permite estimar el costo de reproducción del proyecto y verificar la completitud del inventario.
+
+\begin{table}[H]
+\centering
+\caption{Lista de materiales completa del prototipo.}
+\label{tab:anx_bom}
+\footnotesize
+\begin{tabular}{clcll}
+\toprule
+\textbf{N°} & \textbf{Componente} & \textbf{Cant.} & \textbf{Referencia / Modelo} & \textbf{Función} \\
+\midrule
+\multicolumn{5}{l}{\textbf{Estructura y locomoción}} \\
+\midrule
+1  & Chasis (impresión 3D, PLA+) & 1   & Diseño propio, eSUN PLA+       & Soporte estructural \\
+2  & Motorreductor DC 12\,V 130\,RPM & 2 & JGA25-370                        & Actuación \\
+3  & Rueda de goma 67\,mm            & 2 & Compatible JGA25                  & Tracción \\
+4  & Rueda loca (\textit{ball caster}) & 1 & Rodillo esférico 2.8$\times$4.5\,cm & Apoyo \\
+\midrule
+\multicolumn{5}{l}{\textbf{Sensores}} \\
+\midrule
+5  & Encoder de cuadratura Hall       & 2 & JGA25-371 (11 PPR, integrado)     & Odometría \\
+6  & Escáner láser 2D              & 1 & RPLidar A1M8-R5 (Slamtec)         & Mapeo y navegación \\
+
+\midrule
+\multicolumn{5}{l}{\textbf{Electrónica de control}} \\
+\midrule
+7  & Computador de bordo              & 1 & Raspberry Pi 4 Model B (8\,GB)    & Cómputo de alto nivel, \gls{ROS2} \\
+8  & Microcontrolador                 & 1 & \gls{Arduino} V3 (ATmega328P)      & Control de bajo nivel, PID \\
+9 & Driver de motores                & 1 & Módulo L298N (puente H dual)     & Potencia a motores \\
+\midrule
+\multicolumn{5}{l}{\textbf{Alimentación y protecciones}} \\
+\midrule
+10 & Batería Li-ion 3S               & 1 & Compatible Makita BL1021B (10,8\,V) & Fuente de energía \\
+11 & Regulador buck DC-DC             & 1 & DFRobot DFR0205 (GS2678)          & Conversión 12\,V $\rightarrow$ 5\,V \\
+12 & Interruptor con retención       & 1 & LANBOO 16\,mm                     & Corte general 12\,V \\
+13 & Fusible mini blade               & 1 & OptiFuse APM (valor según diseño) & Protección cortocircuito \\
+14 & Portafusible                     & 1 & Compatible mini blade              & Soporte para fusible \\
+\midrule
+\multicolumn{5}{l}{\textbf{Conectividad y periféricos}} \\
+\midrule
+15 & Tarjeta microSD                  & 1 & 32--64\,GB, clase 10              & SO de la Raspberry Pi \\
+16 & Cable USB-A a mini-USB           & 1 & Para \gls{Arduino}                  & Serial Arduino--Pi \\
+17 & Cable USB-A a micro-USB          & 1 & Para RPLidar A1                    & Datos + alimentación \gls{LIDAR} \\
+18 & Mando inalámbrico               & 1 & Compatible \texttt{joy} de \gls{ROS2} & Teleoperación \\
+19 & Travel router                    & 1 & GL.iNet o equivalente              & Red dedicada Pi--PC \\
+\midrule
+\multicolumn{5}{l}{\textbf{Cableado y misceláneos}} \\
+\midrule
+20 & Cable AWG 18--20 (rojo/negro)    & ---  & Calibre según sección         & Bus de potencia \\
+21 & Conectores Dupont M/F            & ---  & Pines 2.54\,mm                   & señales encoder/L298N \\
+22 & Tornillería M3                  & ---  & M3$\times$8, M3$\times$12       & Fijación de componentes \\
+23 & Separadores hex. M3              & ---  & Nylon o latón                   & Montaje de placas \\
+24 & Cinta termorretractil / Bridas   & ---  & Varios diámetros                & Aislación y ordenamiento \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% >>> NOTA AL AUTOR: Agregar columna de costo unitario y costo total si se
+% desea documentar el presupuesto del proyecto. Ajustar cantidades de
+% misceláneos según el montaje final.
+
+
+% ===================================================================
+% ANEXO 3: ARCHIVOS DE CONFIGURACIóN YAML
+% ===================================================================
+\clearpage
+\section{Archivos de configuración YAML}
+\label{anx:yaml}
+ 
+Este anexo reproduce de forma íntegra los archivos de configuración YAML del proyecto, referenciados a lo largo de los Capítulos~5, 6, 7 y 8. Todos los archivos residen en el directorio \texttt{config/} del paquete \texttt{articubot\_one} dentro del \textit{workspace} \texttt{tesis\_black\_robot}.
+ 
+% -------------------------------------------------------------------
+\subsection*{A3.1\quad \texttt{my\_controllers.yaml} --- Controlador diferencial y gestor}
+\label{anx:yaml_controllers}
+ 
+Este archivo define los parámetros del \texttt{diff\_drive\_controller} y del \texttt{joint\_state\_broadcaster} dentro del marco de \texttt{ros2\_control}. Los valores de \texttt{wheel\_separation} y \texttt{wheel\_radius} deben ser idénticos a los declarados en el modelo \gls{URDF}/\gls{Xacro}.
+ 
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single, caption={Contenido de \texttt{my\_controllers.yaml}.}]
+controller_manager:
+  ros__parameters:
+    update_rate: 30
+ 
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
+ 
+    joint_broad:
+      type: joint_state_broadcaster/JointStateBroadcaster
+ 
+diff_cont:
+  ros__parameters:
+ 
+    publish_rate: 50.0
+ 
+    odom_frame_id: odom
+    base_frame_id: base_link
+    enable_odom_tf: true
+ 
+    left_wheel_names: ['left_wheel_joint']
+    right_wheel_names: ['right_wheel_joint']
+    wheel_separation: 0.188
+    wheel_radius: 0.0335
+ 
+    use_stamped_vel: false
+ 
+    cmd_vel_timeout: 0.5
+    publish_limited_velocity: true
+ 
+    linear.x.has_velocity_limits: true
+    linear.x.max_velocity: 0.13
+    linear.x.min_velocity: -0.13
+ 
+    angular.z.has_velocity_limits: true
+    angular.z.max_velocity: 0.4
+    angular.z.min_velocity: -0.4
+\end{lstlisting}
+ 
+% -------------------------------------------------------------------
+\subsection*{A3.2\quad \texttt{twist\_mux.yaml} --- Multiplexación de fuentes de velocidad}
+\label{anx:yaml_twist_mux}
+ 
+Define las entradas del multiplexor de velocidad con sus prioridades y tiempos de expiración, según lo descrito en la Sección~\ref{sec:twist_mux}.
+ 
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single, caption={Contenido de \texttt{twist\_mux.yaml}.}]
+twist_mux:
+  ros__parameters:
+    topics:
+      navigation:
+        topic   : cmd_vel
+        timeout : 0.5
+        priority: 10
+      joystick:
+        topic   : cmd_vel_joy
+        timeout : 0.5
+        priority: 100
+\end{lstlisting}
+ 
+% -------------------------------------------------------------------
+\subsection*{A3.3\quad \texttt{mapper\_params\_online\_async.yaml} --- Parámetros de SLAM}
+\label{anx:yaml_slam}
+ 
+Configuración completa de \texttt{slam\_toolbox} en modo asíncrono en línea, incluyendo el solver Ceres, cierre de lazo y parámetros de resolución del mapa. Los valores clave se resumen en la Tabla~\ref{tab:slam_params_ch9} del Capítulo~\ref{chap:app_control_nav}.
+ 
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single, caption={Contenido de \texttt{mapper\_params\_online\_async.yaml}.}]
+slam_toolbox:
+  ros__parameters:
+ 
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+ 
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /scan
+    mode: mapping
+ 
+    map_file_name: ""
+    map_start_at_dock: False
+ 
+    debug_logging: false
+    throttle_scans: 1
+    transform_publish_period: 0.02
+    map_update_interval: 1.0
+    resolution: 0.05
+    max_laser_range: 10.0
+    minimum_time_interval: 0.2
+    transform_timeout: 2.5
+    tf_buffer_duration: 60.0
+    stack_size_to_use: 40000000
+    enable_interactive_mode: true
+ 
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.0
+    minimum_travel_heading: 0.0
+    scan_buffer_size: 110
+    scan_buffer_maximum_scan_distance: 10.0
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 3.0
+    loop_search_maximum_distance: 3.0
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+ 
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+ 
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+ 
+    distance_variance_penalty: 0.5
+    angle_variance_penalty: 1.0
+ 
+    fine_search_angle_offset: 0.00349
+    coarse_search_angle_offset: 0.349
+    coarse_angle_resolution: 0.0349
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true
+\end{lstlisting}
+ 
+% -------------------------------------------------------------------
+\subsection*{A3.4\quad \texttt{nav2\_params.yaml} --- Pila de navegación completa (hardware real)}
+\label{anx:yaml_nav2}
+ 
+Este es el archivo de configuración más extenso del proyecto. Dado su tamaño, se presentan las secciones principales. El archivo completo se encuentra en el repositorio del proyecto. La configuración de AMCL se conserva en el archivo pero no se activa en la pila de navegación (véase Anexo~\ref{anx:amcl_params}).
+ 
+\noindent\textbf{Planificador global (NavFn):}
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single]
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 10.0
+    use_sim_time: false
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.15
+      use_astar: true
+      allow_unknown: true
+\end{lstlisting}
+ 
+\noindent\textbf{Controlador local (DWB):}
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single]
+controller_server:
+  ros__parameters:
+    use_sim_time: false
+    controller_frequency: 10.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5
+    min_theta_velocity_threshold: 0.001
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugin: "goal_checker"
+    controller_plugins: ["FollowPath"]
+ 
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.05
+      movement_time_allowance: 10.0
+ 
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.22
+      yaw_goal_tolerance: 0.3
+      stateful: True
+ 
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      min_vel_x: -0.13
+      max_vel_x: 0.13
+      max_vel_theta: 0.4
+      acc_lim_x: 0.2
+      acc_lim_theta: 0.4
+      sim_time: 1.0
+      xy_goal_tolerance: 0.22
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle",
+                "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      BaseObstacle.scale: 4.0
+      PathAlign.scale: 32.0
+      GoalAlign.scale: 24.0
+      PathDist.scale: 50.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 10.0
+\end{lstlisting}
+ 
+\noindent\textbf{Costmaps (global y local):}
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single]
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 10.0
+      publish_frequency: 10.0
+      global_frame: odom
+      robot_base_frame: base_link
+      rolling_window: true
+      width: 4
+      height: 4
+      resolution: 0.03
+      footprint: "[ [0.20, 0.12], [-0.06, 0.12],
+                    [-0.06, -0.12], [0.20, -0.12] ]"
+      plugins: ["obstacle_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 1.5
+        inflation_radius: 0.18
+ 
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 8.0
+      publish_frequency: 4.0
+      resolution: 0.03
+      footprint: "[ [0.20, 0.12], [-0.06, 0.12],
+                    [-0.06, -0.12], [0.20, -0.12] ]"
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 1.5
+        inflation_radius: 0.18
+\end{lstlisting}
+ 
+\noindent\textbf{Servidor de recuperación:}
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single]
+recoveries_server:
+  ros__parameters:
+    cycle_frequency: 10.0
+    recovery_plugins: ["spin", "back_up", "wait"]
+    spin:
+      plugin: "nav2_recoveries/Spin"
+    back_up:
+      plugin: "nav2_recoveries/BackUp"
+    wait:
+      plugin: "nav2_recoveries/Wait"
+    simulate_ahead_time: 1.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: -0.5
+    rotational_acc_lim: 0.3
+\end{lstlisting}
+ 
+% -------------------------------------------------------------------
+\subsection*{A3.5\quad \texttt{joystick.yaml} --- Teleoperación y \textit{dead-man switch}}
+\label{anx:yaml_joystick}
+ 
+Configura el nodo \texttt{teleop\_twist\_joy} con los ejes y botones del mando, incluyendo el botón de habilitación (\textit{dead-man switch}) y las velocidades máximas de teleoperación.
+ 
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single, caption={Contenido de \texttt{joystick.yaml}.}]
+joy_node:
+  ros__parameters:
+    device_id: 0
+    deadzone: 0.3
+    autorepeat_rate: 20.0
+ 
+teleop_node:
+  ros__parameters:
+    axis_linear:
+      x: 1
+    scale_linear:
+      x: 0.5
+    scale_linear_turbo:
+      x: 1.0
+ 
+    axis_angular:
+      yaw: 0
+    scale_angular:
+      yaw: 1.0
+    scale_angular_turbo:
+      yaw: 1.5
+ 
+    enable_button: 6
+    enable_turbo_button: 7
+ 
+    require_enable_button: true
+\end{lstlisting}
+ 
+% -------------------------------------------------------------------
+\subsection*{A3.6\quad \texttt{explore.yaml} --- Explorador de fronteras}
+\label{anx:yaml_explore}
+ 
+Parámetros del módulo de exploración autónoma \texttt{explore\_server}, incluyendo el tamaño mínimo de frontera, la ganancia de información y las frecuencias de actualización.
+ 
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single, caption={Contenido de \texttt{explore.yaml}.}]
+explore_server:
+  ros__parameters:
+ 
+    robot_base_frame: "base_link"
+ 
+    costmap_topic: "/global_costmap/costmap"
+    costmap_updates_topic: "/global_costmap/costmap_updates"
+ 
+    visualize: true
+ 
+    planner_frequency: 0.33
+ 
+    progress_timeout: 120.0
+ 
+    potential_scale: 3.0
+    orientation_scale: 0.0
+    gain_scale: 1.0
+ 
+    transform_tolerance: 2.0
+    min_frontier_size: 0.11
+\end{lstlisting}
+ 
+% -------------------------------------------------------------------
+\subsection*{A3.7\quad \texttt{gazebo\_params.yaml} --- Frecuencia de reloj de simulación}
+\label{anx:yaml_gazebo}
+ 
+Establece la frecuencia de publicación del reloj simulado de Gazebo, parámetro crítico para evitar discontinuidades en la odometría durante la simulación.
+ 
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single, caption={Contenido de \texttt{gazebo\_params.yaml}.}]
+gazebo:
+  ros__parameters:
+    publish_rate: 400.0
+\end{lstlisting}
+ 
+\clearpage
+\section{Árbol de comportamiento XML para navegación con recuperación}
+\label{anx:behavior_tree}
+ 
+El siguiente código XML define el árbol de comportamiento utilizado por el nodo \texttt{bt\_navigator} de Nav2. Este árbol implementa la lógica de navegación con replaneación a 4\,Hz y una secuencia de siete acciones de recuperación, según lo descrito en la Sección~\ref{sec:bt_ch9} y la Tabla~\ref{tab:recovery_ch9}. El archivo se ubica en \texttt{config/navigate\_w\_replanning\_and\_recovery.xml}.
+ 
+\begin{lstlisting}[basicstyle=\small\ttfamily, breaklines=true, frame=single, language=XML, caption={Árbol de comportamiento \texttt{navigate\_w\_replanning\_and\_recovery.xml}.}]
+<BehaviorTree ID="MainTree">
+  <RecoveryNode number_of_retries="6"
+                name="NavigateRecovery">
+    <PipelineSequence name="NavigateWithReplanning">
+      <RateController hz="4.0">
+        <RecoveryNode number_of_retries="1"
+                      name="ComputePathToPose">
+          <ComputePathToPose goal="{goal}" path="{path}"
+                             planner_id="GridBased"/>
+          <ClearCostmapAroundRobot
+            service_name="global_costmap/
+                          clear_costmap_around_robot"
+            reset_distance="1.5"/>
+        </RecoveryNode>
+      </RateController>
+      <RecoveryNode number_of_retries="1"
+                    name="FollowPath">
+        <FollowPath path="{path}"
+                    controller_id="FollowPath"/>
+        <ClearCostmapAroundRobot
+          service_name="local_costmap/
+                        clear_costmap_around_robot"
+          reset_distance="1.0"/>
+      </RecoveryNode>
+    </PipelineSequence>
+ 
+    <ReactiveFallback name="RecoveryFallback">
+      <GoalUpdated/>
+      <SequenceStar name="RecoveryActions">
+        <ClearCostmapAroundRobot
+          service_name="local_costmap/
+                        clear_costmap_around_robot"
+          reset_distance="1.0"/>
+        <ClearCostmapAroundRobot
+          service_name="global_costmap/
+                        clear_costmap_around_robot"
+          reset_distance="1.5"/>
+        <BackUp backup_dist="0.15"
+                backup_speed="0.05"
+                time_allowance="8.0"/>
+        <Spin spin_dist="0.8"/>
+        <ComputePathToPose goal="{goal}"
+                           path="{recovery_path}"
+                           planner_id="GridBased"/>
+        <FollowPath path="{recovery_path}"
+                    controller_id="FollowPath"/>
+        <Wait wait_duration="2"/>
+      </SequenceStar>
+    </ReactiveFallback>
+  </RecoveryNode>
+</BehaviorTree>
+\end{lstlisting}
+ 
+\noindent
+\textbf{Lectura del árbol:} el nodo \texttt{RecoveryNode} intenta ejecutar la secuencia de navegación (planificación + seguimiento); si esta falla, activa la rama de recuperación en secuencia: primero limpia los costmaps (local a 1.0~m y global a 1.5~m de radio), luego retrocede 0.15~m a 0.05~m/s, gira 0.8~rad ($\approx 45.8°$), recalcula una ruta alternativa, intenta seguirla y, si todo lo anterior falla, espera 2~s antes de reintentar. Si tras 6 ciclos completos no logra alcanzar la meta, la navegación se reporta como fallida. Cada vez que se actualiza la meta (\texttt{GoalUpdated}), el árbol se reinicia desde el principio.
+  
+
+
+
+\section{Planos mecánicos y vistas del diseño 3D}
+\label{anx:planos_3d}
+
+Este anexo presenta las vistas ortogonales acotadas del chasis y las piezas estructurales diseñadas para impresión 3D en PLA+ (Sección~\ref{sec:fab_3d} del Capítulo~\ref{ch:componentes}). Todas las piezas fueron modeladas en software de diseño paramétrico y fabricadas en una impresora Creality Ender~3.
+
+% >>> INSERTAR IMAGEN: Vista en planta (superior) del chasis acotada.
+% Mostrar dimensiones generales: largo, ancho, posición de los ejes de rueda,
+% ubicación de los orificios de montaje para motores, Raspberry Pi, Arduino,
+% L298N, batería y RPLidar.
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_chasis_planta.pdf}{0.90\textwidth}
+%             {Vista en planta del chasis con cotas generales (mm).}
+%             {fig:anx_planta}{}
+
+% >>> INSERTAR IMAGEN: Vista frontal (alzado) del chasis acotada.
+% Mostrar alturas: distancia del suelo al eje de las ruedas, altura de la
+% plataforma superior, posición vertical del RPLidar.
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_chasis_alzado.pdf}{0.85\textwidth}
+%             {Vista frontal del chasis con alturas y posición de componentes (mm).}
+%             {fig:anx_alzado}{}
+
+% >>> INSERTAR IMAGEN: Vista lateral (perfil) del chasis acotada.
+% Mostrar posición longitudinal del centro de gravedad estimado,
+% distancia entre el eje motriz y la rueda loca, voladizo frontal.
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_chasis_perfil.pdf}{0.85\textwidth}
+%             {Vista lateral del chasis con distribución longitudinal (mm).}
+%             {fig:anx_perfil}{}
+
+% >>> INSERTAR IMAGEN: Vista isométrica (3D renderizado) del ensamblaje completo.
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_chasis_iso.png}{0.75\textwidth}
+%             {Vista isométrica del ensamblaje completo del robot.}
+%             {fig:anx_isometrica}{}
+
+% >>> INSERTAR IMAGEN: Vista explosionada (si está disponible) mostrando
+% las piezas individuales y su orden de ensamblaje.
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_chasis_explosionada.png}{0.80\textwidth}
+%             {Vista explosionada del chasis y componentes mecánicos.}
+%             {fig:anx_explosionada}{}
+
+\begin{table}[H]
+\centering
+\caption{Parámetros de impresión 3D utilizados.}
+\label{tab:anx_print_params}
+\begin{tabular}{ll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Material                    & PLA+ (eSUN) \\
+Impresora                   & Creality Ender 3 \\
+Altura de capa              & 0.2~mm \\
+Relleno (\textit{infill})  & 20--30\% (giroide o rejilla) \\
+Paredes perimetrales        & 3 \\
+Capas superior/inferior     & 4 \\
+Temperatura de boquilla     & 210\,°C \\
+Temperatura de cama          & 60\,°C \\
+Velocidad de impresión     & 50~mm/s \\
+Soportes                    & Según geometría (voladizos $>$45°) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ===================================================================
+% ANEXO 6: DATOS DE SINTONIZACIóN PID Y CONVERGENCIA PSO
+% ===================================================================
+\clearpage
+\section{Datos de sintonización PID y convergencia PSO}
+\label{anx:pid_data}
+
+Este anexo complementa la Sección~\ref{sec:sintonizacion_pso} del Capítulo~\ref{ch:setup_arduino} y la Sección~\ref{sec:resultados_pid} del Capítulo~\ref{ch:resultados}, proporcionando los datos intermedios del proceso de sintonización automática que no se incluyen en el cuerpo del documento.
+
+\subsection*{A6.1\quad Datos crudos de la respuesta al escalón}
+
+Los datos de la prueba de respuesta al escalón en lazo abierto se almacenaron en el archivo \texttt{step\_response\_velocity\_lazo\_abierto.npy} (formato NumPy), generado por el script \texttt{ControlLazoAbierto.py} con \texttt{PWM\_STEP}~$= 143$. La estructura del archivo es una matriz con las columnas: tiempo (s), señal PWM
+aplicada (adim.), velocidad rueda izquierda (m/s), velocidad rueda derecha (m/s). El período de muestreo nominal es $T_s = 0.1$~s; el escalón de PWM produce una velocidad de estado estacionario de aproximadamente $0.13$~m/s en ambas ruedas, valor detectado automáticamente por \texttt{SintonizacionAutomatica.py} como $v_{ss} = \texttt{np.mean(g\_pv[g\_t} \geq \texttt{7.0])}$.
+
+% >>> INSERTAR GRáFICO: Datos crudos de la respuesta al escalón (ambas ruedas).
+% Eje X: tiempo (s), Eje Y: velocidad (m/s).
+% Mostrar datos sin procesar (puntos) y la consigna (línea punteada).
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_step_raw.pdf}{0.85\textwidth}
+%             {Datos crudos de la respuesta al escalón: rueda izquierda (azul) y derecha (rojo).}
+%             {fig:anx_step_raw}{}
+
+\subsection*{A6.2\quad Parámetros FODT identificados}
+
+El script \texttt{SintonizacionAutomatica.py} ajusta un modelo de primer orden con retardo (FODT) para cada rueda. Dado que el PSO es un algoritmo estocástico, cada ejecución puede producir parámetros ligeramente distintos. La Tabla~\ref{tab:anx_fodt} presenta los valores de la corrida utilizada para generar las ganancias PID iniciales (\texttt{SintonizacionAutomatica.py}). La Tabla~\ref{tab:anx_fodt_lambda} presenta los valores de la corrida independiente utilizada para el cálculo de la sintonía Lambda (\texttt{SintonizacionLambda.py}); estos últimos son los que se adoptaron como referencia para el diseño final del controlador (véase Tabla~\ref{tab:fodt_lambda} del Capítulo~\ref{ch:resultados}).
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{Modelo FODT identificado por PSO --- corrida de \texttt{SintonizacionAutomatica.py}.}
+\label{tab:anx_fodt}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L$ \textbf{(s)} & \textbf{MSE del ajuste} \\
+\midrule
+Izquierda & $0.000913$ & $0.3291$ & $0.0215$ & --- \\
+Derecha   & $0.000890$ & $0.3485$ & $0.0001$ & --- \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item Estos parámetros corresponden a la corrida PSO utilizada para obtener las ganancias PID iniciales. Los valores de $K_m$ y $\tau$ son consistentes entre corridas; el retardo $L$ presenta mayor variabilidad por su baja magnitud relativa.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Modelo FODT identificado por PSO --- corrida de \texttt{SintonizacionLambda.py} (valores de diseño final).}
+\label{tab:anx_fodt_lambda}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L$ \textbf{(s)} \\
+\midrule
+Izquierda & $0.000913$ & $0.3291$ & $0.0001$ \\
+Derecha   & $0.000890$ & $0.3485$ & $0.0845$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% >>> NOTA AL AUTOR: Completar con los valores impresos por
+% SintonizacionAutomatica.py durante la fase 2a.
+
+% >>> INSERTAR GRáFICO: Ajuste del modelo FODT sobre los datos experimentales
+% para cada rueda. Mostrar datos reales (puntos) y modelo simulado (línea cont.).
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_fodt_fit_left.pdf}{0.80\textwidth}
+%             {Ajuste del modelo FODT --- rueda izquierda: datos experimentales vs. modelo identificado.}
+%             {fig:anx_fodt_left}{}
+
+% >>> utemFigurePropia{2.Texto/Imag/anx_fodt_fit_right.pdf}{0.80\textwidth}
+%             {Ajuste del modelo FODT --- rueda derecha: datos experimentales vs. modelo identificado.}
+%             {fig:anx_fodt_right}{}
+
+\subsection*{A6.3\quad Convergencia del algoritmo PSO}
+
+El proceso de optimización utiliza 50~partículas y 150~generaciones. Los siguientes gráficos muestran la evolución de la función de costo (mejor global, \textit{gbest}) a lo largo de las generaciones, tanto para la fase de identificación del modelo como para la fase de optimización de ganancias PID.
+
+% >>> INSERTAR GRáFICO: Convergencia PSO para identificación FODT.
+% Eje X: generación (0--150), Eje Y: función de costo (MSE).
+% Mostrar curva de gbest (mejor valor global) para cada rueda.
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_pso_conv_fodt.pdf}{0.80\textwidth}
+%             {Convergencia del PSO durante la identificación del modelo FODT.}
+%             {fig:anx_pso_fodt}{}
+
+% >>> INSERTAR GRáFICO: Convergencia PSO para optimización de ganancias PID.
+% Eje X: generación (0--150), Eje Y: función de costo J compuesta.
+% Sugerencia: utemFigurePropia{2.Texto/Imag/anx_pso_conv_pid.pdf}{0.80\textwidth}
+%             {Convergencia del PSO durante la optimización de ganancias PID.}
+%             {fig:anx_pso_pid}{}
+
+\subsection*{A6.4\quad Ganancias PID finales y parámetros del firmware}
+
+La siguiente tabla consolida los parámetros que se cargan en el firmware del Arduino mediante la función \texttt{resetPID()} y que se definen en el archivo \texttt{diff\_controller.h}.
+
+\begin{table}[H]
+\centering
+\caption{Parámetros PID y constantes del firmware (valores de referencia del Capítulo~\ref{ch:setup_arduino}).}
+\label{tab:anx_pid_firmware}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Constante} & \textbf{Descripción} & \textbf{Rueda izq.} & \textbf{Rueda der.} \\
+\midrule
+\texttt{Kp}                  & Ganancia proporcional          & $16.00$  & $16.42$ \\
+\texttt{Kd}                  & Ganancia derivativa            & $20.30$  & $20.05$ \\
+\texttt{Ki}                  & Ganancia integral              & $0.075$  & $0.001$ \\
+\texttt{Ko}                  & Divisor de escala              & $50$     & $50$ \\
+\texttt{PID\_INTERVAL}       & Período del PID (ms)         & \multicolumn{2}{c}{$33$ (aprox.\ 30\,Hz)} \\
+\texttt{AUTO\_STOP\_INTERVAL} & Timeout de auto-detención (ms) & \multicolumn{2}{c}{$2000$} \\
+\texttt{ENC\_TICKS\_PER\_REV} & Cuentas por vuelta del encoder & \multicolumn{2}{c}{$1980$} \\
+\texttt{WHEEL\_DIAMETER}      & Diámetro de rueda (m)        & \multicolumn{2}{c}{$0.067$} \\
+\texttt{MAX\_PWM}             & Límite de señal PWM        & \multicolumn{2}{c}{$255$} \\
+\texttt{BAUDRATE}             & Velocidad serial (baud)        & \multicolumn{2}{c}{$57600$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ===================================================================
+% ANEXO 7: GUíA DE PUESTA EN MARCHA DEL ROBOT
+% ===================================================================
+\clearpage
+\section{Guía de puesta en marcha del robot}
+\label{anx:guia_startup}
+
+Esta guía describe el procedimiento paso a paso para encender el robot, verificar la conectividad, lanzar los nodos de \gls{ROS2} y ejecutar una primera misión de navegación. Está dirigida a operadores que ya tienen el sistema instalado y configurado según lo descrito en el Capítulo~\ref{ch:componentes}.
+
+\subsection*{A7.1\quad Requisitos previos}
+
+Antes de iniciar, verificar que se cumplen las siguientes condiciones:
+
+\begin{enumerate}
+\item La batería está cargada (voltaje superior a 10.5\,V medido en los terminales).
+\item La tarjeta microSD con Ubuntu~20.04 y \gls{ROS2}~Foxy está insertada en la Raspberry~Pi.
+\item El \textit{travel router} está encendido y operativo (LED indicador estable).
+\item La estación de trabajo (PC) está conectada a la red del \textit{travel router} y tiene \texttt{ROS\_DOMAIN\_ID=0} configurado.
+\item El mando inalámbrico tiene batería y su receptor está conectado a un puerto USB de la Raspberry~Pi.
+\end{enumerate}
+
+\subsection*{A7.2\quad Encendido del robot}
+
+\begin{enumerate}
+\item Conectar la batería al robot (verificar polaridad).
+\item Presionar el interruptor general (LANBOO 16\,mm) para energizar el riel de 12\,V.
+\item Verificar que el LED de la Raspberry~Pi enciende (parpadeo verde = arrancando SO).
+\item Esperar 30--60 segundos hasta que el sistema operativo arranque completamente.
+\item Verificar que el RPLidar~A1 comienza a girar (motor mecánico audible).
+\end{enumerate}
+
+\subsection*{A7.3\quad Conexión SSH y verificación de red}
+
+Desde la estación de trabajo, abrir un terminal y conectar por SSH:
+
+\begin{verbatim}
+ssh ubuntu@<IP_RASPBERRY_PI>
+\end{verbatim}
+
+Una vez dentro de la Raspberry~Pi, verificar la conectividad DDS:
+
+\begin{verbatim}
+# En la Raspberry Pi:
+source /opt/ros/foxy/setup.bash
+source ~/robot_ws/install/setup.bash
+export ROS_DOMAIN_ID=0
+ros2 topic list
+\end{verbatim}
+
+\noindent
+Si la lista muestra \texttt{/rosout} y \texttt{/parameter\_events}, el \textit{middleware} DDS está operativo. Verificar desde la estación de trabajo que el mismo comando retorna los mismos tópicos.
+
+\subsection*{A7.4a\quad Lanzamiento de la pila completa del robot}
+
+El lanzamiento se realiza en orden, desde terminales SSH separados (o usando \texttt{tmux}):
+
+\paragraph{Terminal 1: Robot base (control + sensores).}
+\begin{verbatim}
+ros2 launch articubot_one launch_robot.launch.py
+\end{verbatim}
+
+\noindent
+Este archivo lanza: \texttt{robot\_state\_publisher}, \texttt{controller\_manager} (con \texttt{diff\_cont} y \texttt{joint\_broad}), y \texttt{twist\_mux}. Esperar a que los controladores reporten \texttt{[ACTIVE]} en la consola.
+
+\paragraph{Terminal 2: LiDAR.}
+\begin{verbatim}
+ros2 launch articubot_one rplidar.launch.py
+\end{verbatim}
+
+\noindent
+Verificar publicación del tópico:
+\begin{verbatim}
+ros2 topic hz /scan
+\end{verbatim}
+El resultado esperado es una frecuencia cercana a 5--10\,Hz.
+
+\paragraph{Terminal 3: Teleoperación (mando inalámbrico).}
+\begin{verbatim}
+ros2 launch articubot_one joystick.launch.py
+\end{verbatim}
+
+\noindent
+Mantener presionado el botón de habilitación (botón 6) y mover los ejes para verificar que el robot responde. Soltar el botón para detener.
+
+\paragraph{Terminal 4: SLAM (mapeo).}
+\begin{verbatim}
+ros2 launch articubot_one online_async_launch.py
+\end{verbatim}
+
+\paragraph{Terminal 5: Nav2 (navegación autónoma).}
+\begin{verbatim}
+ros2 launch articubot_one navigation_launch.py
+\end{verbatim}
+
+\paragraph{Estación de trabajo: RViz.}
+En un terminal del PC (no SSH):
+\begin{verbatim}
+source /opt/ros/foxy/setup.bash
+export ROS_DOMAIN_ID=0
+rviz2 -d ~/tesis_black_robot/src/articubot_one/config/main.rviz
+\end{verbatim}
+
+\subsection*{A7.4b\quad Secuencia de lanzamiento en la estación de trabajo}
+
+La estación de trabajo ejecuta los siguientes procesos en terminales independientes, en el orden indicado:
+
+\begin{enumerate}
+\item \textbf{Compilación del workspace:}
+\begin{verbatim}
+cd tesis_black_robot
+colcon build --symlink-install --executor sequential
+source install/setup.bash
+\end{verbatim}
+
+\item \textbf{Teleoperación (joystick):}
+\begin{verbatim}
+source install/setup.bash
+ros2 launch articubot_one joystick.launch.py
+\end{verbatim}
+
+\item \textbf{Multiplexor de velocidad:}
+\begin{verbatim}
+ros2 run twist_mux twist_mux \
+  --ros-args \
+  --params-file ./src/articubot_one/config/twist_mux.yaml \
+  -r cmd_vel_out:=diff_cont/cmd_vel_unstamped
+\end{verbatim}
+
+\item \textbf{SLAM (mapeo en línea):}
+\begin{verbatim}
+ros2 launch slam_toolbox online_async_launch.py \
+  params_file:=./src/articubot_one/config/\
+    mapper_params_online_async.yaml \
+  use_sim_time:=false
+\end{verbatim}
+
+\item \textbf{Navegación autónoma (Nav2):}
+\begin{verbatim}
+ros2 launch nav2_bringup navigation_launch.py \
+  use_sim_time:=false \
+  params_file:=./src/articubot_one/config/nav2_params.yaml
+\end{verbatim}
+
+\item \textbf{Visualización:}
+\begin{verbatim}
+ros2 run rviz2 rviz2 \
+  -d ./src/articubot_one/config/main.rviz
+\end{verbatim}
+
+\item \textbf{Exploración autónoma} (cuando los anteriores estén activos):
+\begin{verbatim}
+source install/setup.bash
+ros2 launch articubot_one explore.launch.py \
+  use_sim_time:=false
+\end{verbatim}
+\end{enumerate}
+
+\subsection*{A7.4c\quad Secuencia de lanzamiento en el robot}
+
+En la Raspberry~Pi del robot se ejecutan los siguientes procesos:
+
+\begin{enumerate}
+\item \textbf{Compilación del workspace:}
+\begin{verbatim}
+cd ~/robot_ws
+colcon build --symlink-install --executor sequential
+source install/setup.bash
+\end{verbatim}
+
+\item \textbf{Pila del robot} (ros2\_control + modelo):
+\begin{verbatim}
+ros2 launch articubot_one launch_robot.launch.py
+\end{verbatim}
+
+\item \textbf{Escáner láser:}
+\begin{verbatim}
+ros2 launch articubot_one rplidar.launch.py
+\end{verbatim}
+
+\item \textbf{Monitor de recursos} (opcional):
+\begin{verbatim}
+htop
+\end{verbatim}
+\end{enumerate}
+
+\noindent
+Nótese que la navegación, el SLAM y la visualización se ejecutan en la estación de trabajo, no en el robot. La comunicación entre ambos equipos se realiza mediante la red inalámbrica dedicada descrita en la Sección~\ref{sec:ws_env_state}, compartiendo el mismo \texttt{ROS\_DOMAIN\_ID}. Esta distribución de carga permite que la Raspberry~Pi dedique sus recursos exclusivamente al control de motores y a la adquisición del sensor láser.
+
+\textbf{Nota sobre la frecuencia de \texttt{/odom}:} en hardware real, la frecuencia efectiva de publicación de \texttt{/odom} es ${\sim}30$\,Hz (limitada por \texttt{update\_rate:~30} del \emph{controller manager}), no ${\sim}50$\,Hz. Véase la Sección~\ref{subsec:verificacion_tf} para la explicación completa. En simulación con Gazebo, la frecuencia efectiva se aproxima a 50\,Hz. 
+
+\subsection*{A7.5\quad Verificaciones rápidas}
+
+Antes de enviar metas de navegación, verificar los siguientes puntos:
+
+\begin{table}[H]
+\centering
+\caption{Lista de verificación previa a la operación autónoma.}
+\label{tab:anx_checklist}
+\begin{tabular}{lll}
+\toprule
+\textbf{Verificación} & \textbf{Comando / Herramienta} & \textbf{Resultado esperado} \\
+\midrule
+Odometría publicada          & \texttt{ros2 topic hz /odom}     &
+  ${\sim}30$\,Hz (hardware real) /
+  ${\sim}50$\,Hz (simulación)\textsuperscript{b} \\
+Cadena \texttt{tf} completa   & \texttt{ros2 run tf2\_tools view\_frames} & PDF sin discontinuidades \\
+Barrido láser visible        & RViz, display \texttt{LaserScan} & Puntos rojos coherentes \\
+Mapa construyéndose          & RViz, display \texttt{Map}        & Cuadrícula expandiendo \\
+Controlador diferencial activo & \texttt{ros2 control list\_controllers} & \texttt{diff\_cont [active]} \\
+Teleoperación funcional      & Mover ejes con botón mantenido   & Robot se desplaza \\
+\bottomrule
+\end{tabular}
+\vspace{4pt}
+\footnotesize
+\textsuperscript{b} En hardware real, la tasa efectiva de publicación de
+\texttt{/odom} está limitada a ${\sim}30$\,Hz por el parámetro
+\texttt{update\_rate:~30} del \emph{controller manager}, aunque el
+\texttt{diff\_drive\_controller} configura \texttt{publish\_rate:~50\,Hz}.
+Este comportamiento es correcto y se explica en detalle en la
+Sección~\ref{subsec:verificacion_tf}.
+\end{table}
+
+\subsection*{A7.6\quad Envío de la primera meta de navegación}
+
+\begin{enumerate}
+\item En RViz, seleccionar la herramienta \emph{2D Nav Goal} (botón en la barra superior).
+\item Hacer clic en un punto del mapa ya construido (zona blanca = espacio libre) y arrastrar para definir la orientación final.
+\item Observar en RViz que aparece la ruta global (línea verde) y la ruta local (línea azul).
+\item El robot comenzará a moverse hacia la meta. Mantener el mando listo para intervención: presionar el botón de habilitación y mover los ejes para tomar control inmediato si es necesario.
+\item La meta se considera alcanzada cuando Nav2 reporta \texttt{Goal reached} en la consola.
+\end{enumerate}
+
+\subsection*{A7.7\quad Apagado seguro}
+
+\begin{enumerate}
+\item Detener todos los nodos de \gls{ROS2} (Ctrl+C en cada terminal o \texttt{killall} si se usa \texttt{tmux}).
+\item Desde SSH, ejecutar:
+\begin{verbatim}
+sudo shutdown -h now
+\end{verbatim}
+\item Esperar a que el LED verde de la Raspberry~Pi se apague (20--30 segundos).
+\item Desactivar el interruptor general para desconectar la batería del riel de 12\,V.
+\item Desconectar físicamente la batería si el robot no se usará por un período prolongado.
+\end{enumerate}
+
+\noindent
+\textbf{Importante:} nunca desconectar la batería sin apagar la Raspberry~Pi primero. Una desconexión abrupta puede corromper el sistema de archivos de la tarjeta microSD.
+
+
+% ===================================================================
+% ANEXO 8: INVENTARIO DE TóPICOS ROS~2 DEL SISTEMA
+% ===================================================================
+\clearpage
+\section{Inventario de tópicos ROS~2 del sistema}
+\label{anx:topicos}
+
+La siguiente tabla enumera los tópicos activos cuando la pila completa del robot está operativa (control + \gls{LIDAR} + SLAM + Nav2 + teleoperación). Esta tabla complementa la descripción de la Sección~\ref{sec:qos_topics} del Capítulo~\ref{chap:robot_real} y constituye la referencia definitiva del grafo de comunicación.
+
+\begin{table}[H]
+\centering
+\caption{Tópicos principales del sistema con tipo de mensaje, publicador y suscriptor.}
+\label{tab:anx_topicos}
+\footnotesize
+\begin{tabular}{llll}
+\toprule
+\textbf{Tópico} & \textbf{Tipo de mensaje} & \textbf{Publicador} & \textbf{Suscriptor(es)} \\
+\midrule
+\texttt{/scan}         & \texttt{sensor\_msgs/LaserScan}  & \texttt{rplidar\_composition} & \texttt{slam\_toolbox}, costmaps \\
+\texttt{/odom}         & \texttt{nav\_msgs/Odometry}      & \texttt{diff\_cont}            & \texttt{slam\_toolbox}, Nav2 \\
+\texttt{/tf}           & \texttt{tf2\_msgs/TFMessage}     & Varios                         & Todos \\
+\texttt{/tf\_static}   & \texttt{tf2\_msgs/TFMessage}     & \texttt{robot\_state\_pub.}    & Todos \\
+\texttt{/cmd\_vel}     & \texttt{geometry\_msgs/Twist}    & Nav2 controller                & \texttt{twist\_mux} \\
+\texttt{/cmd\_vel\_joy} & \texttt{geometry\_msgs/Twist}   & \texttt{teleop\_twist\_joy}    & \texttt{twist\_mux} \\
+\texttt{/cmd\_vel\_out} & \texttt{geometry\_msgs/Twist}   & \texttt{twist\_mux}            & \texttt{diff\_cont} (remapeado) \\
+\texttt{/map}          & \texttt{nav\_msgs/OccupancyGrid} & \texttt{slam\_toolbox}         & Nav2 costmaps, RViz \\
+\texttt{/joint\_states} & \texttt{sensor\_msgs/JointState} & \texttt{joint\_broad}         & \texttt{robot\_state\_pub.} \\
+\texttt{/motor\_vels}  & \texttt{MotorVels} (custom)       & \texttt{driver}               & GUI, diagnóstico \\
+\texttt{/encoder\_vals} & \texttt{EncoderVals} (custom)    & \texttt{driver}               & GUI, diagnóstico \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Reglas \texttt{udev} para nombres persistentes de dispositivo}
+
+Las siguientes reglas se almacenan en \texttt{/etc/udev/rules.d/99-robot.rules} en la Raspberry~Pi. Los valores de \texttt{idVendor} e \texttt{idProduct} deben verificarse con \texttt{udevadm info} para cada dispositivo específico.
+
+% >>> INSERTAR CóDIGO de las reglas udev:
+% Ejemplo (ajustar según dispositivos reales):
+%
+% \begin{verbatim}
+% # Arduino Nano (CH340 o FTDI segun variante)
+% SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", \
+%     SYMLINK+="arduino", MODE="0666"
+%
+% # RPLidar A1 (Silicon Labs CP210x)
+% SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", \
+%     SYMLINK+="rplidar", MODE="0666"
+% \end{verbatim}
+%
+% >>> NOTA AL AUTOR: Verificar y ajustar los idVendor/idProduct con:
+% udevadm info --name=/dev/ttyUSB0 --attribute-walk | grep -E "idVendor|idProduct"
+
+
+\section{Carta Gantt del proyecto}
+\label{anx:gantt}
+
+La Figura~\ref{fig:gantt} presenta la planificación temporal del proyecto, organizada según las seis etapas metodológicas descritas en la Introducción.
+
+\utemFigurePropia{2.Texto/Imag/carta_gantt.pdf}{0.95\textwidth}{Carta Gantt del proyecto.}{fig:gantt}
+
+\section{Parámetros AMCL preparados (no activados)}
+\label{anx:amcl_params}
+
+El paquete \texttt{nav2\_amcl} fue configurado en \texttt{nav2\_params.yaml} como alternativa de localización sobre mapas preconstruidos. Los parámetros se conservan comentados en el archivo de configuración para facilitar su habilitación futura si se incorpora una IMU. La Tabla~\ref{tab:amcl_params} presenta los valores preparados.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{Parámetros de AMCL preparados en \texttt{nav2\_params.yaml} (no activados).}
+\label{tab:amcl_params}
+\footnotesize
+\begin{tabular}{P{4.2cm} l P{5.8cm}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
+\midrule
+\multicolumn{3}{l}{\textit{Modelo de movimiento}} \\
+\texttt{robot\_model\_type}      & \texttt{differential}  & Modelo cinemático diferencial \\
+\texttt{alpha1}--\texttt{alpha5} & 0.2                    & Coeficientes de ruido del modelo de odometría \\ \addlinespace
+\multicolumn{3}{l}{\textit{Filtro de partículas}} \\
+\texttt{min\_particles}          & 500                    & Mínimo de partículas activas \\
+\texttt{max\_particles}          & 2000                   & Máximo de partículas activas \\
+\texttt{pf\_err}                 & 0.05                   & Error del filtro (criterio KLD) \\
+\texttt{pf\_z}                   & 0.99                   & Cuantil superior del error KLD \\
+\texttt{resample\_interval}      & 1                      & Intervalo de remuestreo (en actualizaciones) \\
+\texttt{recovery\_alpha\_fast}   & 0.0                    & Tasa exponencial rápida de recuperación\tnote{a} \\
+\texttt{recovery\_alpha\_slow}   & 0.0                    & Tasa exponencial lenta de recuperación\tnote{a} \\ \addlinespace
+\multicolumn{3}{l}{\textit{Modelo de observación}} \\
+\texttt{laser\_model\_type}      & \texttt{likelihood\_field} & Modelo de verosimilitud del láser \\
+\texttt{laser\_likelihood\_max\_dist} & 2.0~m             & Distancia máxima de verosimilitud \\
+\texttt{max\_beams}              & 60                     & Máximo de rayos considerados por barrido \\
+\texttt{sigma\_hit}              & 0.2                    & Desviación estándar del modelo de impacto \\
+\texttt{z\_hit}                  & 0.5                    & Peso del modelo de impacto \\
+\texttt{z\_rand}                 & 0.5                    & Peso del modelo aleatorio \\
+\texttt{z\_max}                  & 0.05                   & Peso del modelo de rango máximo \\
+\texttt{z\_short}                & 0.05                   & Peso del modelo de reflexión corta \\ \addlinespace
+\multicolumn{3}{l}{\textit{Marcos y tópicos}} \\
+\texttt{base\_frame\_id}         & \texttt{base\_link}    & Marco base del robot \\
+\texttt{odom\_frame\_id}         & \texttt{odom}          & Marco de odometría \\
+\texttt{global\_frame\_id}       & \texttt{map}           & Marco global \\
+\texttt{scan\_topic}             & \texttt{scan}          & Tópico del sensor láser \\ \addlinespace
+\multicolumn{3}{l}{\textit{Actualización y publicación}} \\
+\texttt{update\_min\_d}          & 0.25~m                 & Desplazamiento mínimo para actualizar filtro \\
+\texttt{update\_min\_a}          & 0.05~rad               & Rotación mínima para actualizar filtro \\
+\texttt{transform\_tolerance}    & 2.0~s                  & Tolerancia temporal de transformaciones \\
+\texttt{tf\_broadcast}           & true                   & Publicar transformada \texttt{map}$\rightarrow$\texttt{odom} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[a] Valores en 0.0 desactivan la recuperación automática de partículas por divergencia; se recomienda activarlos (e.g.\ 0.1 y 0.001) al incorporar una IMU.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{appendices}

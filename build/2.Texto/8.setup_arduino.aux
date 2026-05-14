@@ -1,0 +1,266 @@
+\relax 
+\providecommand\zref@newlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\@writefile{toc}{\contentsline {chapter}{\numberline {7}Implementaci'on del firmware de bajo nivel en Arduino Nano}{192}{chapter.7}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lof}{\contentsline {figure}{\numberline {7.1}{\ignorespaces Arquitectura modular del firmware ROSArduinoBridge}}{193}{figure.caption.142}\protected@file@percent }
+\newlabel{fig:arquitectura_firmware}{{7.1}{193}{Arquitectura modular del firmware ROSArduinoBridge}{figure.caption.142}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.1}Arquitectura modular del firmware}{193}{section.7.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7.2}{\ignorespaces Estructura del proyecto \texttt  {ROSArduinoBridge} y responsabilidad de cada archivo}}{195}{figure.caption.143}\protected@file@percent }
+\newlabel{fig:arbol_firmware}{{7.2}{195}{Estructura del proyecto \texttt {ROSArduinoBridge} y responsabilidad de cada archivo}{figure.caption.143}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.2}Constantes f'isicas y par'ametros globales}{195}{section.7.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7.1}{\ignorespaces Trazabilidad de constantes f'isicas entre el firmware y el \emph  {plugin} de \texttt  {ros2\_control}.}}{196}{table.caption.144}\protected@file@percent }
+\newlabel{tab:trazabilidad_constantes}{{7.1}{196}{Trazabilidad de constantes f'isicas entre el firmware y el \emph {plugin} de \texttt {ros2\_control}}{table.caption.144}{}}
+\newlabel{eq:mps_to_ticks}{{7.1}{196}{Constantes f'isicas y par'ametros globales}{equation.7.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.3}Protocolo de comunicaci'on serial}{197}{section.7.3}\protected@file@percent }
+\newlabel{sec:serial_firmware}{{7.3}{197}{Protocolo de comunicaci'on serial}{section.7.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.1}Comandos de lectura y reinicio de encoders}{198}{subsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Convenci'on de orden de par'ametros.}{198}{paragraph*.145}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.2}Comandos de movimiento}{198}{subsection.7.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.3}Comandos de lectura y actualizaci'on del PID}{199}{subsection.7.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.4}Comandos de prop'osito general}{200}{subsection.7.3.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7.2}{\ignorespaces Resumen del protocolo serial del firmware \texttt  {ROSArduinoBridge}.}}{201}{table.caption.146}\protected@file@percent }
+\newlabel{tab:protocolo_serial}{{7.2}{201}{Resumen del protocolo serial del firmware \texttt {ROSArduinoBridge}}{table.caption.146}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.4}Lectura de encoders y rutinas de interrupci'on}{201}{section.7.4}\protected@file@percent }
+\newlabel{sec:cpr_experimental}{{7.4}{201}{Lectura de encoders y rutinas de interrupci'on}{section.7.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.1}Configuraci'on de interrupciones por cambio de pin}{201}{subsection.7.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.2}Decodificaci'on de cuadratura mediante tabla de estados}{202}{subsection.7.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.3}Obtenci'on experimental de cuentas por vuelta}{204}{subsection.7.4.3}\protected@file@percent }
+\newlabel{sec:cpr_promedios}{{7.4.3}{204}{Obtenci'on experimental de cuentas por vuelta}{subsection.7.4.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7.3}{\ignorespaces Muestras del n'umero de cuentas en los encoders en una revoluci'on}}{204}{table.caption.147}\protected@file@percent }
+\newlabel{tab:muestras_cuentas}{{7.3}{204}{Muestras del n'umero de cuentas en los encoders en una revoluci'on}{table.caption.147}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.5}Accionamiento de motores mediante el puente H L298N}{205}{section.7.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.6}Control PID diferencial}{206}{section.7.6}\protected@file@percent }
+\newlabel{sec:motorcontrol_pid}{{7.6}{206}{Control PID diferencial}{section.7.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6.1}Estructura de datos del controlador}{206}{subsection.7.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Convención de ordenamiento y rol del divisor $K_o$}{207}{subsubsection*.148}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7.4}{\ignorespaces Correspondencia entre posición en el protocolo serial y ganancia PID.}}{207}{table.caption.149}\protected@file@percent }
+\newlabel{tab:orden_pid}{{7.4}{207}{Correspondencia entre posición en el protocolo serial y ganancia PID}{table.caption.149}{}}
+\newlabel{eq:pid_firmware}{{7.5}{208}{Convención de ordenamiento y rol del divisor $K_o$}{equation.7.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6.2}Algoritmo PID incremental}{209}{subsection.7.6.2}\protected@file@percent }
+\newlabel{sec:pid_discreto}{{7.6.2}{209}{Algoritmo PID incremental}{subsection.7.6.2}{}}
+\newlabel{eq:pid_incremental}{{7.7}{209}{Algoritmo PID incremental}{equation.7.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Zona muerta (\textit  {deadband}) por cuantizaci\'on del encoder}{210}{subsubsection*.150}\protected@file@percent }
+\newlabel{sec:deadband}{{7.6.2}{210}{Zona muerta (\textit {deadband}) por cuantizaci\'on del encoder}{subsubsection*.150}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6.3}Ciclo de actualizaci'on del PID}{211}{subsection.7.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6.4}Ganancias iniciales y divisor de escala}{211}{subsection.7.6.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7.5}{\ignorespaces Ganancias PID definitivas codificadas en el firmware (\texttt  {diff\_controller.h}, funci'on \texttt  {resetPID()}). Obtenidas mediante sintonizaci'on asistida por PSO con refinamiento experimental iterativo (v'ease Tabla~\ref {tab:pso_vs_firmware} para la comparaci'on con los valores PSO iniciales).}}{212}{table.caption.151}\protected@file@percent }
+\newlabel{tab:ganancias_pid}{{7.5}{212}{Ganancias PID definitivas codificadas en el firmware (\texttt {diff\_controller.h}, funci'on \texttt {resetPID()}). Obtenidas mediante sintonizaci'on asistida por PSO con refinamiento experimental iterativo (v'ease Tabla~\ref {tab:pso_vs_firmware} para la comparaci'on con los valores PSO iniciales)}{table.caption.151}{}}
+\newlabel{sec:ko_convention}{{7.6.4}{212}{Ganancias iniciales y divisor de escala}{section*.152}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.7}Sintonizaci'on del controlador PID asistida por PSO}{213}{section.7.7}\protected@file@percent }
+\newlabel{sec:sintonizacion_pso}{{7.7}{213}{Sintonizaci'on del controlador PID asistida por PSO}{section.7.7}{}}
+\newlabel{sec:pid_tuning}{{7.7}{213}{Sintonizaci'on del controlador PID asistida por PSO}{section.7.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7.1}Etapa~1: Captura de la respuesta al escal\'on en lazo abierto}{214}{subsection.7.7.1}\protected@file@percent }
+\newlabel{sec:captura_lazo_abierto}{{7.7.1}{214}{Etapa~1: Captura de la respuesta al escal\'on en lazo abierto}{subsection.7.7.1}{}}
+\newlabel{eq:vel_lazo_abierto}{{7.10}{215}{Etapa~1: Captura de la respuesta al escal\'on en lazo abierto}{equation.7.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7.3}{\ignorespaces Respuesta al escalón en lazo abierto (\texttt  {PWM}~$= 143$). Ambas ruedas alcanzan ${\approx }\,0.13$~m/s sin controlador PID activo.}}{216}{figure.caption.153}\protected@file@percent }
+\newlabel{fig:respuesta_lazo_abierto_pso}{{7.3}{216}{Respuesta al escalón en lazo abierto (\texttt {PWM}~$= 143$). Ambas ruedas alcanzan ${\approx }\,0.13$~m/s sin controlador PID activo}{figure.caption.153}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Capa de comunicaci'on serial: la clase \texttt  {serialArduino}.}{216}{subsubsection*.154}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7.6}{\ignorespaces Interfaz p'ublica de la clase \texttt  {serialArduino} (\texttt  {pyArduino.py}).}}{218}{table.caption.155}\protected@file@percent }
+\newlabel{tab:pyarduino_api}{{7.6}{218}{Interfaz p'ublica de la clase \texttt {serialArduino} (\texttt {pyArduino.py})}{table.caption.155}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7.2}Etapa~2: Identificaci'on del modelo de primer orden con retardo}{218}{subsection.7.7.2}\protected@file@percent }
+\newlabel{eq:fodt}{{7.11}{219}{Etapa~2: Identificaci'on del modelo de primer orden con retardo}{equation.7.11}{}}
+\newlabel{eq:euler_fodt}{{7.12}{219}{Etapa~2: Identificaci'on del modelo de primer orden con retardo}{equation.7.12}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Factores de escala y acotaci'on del espacio de b'usqueda}{219}{subsubsection*.156}\protected@file@percent }
+\newlabel{subsec:pso_scale_factors}{{7.7.2}{219}{Factores de escala y acotaci'on del espacio de b'usqueda}{subsubsection*.156}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7.7}{\ignorespaces Factores de escala del PSO y rangos efectivos de b\'usqueda.}}{220}{table.caption.157}\protected@file@percent }
+\newlabel{tab:pso_scale_factors}{{7.7}{220}{Factores de escala del PSO y rangos efectivos de b\'usqueda}{table.caption.157}{}}
+\@writefile{toc}{\contentsline {subsubsection}{Implementaci'on del algoritmo PSO y sus hiperpar'ametros}{220}{subsubsection*.158}\protected@file@percent }
+\newlabel{subsec:pso_hiperparametros}{{7.7.2}{220}{Implementaci'on del algoritmo PSO y sus hiperpar'ametros}{subsubsection*.158}{}}
+\newlabel{eq:pso_vel}{{7.13}{221}{Implementaci'on del algoritmo PSO y sus hiperpar'ametros}{equation.7.13}{}}
+\newlabel{eq:pso_pos}{{7.14}{221}{Implementaci'on del algoritmo PSO y sus hiperpar'ametros}{equation.7.14}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7.8}{\ignorespaces Hiperpar'ametros del algoritmo PSO (\texttt  {pyPso.py}).}}{221}{table.caption.159}\protected@file@percent }
+\newlabel{tab:pso_hiperparametros}{{7.8}{221}{Hiperpar'ametros del algoritmo PSO (\texttt {pyPso.py})}{table.caption.159}{}}
+\@writefile{toc}{\contentsline {paragraph}{Justificaci'on de los valores.}{221}{paragraph*.160}\protected@file@percent }
+\newlabel{eq:chi_clerc}{{7.15}{221}{Justificaci'on de los valores}{equation.7.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7.3}Etapa~3: Optimizaci'on de ganancias PID por simulaci'on en lazo cerrado}{223}{subsection.7.7.3}\protected@file@percent }
+\newlabel{eq:cost_pid}{{7.16}{223}{Etapa~3: Optimizaci'on de ganancias PID por simulaci'on en lazo cerrado}{equation.7.16}{}}
+\newlabel{subsec:simplificaciones_pso}{{7.7.3}{224}{Etapa~3: Optimizaci'on de ganancias PID por simulaci'on en lazo cerrado}{section*.161}{}}
+\@writefile{toc}{\contentsline {paragraph}{Simplificaciones de la simulaci'on respecto del firmware.}{224}{paragraph*.162}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7.4}Etapa~4: Validaci'on experimental y refinamiento iterativo}{225}{subsection.7.7.4}\protected@file@percent }
+\newlabel{subsec:refinamiento_iterativo}{{7.7.4}{225}{Etapa~4: Validaci'on experimental y refinamiento iterativo}{subsection.7.7.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7.5}Resultados de la sintonizaci'on}{226}{subsection.7.7.5}\protected@file@percent }
+\newlabel{subsec:pid_pso_results}{{7.7.5}{226}{Resultados de la sintonizaci'on}{subsection.7.7.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7.9}{\ignorespaces Comparaci'on entre ganancias PID sugeridas por el PSO (salida de \texttt  {SintonizacionAutomatica.py}) y ganancias definitivas cargadas en el firmware (\texttt  {diff\_controller.h}, funci'on \texttt  {resetPID()}). $K_o = 50$ para ambas ruedas, sin variaci'on.}}{227}{table.caption.163}\protected@file@percent }
+\newlabel{tab:pso_vs_firmware}{{7.9}{227}{Comparaci'on entre ganancias PID sugeridas por el PSO (salida de \texttt {SintonizacionAutomatica.py}) y ganancias definitivas cargadas en el firmware (\texttt {diff\_controller.h}, funci'on \texttt {resetPID()}). $K_o = 50$ para ambas ruedas, sin variaci'on}{table.caption.163}{}}
+\@writefile{toc}{\contentsline {paragraph}{Nota sobre el archivo \texttt  {step\_response\_velocity\_lazo\_abierto.npy}.}{227}{paragraph*.164}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.8}Bucle principal y mecanismo de auto-detenci'on}{228}{section.7.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.9}Integraci'on del firmware con \gls {ROS2} mediante \texttt  {diffdrive\_arduino}}{229}{section.7.9}\protected@file@percent }
+\newlabel{sec:integracion_ros2}{{7.9}{229}{Integraci'on del firmware con \gls {ROS2} mediante \texttt {diffdrive\_arduino}}{section.7.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9.1}Arquitectura de \texttt  {ros2\_control} y el \emph  {plugin} de hardware}{229}{subsection.7.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9.2}Configuraci'on e inicio}{230}{subsection.7.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9.3}Ciclo de lectura: del Arduino a \texttt  {ros2\_control}}{231}{subsection.7.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9.4}Ciclo de escritura: de \texttt  {ros2\_control} al Arduino}{231}{subsection.7.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9.5}Clase \texttt  {ArduinoComms}: capa de transporte serial}{232}{subsection.7.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9.6}Clase \texttt  {Wheel}: conversi'on de unidades}{233}{subsection.7.9.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9.7}Par'ametros del controlador diferencial}{233}{subsection.7.9.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.10}Resumen del flujo de datos completo}{234}{section.7.10}\protected@file@percent }
+\@setckpt{2.Texto/8.setup_arduino}{
+\setcounter{page}{236}
+\setcounter{equation}{19}
+\setcounter{enumi}{6}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{footnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{part}{0}
+\setcounter{chapter}{7}
+\setcounter{section}{10}
+\setcounter{subsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{paragraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{figure}{3}
+\setcounter{table}{9}
+\setcounter{float@type}{16}
+\setcounter{LT@tables}{2}
+\setcounter{LT@chunks}{3}
+\setcounter{caption@flags}{2}
+\setcounter{continuedfloat}{0}
+\setcounter{subfigure}{0}
+\setcounter{subtable}{0}
+\setcounter{lstnumber}{13}
+\setcounter{tcbbreakpart}{0}
+\setcounter{tcblayer}{0}
+\setcounter{tcolorbox@number}{0}
+\setcounter{mdf@globalstyle@cnt}{0}
+\setcounter{mdfcountframes}{0}
+\setcounter{mdf@env@i}{0}
+\setcounter{mdf@env@ii}{0}
+\setcounter{mdf@zref@counter}{0}
+\setcounter{@pps}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{parentequation}{0}
+\setcounter{tabx@nest}{0}
+\setcounter{listtotal}{0}
+\setcounter{listcount}{0}
+\setcounter{liststart}{0}
+\setcounter{liststop}{0}
+\setcounter{citecount}{0}
+\setcounter{citetotal}{0}
+\setcounter{multicitecount}{0}
+\setcounter{multicitetotal}{0}
+\setcounter{instcount}{0}
+\setcounter{maxnames}{2}
+\setcounter{minnames}{1}
+\setcounter{maxitems}{999}
+\setcounter{minitems}{1}
+\setcounter{citecounter}{0}
+\setcounter{maxcitecounter}{0}
+\setcounter{savedcitecounter}{0}
+\setcounter{uniquelist}{0}
+\setcounter{uniquename}{0}
+\setcounter{refsection}{0}
+\setcounter{refsegment}{0}
+\setcounter{maxextratitle}{0}
+\setcounter{maxextratitleyear}{0}
+\setcounter{maxextraname}{0}
+\setcounter{maxextradate}{0}
+\setcounter{maxextraalpha}{0}
+\setcounter{abbrvpenalty}{50}
+\setcounter{highnamepenalty}{50}
+\setcounter{lownamepenalty}{25}
+\setcounter{maxparens}{3}
+\setcounter{parenlevel}{0}
+\setcounter{blx@maxsection}{0}
+\setcounter{mincomprange}{10}
+\setcounter{maxcomprange}{100000}
+\setcounter{mincompwidth}{1}
+\setcounter{afterword}{0}
+\setcounter{savedafterword}{0}
+\setcounter{annotator}{0}
+\setcounter{savedannotator}{0}
+\setcounter{author}{0}
+\setcounter{savedauthor}{0}
+\setcounter{bookauthor}{0}
+\setcounter{savedbookauthor}{0}
+\setcounter{commentator}{0}
+\setcounter{savedcommentator}{0}
+\setcounter{editor}{0}
+\setcounter{savededitor}{0}
+\setcounter{editora}{0}
+\setcounter{savededitora}{0}
+\setcounter{editorb}{0}
+\setcounter{savededitorb}{0}
+\setcounter{editorc}{0}
+\setcounter{savededitorc}{0}
+\setcounter{foreword}{0}
+\setcounter{savedforeword}{0}
+\setcounter{holder}{0}
+\setcounter{savedholder}{0}
+\setcounter{introduction}{0}
+\setcounter{savedintroduction}{0}
+\setcounter{namea}{0}
+\setcounter{savednamea}{0}
+\setcounter{nameb}{0}
+\setcounter{savednameb}{0}
+\setcounter{namec}{0}
+\setcounter{savednamec}{0}
+\setcounter{translator}{0}
+\setcounter{savedtranslator}{0}
+\setcounter{shortauthor}{0}
+\setcounter{savedshortauthor}{0}
+\setcounter{shorteditor}{0}
+\setcounter{savedshorteditor}{0}
+\setcounter{narrator}{0}
+\setcounter{savednarrator}{0}
+\setcounter{execproducer}{0}
+\setcounter{savedexecproducer}{0}
+\setcounter{execdirector}{0}
+\setcounter{savedexecdirector}{0}
+\setcounter{with}{0}
+\setcounter{savedwith}{0}
+\setcounter{labelname}{0}
+\setcounter{savedlabelname}{0}
+\setcounter{institution}{0}
+\setcounter{savedinstitution}{0}
+\setcounter{lista}{0}
+\setcounter{savedlista}{0}
+\setcounter{listb}{0}
+\setcounter{savedlistb}{0}
+\setcounter{listc}{0}
+\setcounter{savedlistc}{0}
+\setcounter{listd}{0}
+\setcounter{savedlistd}{0}
+\setcounter{liste}{0}
+\setcounter{savedliste}{0}
+\setcounter{listf}{0}
+\setcounter{savedlistf}{0}
+\setcounter{location}{0}
+\setcounter{savedlocation}{0}
+\setcounter{organization}{0}
+\setcounter{savedorganization}{0}
+\setcounter{origlocation}{0}
+\setcounter{savedoriglocation}{0}
+\setcounter{origpublisher}{0}
+\setcounter{savedorigpublisher}{0}
+\setcounter{publisher}{0}
+\setcounter{savedpublisher}{0}
+\setcounter{language}{0}
+\setcounter{savedlanguage}{0}
+\setcounter{origlanguage}{0}
+\setcounter{savedoriglanguage}{0}
+\setcounter{citation}{0}
+\setcounter{savedcitation}{0}
+\setcounter{pageref}{0}
+\setcounter{savedpageref}{0}
+\setcounter{textcitecount}{0}
+\setcounter{textcitetotal}{0}
+\setcounter{textcitemaxnames}{0}
+\setcounter{biburlbigbreakpenalty}{100}
+\setcounter{biburlbreakpenalty}{200}
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{200}
+\setcounter{biburllcpenalty}{100}
+\setcounter{smartand}{0}
+\setcounter{bbx:relatedcount}{0}
+\setcounter{bbx:relatedtotal}{0}
+\setcounter{section@level}{0}
+\setcounter{Item}{116}
+\setcounter{Hfootnote}{2}
+\setcounter{bookmark@seq@number}{239}
+\setcounter{lstlisting}{0}
+}

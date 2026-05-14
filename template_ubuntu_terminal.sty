@@ -1,0 +1,70 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{template_ubuntu_terminal}[2025/08/16 v1.3 Ubuntu-like terminal boxes]
+
+% \RequirePackage{xcolor}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+% Colores estilo Ubuntu
+\definecolor{ubt-bg}{HTML}{300A24}
+\definecolor{ubt-border}{HTML}{772953}
+\definecolor{ubt-text}{HTML}{EDEDED}
+\definecolor{ubt-user}{HTML}{87D37C}
+\definecolor{ubt-host}{HTML}{67A9FF}
+\definecolor{ubt-path}{HTML}{F7D154}
+\definecolor{ubt-cmd}{HTML}{FFFFFF}
+\definecolor{ubt-out}{HTML}{CFCFCF}
+
+% Fuente y tamaño internos
+\newcommand{\ubt@mono}{\ttfamily}
+\newcommand{\ubt@size}{\small}
+
+% Identidad por defecto
+\newcommand{\ubt@user}{user}
+\newcommand{\ubt@host}{host}
+\newcommand{\ubt@pathdef}{\string~}
+\newcommand{\ubuntuSetIdentity}[3]{%
+  \renewcommand{\ubt@user}{#1}%
+  \renewcommand{\ubt@host}{#2}%
+  \renewcommand{\ubt@pathdef}{#3}%
+}
+
+% Prompt
+\newcommand{\ubuntuPrompt}[3]{%
+  {\ubt@mono
+   \textcolor{ubt-user}{#1}\textcolor{ubt-text}{@}%
+   \textcolor{ubt-host}{#2}\textcolor{ubt-text}{:}%
+   \textcolor{ubt-path}{#3}\textcolor{ubt-cmd}{\$}\,}%
+}
+\newcommand{\ubuntuPromptQuick}{\ubuntuPrompt{\ubt@user}{\ubt@host}{\ubt@pathdef}}
+
+% Caja terminal
+\tcbset{
+  ubtbox/.style={
+    enhanced, breakable,
+    colback=ubt-bg, colframe=ubt-border,
+    boxrule=0.7pt, arc=6pt, outer arc=6pt,
+    left=8pt,right=8pt,top=8pt,bottom=8pt,
+    before skip=8pt, after skip=10pt
+  }
+}
+\newenvironment{ubuntuTerminal}[1][]{%
+  \begin{tcolorbox}[ubtbox,title={#1}]%
+  {\ubt@size\ubt@mono\color{ubt-text}}%
+}{%
+  \end{tcolorbox}%
+}
+
+% Comando (en blanco siempre)
+\newcommand{\ubuntuCmd}[2][]{%
+  \def\ubt@path{\ubt@pathdef}%
+  \ifx\relax#1\relax\else\def\ubt@path{#1}\fi%
+  {\ubt@size\ubt@mono
+   \ubuntuPrompt{\ubt@user}{\ubt@host}{\ubt@path}%
+   \,\textcolor{ubt-cmd}{\texttt{#2}}\par}%
+}
+
+% Salida (gris claro)
+\newcommand{\ubuntuOut}[1]{%
+  {\ubt@size\ubt@mono\textcolor{ubt-out}{#1}\par}%
+}

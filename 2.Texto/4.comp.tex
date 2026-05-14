@@ -1,0 +1,543 @@
+\chapter{Componentes}
+\label{ch:componentes}
+
+En este capítulo se enumeran y describen los componentes utilizados en el prototipo. Se presentan la justificación técnica de selección, los parámetros relevantes, los criterios de integración con \gls{ROS2} y las consideraciones de montaje y seguridad. El robot corresponde a una plataforma diferencial con dos ruedas motrices y una rueda loca (\emph{caster}), un escáner láser \gls{LIDAR} RPLidar~A1, una \gls{RaspberryPi}~4 como computador de a bordo y un \gls{Arduino}~Nano para el control de bajo nivel.
+
+%------------------------------------------------------------------
+\section{Arquitectura física del robot}
+
+\subsection{Plataforma diferencial y chasis}
+
+Se adopta una arquitectura de tracción diferencial con dos ruedas motrices y una rueda loca de apoyo, una de las configuraciones cinemáticas más utilizadas en investigación, docencia y aplicaciones comerciales. La selección se fundamenta en:
+
+\begin{itemize}
+  \item Cinemática simple y ampliamente documentada en \gls{ROS2} (disponibilidad de nodos, controladores y ejemplos).
+  \item Odometría directa a partir de encoders de rueda, adecuada para su fusión con \gls{LIDAR} en \gls{slam}.
+  \item Alta maniobrabilidad (giro en el lugar) para operar en espacios reducidos.
+  \item Integración mecánica y electrónica directa con \gls{Arduino}~Nano, driver L298N y reguladores \gls{DC}--\gls{DC}, favorable al prototipado.
+  \item Costo y peso contenidos, acordes al alcance de una plataforma de investigación y docencia.
+\end{itemize}
+
+\utemFigure{2.Texto/Imag/diff_bec.png}{0.60\textwidth}
+{Arquitectura móvil de tracción diferencial: dos ruedas motrices y una rueda loca (caster).}
+{BECChassisLong}{fig:chasis-2wd-caster}
+
+Esta categoría se caracteriza por dos ruedas motrices paralelas, cada una controlada por un motor independiente, y al menos una rueda loca de apoyo que aporta estabilidad sin influir en la dirección. El movimiento se basa en la diferencia de velocidad angular entre las ruedas:
+
+\begin{itemize}
+  \item Cuando ambas giran a la misma velocidad y sentido, el robot avanza en línea recta.
+  \item Si una rueda gira más rápido que la otra, se genera un giro suave hacia el lado de la rueda más lenta.
+  \item Si las ruedas giran en sentidos opuestos, el robot rota sobre su propio eje (giro en el lugar).
+\end{itemize}
+
+ \utemFigure{2.Texto/Imag/diagrama_diff.png}{0.60\textwidth}
+{Diagrama simple de 2 ruedas + rueda libre.}
+{Tanklike2005}{fig:diagrama_diff}
+
+Las ventajas principales son la simplicidad mecánica y la facilidad de control. Entre sus limitaciones está la dificultad para desplazarse en terrenos irregulares y la necesidad de un control preciso para lograr trayectorias rectas, debido a pequeñas diferencias de fricción o desgaste.
+
+\subsection{Ruedas motrices}
+
+Se seleccionaron ruedas estándar de goma para la tracción, por su robustez, economía y desempeño consistente en interiores.
+
+ \utemFigure{2.Texto/Imag/wheel_set.png}{0.60\textwidth}
+{Conjunto de ruedas.}
+{ThinkRobotics65mmWheel}{fig:wheel_set}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+  \caption{Especificaciones geométricas de las ruedas motrices.}
+  \label{tab:ruedas-especificaciones}
+  \small
+  \begin{tabular}{l S[table-format=3.2] l l}
+    \toprule
+    \textbf{Parámetro} & {\textbf{Valor (mm)}} & \textbf{Valor (m)} & \textbf{Observación} \\ 
+    \midrule
+    Diámetro ($d$)      & 67.00  & 0.06700 & Dato del fabricante \\
+    Ancho               & 26.00  & 0.02600 & Dato del fabricante \\ \addlinespace
+    Radio ($r$)         & 33.50  & 0.03350 & Derivado ($r = d/2$) \\
+    Circunferencia ($C$) & 210.49 & 0.21049 & Derivado ($C = \pi d$) \\ 
+    \bottomrule
+  \end{tabular}
+  \begin{tablenotes}
+    \footnotesize
+    \item[] Valor aproximado para el cálculo de odometría.
+  \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Las ruedas tienen un diámetro de 67~mm y un ancho de 26~mm, dimensiones que ofrecen un compromiso equilibrado entre estabilidad y maniobrabilidad. El material de rodadura presenta un dibujo antideslizante que incrementa la adherencia en superficies comunes como baldosa, vinilo o madera.
+
+\subsection{Rueda loca (\emph{caster})}
+
+Se emplea un rodillo esférico tipo \emph{ball caster} como rueda de apoyo. Su esfera metálica gira libremente en todas direcciones, aportando estabilidad sin influir en la dirección.
+
+\utemFigure{2.Texto/Imag/ball_caster.png}{0.45\textwidth}{Rueda loca.}
+{FIXOhu_OnmagarasztoGorgo}{fig:ball_caster}
+
+Sus dimensiones reducidas (2.8~×~4.5~cm) permiten mantener el punto de apoyo trasero cercano al suelo, reduciendo la inclinación y favoreciendo un centro de gravedad bajo. Soporta cargas de hasta 20~kg, muy por encima del peso estimado del robot.
+
+\subsection{Comparación con otras arquitecturas móviles}
+
+Se compararon tres arquitecturas: diferencial, Ackermann y omnidireccional (Mecanum/Swedish). Los criterios considerados fueron:
+
+\begin{itemize}
+  \item (C1) Maniobrabilidad en espacios reducidos.
+  \item (C2) Calidad de odometría para fusión con \gls{slam}.
+  \item (C3) Complejidad mecánico-cinemática y de control.
+  \item (C4) Eficiencia energética a baja velocidad.
+  \item (C5) Costo e integración con el hardware disponible.
+  \item (C6) Madurez de ejemplos y controladores en \gls{ROS2}.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+  \caption{Comparativa cualitativa de arquitecturas de locomoción.}
+  \label{tab:comparativa_arquitecturas}
+  \small
+  \begin{tabular}{l cccccc}
+    \toprule
+    \textbf{Arquitectura} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} \\ 
+    \midrule
+    Diferencial      & \textbf{Alta}     & \textbf{Alta}  & Baja          & Media         & \textbf{Baja} & \textbf{Alta} \\
+    Ackermann        & Media             & Media          & Media--Alta   & \textbf{Alta} & Media         & Media \\
+    Omnidireccional  & \textbf{Muy alta} & Media--Baja    & \textbf{Alta} & Baja          & Alta          & Media \\ 
+    \bottomrule
+  \end{tabular}
+  \begin{tablenotes}
+    \footnotesize
+    \item \textbf{Criterios:} C1: Maniobrabilidad; C2: Calidad de odometría; C3: Complejidad; C4: Eficiencia energética; C5: Costo; C6: Soporte en \gls{ROS2}.
+  \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+La arquitectura diferencial es la más adecuada para este proyecto por su equilibrio entre costo, facilidad de implementación y rendimiento en interiores. Las alternativas Ackermann u omnidireccional se dejan como líneas de trabajo futuro.
+
+%------------------------------------------------------------------
+\section{Actuación: motores DC con caja reductora}
+
+Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM). Los criterios de selección incluyen:
+
+\begin{itemize}
+  \item Tensión nominal compatible (12~V).
+  \item Par suficiente para superar el rozamiento estático y pequeñas pendientes.
+  \item Corriente de arranque y nominal dentro del margen del driver L298N.
+  \item Bajo \emph{backlash} para mejorar el control de velocidad.
+  \item Caja reductora integrada (relación aproximada 1:45) que convierte alta velocidad y bajo par en una salida de menor velocidad y mayor par, adecuada para tracción.
+\end{itemize}
+
+\utemFigure{2.Texto/Imag/motor.jpg}{0.7\linewidth}{Motor Modelo JGA25-370, 12 V, 130 RPM}{nfp_gm25_370_en}{fig:motor}
+
+\paragraph{Especificaciones técnicas relevantes}
+\begin{itemize}
+  \item \textbf{Tensión nominal}: 12 V DC.
+  \item \textbf{Velocidad sin carga}: 130 RPM.
+  \item \textbf{Corriente sin carga}: 0.05--0.15 A.
+  \item \textbf{Ratio de reducción}: aproximadamente 1:45.
+  \item \textbf{Torque nominal}: ~1 kg·cm; torque de bloqueo ~3.6 kg·cm a 2 A.
+  \item \textbf{Peso}: ~110 g.
+\end{itemize}
+
+%------------------------------------------------------------------
+\section{Encoder de cuadratura}
+
+Se selecciona un encoder incremental en cuadratura de efecto Hall integrado a la familia JGA25 (variante JGA25-371). Las ventajas son:
+
+\begin{enumerate}
+  \item \textbf{Compatibilidad mecánica directa} con el motor JGA25-370: se monta en la tapa trasera, sin soportes externos.
+  \item \textbf{Robustez} frente a polvo y vibraciones, superior a encoders ópticos de bajo costo.
+  \item \textbf{Señal digital A/B estandarizada} (cuadratura a 90°) que permite determinar dirección y velocidad.
+  \item \textbf{Compatibilidad eléctrica} a 5~V, conexión directa al \gls{Arduino}.
+\end{enumerate}
+
+\utemFigure{2.Texto/Imag/encoder.jpg}{0.7\linewidth}{Conexiones de Encoder incremental en cuadratura de efecto Hall}{gm25_370_encoder}{fig:encoder}
+
+\subsection{Resolución efectiva}
+
+La resolución en el eje de salida (rueda) se calcula como:
+
+\begin{equation}
+\mathrm{CPR}_{\text{salida}} = N_{\mathrm{Hall}} \cdot s \cdot G
+\end{equation}
+
+donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor (PPR), $s=4$ (decodificación en cuadratura completa) y $G\approx45$ (relación de reducción). Así:
+
+\begin{equation}
+\mathrm{CPR}_{\text{salida}} = 11 \times 4 \times 45 = 1980 \text{ cuentas/vuelta}
+\end{equation}
+
+Con rueda de diámetro $d=67\,\text{mm}$ ($C\approx0.2105\,\text{m}$), los ticks por metro son $\approx 1980 / 0.2105 \approx 9.41 \times 10^3$. Estos parámetros se usan en la calibración de odometría de \gls{ROS2}.
+
+%------------------------------------------------------------------
+\section{Driver de motores L298N}
+
+Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino}. Sus principales especificaciones son:
+
+\begin{itemize}
+  \item Topología: puente H dual para motores DC bidireccionales.
+  \item Alimentación de motores: 7--35~V (típico en la placa).
+  \item Alimentación lógica: 5~V.
+  \item Corriente por canal: 2.0~A continua, 2.5~A pico repetitivo, 3.0~A pico de 100~ms.
+  \item Control de velocidad mediante \gls{PWM} en pines ENA y ENB (con jumpers retirados).
+\end{itemize}
+
+\utemFigure{2.Texto/Imag/l298n.png}{0.4\textwidth}{Módulo L298N}{ViamRoverTutorial_2022}{fig:l298n}
+
+%------------------------------------------------------------------
+\section{Microcontrolador de bajo nivel: Arduino Nano V3}
+
+Se emplea un \gls{Arduino} V3 (ATmega328P) para ejecutar tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad. De esta forma se evita el \emph{jitter} del sistema operativo de la Raspberry Pi.
+
+\paragraph{Especificaciones técnicas} \citep{ArduinoNanoStore,ArduinoDocsNano,Atmega328PDatasheet}
+\begin{itemize}
+  \item Microcontrolador: ATmega328P a 16 MHz.
+  \item Memoria: 32 KB Flash (2 KB bootloader), 2 KB SRAM, 1 KB EEPROM.
+  \item Voltajes: 5 V lógica.
+  \item I/O: 14 digitales (6 PWM), 8 analógicos (10 bits).
+  \item Interrupciones externas en D2, D3 y por cambio de pin (PCINT).
+\end{itemize}
+
+El \gls{Arduino} V3 proporciona:
+\begin{itemize}
+  \item \textbf{PWM estable} para el L298N (hasta 6 canales por hardware).
+  \item \textbf{Lectura fiable de encoders} mediante interrupciones.
+  \item \textbf{Aislamiento funcional}: el lazo PID corre a 30~Hz mientras la Raspberry Pi se dedica a \gls{ROS2}, SLAM y navegación.
+\end{itemize}
+
+\subsection{Comparación con alternativas}
+
+Se evaluaron otras opciones (Arduino Uno, Pro Mini, Nano Every, Nano 33 BLE, Raspberry Pi Pico, ESP32, Teensy). El \gls{Arduino} V3 se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. En el futuro podría migrarse a una placa compatible con \emph{micro-ROS} (ESP32, Teensy, RP2040) manteniendo la misma arquitectura.
+
+%------------------------------------------------------------------
+\section{Computador de a bordo: Raspberry Pi 4 (8 GB)}
+
+La Raspberry Pi 4 (8 GB) ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) y los nodos de SLAM y navegación.
+
+\subsection{Motivos de selección}
+\begin{itemize}
+  \item \textbf{Compatibilidad} con Ubuntu 20.04 y \gls{ROS2} Foxy (soporte oficial).
+  \item \textbf{E/S integrada}: GPIO, CSI para cámara, múltiples USB, Ethernet y Wi-Fi.
+  \item \textbf{Rendimiento suficiente} para SLAM 2D y Nav2 (4 núcleos a 1.5~GHz, 8 GB RAM).
+  \item \textbf{Ecosistema y documentación} amplia, con ejemplos como TurtleBot.
+\end{itemize}
+
+\subsection{Especificaciones relevantes}
+\begin{itemize}
+  \item Procesador: Broadcom BCM2711, 4× Cortex-A72 a 1.5~GHz (64 bits).
+  \item Memoria: 8 GB LPDDR4-3200.
+  \item Conectividad: Wi-Fi ac, Bluetooth 5.0, Ethernet GbE.
+  \item Puertos: 2×USB 3.0, 2×USB 2.0, 2×micro-HDMI, CSI, DSI, GPIO 40 pines.
+\end{itemize}
+
+\subsection{Alternativas consideradas}
+\begin{itemize}
+  \item \textbf{NVIDIA Jetson Orin Nano}: mayor potencia para IA, pero mayor costo y complejidad.
+  \item \textbf{ODROID-N2+}: buen rendimiento, pero ecosistema menos maduro para \gls{ROS2}.
+  \item \textbf{BeagleBone Black}: PRUs para tiempo real, pero CPU limitada para SLAM.
+\end{itemize}
+
+Dado el alcance del proyecto, la Raspberry Pi 4 es la opción más equilibrada.
+
+\subsection{Límites de corriente USB y enfriamiento}
+Para evitar sobrecargas, se utiliza un \emph{hub} USB alimentado externamente para el \gls{LIDAR} y otros periféricos. Se instala un disipador con ventilación activa para evitar la estrangulación térmica (\emph{throttling}) bajo cargas sostenidas.
+
+%------------------------------------------------------------------
+\section{Sensor LiDAR para mapeo y navegación}
+
+Se emplea un RPLIDAR A1M8, un escáner láser 2D de 360° basado en triangulación. Sus ventajas para este proyecto son:
+
+\begin{itemize}
+  \item Medición directa de distancia con ruido moderado.
+  \item Robusto frente a cambios de iluminación (emisor activo).
+  \item Campo de visión completo (360°).
+  \item Integración nativa en \gls{ROS2} mediante el paquete \texttt{rplidar\_ros}.
+  \item Bajo costo y consumo moderado.
+\end{itemize}
+
+\utemFigure{2.Texto/Imag/a1m8.jpg}{0.6\linewidth}{Láser 2D RPLIDAR A1M8}{NaylampA1M8R5}{fig:lidar}
+
+\paragraph{Especificaciones} según \citep{SlamtecA1Datasheet}:
+\begin{itemize}
+  \item Alcance: 0.15--12 m.
+  \item Frecuencia de barrido: 1--10 Hz (típico 5.5 Hz).
+  \item Tasa de muestreo: hasta 8000 muestras/s (revisión R5).
+  \item Resolución angular: $\le 1^\circ$.
+  \item Alimentación: sistema de escaneo a 5 V, motor 5--10 V, consumo total ~450 mA.
+  \item Peso: ~170 g.
+\end{itemize}
+
+\subsection{Comparación con alternativas}
+\begin{itemize}
+  \item \textbf{Cámaras RGB}: bajo costo pero dependen de iluminación y calibración compleja.
+  \item \textbf{Cámaras RGB-D}: mayor densidad, pero rango limitado y artefactos en exteriores.
+  \item \textbf{Ultrasonido}: económico pero baja resolución y ángulo.
+  \item \textbf{\gls{LIDAR} 3D}: muy costoso y computacionalmente exigente.
+\end{itemize}
+
+El RPLIDAR A1 ofrece la mejor relación costo/prestaciones para mapeo de interiores.
+
+\subsection{Riesgos y mitigación}
+\begin{itemize}
+  \item \textbf{Superficies transparentes/especulares}: lecturas erráticas; se mitiga con capas de inflación conservadoras en el costmap.
+  \item \textbf{Vibraciones}: se amortigua el montaje y se limitan aceleraciones bruscas.
+\end{itemize}
+
+%------------------------------------------------------------------
+\section{Alimentación y distribución de energía}
+
+\subsection{Batería}
+
+Se utiliza una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita). Este formato permite un intercambio rápido y seguro.
+
+\utemFigure{2.Texto/Imag/battery.png}{0.6\linewidth}{Batería \textbf{Li\mbox{-}ion de 12~V}}{AIMJINBL1021B}{fig:battery}
+
+Se eligió frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o plomo-ácido por su facilidad de recambio, seguridad y buena relación energía/peso.
+
+\subsection{Regulador DC-DC (buck)}
+
+Se usa un módulo reductor conmutado DFRobot DFR0205 (chip GS2678) que ofrece dos salidas: una fija de 5~V y otra ajustable entre 3.3 y 25~V. Proporciona hasta 5~A en el riel de 5~V con eficiencia ~90\%. Incluye protecciones por cortocircuito y limitación de corriente.
+
+\utemFigure{2.Texto/Imag/modulo_dc.jpg}{0.6\linewidth}{Power Module SKU DFR0205}{DFRobotPowerModule}{fig:modulo_dc}
+
+Este regulador permite derivar los rieles de 5~V (para Raspberry Pi, \gls{LIDAR}, Arduino) desde la batería de 12~V con bajas pérdidas.
+
+\subsection{Protecciones e interruptores}
+
+El ramal de potencia sigue la cadena: batería $\rightarrow$ fusible $\rightarrow$ interruptor maestro $\rightarrow$ reguladores/cargas. Se utiliza un fusible rápido de tipo \emph{mini blade} de 5~A y un interruptor pulsante con retención de 16~mm (soporta 3~A a 12~V). El interruptor secciona el bus de 12~V, permitiendo apagar los motores sin apagar la Raspberry Pi.
+
+\utemFigure{2.Texto/Imag/switch.jpg}{0.6\linewidth}{16mm Economical Push button Switch}{lanboo_16mm_economical_switch}{fig:switch}
+
+\utemFigure{2.Texto/Imag/fuse.jpg}{0.6\linewidth}{Automotive Blade Fuses - Mini APM}{optifuse_apm}{fig:fuse}
+
+\subsection{Dimensionamiento de cableado y conectores}
+
+La siguiente tabla resume el dimensionamiento estimado. Los valores de corriente y longitud deben ajustarse durante el comisionamiento final.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+  \caption{Dimensionamiento de cableado y conectores.}
+  \label{tab:cableado_conectores}
+  \small
+  \begin{tabular}{P{4.2cm} c c c P{3.2cm}}
+    \toprule
+    \textbf{Ramal de Potencia / Señal} & \textbf{$I_{max}$ (A)} & \textbf{Long. (m)} & \textbf{$\Delta V$ adm.} & \textbf{AWG / Conector}\tnote{a} \\
+    \midrule
+    Batería $\rightarrow$ Switch Principal & 5.0  & 0.15 & $<2\%$ & 16 AWG / XT60 \\
+    Switch $\rightarrow$ Regulador DC-DC (5V) & 5.0  & 0.15 & $<3\%$ & 16 AWG / JST-VH \\
+    \addlinespace
+    Línea 12V $\rightarrow$ Driver Motores (L298N) & 3.6  & 0.20 & $<5\%$ & 18 AWG / Bornera \\
+    Línea 5V $\rightarrow$ SBC (Raspberry Pi 4) & 2.5  & 0.25 & $<0.25$V & 20 AWG / USB-C \\
+    \addlinespace
+    Bus de Encoders / Señal Lógica & 0.1  & 0.30 & N/A & 26-28 AWG / DuPont \\
+    \bottomrule
+  \end{tabular}
+  \begin{tablenotes}
+    \footnotesize
+    \item[a] Los calibres son orientativos; se recomienda cable de silicona multifilar para facilitar el ruteo.
+  \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+%------------------------------------------------------------------
+\section{Fabricación y diseño 3D}
+\label{sec:fab_3d}
+
+\subsection{Material y equipo}
+
+El chasis y cubiertas se fabrican mediante impresión 3D FDM en PLA+ por su facilidad de impresión, baja deformación y estabilidad dimensional. La impresora es una Creality Ender 3 con boquilla de latón de 0.4~mm (aunque para piezas más robustas puede usarse 0.6~mm). El filamento es de 1.75~mm y se almacena con desecante.
+
+\begin{itemize}
+  \item \textbf{Material:} PLA+ (eSUN o equivalente).
+  \item \textbf{Impresora:} Creality Ender 3 (sistema Bowden).
+  \item \textbf{Boquilla:} Latón 0.4~mm (estándar).
+\end{itemize}
+
+\utemFigure{2.Texto/Imag/pla_plus.png}{0.6\linewidth}{PLA+ Black}{esun:pla-plus}{fig:pla}
+\utemFigure{2.Texto/Imag/ender_3.jpg}{0.7\linewidth}{Creality Ender~3}{top3dshop:ender3-review}{fig:ender_3}
+
+\subsection{Diseño}
+
+El modelado 3D se realizó en \textit{Fusion~360} de forma paramétrica, organizando el proyecto por componentes (carenado, tapas de acceso, soporte de \gls{LIDAR}, subchasis, alojamientos electrónicos). Se contemplaron holguras típicas para FDM (0.2--0.4~mm) y se añadieron chaflanes para reducir concentraciones de tensión.
+
+\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_sup_izq_frontal.png}{0.6\linewidth}{Vista isométrica superior–izquierda (frontal)}{fig:isom_sup_izq_frontal}
+
+\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_inf_der.png}{0.6\linewidth}{Vista isométrica inferior–derecha (vista inferior)}{fig:isom_inf_der}
+
+\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_sup_der.png}{0.6\linewidth}{Vista isométrica superior–derecha (frontal)}{fig:isom_sup_der_frontal}
+
+\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_sup_izq_posterior.png}{0.6\linewidth}{Vista isométrica superior–izquierda (posterior)}{fig:isom_sup_izq_posterior}
+
+Las cotas generales se presentan en la siguiente Figura:
+\utemFigurePropia{2.Texto/Imag/medidas_robot_2d.pdf}{0.9\linewidth}{Medidas del chasis (vista 2D)}{fig:medidas_robot_2d}
+
+\begin{table}[H]
+\centering
+\caption{Dimensiones relevantes del robot (según plano de medidas).}
+\label{tab:dimensiones_robot}
+\small
+\begin{tabular}{l l p{7cm}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\ 
+\midrule
+Largo total                  & 246 mm & Extremo posterior a extremo frontal del carenado. \\
+Ancho total                  & 230 mm & Lado a lado en el eje de las ruedas. \\
+Alto chasis (sin \gls{LIDAR})      & 105 mm & Base a cubierta superior. \\
+Alto total (con \gls{LIDAR})       & 153 mm & Base a punto más alto del sensor. \\ \addlinespace
+Distancia entre ruedas ($L$) & 188 mm & Centro a centro de ruedas motrices (\textit{track width}). \\
+Distancia libre al suelo     & 14 mm  & Base a superficie de apoyo (\textit{ground clearance}). \\
+Espesor de pared nominal     & 10 mm  & Paredes del carenado impreso en 3D. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Software y buenas prácticas}
+
+El flujo de trabajo combina \textit{Fusion~360} (diseño paramétrico) y \textit{Ultimaker Cura} (laminado). Se recomiendan los siguientes parámetros de impresión:
+
+\begin{itemize}
+\item Altura de capa: 0.20 mm.
+\item 3 perímetros.
+\item Relleno 20--30\%.
+\item Temperatura de boquilla: 205--215 °C.
+\item Temperatura de cama: 55--60 °C.
+\end{itemize}
+
+El PLA+ es adecuado para interiores pero se degrada con calor o UV. Se recomienda usar tornillería M3/M4 con arandelas y, para uniones frecuentes, insertos roscados (\emph{heat-set inserts}). La orientación de impresión debe alinear las capas con los esfuerzos principales para minimizar la anisotropía. Las tolerancias de ensamblaje deben ser de 0.2--0.4 mm.
+
+\section{Comparación económica}
+
+El costo total de los materiales y componentes adquiridos para la construcción del prototipo ascendió a \textbf{CLP~582.447}, con un desembolso real detallado en la Tabla~\ref{tab:costo_prototipo}. Como es habitual en proyectos de prototipado electrónico y mecánico, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en presentaciones comerciales de múltiples unidades o en kits surtidos; el costo reportado corresponde al valor de compra de dichos kits, lo que proporciona una referencia realista del desembolso necesario para la construcción del robot. En el Anexo~\ref{anx:bom} se desglosa la lista de materiales completa.
+
+\begin{ThreePartTable}
+\begin{TableNotes}[para,flushleft]
+\footnotesize
+\item[a] Equipamiento de soporte externo. El cargador permite recargar las baterías entre sesiones de prueba; el transmisor HDMI permite supervisar la Raspberry Pi durante la depuración sin un monitor cableado.
+\item[b] Adquirido en presentación de múltiples unidades (30–500 piezas). Solo se empleó una fracción en el ensamblaje final; el costo reportado es el del kit completo.
+\item[c] Incluye conectores de crimpado en 18, 20, 22 y 24~AWG, colores rojo y negro. Cada caja de 100 unidades se contabiliza por su costo total.
+\item[d] Incluye cable revestido de 18, 24 y 26~AWG en configuraciones de 2 y 6 núcleos, en rollos de 2~m.
+\end{TableNotes}
+
+\small
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{lrr}
+\caption{Costo del prototipo (precios reales en CLP, período 2024–2026).}
+\label{tab:costo_prototipo}\\
+\toprule
+\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\footnotesize\textit{Continuación de la tabla anterior}}\\
+\toprule
+\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
+\midrule
+\endhead
+\bottomrule
+\insertTableNotes
+\endlastfoot
+\multicolumn{3}{l}{\textit{Componentes principales}} \\ \addlinespace
+RPLidar A1 & 1 & 83.324 \\
+Raspberry Pi 4 (8 GB) & 1 & 77.272 \\
+Baterías Li-ion 12 V, 3000 mAh & 3 & 62.154 \\
+Transmisor HDMI inalámbrico\tnote{a} & 1 & 32.739 \\
+Router GL.iNet MT300N-V2 & 1 & 22.140 \\
+Regulador DC--DC (GS2678) & 1 & 18.858 \\
+Motorreductores JGA25-370 c/ encoder y ruedas & 2 & 18.038 \\
+Cargador de batería Li-ion 12 V\tnote{a} & 1 & 16.169 \\
+Chasis impreso 3D (PLA+, 1 kg) & 1 & 13.353 \\
+Hub USB alimentado & 1 & 12.400 \\
+Carcasa aluminio Raspberry Pi 4 & 1 & 9.832 \\
+Arduino Nano V3 + \emph{shield} base & 1 & 8.000 \\
+Adaptador de batería 12 V (conector Makita) & 1 & 4.940 \\
+Tarjeta microSD 64 GB clase 10 & 1 & 4.655 \\
+Driver de motores L298N & 1 & 3.000 \\
+Rueda loca (\emph{ball caster}) & 1 & 1.893 \\
+\midrule
+\multicolumn{2}{r}{\textit{Subtotal componentes principales}} & \textit{388.767} \\
+\midrule
+\multicolumn{3}{l}{\textit{Fijación, cableado y accesorios}} \\ \addlinespace
+Kit tornillos avellanada M1.6--M3\tnote{b} & 1 & 15.202 \\
+Kit tornillos Allen M3--M5\tnote{b} & 1 & 15.089 \\
+Kit insertos roscados M2--M6 (90 pzas.)\tnote{b} & 1 & 7.899 \\
+Kit insertos roscados M2--M3 (500 pzas.)\tnote{b} & 1 & 7.199 \\
+Separadores hexagonales M3×50 (10 pzas.)\tnote{b} & 1 & 8.293 \\
+Kit terminales JST 1.25 mm & 1 & 5.800 \\
+Kit DuPont 2.54 mm (620 pzas.) & 2 & 9.052 \\
+Kit terminales PH 2.0 mm (230 pzas.) & 1 & 2.507 \\
+Conectores crimpado varios AWG\tnote{c} & 6 & 6.621 \\
+Cable silicona 20 AWG, rojo y negro (5 m c/u) & 2 & 4.162 \\
+Cable revestido varios AWG\tnote{d} & 6 & 12.506 \\
+Cable RJ45 Cat-6 10 m & 1 & 5.066 \\
+Cable RJ45 Cat-6 5 m & 2 & 3.310 \\
+Cable micro USB macho 90°, 25 cm & 1 & 1.099 \\
+Cable extensión micro USB & 1 & 1.298 \\
+Conectores XT60 (5 pares)\tnote{b} & 1 & 3.478 \\
+Portafusible mini + fusible & 1 & 1.464 \\
+Interruptor pulsante 16 mm & 1 & 1.773 \\
+Divisor de línea 6 puertos & 1 & 2.832 \\
+Cinta FPV 10 cm & 1 & 1.817 \\
+\midrule
+\multicolumn{2}{r}{\textit{Subtotal fijación, cableado y accesorios}} & \textit{193.680} \\
+\midrule
+\multicolumn{3}{l}{\textit{Equipamiento de soporte (no montado en el robot)}} \\ \addlinespace
+Transmisor HDMI inalámbrico & (ya incluido) & --- \\
+Cargador de batería Li-ion 12 V & (ya incluido) & --- \\
+\midrule
+\textbf{Total prototipo} & & \textbf{582.447} \\
+\bottomrule
+\end{longtable}
+\end{ThreePartTable}
+
+El costo total del prototipo se contrasta en la Tabla~\ref{tab:comparacion_costos} con el de plataformas robóticas comerciales de prestaciones equivalentes, convertido a dólares estadounidenses al tipo de cambio referencial de 950~CLP/USD (dólar observado promedio del cuarto trimestre de 2024, según el Banco Central de Chile).
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{Comparación de costo con plataformas comerciales.}
+\label{tab:comparacion_costos}
+\begin{tabular}{P{3.8cm} r r P{4.5cm}}
+\toprule
+\textbf{Plataforma} & \textbf{Costo (USD)} & \textbf{Costo (CLP)} & \textbf{Observación} \\
+\midrule
+Este prototipo
+  & $\sim$613
+  & 582.447
+  & Componentes accesibles; costo real documentado \\
+TurtleBot 3 Burger\tnote{a} \citep{ROBOTIS_TB3Burger}
+  & $\sim$550
+  & $\sim$522.500
+  & Kit educativo, RPi4 \\
+TurtleBot 3 Waffle Pi\tnote{a} \citep{ROBOTIS_TB3Waffle}
+  & $\sim$1.800
+  & $\sim$1.710.000
+  & Incluye LiDAR 360° y cámara \\
+Clearpath Jackal \citep{clearpath_jackal}
+  & $\sim$18.000
+  & $\sim$17.100.000
+  & Plataforma industrial \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[a] Precios de catálogo de ROBOTIS (\texttt{robotis.us}) consultados durante el segundo semestre de 2024, previo al incremento arancelario de 2025. A partir de 2025, ROBOTIS aplicó un recargo por aranceles recíprocos (\textit{reciprocal tariffs}), elevando el precio del TurtleBot~3 Burger a US\$\,784 y el del Waffle~Pi a US\$\,1.934. 
+\item Conversión referencial a 950 CLP/USD. Todos los precios son de catálogo, sin impuestos de internación ni envío internacional. El precio del Clearpath Jackal corresponde a la configuración base sin sensores adicionales.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+% ===========================================================================
+\section{Galería fotográfica del prototipo}
+\label{sec:galeria}
+\begin{utemMultiFigurePropia}{Galería fotográfica del prototipo}{fig:galeria_prototipo}
+\addutem{0.36}{2.Texto/Imag/fig_prototipo_planta.jpg}{Vista Planta}
+\addutem{0.36}{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{Vista Lateral izquierda}
+\addutem{0.36}{2.Texto/Imag/fig_prototipo_lateral_derecha.jpg}{Vista Lateral derecha}
+\addutem{0.36}{2.Texto/Imag/fig_prototipo_frontal.jpg}{Vista Frontal}
+\end{utemMultiFigurePropia}
+%------------------------------------------------------------------
+\section*{Conclusión del capítulo}
+
+En este capítulo se han descrito y justificado todos los componentes del prototipo: la plataforma diferencial, ruedas, motorreductores, encoders, driver L298N, microcontrolador \gls{Arduino}, computador Raspberry Pi 4, sensor \gls{LIDAR} RPLidar A1, sistema de alimentación (batería, regulador, protecciones) y la fabricación del chasis mediante impresión 3D. Cada selección se ha fundamentado en criterios de costo, disponibilidad, compatibilidad con \gls{ROS2} y adecuación a los requisitos del proyecto. Estos componentes se integran en los capítulos siguientes para construir el gemelo digital, el firmware de bajo nivel y la arquitectura de control y navegación.

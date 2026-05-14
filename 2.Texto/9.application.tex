@@ -1,0 +1,392 @@
+\chapter{Arquitectura de control y navegación: \texttt{ros2\_control}, SLAM y Nav2}
+\label{chap:app_control_nav}
+
+Este capítulo describe cómo se orquestan los distintos subsistemas de software para que el robot pueda recibir una orden de destino y desplazarse hasta él de forma autónoma. Se aborda, en primer lugar, la capa de control que traduce instrucciones de velocidad en movimiento real de las ruedas; luego, el módulo de mapeo que construye una representación del entorno; a continuación, la localización del robot dentro de ese mapa; y, finalmente, la pila de navegación que planifica trayectorias, evita obstáculos y gestiona situaciones de bloqueo. Se cierra con la integración de un explorador autónomo de fronteras. Todas las configuraciones descritas corresponden a los archivos reales del repositorio del proyecto.
+
+\noindent
+Dado que los subsistemas de control, simulación y hardware se describieron de forma detallada en los capítulos precedentes, las primeras secciones de este capítulo se limitan a resumir la configuración adoptada y referenciar las tablas y figuras correspondientes, evitando la duplicación de contenido. El aporte central de este capítulo reside en las secciones de mapeo con \texttt{slam\_toolbox} (Sección~\ref{sec:slam_ch9}), navegación autónoma con Nav2 y exploración de fronteras, donde se describe la arquitectura de software que orquesta todos los subsistemas para lograr la navegación autónoma del robot.
+% ============================================================
+\section{Marco de control: \texttt{ros2\_control}}
+\label{sec:ros2ctrl_overview}
+
+El marco de control \texttt{ros2\_control} y su integración con el robot —tanto en simulación como en hardware real— se describieron en detalle en los Capítulos~\ref{ch:robot_digital} y~\ref{chap:robot_real}. En resumen, el \texttt{controller\_manager} gestiona el \texttt{diff\_drive\_controller} (que convierte comandos $(v, \omega)$ en velocidades de rueda y publica odometría) y el \texttt{joint\_state\_broadcaster} (que actualiza la cadena \texttt{tf}). La interfaz de hardware se conecta al \gls{Arduino} vía el plugin \texttt{DiffDriveArduino} en el robot real, o al motor de física de Gazebo en simulación. Los parámetros del controlador diferencial se detallan en la Tabla~\ref{tab:diff_drive_params}.
+
+
+\section{Integración en simulación con Gazebo}
+\label{sec:ros2ctrl_gazebo}
+
+La validación en simulación y los problemas conocidos (frecuencia de reloj, geometría de colisión, desfase sensor-transformación) se documentaron en el Capítulo~\ref{ch:robot_digital}. Los criterios de aceptación se presentaron en la Tabla~\ref{tab:criterios_aceptacion_resumen}.
+
+
+\section{Controlador diferencial y parámetros del robot}
+\label{sec:controllers_yaml}
+
+El controlador diferencial y sus parámetros se describieron en la Tabla~\ref{tab:diff_drive_params} del Capítulo~\ref{chap:robot_real}. Los límites de velocidad ($\pm 0.13$~m/s lineal, $\pm 0.4$~rad/s angular) son conservadores, elegidos para operar en la zona lineal del modelo FODT identificado.
+
+% ============================================================
+\section{Despliegue en el robot real}
+\label{sec:ros2ctrl_real}
+
+La secuencia de arranque del robot real (\texttt{launch\_robot.launch.py}), incluyendo la publicación del modelo, la carga de controladores y la verificación de coherencia geométrica, se describió en el Capítulo~\ref{chap:robot_real}. La secuencia temporal se ilustró en la Figura~\ref{fig:secuencia_arranque_controladores}.
+
+\section{Mapeo del entorno con \texttt{slam\_toolbox}}
+\label{sec:slam_ch9}
+
+\subsection{Concepto de SLAM en línea}
+
+Antes de que el robot pueda navegar hacia destinos, necesita un mapa del entorno. El paquete \texttt{slam\_toolbox} construye este mapa de forma incremental mientras el robot se desplaza, resolviendo simultáneamente dos problemas acoplados: dónde está el robot y cómo es el espacio que lo rodea (SLAM). En términos cotidianos, es como entrar a un edificio desconocido con una linterna y un cuaderno: a medida que se recorren pasillos, se dibuja un plano y se marca la posición actual; al volver a un lugar ya visitado, se corrige cualquier error acumulado.
+
+\texttt{slam\_toolbox} ofrece distintos modos de operación que impactan la latencia, el consumo de CPU y la continuidad de la cadena \texttt{tf}. Los modos principales son \texttt{online\_sync}, \texttt{online\_async} y \texttt{lifelong}.
+
+\subsection{Elección del modo de operación: \texttt{online\_async}}
+
+La selección de \texttt{slam\_toolbox} en modo asíncrono en línea responde a los siguientes criterios:
+
+\paragraph{Por qué \texttt{slam\_toolbox} y no Cartographer o GMapping.}
+\begin{itemize}
+\item \textbf{GMapping} (filtro de partículas FastSLAM) es el algoritmo clásico de ROS~1, pero su mantenimiento en ROS~2 es limitado, su rendimiento en pasillos largos se degrada y no admite reanudación de sesiones de mapeo \cite{montemerlo2002fastslam}.
+\item \textbf{Cartographer} produce mapas de alta calidad en entornos grandes, pero impone un mayor costo computacional y requiere calibración detallada \cite{cartographer_repo}. Para una Raspberry Pi 4 con múltiples nodos ROS~2, representa un riesgo de saturación.
+\item \textbf{\texttt{slam\_toolbox}} (SLAM basado en grafos con solver Ceres) es la solución recomendada por la documentación oficial de Nav2 para ROS~2 Foxy, está activamente mantenida, produce mapas con cierre de lazo robusto y ha sido validada en plataformas de baja potencia \cite{macenski2020slamtoolbox}.
+\end{itemize}
+
+\paragraph{Por qué el modo \texttt{online\_async} y no \texttt{online\_sync} ni \texttt{lifelong}.}
+\begin{itemize}
+\item \texttt{online\_sync}: procesa cada barrido en el mismo hilo que lo recibe, pudiendo bloquear la publicación del sensor si la optimización tarda más que el período de barrido.
+\item \texttt{online\_async}: procesa los barridos en un hilo paralelo, la adquisición nunca se bloquea. La cadena \texttt{tf} se mantiene continua bajo carga alta. Es el modo recomendado para hardware con recursos limitados \cite{macenski2020slamtoolbox}.
+\item \texttt{lifelong}: añade actualización continua del mapa y gestión de cambios, adecuado para operación prolongada pero introduce complejidad innecesaria para este proyecto.
+\end{itemize}
+
+El modo \texttt{online\_async} ofrece el mejor equilibrio entre robustez de mapeo, compatibilidad con Nav2 y viabilidad computacional en la Raspberry Pi 4.
+
+\subsection{Configuración adoptada}
+
+El mapeo se realiza con \texttt{async\_slam\_toolbox\_node}. Los parámetros principales, definidos en \texttt{mapper\_params\_online\_async.yaml}, son:
+
+\begin{table}[H]
+\centering
+\caption{Parámetros principales de \texttt{slam\_toolbox} en el proyecto.}
+\label{tab:slam_params_ch9}
+\begin{tabular}{lll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
+\midrule
+\texttt{solver\_plugin}          & \texttt{CeresSolver}          & Optimizador del grafo \\
+\texttt{ceres\_trust\_strategy}  & \texttt{LEVENBERG\_MARQUARDT} & Estrategia de convergencia \\
+\texttt{odom\_frame}             & \texttt{odom}                 & Marco de odometría \\
+\texttt{map\_frame}              & \texttt{map}                  & Marco global del mapa \\
+\texttt{base\_frame}             & \texttt{base\_link}           & Marco base del robot \\
+\texttt{scan\_topic}             & \texttt{/scan}                & Tópico del sensor láser \\
+\texttt{resolution}              & 0.05 m                        & Resolución de la cuadrícula \\
+\texttt{max\_laser\_range}       & 10.0 m                        & Alcance máximo procesado \\
+\texttt{do\_loop\_closing}       & true                          & Cierre de lazo activado \\
+\texttt{minimum\_travel\_distance} & 0.0 m                      & Distancia mínima para nuevo nodo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La estrategia Levenberg-Marquardt combina descenso de gradiente (lejos de la solución) con Gauss-Newton (cerca de ella). El cierre de lazo corrige la deriva acumulada cuando el robot regresa a una zona previamente visitada.
+
+\begin{utemMultiFigurePropia}{Captura de RViz mostrando el mapa en formación con el robot visible}{fig:mapa_en_formacion}
+    \addutem{0.46}{2.Texto/Imag/fig_mapa_en_formacion_part1.png}{Mapa inicial}
+    \hfill
+    \addutem{0.46}{2.Texto/Imag/fig_mapa_en_formacion_part2.png}{Mapa parcial}
+    \hfill
+    \addutem{0.46}{2.Texto/Imag/fig_mapa_en_formacion_part3.png}{Mapa completo tras cierre de lazo}
+\end{utemMultiFigurePropia}
+
+\subsection{Localización AMCL (configurada, no activada)}
+\label{subsec:amcl_config}
+
+El paquete \texttt{nav2\_amcl} fue configurado como alternativa de localización para navegación sobre mapas preconstruidos. Sin embargo, no se activó en las pruebas finales por dos razones:
+
+\begin{enumerate}
+    \item \texttt{slam\_toolbox} en modo \texttt{localization} ya provee localización sobre mapa serializado, cumpliendo la misma función sin requerir un nodo adicional.
+    \item La odometría basada exclusivamente en encoders (sin IMU) produce una estimación inicial insuficiente para que el filtro de partículas converja de manera confiable, especialmente tras giros bruscos donde la deriva angular alcanza hasta 20° (véase Tabla~\ref{tab:odom_giro}).
+\end{enumerate}
+
+Los archivos de configuración se conservan en \texttt{config/nav2\_params\_real.yaml} (líneas comentadas con \texttt{\# AMCL desactivado}) para facilitar su habilitación futura si se incorpora una IMU. Los parámetros preparados se detallan en el Anexo~\ref{anx:amcl_params}.
+
+% ============================================================
+\section{Navegación autónoma con Nav2}
+\label{sec:nav2_ch9}
+
+\subsection{Visión general de la pila de navegación}
+
+Nav2 es la pila de navegación estándar de \gls{ROS2}. Proporciona los componentes necesarios para que un robot reciba una posición de destino y calcule cómo llegar evitando obstáculos. La cadena funcional completa es:
+
+\begin{center}
+\small
+Meta (RViz) $\rightarrow$ \texttt{bt\_navigator} $\rightarrow$ \texttt{planner\_server} $\rightarrow$ \texttt{controller\_server}\\
+$\rightarrow$ \texttt{twist\_mux} $\rightarrow$ \texttt{diff\_drive\_controller} $\rightarrow$ \emph{hardware}
+\end{center}
+
+\subsection{Planificador global: NavFn con A*}
+
+NavFn es el módulo de planificación global de Nav2. Implementa Dijkstra (si \texttt{use\_astar: false}) o A* (si \texttt{use\_astar: true}). En este proyecto se configura \texttt{use\_astar: true} en ambos entornos, por lo que NavFn opera exclusivamente con A*.
+
+El planificador \texttt{NavfnPlanner} (alias \texttt{GridBased}) implementa A* sobre el costmap global. A* utiliza una estimación de la distancia restante al destino para priorizar direcciones prometedoras, lo que lo hace eficiente incluso en mapas grandes.
+
+\begin{table}[H]
+\small    
+\centering
+\caption{Parámetros del planificador global NavFn (\texttt{nav2\_params.yaml}).}
+\label{tab:planner_params_ch9}
+\begin{tabular}{p{3cm} p{3.5cm} p{3.5cm} l}
+\toprule
+\textbf{Parámetro}      & \textbf{Real}    & \textbf{Simulación} & \textbf{Descripción} \\ \midrule
+\texttt{planner\_plugins} & \multicolumn{2}{c}{\texttt{GridBased}}          & Alias del planificador \\
+\texttt{plugin}           & \multicolumn{2}{c}{\texttt{nav2\_navfn\_planner}} & Implementación del algoritmo \\
+\texttt{use\_astar}       & \multicolumn{2}{c}{\texttt{true}}               & Uso de A* en ambos entornos \\ \addlinespace
+\texttt{tolerance}        & 0.15 m           & 0.5 m               & Tolerancia de ruta (menor en real por resolución del costmap) \\
+\texttt{allow\_unknown}   & \multicolumn{2}{c}{\texttt{true}}               & Planifica en zonas no mapeadas \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Controlador local: DWB}
+
+El controlador local genera comandos de velocidad instantáneos para seguir la ruta global adaptándose a obstáculos. Se emplea \texttt{dwb\_core::DWBLocalPlanner} (Dynamic Window-Based), que evalúa un abanico de trayectorias y selecciona la que mejor equilibra avance hacia el destino y seguridad.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+    \caption{Parámetros dinámicos del controlador local DWB (hardware real).}
+    \label{tab:dwb_params_ch9}
+    \begin{tabular}{ll p{5.8cm}}
+        \toprule
+        \textbf{Parámetro}             & \textbf{Valor (real)}     & \textbf{Descripción} \\ 
+        \midrule
+        \texttt{max\_vel\_x}           & +0.13 m/s                 & Velocidad lineal máxima \\
+        \texttt{min\_vel\_x}           & -0.13 m/s                 & Velocidad lineal mínima (retroceso) \\
+        \texttt{max\_vel\_theta}       & 0.4 rad/s                 & Límite de velocidad angular \\
+        \texttt{acc\_lim\_x}           & 0.2 m/s$^{2}$             & Aceleración lineal máxima \\
+        \texttt{acc\_lim\_theta}       & 0.4 rad/s$^{2}$           & Aceleración angular máxima \\
+        \texttt{sim\_time}\tnote{a}    & 1.0 s                     & Horizonte de predicción \\
+        \texttt{xy\_goal\_tolerance}   & 0.22 m                    & Radio de tolerancia espacial de meta \\
+        \texttt{yaw\_goal\_tolerance}  & 0.3 rad                   & Tolerancia angular de meta \\ 
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+        \footnotesize
+        \item[a] En simulación, \texttt{sim\_time} = 1.7 s.
+    \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+El controlador utiliza una combinación ponderada de críticos: \texttt{RotateToGoal} (orientación), \texttt{BaseObstacle} (proximidad a obstáculos), \texttt{PathAlign} y \texttt{GoalAlign} (alineación con la ruta), y \texttt{PathDist} y \texttt{GoalDist} (distancias). Los pesos asignados determinan el comportamiento.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+    \caption{Críticos del controlador local DWB: pesos configurados en hardware real y simulación.}
+    \label{tab:dwb_critics_ch9}
+    \small
+    \begin{tabular}{lll p{4.8cm}}
+        \toprule
+        \textbf{Crítico}      & \textbf{Peso real} & \textbf{Peso sim.} & \textbf{Función / Parámetros clave} \\ 
+        \midrule
+        \texttt{PathDist}     & 50.0              & 32.0              & Minimizar distancia a la ruta global \\
+\texttt{GoalDist}     & 24.0              & 24.0              & Minimizar distancia al destino \\
+        \texttt{PathAlign}    & 32.0              & 32.0              & Alinear orientación con la ruta \\
+        \texttt{RotateToGoal} & 32.0              & 32.0              & Orientarse al llegar a la meta \\
+        \texttt{GoalAlign}    & 24.0              & 24.0              & Alinear orientación con el destino \\
+        \texttt{BaseObstacle} & 4.0               & 0.02              & Penalizar proximidad a obstáculos \\
+        \texttt{Oscillation}  & ---               & ---               & Penalizar cambios bruscos \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+        \footnotesize
+        \item \textbf{Nota:} Las diferencias significativas compensan el ruido sensorial en hardware real.
+    \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+El predominio de \texttt{PathDist} (50.0) sobre \texttt{BaseObstacle} (4.0) indica que el robot prioriza el seguimiento estricto de la ruta, adecuado para pasillos estrechos. Esto explica la concentración de fallos en escenarios de pasillo/puerta (véase Tabla~\ref{tab:nav_real}).
+
+% ============================================================
+\section{Mapas de costos (\emph{costmaps})}
+\label{sec:costmaps_ch9}
+
+\subsection{Concepto}
+
+Los mapas de costos son la representación del entorno que Nav2 utiliza para decidir por dónde puede transitar el robot. Cada celda tiene un valor: 0 = espacio libre, 254 = obstáculo conocido, valores intermedios = grados de proximidad (inflación). El sistema utiliza dos mapas:
+
+\paragraph{Costmap global (\texttt{global\_costmap}).}
+Cubre todo el mapa; utilizado por el planificador global. En hardware real su actualización interna es a 8 Hz (\texttt{update\_frequency: 8.0}), pero la publicación como mensaje ROS se limita a 1 Hz para no saturar la red. En simulación, la actualización se reduce a 1 Hz.
+
+\paragraph{Costmap local (\texttt{local\_costmap}).}
+Ventana móvil de $4 \times 4$ m alrededor del robot; utilizado por el controlador local. En hardware real, actualización y publicación a 10~Hz; en simulación, 5~Hz y 2~Hz respectivamente.
+
+\subsection{Parámetros críticos}
+
+\begin{table}[H]
+\small
+\centering
+\caption{Parámetros de los mapas de costos en \texttt{nav2\_params.yaml} (hardware real).}
+\label{tab:costmap_params_ch9}
+\begin{tabular}{P{3cm} P{3cm} P{3cm} P{4cm}}
+\toprule
+\textbf{Parámetro} & \textbf{Global} & \textbf{Local} & \textbf{Descripción} \\
+\midrule
+\texttt{resolution}            & 0.03 m & 0.03 m & Tamaño de celda \\
+\texttt{inflation\_radius}     & 0.18 m & 0.18 m & Radio de zona de seguridad (real; sim: 0.55 m) \\
+\texttt{cost\_scaling\_factor} & 1.5    & 1.5    & Decaimiento de la inflación \\
+\texttt{global\_frame}         & \texttt{map} & \texttt{odom} & Marco de referencia \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+El \texttt{footprint} del robot es un polígono asimétrico que refleja la forma real del chasis: $[[0.20;\allowbreak\ 0.12],\allowbreak\ [-0.06;\allowbreak\ 0.12],\allowbreak\ [-0.06;\allowbreak\ -0.12],\allowbreak\ [0.20;\allowbreak\ -0.12]]$ m.
+
+% ============================================================
+\section{Orquestación mediante Árboles de Comportamiento}
+\label{sec:bt_ch9}
+
+\subsection{Concepto}
+
+Nav2 utiliza Árboles de Comportamiento (\textit{Behavior Trees}) para orquestar la lógica de navegación de alto nivel. A diferencia de una máquina de estados (transiciones rígidas), un BT organiza las acciones jerárquicamente: si una rama tiene éxito, se avanza; si falla, se pasa a la siguiente rama o se ejecutan acciones de recuperación.
+
+\paragraph{Por qué un BT y no una máquina de estados.}
+Ante un obstáculo dinámico, una máquina de estados necesitaría estados explícitos para cada situación (obstáculo detectado, costmap limpiado, replaneando, retrocediendo, girando...) y transiciones entre todos ellos. Un BT permite añadir nuevas ramas de recuperación sin modificar el resto del árbol. En la práctica, los fallos frecuentes (robot bloqueado, oscilación cerca de la meta) se resolvieron con la secuencia de siete acciones implementada sin reescribir la lógica.
+
+\subsection{Estructura del árbol implementado}
+
+El archivo \texttt{navigate\_w\_replanning\_and\_recovery.xml} define:
+
+\begin{enumerate}
+\item \textbf{Nodo raíz (\texttt{NavigateRecovery})}: permite hasta 6 reintentos del ciclo completo.
+\item \textbf{Rama principal (\texttt{NavigateWithReplanning})}: ejecuta en secuencia:
+    \begin{itemize}
+    \item Un \texttt{RateController} a 4~Hz que replanifica la ruta global periódicamente (\texttt{ComputePathToPose} con \texttt{planner\_id="GridBased"}).
+    \item \texttt{FollowPath} con \texttt{controller\_id="FollowPath"} (controlador local DWB).
+    \end{itemize}
+\item \textbf{Rama de recuperación (\texttt{RecoveryFallback})}: se activa si la rama principal falla. Ejecuta siete acciones de costo creciente (Tabla~\ref{tab:recovery_ch9}).
+\end{enumerate}
+
+\utemFigurePropia{2.Texto/Imag/fig_bt_tree.png}{0.95\textwidth}
+{Estructura jerárquica del árbol de comportamiento \texttt{navigate\_w\_replanning\_and\_recovery.xml}.}
+{fig:bt_tree}
+
+\begin{table}[H]
+\centering
+\caption{Estrategias de recuperación configuradas en el árbol de comportamiento.}
+\label{tab:recovery_ch9}
+\begin{tabular}{lll}
+\toprule
+\textbf{Acción} & \textbf{Parámetros} & \textbf{Propósito} \\
+\midrule
+\textit{Clear local costmap}  & \texttt{reset\_distance}: 1.0~m & Eliminar obstáculos fantasma cercanos \\
+\textit{Clear global costmap} & \texttt{reset\_distance}: 1.5~m & Eliminar obstáculos fantasma globales \\
+\textit{BackUp}               & 0.15~m a 0.05~m/s; timeout 8.0~s & Retroceder para liberar espacio \\
+\textit{Spin}                 & 0.8~rad ($\approx 45.8^\circ$) & Rotar para obtener nueva perspectiva \\
+\textit{ComputePathToPose}    & \texttt{planner\_id="GridBased"} & Recalcular ruta alternativa \\
+\textit{FollowPath}           & ruta de recuperación            & Ejecutar la ruta alternativa \\
+\textit{Wait}                 & 2~s                              & Esperar a que cambie el entorno \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La lógica sigue un principio de escalada: primero soluciones de bajo costo (limpiar costmaps), luego maniobras físicas (retroceder, girar), después replanificación completa. Si tras 6 intentos completos no se alcanza la meta, la navegación se reporta como fallida.
+
+% ============================================================
+\section{Exploración autónoma mediante mapeo de fronteras}
+\label{sec:explore_ch9}
+
+\subsection{Motivación y enfoque}
+
+Para generar mapas de lugares desconocidos sin intervención manual continua, se integra un módulo de exploración autónoma basado en \emph{fronteras} (límite entre espacio libre conocido y espacio inexplorado). Navegando hacia las fronteras más prometedoras, el robot expande sistemáticamente el mapa.
+
+\subsection{Implementación}
+
+Se utiliza el paquete \texttt{m-explore-ros2} (fork de \texttt{explore\_lite}). El nodo \texttt{explore\_server} consume el mapa de \texttt{slam\_toolbox} (\texttt{/map} y \texttt{/map\_updates}), identifica fronteras y envía metas de navegación a Nav2.
+
+\subsection{Parámetros de operación}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+    \caption{Parámetros del explorador de fronteras configurados en \texttt{explore.yaml}.}
+    \label{tab:explore_params_ch9}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Parámetro}             & \textbf{Valor}      & \textbf{Descripción} \\ 
+        \midrule
+        \texttt{robot\_base\_frame}    & \texttt{base\_link} & Marco base del robot \\
+        \texttt{costmap\_topic}\tnote{a} & \texttt{/map}       & Mapa de ocupación crudo de SLAM \\
+        \texttt{planner\_frequency}    & 0.33~Hz             & Frecuencia de reevaluación de fronteras \\
+        \texttt{progress\_timeout}     & 120.0~s             & Tiempo máximo sin progreso \\
+        \texttt{min\_frontier\_size}   & 0.08~m              & Tamaño mínimo de frontera válida \\
+        \texttt{gain\_scale}           & 1.0                 & Peso de la ganancia de información \\
+        \texttt{potential\_scale}      & 0.005               & Peso de la distancia (costo de viaje) \\
+        \texttt{orientation\_scale}    & 0.0                 & Peso de la orientación (desactivado) \\
+        \texttt{visualize}             & \texttt{true}       & Publicar fronteras detectadas en RViz \\
+        \texttt{transform\_tolerance}  & 2.0                 & Tolerancia de transformación TF \\ 
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+        \footnotesize
+        \item[a] Se emplea \texttt{/map} en lugar del costmap inflado para calcular fronteras sobre espacio libre real.
+    \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+La función de ganancia prioriza fuertemente la cantidad de información nueva (\texttt{gain\_scale}=1.0) sobre la distancia a recorrer (\texttt{potential\_scale}=0.005). El \texttt{progress\_timeout} de 120 s actúa como salvaguarda. El \texttt{min\_frontier\_size} de 0.08 m (muy inferior al 0.5 m por defecto) se justifica por las dimensiones reducidas del entorno de pruebas.
+
+% ============================================================
+\section{Verificación incremental y buenas prácticas}
+\label{sec:verificacion_ch9}
+
+El enfoque sigue una progresión incremental:
+
+\begin{enumerate}
+\item Simulación básica: verificar movimiento diferencial, odometría y cadena \texttt{tf} en Gazebo.
+\item Teleoperación en simulación: confirmar arbitraje de \texttt{twist\_mux} y funcionamiento del \textit{dead-man switch}.
+\item Transferencia al hardware: mantener nombres de tópicos, actualizar YAML con valores específicos (límites cinemáticos, frecuencias, tolerancias), cambiar interfaz de hardware y \texttt{use\_sim\_time}.
+\item Teleoperación en hardware: validar respuesta del robot físico, calibrar odometría.
+\item Mapeo y localización simultáneos: lanzar \texttt{slam\_toolbox} en modo asíncrono en línea mientras se teleopera. Verificar en RViz la cadena \texttt{tf}.
+\item Navegación autónoma: con \texttt{slam\_toolbox} activo, habilitar Nav2 y enviar metas cortas. Nav2 consume la transformación \texttt{map} $\rightarrow$ \texttt{odom} de \texttt{slam\_toolbox} (no se usa AMCL).
+\item Exploración autónoma: activar \texttt{explore\_server} una vez que Nav2 opere establemente.
+\end{enumerate}
+
+\paragraph{Resolución de \texttt{use\_sim\_time} en hardware real.}
+El archivo \texttt{nav2\_params.yaml} tiene \texttt{use\_sim\_time: True} por defecto (heredado de simulación). En hardware real se sobrescribe en tiempo de lanzamiento con \texttt{use\_sim\_time:=false} mediante el mecanismo \texttt{RewrittenYaml} de Nav2. Lo mismo aplica a \texttt{slam\_toolbox}.
+
+\subsection{Organización de archivos de configuración}
+
+Todos los YAML y lanzamientos residen en el paquete \texttt{articubot\_one}:
+
+\begin{table}[H]
+\centering
+\caption{Archivos de configuración del proyecto y su función.}
+\label{tab:config_files_ch9}
+\begin{tabular}{ll}
+\toprule
+\textbf{Archivo} & \textbf{Función} \\
+\midrule
+\texttt{my\_controllers.yaml}                & Controlador diferencial y gestor \\
+\texttt{twist\_mux.yaml}                     & Multiplexación de fuentes de velocidad \\
+\texttt{mapper\_params\_online\_async.yaml}   & Parámetros de SLAM \\
+\texttt{nav2\_params.yaml}                    & Pila de navegación completa (AMCL, Nav2) \\
+\texttt{navigate\_w\_replanning\_and\_recovery.xml} & Árbol de comportamiento \\
+\texttt{joystick.yaml}                        & Teleoperación y \textit{dead-man switch} \\
+\texttt{explore.yaml}                         & Explorador de fronteras \\
+\texttt{gazebo\_params.yaml}                  & Frecuencia de reloj de simulación \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Notas de compatibilidad entre distribuciones}
+
+Entre \gls{ROS2} Foxy y versiones posteriores existen diferencias relevantes para la portabilidad del proyecto:
+
+\begin{itemize}
+\item El \emph{spawner} de controladores se llama \texttt{spawner.py} en Foxy (puede cambiar a \texttt{spawner} en distribuciones posteriores).
+\item El parámetro \texttt{default\_bt\_xml\_filename} puede dividirse en dos parámetros separados.
+\item El plugin \texttt{diffdrive\_arduino} es específico de Foxy; en Humble la API de \texttt{ros2\_control} requiere ajustes.
+\item En Foxy, NavFn + DWB es la combinación más estable; planificadores avanzados como \texttt{SmacPlanner2D} requieren versiones más recientes.
+\end{itemize}
+
+% ============================================================
+\section*{Conclusión del capítulo}
+\label{sec:conclusion_ch9}
+
+En este capítulo se ha descrito la arquitectura de navegación autónoma del robot. Se presentó la configuración de \texttt{slam\_toolbox} en modo asíncrono en línea para la construcción incremental del mapa con cierre de lazo, la pila de navegación Nav2 con el planificador global NavFn (A*) y el controlador local DWB, los mapas de costos global y local con sus capas de inflación, y el árbol de comportamiento con siete acciones de recuperación ante bloqueos. También se documentó la infraestructura latente para localización AMCL sobre mapa fijo y el módulo de exploración autónoma de fronteras. Finalmente, se presentaron pautas de verificación incremental para la transferencia simulación--hardware. Esta arquitectura, junto con el control de bajo nivel descrito en los capítulos anteriores, constituye el núcleo funcional del robot autónomo.

@@ -1,0 +1,356 @@
+%=========================================================================================
+% DATOS DEL DOCUMENTO
+% ==========================================================================================
+% Autor: Sebastian Alexis Valderas Neculqueo
+% Carrera: Ingeniería Civil en Electrónica
+% Universidad: UTEM
+% Documento: Tesis
+% Normativa: https://biblioteca.utem.cl/wp-content/uploads/2019/10/Tesis_Normalizacion_04092019.pdf
+%asdfsadfsad==========================================================================================
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TIPO DE DOCUMENTO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pdfminorversion=7
+\documentclass[letterpaper,12pt]{report}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PAQUETES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% --- Tipografía e idioma ---
+\usepackage[english]{tracklang}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,activeacute]{babel}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{amssymb}
+
+% --- Maquetación básica ---
+\usepackage{geometry}
+\geometry{top=4cm,bottom=2.5cm,left=4cm,right=2.5cm}
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{1.0\baselineskip}
+
+% --- Tablas, figuras y flotantes ---
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[flushleft]{threeparttable}
+\usepackage{threeparttablex} 
+\usepackage{multirow}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc}
+\usepackage{longtable}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}m{#1}}
+% --- Títulos, índices y captions ---
+\usepackage{titlesec}
+\usepackage{titletoc}   % Entradas del TOC
+\usepackage{caption}
+\usepackage{subcaption}
+
+% --- Listas y utilidades ---
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*,align=parleft}
+\usepackage{xparse,ragged2e}
+\usepackage{etoolbox,xstring}
+
+% --- Código y cajas ---
+\usepackage{listings}
+% --- AGREGA ESTO: Configuración para cortar líneas de código ---
+\lstset{
+    breaklines=true,          % Cortar líneas largas automáticamente
+    breakatwhitespace=false,  % Cortar en cualquier caracter (no solo espacios)
+    basicstyle=\small\ttfamily, % Fuente monoespaciada pequeña
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}, % (Opcional) Flechita visual al cortar
+}
+\usepackage{tcolorbox}
+\usepackage{arduinoLanguaje}
+\usepackage{mipython}
+\usepackage{template_file_yaml}
+\usepackage{template_ubuntu_terminal}
+
+% --- Anexos ---
+\usepackage{appendix}
+
+% --- Glosario ---
+\usepackage[toc]{glossaries}
+\makeglossaries
+\loadglsentries{3.Pag_final/3.glosario.tex}
+\renewcommand{\glossaryname}{GLOSARIO}
+
+% --- Bibliografía (biblatex APA con biber) ---
+\usepackage{csquotes}
+\usepackage[
+  backend=biber,
+  style=apa,
+  natbib=true,
+  sortcites=true,
+  maxcitenames=2,
+  giveninits=true,
+  doi=false,isbn=false,eprint=false,url=true
+]{biblatex}
+\addbibresource{referencias.bib}
+\DeclareLanguageMapping{spanish}{spanish-apa}
+
+\defbibenvironment{bibnum}
+  {\begin{enumerate}[label=\arabic*.,leftmargin=*,itemsep=0pt,topsep=0pt,align=left]}
+  {\end{enumerate}}
+  {\item}
+
+% Ecuaciones
+\numberwithin{equation}{chapter}
+
+% --- URLs ---
+\usepackage{xurl}
+\urlstyle{same}
+
+% --- Hipervínculos (al final de cargas) ---
+\usepackage[hidelinks]{hyperref}
+
+% --- Encabezados y pies ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[R]{\thepage}
+\fancyfoot[L]{\footnotesize \nouppercase{\leftmark}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ESTILOS/MACROS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareCaptionLabelFormat{utemfig}{Figura~#2}
+\captionsetup[figure]{labelformat=utemfig,labelsep=colon,labelfont=bf,textfont=normalfont}
+
+% ===== Figura tipo UTEM =====
+\newcommand{\utemFigure}[5]{%
+  \begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{6pt}
+    \fbox{\includegraphics[width=#2]{#1}}
+    \caption{#3}
+    \vspace{6pt}
+    \footnotesize \textit{\textbf{Fuente: \cite{#4}. Enlace: \citefield{#4}{url}}}
+    \label{#5}
+  \end{figure}
+}
+
+% ===== Figura tipo UTEM para elaboracion propia=====
+\newcommand{\utemFigurePropia}[4]{%
+  \begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{6pt}
+    \fbox{\includegraphics[width=#2]{#1}}
+    \caption{#3}
+    \vspace{6pt}
+    \footnotesize \textit{Elaboración Propia}
+    \label{#4}
+  \end{figure}
+}
+
+% ===== Entorno UTEM Dinámico para Múltiples Imágenes =====
+\newenvironment{utemMultiFigure}[2]{%
+    % 1. Guardamos los argumentos en comandos temporales
+    \def\tempCaption{#1}% 
+    \def\tempLabel{#2}%
+    
+    \begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{6pt}
+    
+    % Definimos el comando interno (usamos renewcommand para evitar errores de duplicado)
+    \newcommand{\addutem}[5]{%
+        \begin{subfigure}[b]{##1\textwidth}
+            \centering
+            \fbox{\includegraphics[width=\textwidth]{##2}}
+            \caption{##3}
+            \vspace{6pt}
+            \footnotesize \textit{\textbf{Fuente: \cite{##4}. Enlace: \citefield{##4}{url}}}
+            \label{##5}
+        \end{subfigure}
+    }
+}{%
+    % 2. Aquí usamos las memorias temporales en lugar de #1 y #2
+    \vspace{8pt}
+    \caption{\tempCaption}
+    \label{\tempLabel}
+    \end{figure}
+}
+
+% ===== Entorno UTEM Dinámico para Múltiples Imágenes Propia =====
+\newenvironment{utemMultiFigurePropia}[2]{%
+    % 1. Guardamos los argumentos en comandos temporales
+    \def\tempCaption{#1}% 
+    \def\tempLabel{#2}%
+    
+    \begin{figure}[H]
+    \centering
+    \setlength{\fboxsep}{6pt}
+    
+    % Definimos el comando interno (usamos renewcommand para evitar errores de duplicado)
+    \newcommand{\addutem}[3]{%
+        \begin{subfigure}[b]{##1\textwidth}
+            \centering
+            \fbox{\includegraphics[width=\textwidth]{##2}}
+            \caption{##3}
+        \end{subfigure}
+    }
+}{%
+    % 2. Aquí usamos las memorias temporales en lugar de #1 y #2
+    \vspace{8pt}
+    \caption{\tempCaption}
+    {\footnotesize \textit{Elaboración Propia}}
+    \label{\tempLabel}
+    \end{figure}
+}
+
+% ===== Ajustes generales de robustez =====
+\emergencystretch=2em
+
+% ===== Títulos numerados (capítulos/secciones) =====
+\titleformat{\chapter}
+  {\normalfont\huge\bfseries\filcenter}{CAPÍTULO \thechapter: }{0pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-80pt}{40pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+
+% ===== Entradas del TOC (sangrías y puntos guía) =====
+\contentsmargin{0cm}
+\titlecontents{chapter}[0pt]{\addvspace{15pt}}{CAPÍTULO \thecontentslabel\quad}{}{\dotfill\contentspage}
+\titlecontents{section}[54pt]{\addvspace{5pt}}{\thecontentslabel\quad}{}{\dotfill\contentspage}
+\titlecontents{subsection}[108pt]{\addvspace{5pt}}{\thecontentslabel\quad}{}{\dotfill\contentspage}
+
+% =================== SOLO para TOC/LOF/LOT ===================
+% Textos de títulos
+\addto\captionsspanish{
+  \renewcommand{\figurename}{Figura}
+  \renewcommand{\contentsname}{TABLA DE CONTENIDO}
+  \renewcommand{\listfigurename}{ÍNDICE DE ILUSTRACIONES}
+  \renewcommand{\listtablename}{ÍNDICE DE TABLAS}
+  \renewcommand{\tablename}{TABLA}
+}
+
+% Columna de número de página más ancha (evita overfull y cortes)
+\makeatletter
+\renewcommand{\@pnumwidth}{4.5em}%
+\makeatother
+
+% Cabecera "Página" (alineada a la derecha)
+\newcommand{\UTEMPaginaHeader}{\noindent\makebox[\linewidth][r]{\textit{Página}}}
+
+% ---- Redefiniciones que permiten MULTIPÁGINA y pegan el contenido al título ----
+\makeatletter
+
+% 1. Tabla de Contenido (Versión manual para evitar conflictos)
+\renewcommand{\tableofcontents}{%
+  \clearpage
+  {\centering\normalfont\normalsize\bfseries \contentsname \par}
+  \vspace{1ex}
+  \UTEMPaginaHeader\par\vspace{1ex}  % ← antes del contenido
+  \@afterheading
+  \@starttoc{toc}
+  \clearpage
+}
+
+% 2. Lista de Figuras (Estas ya funcionaban, pero las dejamos igual de limpias)
+\renewcommand{\listoffigures}{%
+    \clearpage
+    {\centering\normalfont\normalsize\bfseries \listfigurename \par}%
+    \vspace{1ex}%
+    \UTEMPaginaHeader\par\vspace{1ex}%
+    \@afterheading
+    \@starttoc{lof}%
+    \clearpage
+}
+
+% 3. Lista de Tablas
+\renewcommand{\listoftables}{%
+    \clearpage
+    {\centering\normalfont\normalsize\bfseries \listtablename \par}%
+    \vspace{1ex}%
+    \UTEMPaginaHeader\par\vspace{1ex}%
+    \@afterheading
+    \@starttoc{lot}%
+    \clearpage
+}
+\makeatother
+
+% ===== Etiqueta de TABLA en captions (a juego con Figura) =====
+\DeclareCaptionLabelFormat{utemtab}{TABLA~#2}
+\captionsetup[table]{labelformat=utemtab,labelsep=colon,labelfont=bf,textfont=normalfont}
+
+
+% --- Contador para objetivos específicos ---
+%---Contador para objetivos específicos---
+\newcounter{objEsp}
+\newcommand{\ObEsp}{%               ← Cambiado \OE por \ObEsp
+  \refstepcounter{objEsp}%
+  OE\theobjEsp%
+}
+\providecommand*{\objEspautorefname}{OE}
+
+\usepackage{silence}
+\WarningFilter{latex}{Command \showhyphens has changed}
+% \showhyphens es un comando interno de LaTeX que muestra cómo se dividiría una palabra al final de una línea. Algunos paquetes (como babel, microtype o el gestor de idiomas) redefinen este comando para adaptarlo al idioma del documento, y LaTeX simplemente te avisa de que ha sido modificado.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INICIO DEL DOCUMENTO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\sloppy
+\begin{document}
+
+% ---------------- Páginas preliminares ----------------
+
+\include{1-PagPreliminar/portada.tex}
+\pagenumbering{roman}       % Inicia numeración romana minúscula (i, ii, iii...)
+\setcounter{page}{2}        % La portada es i, por lo tanto esta es ii. 
+\include{1-PagPreliminar/derecho_autor.tex}
+\include{1-PagPreliminar/Nota.tex}
+\include{1-PagPreliminar/dedicatoria.tex}
+\include{1-PagPreliminar/agradecimiento.tex}
+\include{1-PagPreliminar/resumen.tex}
+
+% ===== Índices (título + contenido juntos y con salto libre) =====
+\clearpage
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+
+% ---------------- Texto principal ----------------
+\cleardoublepage
+\pagenumbering{arabic}
+\include{2.Texto/1.Intro.tex}
+\include{2.Texto/2.estado_arte.tex}
+\include{2.Texto/3.marco-teorico.tex}
+\include{2.Texto/4.comp.tex}
+\include{2.Texto/5.workspace.tex}
+\include{2.Texto/6.robot_digital.tex}
+\include{2.Texto/7.robot_real.tex}
+\include{2.Texto/8.setup_arduino.tex}
+\include{2.Texto/9.application.tex}
+\include{2.Texto/10.resultados.tex}
+\include{2.Texto/99.conclusion.tex}
+
+
+% ---------------- Páginas finales ----------------
+\begingroup
+  \doublespacing
+  \printbibliography[title={BIBLIOGRAFÍA},env=bibnum]
+\endgroup
+
+\printglossary[title={GLOSARIO},toctitle={GLOSARIO}]
+\include{3.Pag_final/anexo.tex}
+
+\end{document}
