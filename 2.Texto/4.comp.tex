@@ -106,10 +106,18 @@ Se compararon tres arquitecturas: diferencial, Ackermann y omnidireccional (Meca
     Omnidireccional  & \textbf{Muy alta} & Media--Baja    & \textbf{Alta} & Baja          & Alta          & Media \\ 
     \bottomrule
   \end{tabular}
-  \begin{tablenotes}
-    \footnotesize
-    \item \textbf{Criterios:} C1: Maniobrabilidad; C2: Calidad de odometría; C3: Complejidad; C4: Eficiencia energética; C5: Costo; C6: Soporte en \gls{ROS2}.
-  \end{tablenotes}
+\begin{tablenotes}
+  \footnotesize
+  \item \textbf{Criterios:} C1: Maniobrabilidad; C2: Calidad de odometría;
+  C3: Complejidad; C4: Eficiencia energética; C5: Costo;
+  C6: Soporte en \gls{ROS2}.
+  \item \textbf{Evaluación cualitativa basada en:}
+  \citep{siegwart2011introduction,campion1996structural}
+  para criterios cinemáticos (C1--C3),
+  \citep{thrun2005probabilistic} para C2,
+  \citep{taheri2015omnidirectional} para la arquitectura omnidireccional, y
+  \citep{macenski2020nav2} para C6.
+\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -173,18 +181,20 @@ Con rueda de diámetro $d=67\,\text{mm}$ ($C\approx0.2105\,\text{m}$), los ticks
 %------------------------------------------------------------------
 \section{Driver de motores L298N}
 
-Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino}. Sus principales especificaciones son:
+Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo 
+costo y compatibilidad lógica a 5~V con el \gls{Arduino} 
+\citep{STMicro_L298N_Datasheet}. Sus principales especificaciones son:
 
 \begin{itemize}
   \item Topología: puente H dual para motores DC bidireccionales.
-  \item Alimentación de motores: 7--35~V (típico en la placa).
-  \item Alimentación lógica: 5~V.
-  \item Corriente por canal: 2.0~A continua, 2.5~A pico repetitivo, 3.0~A pico de 100~ms.
-  \item Control de velocidad mediante \gls{PWM} en pines ENA y ENB (con jumpers retirados).
+  \item Alimentación de motores (CI): hasta 46~V; el módulo breakout 
+        típico opera entre 7--35~V debido al regulador 78M05 integrado.
+  \item Alimentación lógica: 4.5--7~V (típico 5~V, compatible TTL).
+  \item Corriente por canal: 2.0~A continua; 3.0~A pico no repetitivo 
+        ($t \leq 100$~ms). Corriente total máxima: 4~A.
+  \item Control de velocidad mediante \gls{PWM} en pines ENA y ENB 
+        (con jumpers retirados).
 \end{itemize}
-
-\utemFigure{2.Texto/Imag/l298n.png}{0.4\textwidth}{Módulo L298N}{ViamRoverTutorial_2022}{fig:l298n}
-
 %------------------------------------------------------------------
 \section{Microcontrolador de bajo nivel: Arduino Nano V3}
 
@@ -211,23 +221,27 @@ El \gls{Arduino} V3 proporciona:
 Se evaluaron otras opciones (Arduino Uno, Pro Mini, Nano Every, Nano 33 BLE, Raspberry Pi Pico, ESP32, Teensy). El \gls{Arduino} V3 se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. En el futuro podría migrarse a una placa compatible con \emph{micro-ROS} (ESP32, Teensy, RP2040) manteniendo la misma arquitectura.
 
 %------------------------------------------------------------------
-\section{Computador de a bordo: Raspberry Pi 4 (8 GB)}
+\section{Raspberry Pi 4 (8 GB)}
 
-La Raspberry Pi 4 (8 GB) ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) y los nodos de SLAM y navegación.
+La Raspberry Pi 4 (8 GB) \parencite{RaspberryPi4Specs} ejecuta Ubuntu 20.04 
+y \gls{ROS2} Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) 
+y los nodos de SLAM y navegación.
 
 \subsection{Motivos de selección}
 \begin{itemize}
   \item \textbf{Compatibilidad} con Ubuntu 20.04 y \gls{ROS2} Foxy (soporte oficial).
   \item \textbf{E/S integrada}: GPIO, CSI para cámara, múltiples USB, Ethernet y Wi-Fi.
-  \item \textbf{Rendimiento suficiente} para SLAM 2D y Nav2 (4 núcleos a 1.5~GHz, 8 GB RAM).
+  \item \textbf{Rendimiento suficiente} para SLAM 2D y Nav2       (4 núcleos a 1.8~GHz, 8~GB RAM) \citep{RaspberryPi4Specs, RaspberryPi4Datasheet}.
   \item \textbf{Ecosistema y documentación} amplia, con ejemplos como TurtleBot.
 \end{itemize}
 
 \subsection{Especificaciones relevantes}
+Según \citep{RaspberryPi4Datasheet}:
 \begin{itemize}
-  \item Procesador: Broadcom BCM2711, 4× Cortex-A72 a 1.5~GHz (64 bits).
-  \item Memoria: 8 GB LPDDR4-3200.
-  \item Conectividad: Wi-Fi ac, Bluetooth 5.0, Ethernet GbE.
+  \item Procesador: Broadcom BCM2711, 4× Cortex-A72 (ARMv8) a 1.8~GHz (64 bits).
+  \item Memoria: 8~GB LPDDR4-3200 SDRAM.
+  \item Conectividad: Wi-Fi dual-band IEEE 802.11ac (2.4/5.0~GHz), 
+        Bluetooth 5.0 + BLE, Ethernet GbE.
   \item Puertos: 2×USB 3.0, 2×USB 2.0, 2×micro-HDMI, CSI, DSI, GPIO 40 pines.
 \end{itemize}
 
@@ -239,9 +253,6 @@ La Raspberry Pi 4 (8 GB) ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, orquestando la 
 \end{itemize}
 
 Dado el alcance del proyecto, la Raspberry Pi 4 es la opción más equilibrada.
-
-\subsection{Límites de corriente USB y enfriamiento}
-Para evitar sobrecargas, se utiliza un \emph{hub} USB alimentado externamente para el \gls{LIDAR} y otros periféricos. Se instala un disipador con ventilación activa para evitar la estrangulación térmica (\emph{throttling}) bajo cargas sostenidas.
 
 %------------------------------------------------------------------
 \section{Sensor LiDAR para mapeo y navegación}
@@ -297,11 +308,12 @@ Se eligió frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o pl
 
 \subsection{Regulador DC-DC (buck)}
 
-Se usa un módulo reductor conmutado DFRobot DFR0205 (chip GS2678) que ofrece dos salidas: una fija de 5~V y otra ajustable entre 3.3 y 25~V. Proporciona hasta 5~A en el riel de 5~V con eficiencia ~90\%. Incluye protecciones por cortocircuito y limitación de corriente.
+Se usa el módulo DFRobot DFR0205, basado en el chip GS2678, un convertidor reductor conmutado a 350~kHz \parencite{DFRobotPowerModule}. Acepta tensiones de entrada entre 3.6 y 25~V, y ofrece tres salidas: una fija de 5~V, una ajustable entre 3.3 y 25~V, y un paso directo de la entrada. Entrega hasta 5~A con una potencia nominal de 25~W. Incluye protecciones por cortocircuito y limitación de corriente.
 
 \utemFigure{2.Texto/Imag/modulo_dc.jpg}{0.6\linewidth}{Power Module SKU DFR0205}{DFRobotPowerModule}{fig:modulo_dc}
 
-Este regulador permite derivar los rieles de 5~V (para Raspberry Pi, \gls{LIDAR}, Arduino) desde la batería de 12~V con bajas pérdidas.
+Este regulador permite derivar el riel de 5~V (Raspberry Pi, \gls{LIDAR}, 
+\gls{Arduino}) desde la batería de 12~V con bajas pérdidas.
 
 \subsection{Protecciones e interruptores}
 
@@ -323,20 +335,19 @@ La siguiente tabla resume el dimensionamiento estimado. Los valores de corriente
   \small
   \begin{tabular}{P{4.2cm} c c c P{3.2cm}}
     \toprule
-    \textbf{Ramal de Potencia / Señal} & \textbf{$I_{max}$ (A)} & \textbf{Long. (m)} & \textbf{$\Delta V$ adm.} & \textbf{AWG / Conector}\tnote{a} \\
+    \textbf{Ramal de Potencia / Señal} & \textbf{$I_{max}$ (A)} & \textbf{Long. (m)} & \textbf{$\Delta V$ adm.}\tnote{b} & \textbf{AWG / Conector}\tnote{a} \\
     \midrule
-    Batería $\rightarrow$ Switch Principal & 5.0  & 0.15 & $<2\%$ & 16 AWG / XT60 \\
-    Switch $\rightarrow$ Regulador DC-DC (5V) & 5.0  & 0.15 & $<3\%$ & 16 AWG / JST-VH \\
-    \addlinespace
-    Línea 12V $\rightarrow$ Driver Motores (L298N) & 3.6  & 0.20 & $<5\%$ & 18 AWG / Bornera \\
-    Línea 5V $\rightarrow$ SBC (Raspberry Pi 4) & 2.5  & 0.25 & $<0.25$V & 20 AWG / USB-C \\
-    \addlinespace
-    Bus de Encoders / Señal Lógica & 0.1  & 0.30 & N/A & 26-28 AWG / DuPont \\
+Batería $\rightarrow$ Switch Principal        & 5.0 & 0.15 & $<0.24$\,V & 14 AWG / XT60    \\
+Switch $\rightarrow$ Regulador DC-DC (5V)     & 5.0 & 0.15 & $<0.36$\,V & 18 AWG / Bornera \\
+Línea 12V $\rightarrow$ Driver Motores (L298N)& 3.6 & 0.20 & $<0.60$\,V & 18 AWG / Bornera \\
+Línea 5V $\rightarrow$ SBC (Raspberry Pi 4)  & 3.0 & 0.25 & $<0.25$\,V & 22 AWG / USB-C   \\
     \bottomrule
   \end{tabular}
   \begin{tablenotes}
     \footnotesize
     \item[a] Los calibres son orientativos; se recomienda cable de silicona multifilar para facilitar el ruteo.
+    \item[b] Caída de tensión admisible calculada como porcentaje 
+             del voltaje nominal del ramal
   \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -360,15 +371,19 @@ El chasis y cubiertas se fabrican mediante impresión 3D FDM en PLA+ por su faci
 
 \subsection{Diseño}
 
-El modelado 3D se realizó en \textit{Fusion~360} de forma paramétrica, organizando el proyecto por componentes (carenado, tapas de acceso, soporte de \gls{LIDAR}, subchasis, alojamientos electrónicos). Se contemplaron holguras típicas para FDM (0.2--0.4~mm) y se añadieron chaflanes para reducir concentraciones de tensión.
+El modelado 3D se realizó en \textit{Fusion~360} de forma paramétrica, organizando el proyecto por componentes (carcasa, tapas de acceso, soporte de \gls{LIDAR}, subchasis, alojamientos electrónicos). Se contemplaron holguras típicas para FDM (0.2--0.4~mm) y se añadieron chaflanes para reducir concentraciones de tensión.
 
-\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_sup_izq_frontal.png}{0.6\linewidth}{Vista isométrica superior–izquierda (frontal)}{fig:isom_sup_izq_frontal}
+\begin{utemMultiFigurePropia}{Galería fotográfica del prototipo en Diseño 3D}{fig:galeria_prototipo_3d}
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_izq_frontal.png}{Vista isométrica superior–izquierda (frontal)}
+\hfill
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_inf_der.png}{Vista isométrica inferior–derecha (vista inferior)}
 
-\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_inf_der.png}{0.6\linewidth}{Vista isométrica inferior–derecha (vista inferior)}{fig:isom_inf_der}
+\vspace{1cm}
 
-\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_sup_der.png}{0.6\linewidth}{Vista isométrica superior–derecha (frontal)}{fig:isom_sup_der_frontal}
-
-\utemFigurePropia{2.Texto/Imag/robot_vista_isometrica_sup_izq_posterior.png}{0.6\linewidth}{Vista isométrica superior–izquierda (posterior)}{fig:isom_sup_izq_posterior}
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_der.png}{Vista isométrica superior–derecha (frontal)}
+\hfill
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_izq_posterior.png}{Vista isométrica superior–izquierda (posterior)}
+\end{utemMultiFigurePropia}
 
 Las cotas generales se presentan en la siguiente Figura:
 \utemFigurePropia{2.Texto/Imag/medidas_robot_2d.pdf}{0.9\linewidth}{Medidas del chasis (vista 2D)}{fig:medidas_robot_2d}
@@ -378,19 +393,26 @@ Las cotas generales se presentan en la siguiente Figura:
 \caption{Dimensiones relevantes del robot (según plano de medidas).}
 \label{tab:dimensiones_robot}
 \small
+\begin{threeparttable}
 \begin{tabular}{l l p{7cm}}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\ 
 \midrule
-Largo total                  & 246 mm & Extremo posterior a extremo frontal del carenado. \\
+Largo total                  & 246 mm\tnote{a} & Extremo posterior a extremo frontal de la carcasa. \\
 Ancho total                  & 230 mm & Lado a lado en el eje de las ruedas. \\
 Alto chasis (sin \gls{LIDAR})      & 105 mm & Base a cubierta superior. \\
 Alto total (con \gls{LIDAR})       & 153 mm & Base a punto más alto del sensor. \\ \addlinespace
 Distancia entre ruedas ($L$) & 188 mm & Centro a centro de ruedas motrices (\textit{track width}). \\
 Distancia libre al suelo     & 14 mm  & Base a superficie de apoyo (\textit{ground clearance}). \\
-Espesor de pared nominal     & 10 mm  & Paredes del carenado impreso en 3D. \\
+Espesor de pared nominal     & 10 mm  & Paredes de la carcasa impresa en 3D. \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}
+  \footnotesize
+  \item[a] Leve discrepancia con el diseño 3D producto de tolerancias 
+           de impresión.
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 \subsection{Software y buenas prácticas}
@@ -409,7 +431,7 @@ El PLA+ es adecuado para interiores pero se degrada con calor o UV. Se recomiend
 
 \section{Comparación económica}
 
-El costo total de los materiales y componentes adquiridos para la construcción del prototipo ascendió a \textbf{CLP~582.447}, con un desembolso real detallado en la Tabla~\ref{tab:costo_prototipo}. Como es habitual en proyectos de prototipado electrónico y mecánico, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en presentaciones comerciales de múltiples unidades o en kits surtidos; el costo reportado corresponde al valor de compra de dichos kits, lo que proporciona una referencia realista del desembolso necesario para la construcción del robot. En el Anexo~\ref{anx:bom} se desglosa la lista de materiales completa.
+El costo total de los materiales y componentes adquiridos para la construcción del prototipo ascendió a \textbf{CLP~582.447}, con un desembolso real detallado en la Tabla~\ref{tab:costo_prototipo}. Como es habitual en proyectos de prototipado electrónico y mecánico, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en presentaciones comerciales de múltiples unidades o en kits surtidos; el costo reportado corresponde al valor de compra de dichos kits, lo que proporciona una referencia realista del desembolso necesario para la construcción del robot. En el \ref{anx:bom} se desglosa la lista de materiales completa.
 
 \begin{ThreePartTable}
 \begin{TableNotes}[para,flushleft]
@@ -491,7 +513,7 @@ Cargador de batería Li-ion 12 V & (ya incluido) & --- \\
 \end{longtable}
 \end{ThreePartTable}
 
-El costo total del prototipo se contrasta en la Tabla~\ref{tab:comparacion_costos} con el de plataformas robóticas comerciales de prestaciones equivalentes, convertido a dólares estadounidenses al tipo de cambio referencial de 950~CLP/USD (dólar observado promedio del cuarto trimestre de 2024, según el Banco Central de Chile).
+El costo total del prototipo se contrasta en la Tabla~\ref{tab:comparacion_costos} con el de plataformas robóticas comerciales de prestaciones equivalentes, convertido a dólares estadounidenses al tipo de cambio referencial de 963~CLP/USD (dólar observado promedio del cuarto trimestre de 2024, según el Banco Central de Chile \citep{BCCh_DolarQ42024}).
 
 \begin{table}[H]
 \centering
@@ -503,7 +525,7 @@ El costo total del prototipo se contrasta en la Tabla~\ref{tab:comparacion_costo
 \textbf{Plataforma} & \textbf{Costo (USD)} & \textbf{Costo (CLP)} & \textbf{Observación} \\
 \midrule
 Este prototipo
-  & $\sim$613
+  & $\sim$605
   & 582.447
   & Componentes accesibles; costo real documentado \\
 TurtleBot 3 Burger\tnote{a} \citep{ROBOTIS_TB3Burger}
@@ -523,7 +545,7 @@ Clearpath Jackal \citep{clearpath_jackal}
 \begin{tablenotes}
 \footnotesize
 \item[a] Precios de catálogo de ROBOTIS (\texttt{robotis.us}) consultados durante el segundo semestre de 2024, previo al incremento arancelario de 2025. A partir de 2025, ROBOTIS aplicó un recargo por aranceles recíprocos (\textit{reciprocal tariffs}), elevando el precio del TurtleBot~3 Burger a US\$\,784 y el del Waffle~Pi a US\$\,1.934. 
-\item Conversión referencial a 950 CLP/USD. Todos los precios son de catálogo, sin impuestos de internación ni envío internacional. El precio del Clearpath Jackal corresponde a la configuración base sin sensores adicionales.
+\item Conversión referencial a 963 CLP/USD. Todos los precios son de catálogo, sin impuestos de internación ni envío internacional. El precio del Clearpath Jackal corresponde a la configuración base sin sensores adicionales.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -532,10 +554,15 @@ Clearpath Jackal \citep{clearpath_jackal}
 \section{Galería fotográfica del prototipo}
 \label{sec:galeria}
 \begin{utemMultiFigurePropia}{Galería fotográfica del prototipo}{fig:galeria_prototipo}
+
 \addutem{0.36}{2.Texto/Imag/fig_prototipo_planta.jpg}{Vista Planta}
-\addutem{0.36}{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{Vista Lateral izquierda}
-\addutem{0.36}{2.Texto/Imag/fig_prototipo_lateral_derecha.jpg}{Vista Lateral derecha}
-\addutem{0.36}{2.Texto/Imag/fig_prototipo_frontal.jpg}{Vista Frontal}
+\hfill
+\addutem{0.42}{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{Vista Lateral izquierda}
+
+\vspace{1cm}
+\addutem{0.42}{2.Texto/Imag/fig_prototipo_lateral_derecha.jpg}{Vista Lateral derecha}
+\hfill
+\addutem{0.42}{2.Texto/Imag/fig_prototipo_frontal.jpg}{Vista Frontal}
 \end{utemMultiFigurePropia}
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

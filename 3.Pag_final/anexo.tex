@@ -1115,4 +1115,68 @@ El paquete \texttt{nav2\_amcl} fue configurado en \texttt{nav2\_params.yaml} com
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
+
+\section{Resultados obtenidos en \texorpdfstring{\citetitle{ngoc2023efficient} \parencite{ngoc2023efficient}}{Efficient Evaluation of SLAM Methods and Integration of Human Detection with YOLO Based on Multiple Optimization in ROS2 (Ngoc et al., 2023)}}
+\label{anx:resultados_ngoc2023efficient}
+
+\begin{table}[h!]
+\centering
+\caption{Distance accuracy of three SLAM methods for the first map}
+\renewcommand{\arraystretch}{2.1} % <-- Aumentar
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline
+& \multicolumn{3}{c|}{Cartographer (m)}
+& \multicolumn{3}{c|}{Gmapping (m)}
+& \multicolumn{3}{c|}{Slam Toolbox (m)} \\ \hline
+& Goal point 1 & Goal point 2 & Goal point 3
+& Goal point 1 & Goal point 2 & Goal point 3
+& Goal point 1 & Goal point 2 & Goal point 3 \\ \hline
+\textbf{Test 1}
+  & \makecell[l]{$x$: 7.73867 \\ $y$: -1.93425}
+  & \makecell[l]{$x$: 4.11695 \\ $y$: -8.24249}
+  & \makecell[l]{$x$: -4.9892  \\ $y$: -0.4127}
+  & \makecell[l]{$x$: 7.4873  \\ $y$: -2.1837}
+  & \makecell[l]{$x$: 4.0047  \\ $y$: -7.838}
+  & \makecell[l]{$x$: -4.988  \\ $y$:  0.210}
+  & \makecell[l]{$x$: 7.583   \\ $y$:  2.088}
+  & \makecell[l]{$x$: 4.036   \\ $y$: -8.046}
+  & \makecell[l]{$x$: -5.007  \\ $y$:  0.027} \\ \hline
+\textbf{Test 2}
+  & \makecell[l]{$x$: 7.73895 \\ $y$: -1.93484}
+  & \makecell[l]{$x$: 4.11672 \\ $y$: -8.2428}
+  & \makecell[l]{$x$: -4.9896 \\ $y$: -0.4125}
+  & \makecell[l]{$x$: 7.4933  \\ $y$: -2.1807}
+  & \makecell[l]{$x$: 4.0123  \\ $y$: -7.8801}
+  & \makecell[l]{$x$: -4.9874 \\ $y$:  0.1199}
+  & \makecell[l]{$x$: 7.584   \\ $y$:  2.018}
+  & \makecell[l]{$x$: 4.06252 \\ $y$: -8.13627}
+  & \makecell[l]{$x$: -5.0832 \\ $y$: -0.0174} \\ \hline
+\textbf{Test 3}
+  & \makecell[l]{$x$: 7.7385  \\ $y$: -1.9343}
+  & \makecell[l]{$x$: 4.1163  \\ $y$: -8.24216}
+  & \makecell[l]{$x$: -4.9890 \\ $y$: -0.4122}
+  & \makecell[l]{$x$: 7.4854  \\ $y$: -2.1838}
+  & \makecell[l]{$x$: 4.0098  \\ $y$: -7.8823}
+  & \makecell[l]{$x$: -5.003  \\ $y$: -0.173}
+  & \makecell[l]{$x$: 7.5276  \\ $y$:  2.092}
+  & \makecell[l]{$x$: 4.04852 \\ $y$: -8.07527}
+  & \makecell[l]{$x$: -4.968  \\ $y$:  0.027} \\ \hline
+\textbf{Average}
+  & \makecell[l]{$x$: 7.7387  \\ $y$: -1.9344}
+  & \makecell[l]{$x$: 4.11668 \\ $y$: -8.24248}
+  & \makecell[l]{$x$: -4.9893 \\ $y$: -0.41254}
+  & \makecell[l]{$x$: 7.48874 \\ $y$: -2.1834}
+  & \makecell[l]{$x$: 4.0089  \\ $y$: -7.8668}
+  & \makecell[l]{$x$: -5.1035 \\ $y$: -0.173}
+  & \makecell[l]{$x$: 7.532   \\ $y$:  2.066}
+  & \makecell[l]{$x$: 4.04952 \\ $y$: -8.08527}
+  & \makecell[l]{$x$: -5.0198 \\ $y$: -0.0242} \\ \hline
+\textbf{Accuracy}
+  & 96.81\% & 97.0\%  & 91.74\%
+  & 97.63\% & 98.5\%  & 96.04\%
+  & 99.05\% & 98.89\% & 99.37\% \\ \hline
+\end{tabular}%
+}
+\end{table}
 \end{appendices}

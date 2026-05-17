@@ -17,13 +17,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PAQUETES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+\usepackage{textcomp}
 % --- Tipografía e idioma ---
 \usepackage[english]{tracklang}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[spanish,activeacute]{babel}
 \usepackage{helvet}
+
 \renewcommand{\familydefault}{\sfdefault}
 \usepackage{microtype}
 \usepackage{amssymb}
@@ -52,6 +53,7 @@
 \usepackage{longtable}
 \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}m{#1}}
+\usepackage{makecell}
 % --- Títulos, índices y captions ---
 \usepackage{titlesec}
 \usepackage{titletoc}   % Entradas del TOC
@@ -74,10 +76,6 @@
     postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}, % (Opcional) Flechita visual al cortar
 }
 \usepackage{tcolorbox}
-\usepackage{arduinoLanguaje}
-\usepackage{mipython}
-\usepackage{template_file_yaml}
-\usepackage{template_ubuntu_terminal}
 
 % --- Anexos ---
 \usepackage{appendix}
@@ -169,14 +167,13 @@
     \setlength{\fboxsep}{6pt}
     
     % Definimos el comando interno (usamos renewcommand para evitar errores de duplicado)
-    \newcommand{\addutem}[5]{%
+    \newcommand{\addutem}[4]{%
         \begin{subfigure}[b]{##1\textwidth}
             \centering
             \fbox{\includegraphics[width=\textwidth]{##2}}
             \caption{##3}
             \vspace{6pt}
-            \footnotesize \textit{\textbf{Fuente: \cite{##4}. Enlace: \citefield{##4}{url}}}
-            \label{##5}
+            \footnotesize \textit{\textbf{Fuente: \cite{##4}}}
         \end{subfigure}
     }
 }{%

@@ -139,7 +139,7 @@ donde $w^g$ es el factor de inercia (decreciente linealmente), $c_1$, $c_2$ son 
 \label{eq:constriccion}
 \end{equation}
 
-con $\chi \approx 0.7298$ para la parametrización canónica $c_1 = c_2 = 2.05$ \citep{CK2002}. En el presente trabajo se adopta una variante con leve asimetría cognitiva: $c_1 = 2.05$ y $c_2 = 4 - c_1 = 1.95$, manteniendo $\chi = 0.7298$ como valor empíricamente validado. La justificación de esta elección se detalla en la Sección~\ref{subsec:pso_hiperparametros}.
+con $\chi \approx 0.7298$ para la parametrización canónica $c_1 = c_2 = 2.05$ \citep{CK2002}.
 
 \subsection{Función de costo para sintonización PID}
 
@@ -179,7 +179,7 @@ En este proyecto se utiliza \texttt{slam\_toolbox} con optimización de grafos (
 
 \subsection{Sensores y cierre de lazo}
 
-El sensor principal es un \gls{LIDAR} 2D (RPLidar A1) montado en el marco \texttt{laser\_frame} (12~cm por delante de \texttt{base\_link}). Sus lecturas ($360^\circ$, $5$--$10$~Hz) permiten construir el mapa y detectar obstáculos. El \textit{cierre de lazo} corrige la deriva acumulada cuando el robot reconoce una zona previamente visitada, ajustando globalmente el grafo de poses y mejorando la consistencia del mapa.
+El sensor principal es un \gls{LIDAR} 2D (RPLidar A1) montado en el marco \texttt{laser\_frame}. Sus lecturas ($360^\circ$, $5$--$10$~Hz) permiten construir el mapa y detectar obstáculos. El \textit{cierre de lazo} corrige la deriva acumulada cuando el robot reconoce una zona previamente visitada, ajustando globalmente el grafo de poses y mejorando la consistencia del mapa.
 
 \section{Planificación de trayectorias y control local}
 \label{sec:nav_marco}

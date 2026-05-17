@@ -58,7 +58,7 @@ Segmenta grafos lógicos en el mismo medio físico. Definir dominios por escenar
 Permitir multidifusión en el AP, desactivar \emph{client isolation}, abrir el tráfico \texttt{UDP} relevante en el cortafuegos y evitar VLAN/IGMP que filtren la multidifusión.
 
 \paragraph{Perfiles \textit{QoS} (orientativos)}
-Los perfiles de calidad de servicio (\textit{QoS}) por tópico se configuran según el tipo de tráfico: datos sensoriales como \texttt{/scan} operan en modo \texttt{best\_effort}, mientras que tópicos de control (\texttt{/cmd\_vel}, \texttt{/odom}, \texttt{/tf}) requieren \texttt{reliable}. La configuración detallada se presenta en la Sección~\ref{sec:qos_profiles} del Capítulo~\ref{chap:robot_real}.
+Los perfiles de calidad de servicio (\textit{QoS}) por tópico se configuran según el tipo de tráfico: datos sensoriales como \texttt{/scan} operan en modo \texttt{best\_effort}, mientras que tópicos de control (\texttt{/cmd\_vel}, \texttt{/odom}, \texttt{/tf}) requieren \texttt{reliable}. La configuración detallada se presenta en la Sección~\ref{sec:qos_profiles}.
 % =====================================================
 \section{Paquetes propios y estructura del \textit{workspace}}
 % =====================================================
@@ -95,7 +95,7 @@ La estrategia de \textit{single source of truth} —mantener el mismo paquete si
 \small
 \caption{Estructura y propósito de las carpetas del paquete de \gls{ROS2}.}
 \label{tab:ws_roles}
-\begin{tabular}{>{\ttfamily}P{0.30\textwidth} P{0.65\textwidth}}
+\begin{tabular}{>{\ttfamily}P{0.27\textwidth} P{0.65\textwidth}}
     \toprule
     \textbf{Carpeta / Archivo} & \textbf{Rol y relevancia en el sistema} \\ 
     \midrule
@@ -103,17 +103,10 @@ La estrategia de \textit{single source of truth} —mantener el mismo paquete si
     config/      & Almacena archivos YAML para controladores, SLAM, \textit{costmaps} y navegación. Define el comportamiento del sistema sin recompilar. \\ \addlinespace
     launch/      & Scripts de lanzamiento en Python (\texttt{.launch.py}). Orquestan el encendido (\textit{bringup}) coordinado de sensores, controladores y nodos de visión. \\ \addlinespace
     worlds/      & Definiciones de entornos para Gazebo. Permiten validar la respuesta de sensores y la cinemática del robot bajo condiciones controladas de fricción y ruido. \\ \addlinespace
-    CMakeLists.txt \newline package.xml & Archivos de metadatos de \textit{colcon}. Definen dependencias del sistema, reglas de exportación e instalación de recursos en el espacio de trabajo. \\ 
+    CMakeLists.txt y package.xml & Archivos de metadatos de \textit{colcon}. Definen dependencias del sistema, reglas de exportación e instalación de recursos en el espacio de trabajo. \\ 
     \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{Dependencias para simulación y control}
-\begin{itemize}
-  \item \texttt{ros-foxy-gazebo-ros-pkgs}, \texttt{ros-foxy-gazebo-ros}, \texttt{ros-foxy-gazebo-plugins}.
-  \item \texttt{ros-foxy-gazebo-ros2-control} para probar controladores en simulación.
-  \item \texttt{ros-foxy-geometry2}, \texttt{ros-foxy-geometry-msgs} para \texttt{tf} y tipos de mensajes.
-\end{itemize}
 
 \subsection{Flujo de trabajo con \texttt{colcon} y superposiciones}
 \begin{enumerate}
@@ -131,7 +124,7 @@ Se genera una clave \texttt{ed25519}, se añade al agente, se registra en GitHub
 
 \subsection{Pruebas de conectividad y descubrimiento}
 \begin{enumerate}
-  \item \textbf{IP y enlace}: ejecutar \texttt{ping 192.168.8.1} y verificar conectividad bidireccional host $\leftrightarrow$ robot.
+  \item \textbf{IP y enlace}: ejecutar \texttt{ping 192.168.X.X} y verificar conectividad bidireccional host $\leftrightarrow$ robot.
   \item \textbf{Multidifusión}: los dispositivos del AP deben verse entre sí (sin \emph{client isolation}).
   \item \textbf{\gls{ROS2}}: en ambos extremos, ejecutar \texttt{ros2 daemon stop} y luego \texttt{ros2 node list}; verificar que aparecen nodos remotos en el dominio configurado.
   \item \textbf{QoS}: comprobar que \texttt{/cmd\_vel}, \texttt{/odom} y \texttt{/tf} sean confiables (\textit{reliable}) y que \texttt{/scan} e \texttt{/image} toleren pérdidas (\textit{best\_effort}).
