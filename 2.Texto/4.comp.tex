@@ -337,7 +337,7 @@ La siguiente tabla resume el dimensionamiento estimado. Los valores de corriente
     \toprule
     \textbf{Ramal de Potencia / Señal} & \textbf{$I_{max}$ (A)} & \textbf{Long. (m)} & \textbf{$\Delta V$ adm.}\tnote{b} & \textbf{AWG / Conector}\tnote{a} \\
     \midrule
-Batería $\rightarrow$ Switch Principal        & 5.0 & 0.15 & $<0.24$\,V & 14 AWG / XT60    \\
+Batería $\rightarrow$ Switch Principal        & 5.2\tnote{c} & 0.15 & $<0.24$\,V & 14 AWG / XT60    \\
 Switch $\rightarrow$ Regulador DC-DC (5V)     & 5.0 & 0.15 & $<0.36$\,V & 18 AWG / Bornera \\
 Línea 12V $\rightarrow$ Driver Motores (L298N)& 3.6 & 0.20 & $<0.60$\,V & 18 AWG / Bornera \\
 Línea 5V $\rightarrow$ SBC (Raspberry Pi 4)  & 3.0 & 0.25 & $<0.25$\,V & 22 AWG / USB-C   \\
@@ -346,8 +346,8 @@ Línea 5V $\rightarrow$ SBC (Raspberry Pi 4)  & 3.0 & 0.25 & $<0.25$\,V & 22 AWG
   \begin{tablenotes}
     \footnotesize
     \item[a] Los calibres son orientativos; se recomienda cable de silicona multifilar para facilitar el ruteo.
-    \item[b] Caída de tensión admisible calculada como porcentaje 
-             del voltaje nominal del ramal
+    \item[b] Caída de tensión admisible calculada como porcentaje del voltaje nominal del ramal
+    \item[c] Pico instantáneo según Tabla~\ref{tab:power_budget_filled}; protegido por fusible de 7.5 A aguas abajo.
   \end{tablenotes}
 \end{threeparttable}
 \end{table}
