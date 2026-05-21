@@ -184,7 +184,7 @@ La prioridad más alta de la teleoperación implementa un \textit{dead-man switc
 \subsection{Convenciones de marcos \texttt{tf}}
 \label{sec:tf_frames}
 
-La cadena de transformaciones sigue las convenciones REP-103 y REP-105:
+La cadena de transformaciones reutiliza las convenciones \gls{REP103}~\cite{rep103} y \gls{REP105}~\cite{rep105} ya descritas en la Sección~\ref{sec:tf-convenciones}, manteniendo la simetría entre simulación y hardware real:
 
 \begin{center}
 \texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame}
@@ -233,30 +233,25 @@ En una red inalámbrica, la pérdida ocasional de paquetes es inevitable. \gls{R
 
 \begin{table}[H]
 \centering
-\caption{Perfiles de QoS configurados por tópico.}
+\caption{Perfiles de QoS configurados u observados por tópico.}
 \label{tab:qos_wifi}
-\small
-\begin{tabular}{llc}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llccl p{2.0cm}}
 \toprule
-\textbf{Tópico} & \textbf{Fiabilidad} 
-  & \textbf{Profundidad} \\
+\textbf{Tópico} & \textbf{Fiabilidad} & \textbf{Durabilidad} & \textbf{Profundidad} & \textbf{Origen} \\
 \midrule
-\texttt{/scan\_raw} (suscripción) 
-  & \texttt{best\_effort} & 10 \\
-\texttt{/scan} (publicación filtrada) 
-  & \texttt{reliable}     & 10 \\
-\texttt{/cmd\_vel} 
-  & \texttt{reliable}     & 10 \\
-\texttt{/odom} 
-  & \texttt{reliable}     & 10 \\
-\texttt{/tf}, \texttt{/tf\_static} 
-  & \texttt{reliable}     & 10 \\
+\texttt{/scan\_raw}  & \texttt{best\_effort}    & \texttt{volatile}        & 10  & Explícito (\texttt{scan\_filter\_node}) \\
+\texttt{/scan}       & \texttt{reliable}        & \texttt{volatile}        & 10  & Explícito (\texttt{scan\_filter\_node}) \\
+\texttt{/cmd\_vel}   & \texttt{reliable}        & \texttt{volatile}        & 10  & Default \texttt{rclcpp} \\
+\texttt{/odom}       & \texttt{reliable}        & \texttt{volatile}        & 10  & Default \texttt{diff\_drive\_controller} \\
+\texttt{/tf}         & \texttt{reliable}        & \texttt{volatile}        & 100 & Default \texttt{tf2\_ros} \\
+\texttt{/tf\_static} & \texttt{reliable}        & \texttt{transient\_local} & 1   & Default \texttt{tf2\_ros} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent
-\texttt{/scan} se configura como \texttt{best\_effort} porque perder un barrido aislado no es crítico; los tópicos de control y odometría son \texttt{reliable} por su importancia para la coherencia del sistema.
+La Tabla~\ref{tab:qos_wifi} resume los perfiles de QoS relevantes. Solo \texttt{/scan\_raw} y \texttt{/scan} se configuran explícitamente en \texttt{scan\_filter\_node.py}: el primero como \texttt{best\_effort} para tolerar pérdidas aisladas del barrido láser, y el segundo como \texttt{reliable} para que coincida con la suscripción de \texttt{slam\_toolbox} y los \textit{costmaps} de Nav2 (que rechazan publicadores \texttt{best\_effort} por incompatibilidad de QoS). El resto de los tópicos usa los valores por defecto de sus respectivos nodos. Destaca \texttt{/tf\_static} con durabilidad \texttt{transient\_local}: esta propiedad \textit{latched} permite que los nodos suscritos tras el arranque del \texttt{robot\_state\_publisher} reciban igualmente las transformaciones estáticas, evitando pérdidas de cadena TF al iniciar SLAM o navegación con retraso.
 
 % ============================================================
 \section{Sincronización temporal y latencias}
@@ -272,31 +267,38 @@ La precisión temporal es esencial para la coherencia de las transformaciones y 
 \section{Nombres persistentes de dispositivo (udev)}
 \label{sec:udev}
 % ============================================================
-
-Para evitar que los nombres de los puertos USB cambien entre reinicios, se definen reglas \texttt{udev} que crean enlaces simbólicos estables basados en atributos únicos de cada dispositivo.
+Para evitar que los nombres de los puertos serie cambien entre reinicios (\texttt{ttyUSB0} y \texttt{ttyUSB1} pueden intercambiarse al reconectar), se definen reglas \texttt{udev} en la Raspberry~Pi que crean enlaces simbólicos estables basados en atributos únicos de cada dispositivo. La Tabla~\ref{tab:udev_mapping} resume el mapeo aplicado.
 
 \begin{table}[H]
 \centering
 \begin{threeparttable}
-    \caption{Mapeo de dispositivos USB a nombres persistentes mediante reglas \texttt{udev}.}
+    \caption{Mapeo de dispositivos a nombres persistentes mediante reglas \texttt{udev} en la Raspberry~Pi.}
     \label{tab:udev_mapping}
     \footnotesize
-    \begin{tabular}{llllll}
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{lllllc}
         \toprule
-        \textbf{Dispositivo} & \textbf{Vendor} & \textbf{Product} & \textbf{Symlink} & \textbf{Baud} & \textbf{Referencia} \\ 
+        \textbf{Dispositivo} & \textbf{Bus} & \textbf{Coincidencia} & \textbf{Symlink} & \textbf{Archivo} & \textbf{Estado} \\
         \midrule
-        \gls{Arduino} & \texttt{1a86}\tnote{a} & \texttt{7523}\tnote{a} & \texttt{/dev/motor\_controller} & 57600  & \texttt{ros2\_control.xacro} \\
-        RPLIDAR A1   & \texttt{10c4}\tnote{a} & \texttt{ea60}\tnote{a} & \texttt{/dev/rplidar} & 115200 & \texttt{rplidar.launch.py} \\ 
+        \gls{Arduino}\tnote{a} & USB       & \texttt{1a86:7523} & \texttt{motor\_controller} & \texttt{99-motor-controller} & Activo            \\
+        RPLIDAR A1             & USB       & \texttt{10c4:ea60} & \texttt{rplidar}           & \texttt{99-rplidar}          & Heredado\tnote{b} \\
+        RPLIDAR A1             & UART/GPIO & \texttt{ttyAMA0}   & \texttt{rlidar\_gpio}      & \texttt{99-rlidar-gpio}      & Activo            \\
         \bottomrule
     \end{tabular}
     \begin{tablenotes}
         \footnotesize
-        \item[a] Valores típicos; confirmar con \texttt{udevadm info}.
+        \item[a] La regla del Arduino agrega \texttt{MODE="0666"} y un \texttt{PROGRAM="/bin/stty -F /dev/\%k -hupcl"} que deshabilita el \textit{hangup-on-close} de la línea serie, evitando el reinicio automático del microcontrolador al abrir el puerto (efecto colateral del chip CH340 al activar \gls{DTR}).
+        \item[b] Conservada únicamente para pruebas de bancada con el sensor conectado por USB durante la etapa inicial de desarrollo; en operación normal el RPLIDAR se comunica por UART/GPIO a través de \texttt{ttyAMA0}.
     \end{tablenotes}
 \end{threeparttable}
 \end{table}
+Las reglas se distribuyen en tres archivos dentro de \texttt{/etc/udev/rules.d/}, uno por dispositivo y modo de conexión, y se activan en secuencia con los siguientes tres comandos:
 
-Las reglas se almacenan en \texttt{/etc/udev/rules.d/99-robot.rules} y se activan con \texttt{sudo udevadm control --reload-rules \&\& sudo udevadm trigger}.
+\begin{enumerate}
+    \item \texttt{sudo udevadm control --reload-rules}: recarga el contenido de \texttt{/etc/udev/rules.d/} en el \textit{daemon} de udev.
+    \item \texttt{sudo udevadm trigger}: re-emite los eventos de los dispositivos ya conectados para aplicarles las reglas recargadas, sin necesidad de desconectar físicamente el USB.
+    \item \texttt{ls -la /dev/motor\_controller /dev/rlidar\_gpio}: verifica que los enlaces simbólicos se hayan creado y apunten correctamente al \texttt{ttyUSB*} o \texttt{ttyAMA0} respectivos.
+\end{enumerate}
 
 % ============================================================
 \section{Parámetros del controlador diferencial}
@@ -309,6 +311,7 @@ El archivo \texttt{my\_controllers.yaml} centraliza la configuración del \textt
 \centering
 \caption{Parámetros del controlador diferencial.}
 \label{tab:diff_drive_params}
+\small
 \begin{tabular}{lll}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
@@ -342,7 +345,7 @@ El plugin \texttt{DiffDriveArduino} actúa como puente entre \texttt{ros2\_contr
 {Secuencia de inicialización del método \texttt{start()} del plugin.}
 {fig:secuencia_start}
 
-La implementación detallada del plugin, incluyendo los ciclos de lectura/escritura, la clase \texttt{ArduinoComms}, la clase \texttt{Wheel} y la conversión de unidades, se describe en la Sección~\ref{sec:integracion_ros2} del Capítulo~\ref{ch:setup_arduino}. La Figura~\ref{fig:conversion_unidades} resume el flujo de conversión y la Figura~\ref{fig:secuencia_start} muestra la secuencia de inicialización.
+La implementación detallada del plugin, incluyendo los ciclos de lectura/escritura, la clase \texttt{ArduinoComms}, la clase \texttt{Wheel} y la conversión de unidades, se describe en la Sección~\ref{sec:integracion_ros2}. La Figura~\ref{fig:conversion_unidades} resume el flujo de conversión y la Figura~\ref{fig:secuencia_start} muestra la secuencia de inicialización.
 
 
 

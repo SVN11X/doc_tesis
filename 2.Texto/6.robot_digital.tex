@@ -163,7 +163,7 @@ En la práctica, con el robot físico el sistema se conecta al \gls{Arduino} ví
 
 Un marco de referencia (\textit{frame}) es un sistema de coordenadas asociado a una parte del robot o a un concepto espacial. La cadena de transformaciones define cómo se relacionan estos marcos, permitiendo convertir posiciones de un sistema a otro.
 
-Se adopta la convención estándar de ROS: \texttt{x} hacia adelante, \texttt{y} hacia la izquierda, \texttt{z} hacia arriba. La publicación de la cadena se realiza con \texttt{robot\_state\_publisher}. Los marcos relevantes son:
+Se adopta la convención estándar de ROS definida en \gls{REP103}~\cite{rep103}: \texttt{x} hacia adelante, \texttt{y} hacia la izquierda, \texttt{z} hacia arriba, con ángulos expresados en radianes y siguiendo la regla de la mano derecha. La organización de la cadena de marcos sigue además \gls{REP105}~\cite{rep105}, que estandariza los marcos \texttt{map}, \texttt{odom} y \texttt{base\_link} para plataformas móviles. La publicación de la cadena se realiza con \texttt{robot\_state\_publisher}. Los marcos relevantes son:
 
 \begin{itemize}
 \item \texttt{base\_link} $\rightarrow$ \texttt{base\_footprint}: fijo, origen en $(0,0,0)$. Proyección del robot sobre el suelo.

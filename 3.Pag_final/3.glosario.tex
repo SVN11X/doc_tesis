@@ -196,3 +196,27 @@ canal Z (index) para referencia de vuelta.}
   name = {AMCL},
   description = {\textit{Adaptive Monte Carlo Localization}. Algoritmo de localización probabilística basado en filtro de partículas que estima la pose del robot sobre un mapa de ocupación. En este proyecto se emplea el nodo \texttt{amcl} de Nav2 con modelo de movimiento diferencial.}
 }
+
+\newglossaryentry{REP}
+{
+name=REP,
+description={ROS Enhancement Proposal. Documento normativo del ecosistema ROS donde la comunidad fija estándares y convenciones de obligado cumplimiento para los paquetes oficiales.}
+}
+
+\newglossaryentry{REP103}
+{
+name=REP-103,
+description={Standard Units of Measure and Coordinate Conventions. Fija las unidades SI y la convención de ejes para robots móviles en ROS: x hacia adelante, y hacia la izquierda, z hacia arriba, regla de la mano derecha y ángulos en radianes.}
+}
+
+\newglossaryentry{REP105}
+{
+name=REP-105,
+description={Coordinate Frames for Mobile Platforms. Define la cadena canónica de marcos de referencia para plataformas móviles en ROS (\texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ marcos de sensores) y la semántica esperada de cada uno.}
+}
+
+\newglossaryentry{DTR}
+{
+name=DTR,
+description={Data Terminal Ready. Señal de control de la interfaz serie RS-232 mediante la cual el equipo terminal (PC u ordenador embebido) indica al equipo de comunicaciones que está listo para operar. En adaptadores USB-serie como el CH340 utilizado por el Arduino Nano, la activación de \gls{DTR} al abrir el puerto provoca un pulso en la línea de reset del microcontrolador, reiniciándolo automáticamente.}
+}
