@@ -14,7 +14,7 @@ La plataforma se organiza en dos dominios acoplados con responsabilidades claram
 \begin{enumerate}
 \item \textbf{Dominio de potencia}: comprende un bus principal a 12 V que alimenta los actuadores (motores DC a través del puente H L298N) y un bus regulado a 5 V que alimenta la lógica y los sensores (Raspberry Pi, \gls{LIDAR} y periféricos). Esta separación evita que las perturbaciones eléctricas de los motores afecten a la electrónica sensible.
 
-\item \textbf{Dominio de comunicaciones}: comprende un enlace serie USB/TTL entre la Raspberry Pi y el \gls{Arduino} (control de motores y encoders) y un enlace USB hacia el escáner láser RPLIDAR A1. En el plano lógico, la gráfica de nodos \gls{ROS2} contempla:
+\item \textbf{Dominio de comunicaciones}: comprende un enlace serie USB/TTL entre la Raspberry Pi y el \gls{Arduino} (control de motores y encoders) y comunicacion serial hacia el escáner láser RPLIDAR A1. En el plano lógico, la gráfica de nodos \gls{ROS2} contempla:
 \begin{itemize}
 \item \texttt{rplidar\_ros} para la publicación de los barridos del láser.
 \item Los nodos \texttt{joy} y \texttt{teleop\_twist\_joy} para la teleoperación.
