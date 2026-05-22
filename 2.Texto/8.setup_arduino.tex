@@ -1,14 +1,14 @@
 \chapter{Implementación del firmware de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
 
-Teniendo definidos los componentes del robot (Capítulos~4, 5, 6 y 7), este capítulo describe cómo se construyó el firmware \texttt{ROSArduinoBridge} que se ejecuta en el \gls{Arduino} Nano. A diferencia de un enfoque monolítico donde toda la lógica reside en un único archivo, el firmware adopta una arquitectura modular compuesta por múltiples archivos con responsabilidades bien delimitadas: un archivo principal (\texttt{ROSArduinoBridge.ino}) que orquesta la comunicación serial y el ciclo de control, un módulo de comandos (\texttt{commands.h}), un controlador diferencial (\texttt{diff\_controller.h}), un driver de encoders (\texttt{encoder\_driver.h}/\texttt{.ino}) y un driver de motores (\texttt{motor\_driver.h}/\texttt{.ino}).
+Teniendo definidos los componentes del robot, este capítulo describe cómo se construyó el firmware \texttt{ROSArduinoBridge} que se ejecuta en el \gls{Arduino} Nano. A diferencia de un enfoque monolítico donde toda la lógica reside en un único archivo, el firmware adopta una arquitectura modular compuesta por múltiples archivos con responsabilidades bien delimitadas: un archivo principal (\texttt{ROSArduinoBridge.ino}) que orquesta la comunicación serial y el ciclo de control, un módulo de comandos (\texttt{commands.h}), un controlador diferencial (\texttt{diff\_controller.h}), un driver de encoders (\texttt{encoder\_driver.h}/\texttt{.ino}) y un driver de motores (\texttt{motor\_driver.h}/\texttt{.ino}).
 
 El firmware cumple las siguientes funciones principales dentro de la arquitectura del robot:
 
 \begin{enumerate}
 \item Leer los encoders incrementales de cada rueda mediante interrupciones por cambio de pin (\emph{Pin Change Interrupts}).
 \item Ejecutar un controlador PID por cada rueda a una tasa de 30 Hz, calculando la acción de control en función del error entre la referencia de velocidad y la velocidad medida, ambas expresadas en \emph{ticks/frame}.
-\item Capturar la respuesta al escalón en lazo abierto, aplicando PWM directo mediante el comando \texttt{'o'} para identificar la dinámica de la planta sin controlador activo.
+\item Capturar la respuesta al escalón en lazo abierto, aplicando PWM directo mediante el comando \texttt{\textquotesingle o\textquotesingle} para identificar la dinámica de la planta sin controlador activo.
 \item Entregar información de estado (valores absolutos de encoders y velocidades medidas) a la capa de \texttt{ros2\_control} que opera en la \gls{RaspberryPi}.
 \item Incorporar un mecanismo de seguridad de auto-detención (\emph{auto-stop}) que apaga los motores si no se reciben comandos dentro de un intervalo configurable.
 \end{enumerate}
@@ -90,36 +90,36 @@ Los comandos disponibles se definen como constantes de un solo carácter en el a
 
 \subsection{Comandos de lectura y reinicio de encoders}
 
-El comando \texttt{'e'} (\texttt{READ\_ENCODERS}) solicita al firmware que devuelva los contadores absolutos de ambos encoders. La respuesta consiste en dos enteros separados por un espacio, representando las cuentas acumuladas del encoder izquierdo y del encoder derecho respectivamente. Este comando es utilizado por la interfaz de hardware \texttt{diffdrive\_arduino} en cada ciclo de lectura para calcular posiciones y velocidades angulares de las ruedas.
+El comando \texttt{\textquotesingle e\textquotesingle} (\texttt{READ\_ENCODERS}) solicita al firmware que devuelva los contadores absolutos de ambos encoders. La respuesta consiste en dos enteros separados por un espacio, representando las cuentas acumuladas del encoder izquierdo y del encoder derecho respectivamente. Este comando es utilizado por la interfaz de hardware \texttt{diffdrive\_arduino} en cada ciclo de lectura para calcular posiciones y velocidades angulares de las ruedas.
 
-El comando \texttt{'r'} (\texttt{RESET\_ENCODERS}) pone a cero ambos contadores de encoder y reinicia el estado interno del controlador PID. Esto resulta útil al inicio de una sesión de operación o cuando se desea establecer un nuevo origen de referencia para la odometría.
+El comando \texttt{\textquotesingle r\textquotesingle} (\texttt{RESET\_ENCODERS}) pone a cero ambos contadores de encoder y reinicia el estado interno del controlador PID. Esto resulta útil al inicio de una sesión de operación o cuando se desea establecer un nuevo origen de referencia para la odometría.
 
 \paragraph{Convención de orden de parámetros.}
-Es importante notar que el firmware adopta el orden $K_p$:$K_d$:$K_i$:$K_o$ tanto en los comandos seriales \texttt{'u'} y \texttt{'z'} como en la estructura \texttt{SetPointInfo} de \texttt{diff\_controller.h}. Este orden difiere de la convención habitual de la teoría de control, donde las ganancias se enumeran como $K_p$, $K_i$, $K_d$ (proporcional, integral, derivativo). La diferencia se hereda del repositorio original \texttt{ros\_arduino\_bridge}~\cite{ROSArduinoBridge} y se ha mantenido para preservar la compatibilidad con las herramientas de diagnóstico existentes. Al cargar ganancias manualmente mediante el monitor serial o al interpretar la salida del comando \texttt{'n'} (\texttt{READ\_PIDS}), debe tenerse presente que el \textbf{segundo} parámetro corresponde a $K_d$ (derivativo) y el \textbf{tercero} a $K_i$ (integral), no a la inversa.
+Es importante notar que el firmware adopta el orden $K_p$:$K_d$:$K_i$:$K_o$ tanto en los comandos seriales \texttt{\textquotesingle u\textquotesingle} y \texttt{\textquotesingle z\textquotesingle} como en la estructura \texttt{SetPointInfo} de \texttt{diff\_controller.h}. Este orden difiere de la convención habitual de la teoría de control, donde las ganancias se enumeran como $K_p$, $K_i$, $K_d$ (proporcional, integral, derivativo). La diferencia se hereda del repositorio original \texttt{ros\_arduino\_bridge}~\cite{ROSArduinoBridge} y se ha mantenido para preservar la compatibilidad con las herramientas de diagnóstico existentes. Al cargar ganancias manualmente mediante el monitor serial o al interpretar la salida del comando \texttt{\textquotesingle n\textquotesingle} (\texttt{READ\_PIDS}), debe tenerse presente que el \textbf{segundo} parámetro corresponde a $K_d$ (derivativo) y el \textbf{tercero} a $K_i$ (integral), no a la inversa.
 
 \subsection{Comandos de movimiento}
 
 El firmware ofrece tres modos de actuación sobre los motores, cada uno adecuado a un contexto de uso distinto:
 
-El comando \texttt{'o'} (\texttt{MOTOR\_RAW\_PWM}) recibe dos valores enteros que se aplican directamente como códigos PWM a los motores izquierdo y derecho, en el rango $[-255, 255]$. Al enviar este comando, el firmware desactiva el controlador PID, reinicia su estado interno y aplica los valores de PWM de forma inmediata. Este modo opera en lazo abierto y se utiliza principalmente para pruebas de hardware, verificación de cableado y diagnóstico inicial del sistema de actuación.
+El comando \texttt{\textquotesingle o\textquotesingle} (\texttt{MOTOR\_RAW\_PWM}) recibe dos valores enteros que se aplican directamente como códigos PWM a los motores izquierdo y derecho, en el rango $[-255, 255]$. Al enviar este comando, el firmware desactiva el controlador PID, reinicia su estado interno y aplica los valores de PWM de forma inmediata. Este modo opera en lazo abierto y se utiliza principalmente para pruebas de hardware, verificación de cableado y diagnóstico inicial del sistema de actuación.
 
-El comando \texttt{'m'} (\texttt{MOTOR\_SPEEDS}) recibe dos valores que representan la velocidad deseada de cada rueda expresada en \emph{ticks/frame}, es decir, el número de cuentas de encoder que se espera acumular en cada intervalo de control ($\approx 33$ ms). Estos valores se almacenan como referencia para el controlador PID: \texttt{leftPID.TargetTicksPerFrame} y \texttt{rightPID.TargetTicksPerFrame}. Si ambas referencias son cero, el firmware detiene los motores inmediatamente y reinicia el PID para evitar acumulación residual en el término integral. En caso contrario, activa la bandera \texttt{moving} que habilita la ejecución del lazo de control. Este es el modo principal de operación durante la navegación autónoma.
+El comando \texttt{\textquotesingle m\textquotesingle} (\texttt{MOTOR\_SPEEDS}) recibe dos valores que representan la velocidad deseada de cada rueda expresada en \emph{ticks/frame}, es decir, el número de cuentas de encoder que se espera acumular en cada intervalo de control ($\approx 33$ ms). Estos valores se almacenan como referencia para el controlador PID: \texttt{leftPID.TargetTicksPerFrame} y \texttt{rightPID.TargetTicksPerFrame}. Si ambas referencias son cero, el firmware detiene los motores inmediatamente y reinicia el PID para evitar acumulación residual en el término integral. En caso contrario, activa la bandera \texttt{moving} que habilita la ejecución del lazo de control. Este es el modo principal de operación durante la navegación autónoma.
 
-El comando \texttt{'k'} (\texttt{SET\_VEL\_MPS}) constituye una extensión que acepta referencias de velocidad directamente en metros por segundo. Internamente, el firmware convierte estas referencias a \emph{ticks/frame} multiplicando por el factor \texttt{MPS\_TO\_TICKS\_FACTOR} calculado en la Ecuación~\eqref{eq:mps_to_ticks}. La lógica de detenido y activación del PID es idéntica a la del comando \texttt{'m'}. Este comando simplifica la interfaz con las herramientas de sintonización en Python descritas en la Sección~\ref{sec:sintonizacion_pso}, ya que permite trabajar en unidades físicas sin necesidad de convertir manualmente a ticks.
+El comando \texttt{\textquotesingle k\textquotesingle} (\texttt{SET\_VEL\_MPS}) constituye una extensión que acepta referencias de velocidad directamente en metros por segundo. Internamente, el firmware convierte estas referencias a \emph{ticks/frame} multiplicando por el factor \texttt{MPS\_TO\_TICKS\_FACTOR} calculado en la Ecuación~\eqref{eq:mps_to_ticks}. La lógica de detenido y activación del PID es idéntica a la del comando \texttt{\textquotesingle m\textquotesingle}. Este comando simplifica la interfaz con las herramientas de sintonización en Python descritas en la Sección~\ref{sec:sintonizacion_pso}, ya que permite trabajar en unidades físicas sin necesidad de convertir manualmente a ticks.
 
 \subsection{Comandos de lectura y actualización del PID}
 
-El comando \texttt{'j'} (\texttt{READ\_VEL\_MPS}) devuelve la velocidad medida de cada rueda en metros por segundo. Para ello, el firmware divide la última entrada del PID (\texttt{PrevInput}, que representa los ticks medidos en el último frame) entre el factor \texttt{MPS\_TO\_TICKS\_FACTOR}. Este comando complementa al de lectura de encoders al proporcionar una medida directa de velocidad que puede compararse con la referencia enviada.
+El comando \texttt{\textquotesingle j\textquotesingle} (\texttt{READ\_VEL\_MPS}) devuelve la velocidad medida de cada rueda en metros por segundo. Para ello, el firmware divide la última entrada del PID (\texttt{PrevInput}, que representa los ticks medidos en el último frame) entre el factor \texttt{MPS\_TO\_TICKS\_FACTOR}. Este comando complementa al de lectura de encoders al proporcionar una medida directa de velocidad que puede compararse con la referencia enviada.
 
-El comando \texttt{'u'} (\texttt{UPDATE\_PID}) permite modificar en tiempo de ejecución las cuatro ganancias del controlador PID: $K_p$, $K_d$, $K_i$ y $K_o$. Los valores se transmiten separados por el carácter \texttt{':'}, y se aplican de forma simétrica a ambas ruedas. Este comando es fundamental durante la fase de sintonización, ya que permite ajustar las ganancias sin necesidad de recompilar y recargar el firmware.
+El comando \texttt{\textquotesingle u\textquotesingle} (\texttt{UPDATE\_PID}) permite modificar en tiempo de ejecución las cuatro ganancias del controlador PID: $K_p$, $K_d$, $K_i$ y $K_o$. Los valores se transmiten separados por el carácter \texttt{\textquotesingle :\textquotesingle}, y se aplican de forma simétrica a ambas ruedas. Este comando es fundamental durante la fase de sintonización, ya que permite ajustar las ganancias sin necesidad de recompilar y recargar el firmware.
 
-El comando \texttt{'z'} (\texttt{UPDATE\_PID\_LR}) extiende al anterior al aceptar ocho parámetros separados por \texttt{':'}: cuatro ganancias para la rueda izquierda seguidas de cuatro para la rueda derecha. Esta diferenciación es necesaria cuando las características mecánicas de ambos motores no son idénticas, como es habitual en la práctica.
+El comando \texttt{\textquotesingle z\textquotesingle} (\texttt{UPDATE\_PID\_LR}) extiende al anterior al aceptar ocho parámetros separados por \texttt{\textquotesingle :\textquotesingle}: cuatro ganancias para la rueda izquierda seguidas de cuatro para la rueda derecha. Esta diferenciación es necesaria cuando las características mecánicas de ambos motores no son idénticas, como es habitual en la práctica.
 
-El comando \texttt{'n'} (\texttt{READ\_PIDS}) devuelve las ocho ganancias actualmente configuradas, lo que permite verificar que los valores enviados con \texttt{'u'} o \texttt{'z'} se hayan aplicado correctamente.
+El comando \texttt{\textquotesingle n\textquotesingle} (\texttt{READ\_PIDS}) devuelve las ocho ganancias actualmente configuradas, lo que permite verificar que los valores enviados con \texttt{\textquotesingle u\textquotesingle} o \texttt{\textquotesingle z\textquotesingle} se hayan aplicado correctamente.
 
 \subsection{Comandos de propósito general}
 
-Adicionalmente, el protocolo incluye comandos para operaciones básicas de lectura y escritura de pines digitales y analógicos (\texttt{'a'}, \texttt{'d'}, \texttt{'w'}, \texttt{'x'}), configuración de modo de pin (\texttt{'c'}) y consulta de la tasa de baudios (\texttt{'b'}). Estos comandos no intervienen durante la operación normal del robot, pero resultan útiles para diagnóstico y verificación de conectividad.
+Adicionalmente, el protocolo incluye comandos para operaciones básicas de lectura y escritura de pines digitales y analógicos (\texttt{\textquotesingle a\textquotesingle}, \texttt{\textquotesingle d\textquotesingle}, \texttt{\textquotesingle w\textquotesingle}, \texttt{\textquotesingle x\textquotesingle}), configuración de modo de pin (\texttt{\textquotesingle c\textquotesingle}) y consulta de la tasa de baudios (\texttt{\textquotesingle b\textquotesingle}). Estos comandos no intervienen durante la operación normal del robot, pero resultan útiles para diagnóstico y verificación de conectividad.
 
 \begin{table}[H]
 \centering
@@ -131,32 +131,32 @@ Adicionalmente, el protocolo incluye comandos para operaciones básicas de lectu
 \textbf{Cmd} & \textbf{Nombre} & \textbf{Argumentos} & \textbf{Respuesta} & \textbf{Uso} \\ 
 \midrule
 \textit{Encoders} \\
-\texttt{'e'} & \texttt{READ\_ENCODERS}  & ---                 & \texttt{enc\_L enc\_R}  & Operación \\
-\texttt{'r'} & \texttt{RESET\_ENCODERS} & ---                 & \texttt{OK}             & Diagnóstico \\ \addlinespace
+\texttt{\textquotesingle e\textquotesingle} & \texttt{READ\_ENCODERS}  & ---                 & \texttt{enc\_L enc\_R}  & Operación \\
+\texttt{\textquotesingle r\textquotesingle} & \texttt{RESET\_ENCODERS} & ---                 & \texttt{OK}             & Diagnóstico \\ \addlinespace
 
 \textit{Movimiento} \\
-\texttt{'m'} & \texttt{MOTOR\_SPEEDS}   & \texttt{tL tR} (ticks) & ---                  & Operación \\
-\texttt{'o'} & \texttt{MOTOR\_RAW\_PWM} & \texttt{pL pR} ($\pm$255) & ---               & Diagnóstico \\
-\texttt{'k'} & \texttt{SET\_VEL\_MPS}   & \texttt{vL vR} (m/s)   & ---                  & Sintonización \\ \addlinespace
+\texttt{\textquotesingle m\textquotesingle} & \texttt{MOTOR\_SPEEDS}   & \texttt{tL tR} (ticks) & ---                  & Operación \\
+\texttt{\textquotesingle o\textquotesingle} & \texttt{MOTOR\_RAW\_PWM} & \texttt{pL pR} ($\pm$255) & ---               & Diagnóstico \\
+\texttt{\textquotesingle k\textquotesingle} & \texttt{SET\_VEL\_MPS}   & \texttt{vL vR} (m/s)   & ---                  & Sintonización \\ \addlinespace
 
 \textit{PID} \\
-\texttt{'u'} & \texttt{UPDATE\_PID}     & \texttt{Kp:Kd:Ki:Ko}   & \texttt{OK}          & Sintonización \\
-\texttt{'z'} & \texttt{UPDATE\_PID\_LR} & \texttt{8 ganancias}   & \texttt{OK}          & Sintonización \\
-\texttt{'n'} & \texttt{READ\_PIDS}      & ---                    & 8 ganancias          & Diagnóstico \\
-\texttt{'j'} & \texttt{READ\_VEL\_MPS}  & ---                    & \texttt{vL vR} (m/s) & Sintonización \\ \addlinespace
+\texttt{\textquotesingle u\textquotesingle} & \texttt{UPDATE\_PID}     & \texttt{Kp:Kd:Ki:Ko}   & \texttt{OK}          & Sintonización \\
+\texttt{\textquotesingle z\textquotesingle} & \texttt{UPDATE\_PID\_LR} & \texttt{8 ganancias}   & \texttt{OK}          & Sintonización \\
+\texttt{\textquotesingle n\textquotesingle} & \texttt{READ\_PIDS}      & ---                    & 8 ganancias          & Diagnóstico \\
+\texttt{\textquotesingle j\textquotesingle} & \texttt{READ\_VEL\_MPS}  & ---                    & \texttt{vL vR} (m/s) & Sintonización \\ \addlinespace
 
 \textit{Propósito general} \\
-\texttt{'b'} & \texttt{READ\_BAUDRATE}  & ---                 & \texttt{57600}          & Diagnóstico \\
-\texttt{'a'} & \texttt{ANALOG\_READ}    & pin                 & valor (0--1023)         & Diagnóstico \\
-\texttt{'d'} & \texttt{DIGITAL\_READ}   & pin                 & valor (0/1)             & Diagnóstico \\
-\texttt{'w'} & \texttt{DIGITAL\_WRITE}  & pin valor           & ---                     & Diagnóstico \\
-\texttt{'x'} & \texttt{ANALOG\_WRITE}   & pin valor           & ---                     & Diagnóstico \\
-\texttt{'c'} & \texttt{PIN\_MODE}       & pin modo            & ---                     & Diagnóstico \\ 
+\texttt{\textquotesingle b\textquotesingle} & \texttt{READ\_BAUDRATE}  & ---                 & \texttt{57600}          & Diagnóstico \\
+\texttt{\textquotesingle a\textquotesingle} & \texttt{ANALOG\_READ}    & pin                 & valor (0--1023)         & Diagnóstico \\
+\texttt{\textquotesingle d\textquotesingle} & \texttt{DIGITAL\_READ}   & pin                 & valor (0/1)             & Diagnóstico \\
+\texttt{\textquotesingle w\textquotesingle} & \texttt{DIGITAL\_WRITE}  & pin valor           & ---                     & Diagnóstico \\
+\texttt{\textquotesingle x\textquotesingle} & \texttt{ANALOG\_WRITE}   & pin valor           & ---                     & Diagnóstico \\
+\texttt{\textquotesingle c\textquotesingle} & \texttt{PIN\_MODE}       & pin modo            & ---                     & Diagnóstico \\ 
 \bottomrule
 \end{tabular}
 \end{table}
 
-El intercambio típico de mensajes entre la Raspberry Pi y el Arduino durante la operación normal se ilustra en la Figura~\ref{fig:secuencia_control} del Capítulo~\ref{chap:robot_real}.
+El intercambio típico de mensajes entre la Raspberry Pi y el Arduino durante la operación normal se ilustra en la Figura~\ref{fig:secuencia_control}.
 
 %------------------------------------------------------------------
 \section{Lectura de encoders y rutinas de interrupción}
@@ -195,7 +195,7 @@ El encoder derecho opera de forma análoga, pero su ISR (\texttt{PCINT1}) lee de
 
 Este método de tabla de búsqueda presenta dos ventajas significativas frente a la decodificación basada en cadenas de comparaciones condicionales. En primer lugar, el tiempo de ejecución de la ISR es constante e independiente del sentido de giro, lo que reduce el \emph{jitter} y mejora la precisión de la medición a velocidades elevadas. En segundo lugar, la tabla maneja implícitamente las transiciones inválidas asignándoles incremento cero, evitando la necesidad de lógica adicional de protección contra ruido.
 
-La asignación de pines de los encoders a los puertos del ATmega328P y sus vectores de interrupción asociados se detalla en la Tabla~\ref{tab:pinout_arduino_l298n} del Capítulo~\ref{chap:robot_real}.
+La asignación de pines de los encoders a los puertos del ATmega328P y sus vectores de interrupción asociados se detalla en la Tabla~\ref{tab:pinout_arduino_l298n}.
 
 \subsection{Obtención experimental de cuentas por vuelta}
 \label{sec:cpr_promedios}
@@ -244,7 +244,7 @@ Cada motor dispone de dos pines de dirección: \texttt{RIGHT\_MOTOR\_FORWARD} (p
 
 La función \texttt{setMotorSpeeds()} actúa como envoltura que invoca \texttt{setMotorSpeed()} secuencialmente para ambas ruedas, simplificando las llamadas desde el controlador PID y desde los comandos seriales.
 
-El esquema de conexiones eléctricas entre el \gls{Arduino}, el puente H L298N y los motores se presenta en la Figura~\ref{fig:esquema_conexiones}, y la asignación detallada de pines en la Tabla~\ref{tab:pinout_arduino_l298n}, ambas en el Capítulo~\ref{chap:robot_real}.
+El esquema de conexiones eléctricas entre el \gls{Arduino}, el puente H L298N y los motores se presenta en la Figura~\ref{fig:esquema_conexiones}, y la asignación detallada de pines en la Tabla~\ref{tab:pinout_arduino_l298n}.
 
 %------------------------------------------------------------------
 \section{Control PID diferencial}
@@ -257,7 +257,7 @@ El controlador de velocidad de cada rueda se implementa en el archivo \texttt{di
 La estructura \texttt{SetPointInfo} contiene los siguientes campos:
 
 \begin{itemize}
-\item \texttt{TargetTicksPerFrame}: referencia de velocidad expresada como número de cuentas de encoder esperadas en un intervalo de control. Este valor es establecido por los comandos \texttt{'m'} o \texttt{'k'} a través del protocolo serial.
+\item \texttt{TargetTicksPerFrame}: referencia de velocidad expresada como número de cuentas de encoder esperadas en un intervalo de control. Este valor es establecido por los comandos \texttt{\textquotesingle m\textquotesingle} o \texttt{\textquotesingle k\textquotesingle} a través del protocolo serial.
 \item \texttt{Encoder} y \texttt{PrevEnc}: valor actual y anterior del contador absoluto del encoder. La diferencia entre ambos proporciona la velocidad medida en ticks/frame.
 \item \texttt{PrevInput}: almacena la última medición de velocidad para el cálculo del término derivativo.
 \item \texttt{ITerm}: acumulador del término integral del controlador.
@@ -269,23 +269,36 @@ Se instancian dos variables globales de este tipo: \texttt{leftPID} y \texttt{ri
 
 \subsubsection{Convención de ordenamiento y rol del divisor $K_o$}
 
-El firmware hereda del proyecto original \texttt{ros\_arduino\_bridge} \cite{ROSArduinoBridge} una convención de ordenamiento de ganancias distinta de la notación académica estándar. En la literatura clásica de control automático, la ley de control PID se expresa habitualmente como $K_p$, $K_i$, $K_d$ (proporcional, integral, derivativa). Sin embargo, la estructura \texttt{SetPointInfo} del firmware y los comandos seriales \texttt{'u'} y \texttt{'z'} utilizan el orden $K_p$, $K_d$, $K_i$, $K_o$, según la correspondencia:
+El firmware hereda del proyecto original \texttt{ros\_arduino\_bridge} \cite{ROSArduinoBridge} una convención de ordenamiento de ganancias distinta de la notación académica estándar. En la literatura clásica de control automático, la ley de control PID se expresa habitualmente como $K_p$, $K_i$, $K_d$ (proporcional, integral, derivativa). Sin embargo, la estructura \texttt{SetPointInfo} del firmware y los comandos seriales \texttt{\textquotesingle u\textquotesingle} y \texttt{\textquotesingle z\textquotesingle} utilizan el orden $K_p$, $K_d$, $K_i$, $K_o$, según la correspondencia:
 
 \begin{table}[H]
 \centering
-\caption{Correspondencia entre posición en el protocolo serial y ganancia PID.}
-\label{tab:orden_pid}
-\begin{tabular}{clll}
-\toprule
-\textbf{Posición} & \textbf{Campo firmware} & \textbf{Ganancia}
-  & \textbf{Equivalente académico} \\
-\midrule
-0 & \texttt{pid\_args[0]} / \texttt{Kp} & Proporcional & $K_p$ \\
-1 & \texttt{pid\_args[1]} / \texttt{Kd} & Derivativa   & $K_d$ \\
-2 & \texttt{pid\_args[2]} / \texttt{Ki} & Integral     & $K_i$ \\
-3 & \texttt{pid\_args[3]} / \texttt{Ko} & Divisor de escala & --- (sin equivalente directo) \\
-\bottomrule
-\end{tabular}
+\begin{threeparttable}
+    \caption{Correspondencia entre posición en el protocolo serial, campo del firmware y ganancia equivalente en la formulación canónica del PID.}
+    \label{tab:orden_pid}
+    \begin{tabular}{clll}
+        \toprule
+        \textbf{Posición\tnote{a}} & \textbf{Campo firmware} & \textbf{Ganancia}
+          & \textbf{Equivalente canónico\tnote{b}} \\
+        \midrule
+        0 & \texttt{pid\_args[0]} / \texttt{Kp} & Proporcional                & $k_p = K_p / K_o$ \\
+        1 & \texttt{pid\_args[1]} / \texttt{Kd} & Derivativa                  & $k_d = K_d / K_o$ \\
+        2 & \texttt{pid\_args[2]} / \texttt{Ki} & Integral                    & $k_i = K_i / K_o$ \\
+        3 & \texttt{pid\_args[3]} / \texttt{Ko} & Divisor de escala\tnote{c}  & ---               \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \footnotesize
+      \item[a] Orden $K_p, K_d, K_i, K_o$ heredado del firmware
+            \emph{ROSArduinoBridge}; difiere del habitual $K_p, K_i, K_d$.
+            Respetar al armar tramas seriales.
+      \item[b] Equivalencia canónica: dividir por $K_o$. Permite transmitir
+            ganancias como enteros (1–255). 
+      \item[c] $K_o$ no es canónico. En el firmware divide la salida:
+            $u[k] = (K_p e[k] - K_d(y[k]-y[k-1]) + I[k])/K_o$,
+            con $I[k] = I[k-1] + K_i e[k]$. Actúa como normalización previa al PWM.
+    \end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 El parámetro $K_o$ no es una ganancia PID en el sentido clásico, sino un \textbf{divisor de escala global} que normaliza la salida del controlador. La ecuación de control implementada en la función \texttt{doPID()} es:
@@ -299,13 +312,13 @@ u[k] = u[k-1] + \frac{K_p \cdot e[k]
 \end{equation}
 
 \noindent
-donde $\Delta_{\text{in}}[k]$ es el incremento de encoder en el frame actual y $I[k]$ es el término integral acumulado. De este modo, las ganancias \emph{efectivas} que actúan sobre el sistema son $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. Con $K_o = 50$, las ganancias de la rueda izquierda resultan en valores efectivos de $16.0/50 = 0.32$ (proporcional), $20.3/50 = 0.406$ (derivativa) y $0.075/50 = 1.5 \times 10^{-3}$ (integral).
+donde $\Delta_{\text{in}}[k]$ es el incremento de encoder en el frame actual y $I[k]$ es el término integral acumulado. De este modo, las ganancias \emph{efectivas} que actúan sobre el sistema son $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$.
 
 La ventaja de esta formulación es doble. Primero, permite trabajar con valores numéricos de ganancias más grandes (del orden de unidades y decenas), lo que mejora la \textbf{resolución de ajuste}: la diferencia entre $K_p = 16.00$ (rueda izquierda) y $K_p = 16.42$ (rueda derecha) representa un cambio fino del $2.6\%$ que sería difícil de expresar con la ganancia efectiva directa ($0.3200$ vs. $0.3284$). Segundo, la acumulación del término integral se realiza \emph{antes} de la división por $K_o$, lo que reduce errores de redondeo en aritmética de punto fijo o flotante de baja precisión, típica de microcontroladores de 8 bits como el ATmega328P del \gls{Arduino}.
 
 Adicionalmente, el firmware implementa un mecanismo de \textit{anti-windup} condicional: el término integral $I[k]$ solo se actualiza cuando la salida $u[k]$ no se encuentra saturada (es decir, cuando $|u[k]| < \texttt{MAX\_PWM} = 255$). Esto evita que el error integral se acumule indefinidamente cuando el actuador ya está al límite de su capacidad.
 
-Esta convención de ordenamiento se mantiene consistente en todo el proyecto: el script de sintonización automática (\texttt{SintonizacionAutomatica.py}) utiliza \texttt{ARDUINO\_KO} $= 50$ como constante fija, y el comando serial \texttt{'z'} (\texttt{UPDATE\_PID\_LR}) empaqueta las ganancias en el mismo orden $K_p$:$K_d$:$K_i$:$K_o$ para cada rueda.
+Esta convención de ordenamiento se mantiene consistente en todo el proyecto: el script de sintonización automática (\texttt{SintonizacionAutomatica.py}) utiliza \texttt{ARDUINO\_KO} $= 50$ como constante fija, y el comando serial \texttt{\textquotesingle z\textquotesingle} (\texttt{UPDATE\_PID\_LR}) empaqueta las ganancias en el mismo orden $K_p$:$K_d$:$K_i$:$K_o$ para cada rueda.
 
 \subsection{Algoritmo PID incremental}
 \label{sec:pid_discreto}
@@ -401,9 +414,9 @@ $K_o$ & 50    & 50    \\
 \phantomsection
 \label{sec:ko_convention}
 \noindent
-El divisor $K_o = 50$ cumple la función de factor de escala global. Al dividir la salida del PID por $K_o$, se permite que las ganancias $K_p$, $K_d$ y $K_i$ tomen valores numéricamente mayores, lo que mejora la resolución del ajuste cuando se trabaja con aritmética entera o de punto fijo. Las ganancias efectivas que realmente actúan sobre el sistema son $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. Estos valores iniciales se obtuvieron mediante el proceso de sintonización automática descrito en la Sección~\ref{sec:sintonizacion_pso}, y pueden ser modificados en tiempo de ejecución mediante los comandos \texttt{'u'} o \texttt{'z'} del protocolo serial.
+El divisor $K_o = 50$ cumple la función de factor de escala global. Al dividir la salida del PID por $K_o$, se permite que las ganancias $K_p$, $K_d$ y $K_i$ tomen valores numéricamente mayores, lo que mejora la resolución del ajuste cuando se trabaja con aritmética entera o de punto fijo. Las ganancias efectivas que realmente actúan sobre el sistema son $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. Estos valores iniciales se obtuvieron mediante el proceso de sintonización automática descrito en la Sección~\ref{sec:sintonizacion_pso}, y pueden ser modificados en tiempo de ejecución mediante los comandos \texttt{\textquotesingle u\textquotesingle} o \texttt{\textquotesingle z\textquotesingle} del protocolo serial.
 
-Las diferencias entre las ganancias de ambas ruedas reflejan las asimetrías mecánicas del robot: diferencias en fricción, juego mecánico de la caja reductora e imprecisiones de montaje hacen que el mismo código PWM no produzca exactamente la misma velocidad en ambos lados. El comando \texttt{'z'} (\texttt{UPDATE\_PID\_LR}) fue diseñado específicamente para abordar esta asimetría, permitiendo configurar ganancias independientes para cada rueda.
+Las diferencias entre las ganancias de ambas ruedas reflejan las asimetrías mecánicas del robot: diferencias en fricción, juego mecánico de la caja reductora e imprecisiones de montaje hacen que el mismo código PWM no produzca exactamente la misma velocidad en ambos lados. El comando \texttt{\textquotesingle z\textquotesingle} (\texttt{UPDATE\_PID\_LR}) fue diseñado específicamente para abordar esta asimetría, permitiendo configurar ganancias independientes para cada rueda.
 
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID asistida por PSO}
@@ -427,11 +440,11 @@ Este enfoque de \emph{sintonización asistida por metaheurística con validació
 
 El primer paso consiste en obtener datos experimentales de la dinámica \textbf{de la planta en lazo abierto}, es decir, sin controlador PID activo. Esta distinción es fundamental: si la captura se realizara con el PID habilitado, el modelo identificado reflejaría la dinámica del sistema controlado y no la de la planta, introduciendo una circularidad que impediría al PSO encontrar ganancias independientes de las vigentes durante la captura.
 
-Para ello se desarrolló el \emph{script} \texttt{ControlLazoAbierto.py}, que establece comunicación serial directa con el Arduino sin utilizar el hilo de lectura asincrónico de \texttt{pyArduino}, lo cual es necesario porque el comando de lectura de encoders (\texttt{'e'}) requiere una respuesta síncrona que no puede competir con un hilo de fondo activo.
+Para ello se desarrolló el \emph{script} \texttt{ControlLazoAbierto.py}, que establece comunicación serial directa con el Arduino sin utilizar el hilo de lectura asincrónico de \texttt{pyArduino}, lo cual es necesario porque el comando de lectura de encoders (\texttt{\textquotesingle e\textquotesingle}) requiere una respuesta síncrona que no puede competir con un hilo de fondo activo.
 
 \begin{quote}
 \textbf{Entorno de ejecución.}
-Los \emph{scripts} \texttt{ControlLazoAbierto.py} y \texttt{ControlLazoCerrado.py} (así como \texttt{SintonizacionAutomatica.py} y \texttt{SintonizacionLambda.py}) se ejecutan en la \textbf{PC de desarrollo}, con el \gls{Arduino} conectado directamente al puerto USB de dicha PC, \emph{no} en la Raspberry Pi ni a través de la red \gls{ROS2}. El parámetro \texttt{port} de \texttt{pyArduino.py} debe ajustarse al identificador de puerto del sistema operativo: \texttt{'COM4'} o similar en Windows; \texttt{'/dev/ttyUSBx'} en Linux/macOS. 
+Los \emph{scripts} \texttt{ControlLazoAbierto.py} y \texttt{ControlLazoCerrado.py} (así como \texttt{SintonizacionAutomatica.py} y \texttt{SintonizacionLambda.py}) se ejecutan en la \textbf{PC de desarrollo}, con el \gls{Arduino} conectado directamente al puerto USB de dicha PC, \emph{no} en la Raspberry Pi ni a través de la red \gls{ROS2}. El parámetro \texttt{port} de \texttt{pyArduino.py} debe ajustarse al identificador de puerto del sistema operativo: \texttt{\textquotesingle COM4\textquotesingle} o similar en Windows; \texttt{\textquotesingle /dev/ttyUSBx\textquotesingle} en Linux/macOS. 
 \end{quote}
 
 El procedimiento es el siguiente:
@@ -439,13 +452,13 @@ El procedimiento es el siguiente:
 \begin{enumerate}
 \item Se establece comunicación serial directa a 57600 baud mediante \texttt{serial.Serial}, sin hilo de fondo.
 
-\item Se verifica la comunicación leyendo los encoders con el comando \texttt{'e'} (\texttt{READ\_ENCODERS}) y confirmando que la respuesta contiene dos enteros válidos.
+\item Se verifica la comunicación leyendo los encoders con el comando \texttt{\textquotesingle e\textquotesingle} (\texttt{READ\_ENCODERS}) y confirmando que la respuesta contiene dos enteros válidos.
 
-\item Durante el primer segundo se envía PWM cero como línea base mediante el comando \texttt{'o'} (\texttt{MOTOR\_RAW\_PWM}).
+\item Durante el primer segundo se envía PWM cero como línea base mediante el comando \texttt{\textquotesingle o\textquotesingle} (\texttt{MOTOR\_RAW\_PWM}).
 
-\item En $t = 1.0$ s se aplica un escalón de PWM de valor \texttt{PWM\_STEP} $= 143$, determinado experimentalmente como el valor que produce una velocidad de estado estacionario de aproximadamente $0.13$ m/s en ambas ruedas. El comando \texttt{'o'} aplica este PWM directamente a los motores, desactivando el lazo de control PID del firmware. Este valor se obtuvo de forma iterativa: se comenzó con \texttt{PWM\_STEP} $= 100$ (que produjo ${\approx}\,0.067$ m/s) y se ajustó hasta alcanzar la velocidad objetivo.  
+\item En $t = 1.0$ s se aplica un escalón de PWM de valor \texttt{PWM\_STEP} $= 143$, determinado experimentalmente como el valor que produce una velocidad de estado estacionario de aproximadamente $0.13$ m/s en ambas ruedas. El comando \texttt{\textquotesingle o\textquotesingle} aplica este PWM directamente a los motores, desactivando el lazo de control PID del firmware. Este valor se obtuvo de forma iterativa: se comenzó con \texttt{PWM\_STEP} $= 100$ (que produjo ${\approx}\,0.067$ m/s) y se ajustó hasta alcanzar la velocidad objetivo.  
 
-\item La velocidad de cada rueda se calcula a partir de la diferencia de cuentas de encoder entre muestras consecutivas, leídas mediante el comando \texttt{'e'} de forma síncrona:
+\item La velocidad de cada rueda se calcula a partir de la diferencia de cuentas de encoder entre muestras consecutivas, leídas mediante el comando \texttt{\textquotesingle e\textquotesingle} de forma síncrona:
 
 \begin{equation}
 v[k] = \frac{\Delta\texttt{enc}[k]}{T_s \cdot \texttt{PID\_RATE}} 
@@ -471,7 +484,7 @@ Los \emph{scripts} de captura (\texttt{ControlLazoCerrado.py}) y de sintonizaci�
 
 La solución adoptada es un esquema de \textbf{lectura asincrónica mediante hilo de fondo}. Al invocar \texttt{readSerialStart()}, la clase lanza un hilo secundario (\texttt{backgroundThread}) que monitorea el puerto serial de forma continua: cada vez que detecta datos disponibles, lee una línea completa, la descompone en campos numéricos separados por espacios y actualiza el atributo \texttt{rawData}, un arreglo compartido de tamaño configurable (\texttt{sizeData} = 2 para las dos ruedas). De este modo, el hilo principal puede consultar la última lectura disponible en cualquier instante sin esperar una respuesta del Arduino, lo que permite mantener el período de muestreo $T_s$ sin discontinuidades.
 
-El envío de comandos se realiza mediante el método \texttt{sendData(datos, cmd)}, que construye una cadena con el formato esperado por el protocolo del firmware (carácter de comando seguido de los argumentos separados por espacios, terminado en retorno de carro (\texttt{'\textbackslash r'})) y la transmite por el puerto serial. Por ejemplo, la invocación \texttt{sendData([0.13, 0.13], cmd='k')} genera la cadena \texttt{"k 0.13 0.13\textbackslash r"}, que el firmware interpreta como el comando \texttt{SET\_VEL\_MPS} con referencia de $0.13$ m/s para ambas ruedas.
+El envío de comandos se realiza mediante el método \texttt{sendData(datos, cmd)}, que construye una cadena con el formato esperado por el protocolo del firmware (carácter de comando seguido de los argumentos separados por espacios, terminado en retorno de carro (\texttt{\textquotesingle \textbackslash r\textquotesingle})) y la transmite por el puerto serial. Por ejemplo, la invocación \texttt{sendData([0.13, 0.13], cmd=\textquotesingle k\textquotesingle)} genera la cadena \texttt{"k 0.13 0.13\textbackslash r"}, que el firmware interpreta como el comando \texttt{SET\_VEL\_MPS} con referencia de $0.13$ m/s para ambas ruedas.
 
 La Tabla~\ref{tab:pyarduino_api} resume la interfaz pública de la clase.
 
@@ -489,7 +502,7 @@ La Tabla~\ref{tab:pyarduino_api} resume la interfaz pública de la clase.
     \texttt{readSerialStart()} & 
     Lanza el hilo de lectura en segundo plano. La variable \texttt{rawData} se actualiza de forma asincrónica con cada línea válida recibida. \\ \addlinespace
     \texttt{sendData(datos, cmd)} & 
-    Envía un comando serial formateado como \texttt{"cmd val1 val2... \textbackslash r"}. El parámetro \texttt{cmd} corresponde al protocolo (\texttt{'k'}, \texttt{'e'}, etc.). \\ \addlinespace
+    Envía un comando serial formateado como \texttt{"cmd val1 val2... \textbackslash r"}. El parámetro \texttt{cmd} corresponde al protocolo (\texttt{\textquotesingle k\textquotesingle}, \texttt{\textquotesingle e\textquotesingle}, etc.). \\ \addlinespace
     \texttt{close()} & 
     Detiene el hilo de lectura, espera su finalización (\texttt{join()}) y cierra formalmente el puerto serial. \\ 
     \bottomrule
@@ -613,7 +626,7 @@ donde $\text{MSE}(e)$ es el error cuadrático medio entre la referencia y la res
 
 La simulación del lazo cerrado reproduce fielmente la estructura del PID implementado en el firmware, incluyendo la división por $K_o = 50$ y la saturación de la salida (véase la Sección~\ref{sec:ko_convention} para el rol del divisor $K_o$), de modo que las ganancias optimizadas constituyen una aproximación inicial transferible al Arduino.
 
-Un segundo PSO de 50 partículas y 150 generaciones busca las ganancias para cada rueda. El resultado se presenta en formato listo para ser enviado al firmware mediante el comando \texttt{'z'} (\texttt{UPDATE\_PID\_LR}), por ejemplo:
+Un segundo PSO de 50 partículas y 150 generaciones busca las ganancias para cada rueda. El resultado se presenta en formato listo para ser enviado al firmware mediante el comando \texttt{\textquotesingle z\textquotesingle} (\texttt{UPDATE\_PID\_LR}), por ejemplo:
 
 \begin{center}
 \texttt{z 16:20:0:50:16:20:0:50}
@@ -636,10 +649,8 @@ La simulación del lazo cerrado utilizada en la Etapa 3 introduce dos simplifica
 Ambas simplificaciones son aceptables en la práctica: el \textit{deadband} de 1--2 ticks tiene un efecto marginal sobre las métricas globales de desempeño (sobreimpulso, tiempo de subida, error estacionario), y el clipping adicional del integrador no se activa durante la operación normal del robot, ya que los valores típicos de $I_{\text{Term}}$ permanecen muy por debajo de los límites impuestos. El refinamiento experimental de la Etapa 4 compensa cualquier discrepancia residual entre el modelo simulado y la planta real.
 
 \utemFigurePropia{2.Texto/Imag/identificacion_y_sintonizacion_pso.png}{0.95\textwidth}
-{Identificación del modelo FODT y respuesta en lazo cerrado con ganancias PSO iniciales.
-\textit{Arriba}: ajuste del modelo FODT a los datos de lazo abierto.
-\textit{Abajo}: simulación del sistema controlado con las ganancias sugeridas por el PSO.}
-{fig:identificacion_sintonizacion_pso}
+{Procedimiento de sintonización automatizada en dos etapas. Columna izquierda: identificación FODT (Ec.~\ref{eq:fodt}) por PSO sobre la respuesta al escalón en lazo abierto. Columna derecha: simulación del PID resultante de un segundo PSO sobre el modelo identificado. Filas: rueda izquierda (arriba), rueda derecha (abajo).}
+{fig:pso_pipeline}
 
 \subsection{Etapa 4: Validación experimental y refinamiento iterativo}
 \label{subsec:refinamiento_iterativo}
@@ -649,7 +660,7 @@ Las ganancias obtenidas por el PSO en la Etapa 3 se consideran un \textbf{punto 
 El ciclo de validación procede de la siguiente manera:
 
 \begin{enumerate}
-\item Se cargan las ganancias sugeridas por el PSO en el firmware, ya sea mediante el comando serial \texttt{'z'} (en caliente) o editando directamente la función \texttt{resetPID()} en \texttt{diff\_controller.h} y recompilando.
+\item Se cargan las ganancias sugeridas por el PSO en el firmware, ya sea mediante el comando serial \texttt{\textquotesingle z\textquotesingle} (en caliente) o editando directamente la función \texttt{resetPID()} en \texttt{diff\_controller.h} y recompilando.
 \item Se ejecuta nuevamente \texttt{ControlLazoCerrado.py} para capturar la respuesta al escalón con las nuevas ganancias.
 \item Se examina visualmente la gráfica resultante, evaluando:
 \begin{itemize}
@@ -705,7 +716,7 @@ En primer lugar, atiende el \emph{parser} serial descrito en la Sección~\ref{se
 
 En segundo lugar, cuando el tiempo transcurrido desde la última ejecución del PID supera \texttt{PID\_INTERVAL}, se invoca la función \texttt{updatePID()} que realiza el ciclo completo de lectura de encoders, cálculo de la acción de control y aplicación de PWM a los motores. La variable \texttt{nextPID} se incrementa en \texttt{PID\_INTERVAL} tras cada ejecución, de modo que el sistema se recupera automáticamente si alguna iteración se retrasa ligeramente.
 
-En tercer lugar, se evalúa la condición de auto-detención: si han transcurrido más de \texttt{AUTO\_STOP\_INTERVAL} (2000 ms) desde el último comando de movimiento recibido, los motores se detienen y la bandera \texttt{moving} se desactiva. Cada comando de movimiento (\texttt{'m'}, \texttt{'o'} y \texttt{'k'}) actualiza la marca temporal \texttt{lastMotorCommand}, reiniciando implícitamente el temporizador de seguridad.
+En tercer lugar, se evalúa la condición de auto-detención: si han transcurrido más de \texttt{AUTO\_STOP\_INTERVAL} (2000 ms) desde el último comando de movimiento recibido, los motores se detienen y la bandera \texttt{moving} se desactiva. Cada comando de movimiento (\texttt{\textquotesingle m\textquotesingle}, \texttt{\textquotesingle o\textquotesingle} y \texttt{\textquotesingle k\textquotesingle}) actualiza la marca temporal \texttt{lastMotorCommand}, reiniciando implícitamente el temporizador de seguridad.
 
 Este mecanismo de auto-detención es una salvaguarda crítica para la operación en un entorno real: si la \gls{RaspberryPi} se reinicia, pierde la conexión Wi-Fi o el nodo de navegación falla, el robot se detendrá automáticamente en un plazo máximo de dos segundos en lugar de continuar moviéndose de forma descontrolada.
 
@@ -746,7 +757,7 @@ El método \texttt{start()} inicializa la comunicación serial y envía un mensa
 \small\texttt{RCLCPP\_INFO: "PID values: using firmware defaults (PSO-tuned, per-wheel)"}
 \end{center}
 
-La secuencia de arranque del plugin se ilustra en la Figura~\ref{fig:secuencia_start} del Capítulo~\ref{chap:robot_real}.
+La secuencia de arranque del plugin se ilustra en la Figura~\ref{fig:secuencia_start}.
 
 \subsection{Ciclo de lectura: del Arduino a \texttt{ros2\_control}}
 
@@ -754,7 +765,7 @@ En cada iteración del ciclo de control, el método \texttt{read()} ejecuta la s
 
 \begin{enumerate}
 \item Mide el tiempo transcurrido desde la última lectura (\texttt{deltaSeconds}) mediante \texttt{std::chrono}.
-\item Envía el comando \texttt{'e'} al Arduino a través de la clase \texttt{ArduinoComms} y recibe como respuesta los dos contadores absolutos de encoder.
+\item Envía el comando \texttt{\textquotesingle e\textquotesingle} al Arduino a través de la clase \texttt{ArduinoComms} y recibe como respuesta los dos contadores absolutos de encoder.
 \item Calcula la posición angular acumulada de cada rueda como $\theta = \texttt{enc} \times \texttt{rads\_per\_count}$.
 \item Calcula la velocidad angular de cada rueda como la diferencia de posiciones dividida por el intervalo de tiempo: $\omega = (\theta[k] - \theta[k-1]) / \Delta t$.
 \end{enumerate}
@@ -772,7 +783,7 @@ El método \texttt{write()} realiza la conversión inversa: traduce los comandos
 \end{equation}
 
 \noindent
-donde \texttt{rads\_per\_count} es el factor calculado a partir de \texttt{enc\_counts\_per\_rev} y \texttt{loop\_rate} es la frecuencia del lazo de control (30 Hz). El resultado se envía al Arduino mediante el comando \texttt{'m'} a través de \texttt{ArduinoComms::setMotorValues()}.
+donde \texttt{rads\_per\_count} es el factor calculado a partir de \texttt{enc\_counts\_per\_rev} y \texttt{loop\_rate} es la frecuencia del lazo de control (30 Hz). El resultado se envía al Arduino mediante el comando \texttt{\textquotesingle m\textquotesingle} a través de \texttt{ArduinoComms::setMotorValues()}.
 
 La consistencia de esta conversión depende de que \texttt{loop\_rate} en el \emph{plugin} coincida con \texttt{PID\_RATE} en el firmware. Ambos están configurados en 30 Hz, de modo que un \emph{tick por frame} en el \emph{plugin} corresponde exactamente a un \emph{tick por frame} en el controlador PID del Arduino.
 
@@ -781,10 +792,10 @@ La consistencia de esta conversión depende de que \texttt{loop\_rate} en el \em
 La clase \texttt{ArduinoComms} encapsula toda la comunicación serial utilizando la librería \texttt{serial} de C++. Sus métodos principales corresponden directamente a los comandos del protocolo del firmware:
 
 \begin{itemize}
-\item \texttt{readEncoderValues()}: envía \texttt{"e\textbackslash r"} y parsea la respuesta en dos enteros.
-\item \texttt{setMotorValues()}: construye y envía la cadena \texttt{"m <izq> <der>\textbackslash r"}.
-\item \texttt{setPidValues()}: construye y envía la cadena \texttt{"u <Kp>:<Kd>:<Ki>:<Ko>\textbackslash r"}. Dado que el comando \texttt{'u'} aplica ganancias idénticas a ambas ruedas, este método solo es útil para sintonía simétrica. Las ganancias asimétricas del PSO se precargan en el firmware (función \texttt{resetPID()}) y no se envían desde el plugin.
-\item \texttt{sendEmptyMsg()}: envía \texttt{"\textbackslash r"} como \emph{heartbeat} de verificación.
+    \item \texttt{readEncoderValues()}: envía \verb|"e\r"| y parsea la respuesta en dos enteros.
+    \item \texttt{setMotorValues()}: construye y envía la cadena \verb|"m <izq> <der>\r"|.
+    \item \texttt{setPidValues()}: construye y envía la cadena \verb|"u <Kp>:<Kd>:<Ki>:<Ko>\r"|. Dado que el comando \verb|'u'| aplica ganancias idénticas a ambas ruedas, este método solo es útil para sintonía simétrica. Las ganancias asimétricas del PSO se precargan en el firmware (función \texttt{resetPID()}) y no se envían desde el plugin.
+    \item \texttt{sendEmptyMsg()}: envía \verb|"\r"| como \emph{heartbeat} de verificación.
 \end{itemize}
 
 \noindent
@@ -800,12 +811,7 @@ La cadena completa de conversión de unidades entre \texttt{ros2\_control} y el 
 
 \subsection{Parámetros del controlador diferencial}
 
-El archivo \texttt{my\_controllers.yaml} configura el \texttt{diff\_drive\_controller} con los parámetros geométricos del robot (Tabla~\ref{tab:diff_drive_params} del Capítulo~\ref{chap:robot_real}). La consistencia de estos parámetros con el firmware es crítica: \texttt{wheel\_radius} coincide con \texttt{WHEEL\_DIAMETER}/2 (0.067/2 = 0.0335~m), la frecuencia \texttt{update\_rate} de 30 Hz coincide con \texttt{PID\_RATE} del Arduino, y los límites de velocidad ($\pm 0.13$~m/s lineal, $\pm 0.4$~rad/s angular) mantienen los motores en la zona lineal del modelo FODT identificado.
-
-%------------------------------------------------------------------
-\section{Resumen del flujo de datos completo}
-
-El ciclo completo de control —desde la publicación de un comando de velocidad hasta la retroalimentación de odometría— se describió paso a paso en la Sección~\ref{sec:flujo_datos} del Capítulo~\ref{chap:robot_real} y se ilustra en las Figuras~\ref{fig:flujo_control_diferencial} y~\ref{fig:secuencia_control}. La tabla de trazabilidad de parámetros compartidos entre el firmware y el plugin (Tabla~\ref{tab:trazabilidad_parametros}) confirma la consistencia de las constantes \texttt{TICKS\_PER\_REV} (1980), \texttt{PID\_RATE} (30 Hz) y \texttt{BAUDRATE} (57600) en ambos extremos de la comunicación.
+El archivo \texttt{my\_controllers.yaml} configura el \texttt{diff\_drive\_controller} con los parámetros geométricos del robot (Tabla~\ref{tab:diff_drive_params}). La consistencia de estos parámetros con el firmware es crítica: \texttt{wheel\_radius} coincide con \texttt{WHEEL\_DIAMETER}/2 (0.067/2 = 0.0335~m), la frecuencia \texttt{update\_rate} de 30 Hz coincide con \texttt{PID\_RATE} del Arduino, y los límites de velocidad ($\pm 0.13$~m/s lineal, $\pm 0.4$~rad/s angular) mantienen los motores en la zona lineal del modelo FODT identificado.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

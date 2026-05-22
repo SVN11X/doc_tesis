@@ -11,23 +11,7 @@ Dado que los subsistemas de control, simulación y hardware se describieron de f
 
 El marco de control \texttt{ros2\_control} y su integración con el robot —tanto en simulación como en hardware real— se describieron en detalle en los Capítulos~\ref{ch:robot_digital} y~\ref{chap:robot_real}. En resumen, el \texttt{controller\_manager} gestiona el \texttt{diff\_drive\_controller} (que convierte comandos $(v, \omega)$ en velocidades de rueda y publica odometría) y el \texttt{joint\_state\_broadcaster} (que actualiza la cadena \texttt{tf}). La interfaz de hardware se conecta al \gls{Arduino} vía el plugin \texttt{DiffDriveArduino} en el robot real, o al motor de física de Gazebo en simulación. Los parámetros del controlador diferencial se detallan en la Tabla~\ref{tab:diff_drive_params}.
 
-
-\section{Integración en simulación con Gazebo}
-\label{sec:ros2ctrl_gazebo}
-
-La validación en simulación y los problemas conocidos (frecuencia de reloj, geometría de colisión, desfase sensor-transformación) se documentaron en el Capítulo~\ref{ch:robot_digital}. Los criterios de aceptación se presentaron en la Tabla~\ref{tab:criterios_aceptacion_resumen}.
-
-
-\section{Controlador diferencial y parámetros del robot}
-\label{sec:controllers_yaml}
-
-El controlador diferencial y sus parámetros se describieron en la Tabla~\ref{tab:diff_drive_params} del Capítulo~\ref{chap:robot_real}. Los límites de velocidad ($\pm 0.13$~m/s lineal, $\pm 0.4$~rad/s angular) son conservadores, elegidos para operar en la zona lineal del modelo FODT identificado.
-
 % ============================================================
-\section{Despliegue en el robot real}
-\label{sec:ros2ctrl_real}
-
-La secuencia de arranque del robot real (\texttt{launch\_robot.launch.py}), incluyendo la publicación del modelo, la carga de controladores y la verificación de coherencia geométrica, se describió en el Capítulo~\ref{chap:robot_real}. La secuencia temporal se ilustró en la Figura~\ref{fig:secuencia_arranque_controladores}.
 
 \section{Mapeo del entorno con \texttt{slam\_toolbox}}
 \label{sec:slam_ch9}
@@ -52,8 +36,9 @@ La selección de \texttt{slam\_toolbox} en modo asíncrono en línea responde a 
 \paragraph{Por qué el modo \texttt{online\_async} y no \texttt{online\_sync} ni \texttt{lifelong}.}
 \begin{itemize}
 \item \texttt{online\_sync}: procesa cada barrido en el mismo hilo que lo recibe, pudiendo bloquear la publicación del sensor si la optimización tarda más que el período de barrido.
-\item \texttt{online\_async}: procesa los barridos en un hilo paralelo, la adquisición nunca se bloquea. La cadena \texttt{tf} se mantiene continua bajo carga alta. Es el modo recomendado para hardware con recursos limitados \cite{macenski2020slamtoolbox}.
+
 \item \texttt{lifelong}: añade actualización continua del mapa y gestión de cambios, adecuado para operación prolongada pero introduce complejidad innecesaria para este proyecto.
+\item \texttt{online\_async}: procesa los barridos en un hilo paralelo, la adquisición nunca se bloquea. La cadena \texttt{tf} se mantiene continua bajo carga alta. Es el modo recomendado para hardware con recursos limitados \cite{macenski2020slamtoolbox}.
 \end{itemize}
 
 El modo \texttt{online\_async} ofrece el mejor equilibrio entre robustez de mapeo, compatibilidad con Nav2 y viabilidad computacional en la Raspberry Pi 4.
@@ -101,10 +86,10 @@ El paquete \texttt{nav2\_amcl} fue configurado como alternativa de localización
 
 \begin{enumerate}
     \item \texttt{slam\_toolbox} en modo \texttt{localization} ya provee localización sobre mapa serializado, cumpliendo la misma función sin requerir un nodo adicional.
-    \item La odometría basada exclusivamente en encoders (sin IMU) produce una estimación inicial insuficiente para que el filtro de partículas converja de manera confiable, especialmente tras giros bruscos donde la deriva angular alcanza hasta 20° (véase Tabla~\ref{tab:odom_giro}).
+    \item La odometría basada exclusivamente en encoders (sin IMU) produce una estimación inicial insuficiente para que el filtro de partículas converja de manera confiable, especialmente tras giros bruscos donde la deriva angular alcanza hasta 20° (véase Tabla~\ref{tab:odom_giro})
 \end{enumerate}
 
-Los archivos de configuración se conservan en \texttt{config/nav2\_params\_real.yaml} (líneas comentadas con \texttt{\# AMCL desactivado}) para facilitar su habilitación futura si se incorpora una IMU. Los parámetros preparados se detallan en el Anexo~\ref{anx:amcl_params}.
+Los archivos de configuración se conservan en \texttt{config/nav2\_params\_real.yaml} (líneas comentadas con \texttt{\# AMCL desactivado}) para facilitar su habilitación futura si se incorpora una IMU. Los parámetros preparados se detallan en el \ref{anx:amcl_params}
 
 % ============================================================
 \section{Navegación autónoma con Nav2}
@@ -127,18 +112,22 @@ NavFn es el módulo de planificación global de Nav2. Implementa Dijkstra (si \t
 El planificador \texttt{NavfnPlanner} (alias \texttt{GridBased}) implementa A* sobre el costmap global. A* utiliza una estimación de la distancia restante al destino para priorizar direcciones prometedoras, lo que lo hace eficiente incluso en mapas grandes.
 
 \begin{table}[H]
-\small    
 \centering
-\caption{Parámetros del planificador global NavFn (\texttt{nav2\_params.yaml}).}
+\small
+\caption{Parámetros del planificador global NavFn (\texttt{nav2\_params.yaml}). Los valores son idénticos en simulación y hardware real, salvo \texttt{tolerance}, ajustado por la diferente resolución del costmap en cada entorno.}
 \label{tab:planner_params_ch9}
-\begin{tabular}{p{3cm} p{3.5cm} p{3.5cm} l}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{} l >{\centering\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{7cm} @{}}
 \toprule
-\textbf{Parámetro}      & \textbf{Real}    & \textbf{Simulación} & \textbf{Descripción} \\ \midrule
-\texttt{planner\_plugins} & \multicolumn{2}{c}{\texttt{GridBased}}          & Alias del planificador \\
-\texttt{plugin}           & \multicolumn{2}{c}{\texttt{nav2\_navfn\_planner}} & Implementación del algoritmo \\
-\texttt{use\_astar}       & \multicolumn{2}{c}{\texttt{true}}               & Uso de A* en ambos entornos \\ \addlinespace
-\texttt{tolerance}        & 0.15 m           & 0.5 m               & Tolerancia de ruta (menor en real por resolución del costmap) \\
-\texttt{allow\_unknown}   & \multicolumn{2}{c}{\texttt{true}}               & Planifica en zonas no mapeadas \\ \bottomrule
+\textbf{Parámetro}        & \textbf{Valor}                           & \textbf{Descripción} \\
+\midrule
+\texttt{planner\_plugins} & \texttt{GridBased}                       & Alias del planificador \\
+\texttt{plugin}           & \texttt{nav2\_navfn\_planner}            & Implementación del algoritmo \\
+\texttt{use\_astar}       & \texttt{true}                            & Uso de A* sobre el costmap global \\
+\texttt{allow\_unknown}   & \texttt{true}                            & Habilita planificar en zonas no mapeadas \\
+\addlinespace
+\texttt{tolerance}        & $0.5$~m (sim) \newline $0.15$~m (real)   & Distancia máxima al objetivo aceptada como "alcanzado"; valor menor en hardware real por mayor resolución del costmap \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -219,20 +208,27 @@ Ventana móvil de $4 \times 4$ m alrededor del robot; utilizado por el controlad
 \subsection{Parámetros críticos}
 
 \begin{table}[H]
-\small
 \centering
-\caption{Parámetros de los mapas de costos en \texttt{nav2\_params.yaml} (hardware real).}
-\label{tab:costmap_params_ch9}
-\begin{tabular}{P{3cm} P{3cm} P{3cm} P{4cm}}
-\toprule
-\textbf{Parámetro} & \textbf{Global} & \textbf{Local} & \textbf{Descripción} \\
-\midrule
-\texttt{resolution}            & 0.03 m & 0.03 m & Tamaño de celda \\
-\texttt{inflation\_radius}     & 0.18 m & 0.18 m & Radio de zona de seguridad (real; sim: 0.55 m) \\
-\texttt{cost\_scaling\_factor} & 1.5    & 1.5    & Decaimiento de la inflación \\
-\texttt{global\_frame}         & \texttt{map} & \texttt{odom} & Marco de referencia \\
-\bottomrule
-\end{tabular}
+\small
+\begin{threeparttable}
+    \caption{Parámetros de los mapas de costos en \texttt{nav2\_params.yaml} (hardware real).}
+    \label{tab:costmap_params_ch9}
+    \setlength{\tabcolsep}{5pt}
+    \begin{tabular}{@{} l >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{1.7cm} >{\raggedright\arraybackslash}p{6.3cm} @{}}
+        \toprule
+        \textbf{Parámetro}             & \textbf{Global}  & \textbf{Local}  & \textbf{Descripción} \\
+        \midrule
+        \texttt{resolution}            & $0.03$~m          & $0.03$~m         & Tamaño de celda \\
+        \texttt{inflation\_radius}     & $0.18$~m          & $0.18$~m         & Radio de zona de seguridad\tnote{a} \\
+        \texttt{cost\_scaling\_factor} & $1.5$             & $1.5$            & Tasa de decaimiento exponencial de la inflación \\
+        \texttt{global\_frame}         & \texttt{map}      & \texttt{odom}    & Marco de referencia del costmap \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+        \footnotesize
+        \item[a] En el entorno de simulación se utiliza $r_{\text{inflación}} = 0.55$~m por la mayor huella del robot simulado respecto del prototipo real (Sec.~\ref{sec:nav_marco}).
+    \end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 El \texttt{footprint} del robot es un polígono asimétrico que refleja la forma real del chasis: $[[0.20;\allowbreak\ 0.12],\allowbreak\ [-0.06;\allowbreak\ 0.12],\allowbreak\ [-0.06;\allowbreak\ -0.12],\allowbreak\ [0.20;\allowbreak\ -0.12]]$ m.

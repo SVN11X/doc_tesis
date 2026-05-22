@@ -220,3 +220,9 @@ description={Coordinate Frames for Mobile Platforms. Define la cadena canónica 
 name=DTR,
 description={Data Terminal Ready. Señal de control de la interfaz serie RS-232 mediante la cual el equipo terminal (PC u ordenador embebido) indica al equipo de comunicaciones que está listo para operar. En adaptadores USB-serie como el CH340 utilizado por el Arduino Nano, la activación de \gls{DTR} al abrir el puerto provoca un pulso en la línea de reset del microcontrolador, reiniciándolo automáticamente.}
 }
+
+\newglossaryentry{microRos}
+{
+name=micro-ROS,
+description={Implementación de \gls{ROS2} para microcontroladores de 32 bits con recursos limitados. Permite que un MCU actúe como nodo nativo en el grafo de \gls{ROS2}, eliminando la necesidad de un puente serial. Requiere típicamente al menos 64~KB de RAM y 256~KB de \textit{flash}, condiciones no cumplidas por la familia AVR de 8 bits usada por el Arduino Nano.}
+}

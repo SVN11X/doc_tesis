@@ -10,7 +10,7 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 \subsection{Entorno de simulación}
 \label{subsec:entorno_sim}
 
-Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04, utilizando el mundo \texttt{obstacles.world} (recinto de $6 \times 8$~m con paredes y obstáculos interiores). La configuración mantiene los mismos nombres de tópicos y estructura de parámetros que el robot real, con archivos YAML paralelos (\texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}) que adaptan límites cinemáticos, frecuencias de costmap y tolerancias de navegación al entorno simulado, además de \texttt{use\_sim\_time:=true}.
+Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04, utilizando archivos \texttt{.world}. La configuración mantiene los mismos nombres de tópicos y estructura de parámetros que el robot real, con archivos YAML paralelos (\texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}) que adaptan límites cinemáticos, frecuencias de costmap y tolerancias de navegación al entorno simulado, además de \texttt{use\_sim\_time:=true}.
 
 \begin{utemMultiFigurePropia}{Muestra de simulación en Gazebo.}{fig:sample_nav_sim_v1}
     \addutem{0.46}{2.Texto/Imag/sample_nav_sim_part1.png}{Comienzo}
@@ -196,7 +196,7 @@ La distancia reportada por \texttt{/odom} es sistemáticamente inferior a la te�
 \label{tab:odom_giro_sim}
 \begin{tabular}{ccccc}
 \toprule
-\textbf{Prueba} & \textbf{Giro te\'orico (\textdegree{})} & \textbf{Giro odom. (\textdegree{})} & \textbf{Giro real GT (\textdegree{})} & \textbf{Error (\%)}\tnote{a} \\
+\textbf{Prueba} & \textbf{Giro teórico (\textdegree{})} & \textbf{Giro odom. (\textdegree{})} & \textbf{Giro real GT (\textdegree{})} & \textbf{Error (\%)}\tnote{a} \\
 \midrule
 1 & 360.0 & 335.86 & 335.86 & 6.71\% \\
 2 & 360.0 & 347.40 & 347.40 & 3.50\% \\
@@ -305,7 +305,7 @@ Derecha   & 0.000890 & 0.3485 & 0.0001 \\
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item[a] El PSO es un algoritmo estocástico; cada ejecución sobre los mismos datos de lazo abierto puede producir valores de $L$ ligeramente distintos (las ganancias $K_m$ y $\tau$ son consistentes entre corridas). Los parámetros FODT adoptados como referencia para el diseño final corresponden a la corrida de \texttt{SintonizacionLambda.py} (Tabla~\ref{tab:fodt_lambda}).
+\item[a] El PSO es un algoritmo estocástico; cada ejecución sobre los mismos datos de lazo abierto puede producir valores de $L$ ligeramente distintos (las ganancias $K_m$ y $\tau$ son consistentes entre corridas).
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -730,7 +730,7 @@ Observaciones & --- \\
 
 \subsection{Margen del regulador de 5 V}
 
-El regulador conmutado DC--DC utilizado (DFRobot DFR0205, basado en el GS2678) está dimensionado para entregar hasta 5~A en el riel de 5~V. De acuerdo con el presupuesto de potencia presentado en la Tabla~\ref{tab:power_budget_filled} del Capítulo~\ref{chap:robot_real}, la corriente continua máxima prevista en dicho riel es de 2.02~A, con picos de hasta 3.20~A al arrancar simultáneamente la Raspberry Pi~4 y los periféricos USB. Incluso en el peor caso de consumo estimado, el regulador opera a un 64\,\% de su capacidad nominal, lo que le confiere un margen de seguridad de aproximadamente $2.5\times$ sobre la corriente continua y de $1.6\times$ sobre la corriente de pico. Durante todas las pruebas experimentales descritas en las secciones anteriores —que incluyen sesiones de mapeo SLAM y navegación autónoma superiores a 10~min de operación continua— no se observaron evidencias de sobrecalentamiento ni de caídas de tensión en el riel de 5~V, lo que confirma que la fuente de alimentación es adecuada para la carga del prototipo y que dispone de reserva suficiente para la incorporación futura de sensores adicionales, como una IMU o una cámara RGB-D de bajo consumo.
+El regulador conmutado DC--DC utilizado (DFRobot DFR0205, basado en el GS2678) está dimensionado para entregar hasta 5~A en el riel de 5~V. De acuerdo con el presupuesto de potencia presentado en la Tabla~\ref{tab:power_budget_filled}, la corriente continua máxima prevista en dicho riel es de 2.02~A, con picos de hasta 3.20~A al arrancar simultáneamente la Raspberry Pi~4 y los periféricos USB. Incluso en el peor caso de consumo estimado, el regulador opera a un 64\,\% de su capacidad nominal, lo que le confiere un margen de seguridad de aproximadamente $2.5\times$ sobre la corriente continua y de $1.6\times$ sobre la corriente de pico. Durante todas las pruebas experimentales descritas en las secciones anteriores —que incluyen sesiones de mapeo SLAM y navegación autónoma superiores a 10~min de operación continua— no se observaron evidencias de sobrecalentamiento ni de caídas de tensión en el riel de 5~V, lo que confirma que la fuente de alimentación es adecuada para la carga del prototipo y que dispone de reserva suficiente para la incorporación futura de sensores adicionales, como una IMU o una cámara RGB-D de bajo consumo.
 
 
 % ===========================================================================

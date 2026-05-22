@@ -360,9 +360,9 @@ El flujo de datos que completa un ciclo de control es:
 \item Nodo de navegación o teleoperación publica en \texttt{/cmd\_vel} o \texttt{/cmd\_vel\_joy}.
 \item \texttt{twist\_mux} selecciona la fuente de mayor prioridad y reenvía a \texttt{/diff\_cont/cmd\_vel\_unstamped}.
 \item \texttt{diff\_drive\_controller} convierte $(v,\omega)$ en velocidades angulares de rueda.
-\item El plugin \texttt{DiffDriveArduino} convierte a ticks/frame y envía comando \texttt{'m'}.
+\item El plugin \texttt{DiffDriveArduino} convierte a ticks/frame y envía comando \texttt{\textquotesingle m\textquotesingle}.
 \item El firmware actualiza las referencias PID y, en el siguiente ciclo, calcula PWM y aplica a los motores.
-\item Periódicamente, \texttt{read()} solicita los encoders con \texttt{'e'}, calcula posiciones y velocidades.
+\item Periódicamente, \texttt{read()} solicita los encoders con \texttt{\textquotesingle e\textquotesingle}, calcula posiciones y velocidades.
 \item \texttt{diff\_drive\_controller} publica odometría en \texttt{/odom} y la transformación \texttt{odom}→\texttt{base\_link}.
 \end{enumerate}
 
