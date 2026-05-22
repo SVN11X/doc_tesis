@@ -314,11 +314,11 @@ Derecha   & 0.000890 & 0.3485 & 0.0001 \\
 \begin{table}[H]
 \centering
 \begin{threeparttable}
-\caption{Indicadores de desempeño PID con ganancias PSO.}
+\caption{Indicadores de desempeño PID con ganancias PSO. Todas las métricas se calculan con \texttt{deadband}$\,=0$ por consistencia metodológica.}
 \label{tab:pid_performance}
 \begin{tabular}{lcc}
 \toprule
-\textbf{Indicador}\tnote{b} & \textbf{Rueda izquierda} & \textbf{Rueda derecha} \\
+\textbf{Indicador} & \textbf{Rueda izquierda} & \textbf{Rueda derecha} \\
 \midrule
 Tiempo de subida (10\%--90\%) & 0.600~s & 0.600~s \\
 Tiempo de establecimiento (2\%) & N/A\tnote{a} & 3.100~s \\
@@ -328,8 +328,7 @@ Error estacionario & 0.00488~m/s & 0.00192~m/s \\
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item[a] La rueda izquierda no alcanza la banda del 2\% dentro de 10 s por oscilación residual.
-\item[b] Métricas calculadas con \texttt{deadband}$\,=0$ por consistencia metodológica.
+\item[a] La rueda izquierda no alcanza la banda del 2\% dentro de 10~s por oscilación residual.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

@@ -218,7 +218,7 @@ El \gls{Arduino} V3 proporciona:
 
 \subsection{Comparación con alternativas}
 
-Se evaluaron otras opciones (Arduino Uno, Pro Mini, Nano Every, Nano 33 BLE, Raspberry Pi Pico, ESP32, Teensy). El \gls{Arduino} V3 se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. En el futuro podría migrarse a una placa compatible con \emph{micro-ROS} (ESP32, Teensy, RP2040) manteniendo la misma arquitectura.
+Se evaluaron otras opciones (Arduino Uno, Pro Mini, Nano Every, Nano 33 BLE, Raspberry Pi Pico, ESP32, Teensy). El \gls{Arduino} V3 se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Cabe notar que su microcontrolador ATmega328P de 8 bits (2~KB de SRAM) queda por debajo de los requisitos mínimos de \gls{microRos}~\cite{microros} —el \textit{framework} de \gls{ROS2} para microcontroladores de 32 bits con recursos limitados— por lo que la integración con el grafo de \gls{ROS2} se resolvió mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}). Plataformas como ESP32, Teensy~4.x o Raspberry Pi Pico (RP2040) sí cumplen esos requisitos y son candidatas naturales para una migración futura que conserve la misma arquitectura mecánica y de control.
 
 %------------------------------------------------------------------
 \section{Raspberry Pi 4 (8 GB)}
