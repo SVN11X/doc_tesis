@@ -1179,4 +1179,128 @@ El paquete \texttt{nav2\_amcl} fue configurado en \texttt{nav2\_params.yaml} com
 \end{tabular}%
 }
 \end{table}
+
+\section{Comparación económica}
+
+El costo total de los materiales y componentes adquiridos para la construcción del prototipo ascendió a \textbf{CLP~582.447}, con un desembolso real detallado en la Tabla~\ref{tab:costo_prototipo}. Como es habitual en proyectos de prototipado electrónico y mecánico, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en presentaciones comerciales de múltiples unidades o en kits surtidos; el costo reportado corresponde al valor de compra de dichos kits, lo que proporciona una referencia realista del desembolso necesario para la construcción del robot. En el \ref{anx:bom} se desglosa la lista de materiales completa.
+
+\begin{ThreePartTable}
+\begin{TableNotes}[para,flushleft]
+\footnotesize
+\item[a] Equipamiento de soporte externo. El cargador permite recargar las baterías entre sesiones de prueba; el transmisor HDMI permite supervisar la Raspberry Pi durante la depuración sin un monitor cableado.
+\item[b] Adquirido en presentación de múltiples unidades (30–500 piezas). Solo se empleó una fracción en el ensamblaje final; el costo reportado es el del kit completo.
+\item[c] Incluye conectores de crimpado en 18, 20, 22 y 24~AWG, colores rojo y negro. Cada caja de 100 unidades se contabiliza por su costo total.
+\item[d] Incluye cable revestido de 18, 24 y 26~AWG en configuraciones de 2 y 6 núcleos, en rollos de 2~m.
+\end{TableNotes}
+
+\small
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{lrr}
+\caption{Costo del prototipo (precios reales en CLP, período 2024–2026).}
+\label{tab:costo_prototipo}\\
+\toprule
+\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\footnotesize\textit{Continuación de la tabla anterior}}\\
+\toprule
+\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
+\midrule
+\endhead
+\bottomrule
+\insertTableNotes
+\endlastfoot
+\multicolumn{3}{l}{\textit{Componentes principales}} \\ \addlinespace
+RPLidar A1 & 1 & 83.324 \\
+Raspberry Pi 4 (8 GB) & 1 & 77.272 \\
+Baterías Li-ion 12 V, 3000 mAh & 3 & 62.154 \\
+Transmisor HDMI inalámbrico\tnote{a} & 1 & 32.739 \\
+Router GL.iNet MT300N-V2 & 1 & 22.140 \\
+Regulador DC--DC (GS2678) & 1 & 18.858 \\
+Motorreductores JGA25-370 c/ encoder y ruedas & 2 & 18.038 \\
+Cargador de batería Li-ion 12 V\tnote{a} & 1 & 16.169 \\
+Chasis impreso 3D (PLA+, 1 kg) & 1 & 13.353 \\
+Hub USB alimentado & 1 & 12.400 \\
+Carcasa aluminio Raspberry Pi 4 & 1 & 9.832 \\
+Arduino Nano V3 + \emph{shield} base & 1 & 8.000 \\
+Adaptador de batería 12 V (conector Makita) & 1 & 4.940 \\
+Tarjeta microSD 64 GB clase 10 & 1 & 4.655 \\
+Driver de motores L298N & 1 & 3.000 \\
+Rueda loca (\emph{ball caster}) & 1 & 1.893 \\
+\midrule
+\multicolumn{2}{r}{\textit{Subtotal componentes principales}} & \textit{388.767} \\
+\midrule
+\multicolumn{3}{l}{\textit{Fijación, cableado y accesorios}} \\ \addlinespace
+Kit tornillos avellanada M1.6--M3\tnote{b} & 1 & 15.202 \\
+Kit tornillos Allen M3--M5\tnote{b} & 1 & 15.089 \\
+Kit insertos roscados M2--M6 (90 pzas.)\tnote{b} & 1 & 7.899 \\
+Kit insertos roscados M2--M3 (500 pzas.)\tnote{b} & 1 & 7.199 \\
+Separadores hexagonales M3×50 (10 pzas.)\tnote{b} & 1 & 8.293 \\
+Kit terminales JST 1.25 mm & 1 & 5.800 \\
+Kit DuPont 2.54 mm (620 pzas.) & 2 & 9.052 \\
+Kit terminales PH 2.0 mm (230 pzas.) & 1 & 2.507 \\
+Conectores crimpado varios AWG\tnote{c} & 6 & 6.621 \\
+Cable silicona 20 AWG, rojo y negro (5 m c/u) & 2 & 4.162 \\
+Cable revestido varios AWG\tnote{d} & 6 & 12.506 \\
+Cable RJ45 Cat-6 10 m & 1 & 5.066 \\
+Cable RJ45 Cat-6 5 m & 2 & 3.310 \\
+Cable micro USB macho 90°, 25 cm & 1 & 1.099 \\
+Cable extensión micro USB & 1 & 1.298 \\
+Conectores XT60 (5 pares)\tnote{b} & 1 & 3.478 \\
+Portafusible mini + fusible & 1 & 1.464 \\
+Interruptor pulsante 16 mm & 1 & 1.773 \\
+Divisor de línea 6 puertos & 1 & 2.832 \\
+Cinta FPV 10 cm & 1 & 1.817 \\
+\midrule
+\multicolumn{2}{r}{\textit{Subtotal fijación, cableado y accesorios}} & \textit{193.680} \\
+\midrule
+\multicolumn{3}{l}{\textit{Equipamiento de soporte (no montado en el robot)}} \\ \addlinespace
+Transmisor HDMI inalámbrico & (ya incluido) & --- \\
+Cargador de batería Li-ion 12 V & (ya incluido) & --- \\
+\midrule
+\textbf{Total prototipo} & & \textbf{582.447} \\
+\bottomrule
+\end{longtable}
+\end{ThreePartTable}
+
+El costo total del prototipo se contrasta en la Tabla~\ref{tab:comparacion_costos} con el de plataformas robóticas comerciales de prestaciones equivalentes, convertido a dólares estadounidenses al tipo de cambio referencial de 963~CLP/USD (dólar observado promedio del cuarto trimestre de 2024, según el Banco Central de Chile \citep{BCCh_DolarQ42024}).
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{Comparación de costo con plataformas comerciales.}
+\label{tab:comparacion_costos}
+\begin{tabular}{P{3.8cm} r r P{4.5cm}}
+\toprule
+\textbf{Plataforma} & \textbf{Costo (USD)} & \textbf{Costo (CLP)} & \textbf{Observación} \\
+\midrule
+Este prototipo
+  & $\sim$605
+  & 582.447
+  & Componentes accesibles; costo real documentado \\
+TurtleBot 3 Burger\tnote{a} \citep{ROBOTIS_TB3Burger}
+  & $\sim$550
+  & $\sim$522.500
+  & Kit educativo, RPi4 \\
+TurtleBot 3 Waffle Pi\tnote{a} \citep{ROBOTIS_TB3Waffle}
+  & $\sim$1.800
+  & $\sim$1.710.000
+  & Incluye LiDAR 360° y cámara \\
+Clearpath Jackal \citep{clearpath_jackal}
+  & $\sim$18.000
+  & $\sim$17.100.000
+  & Plataforma industrial \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[a] Precios de catálogo de ROBOTIS (\texttt{robotis.us}) consultados durante el segundo semestre de 2024, previo al incremento arancelario de 2025. A partir de 2025, ROBOTIS aplicó un recargo por aranceles recíprocos (\textit{reciprocal tariffs}), elevando el precio del TurtleBot~3 Burger a US\$\,784 y el del Waffle~Pi a US\$\,1.934. 
+\item Conversión referencial a 963 CLP/USD. Todos los precios son de catálogo, sin impuestos de internación ni envío internacional. El precio del Clearpath Jackal corresponde a la configuración base sin sensores adicionales.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+
 \end{appendices}
+

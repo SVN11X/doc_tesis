@@ -18,7 +18,7 @@ Se adopta una arquitectura de tracción diferencial con dos ruedas motrices y un
   \item Costo y peso contenidos, acordes al alcance de una plataforma de investigación y docencia.
 \end{itemize}
 
-\utemFigure{2.Texto/Imag/diff_bec.png}{0.60\textwidth}
+\utemFigure{2.Texto/Imag/diff_bec.png}{0.40\textwidth}
 {Arquitectura móvil de tracción diferencial: dos ruedas motrices y una rueda loca (caster).}
 {BECChassisLong}{fig:chasis-2wd-caster}
 
@@ -30,7 +30,7 @@ Esta categoría se caracteriza por dos ruedas motrices paralelas, cada una contr
   \item Si las ruedas giran en sentidos opuestos, el robot rota sobre su propio eje (giro en el lugar).
 \end{itemize}
 
- \utemFigure{2.Texto/Imag/diagrama_diff.png}{0.60\textwidth}
+ \utemFigure{2.Texto/Imag/diagrama_diff.png}{0.40\textwidth}
 {Diagrama simple de 2 ruedas + rueda libre.}
 {Tanklike2005}{fig:diagrama_diff}
 
@@ -40,7 +40,7 @@ Las ventajas principales son la simplicidad mecánica y la facilidad de control.
 
 Se seleccionaron ruedas estándar de goma para la tracción, por su robustez, economía y desempeño consistente en interiores.
 
- \utemFigure{2.Texto/Imag/wheel_set.png}{0.60\textwidth}
+ \utemFigure{2.Texto/Imag/wheel_set.png}{0.50\textwidth}
 {Conjunto de ruedas.}
 {ThinkRobotics65mmWheel}{fig:wheel_set}
 
@@ -73,7 +73,7 @@ Las ruedas tienen un diámetro de 67~mm y un ancho de 26~mm, dimensiones que ofr
 
 Se emplea un rodillo esférico tipo \emph{ball caster} como rueda de apoyo. Su esfera metálica gira libremente en todas direcciones, aportando estabilidad sin influir en la dirección.
 
-\utemFigure{2.Texto/Imag/ball_caster.png}{0.45\textwidth}{Rueda loca.}
+\utemFigure{2.Texto/Imag/ball_caster.png}{0.35\textwidth}{Rueda loca.}
 {FIXOhu_OnmagarasztoGorgo}{fig:ball_caster}
 
 Sus dimensiones reducidas (2.8~×~4.5~cm) permiten mantener el punto de apoyo trasero cercano al suelo, reduciendo la inclinación y favoreciendo un centro de gravedad bajo. Soporta cargas de hasta 20~kg, muy por encima del peso estimado del robot.
@@ -136,7 +136,7 @@ Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM). Los criterios de selecci�
   \item Caja reductora integrada (relación aproximada 1:45) que convierte alta velocidad y bajo par en una salida de menor velocidad y mayor par, adecuada para tracción.
 \end{itemize}
 
-\utemFigure{2.Texto/Imag/motor.jpg}{0.7\linewidth}{Motor Modelo JGA25-370, 12 V, 130 RPM}{nfp_gm25_370_en}{fig:motor}
+\utemFigure{2.Texto/Imag/motor.jpg}{0.5\linewidth}{Motor Modelo JGA25-370, 12 V, 130 RPM}{nfp_gm25_370_en}{fig:motor}
 
 \paragraph{Especificaciones técnicas relevantes}
 \begin{itemize}
@@ -267,7 +267,7 @@ Se emplea un RPLIDAR A1M8, un escáner láser 2D de 360° basado en triangulaci�
   \item Bajo costo y consumo moderado.
 \end{itemize}
 
-\utemFigure{2.Texto/Imag/a1m8.jpg}{0.6\linewidth}{Láser 2D RPLIDAR A1M8}{NaylampA1M8R5}{fig:lidar}
+\utemFigure{2.Texto/Imag/a1m8.jpg}{0.4\linewidth}{Láser 2D RPLIDAR A1M8}{NaylampA1M8R5}{fig:lidar}
 
 \paragraph{Especificaciones} según \citep{SlamtecA1Datasheet}:
 \begin{itemize}
@@ -302,7 +302,7 @@ El RPLIDAR A1 ofrece la mejor relación costo/prestaciones para mapeo de interio
 
 Se utiliza una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita). Este formato permite un intercambio rápido y seguro.
 
-\utemFigure{2.Texto/Imag/battery.png}{0.6\linewidth}{Batería \textbf{Li\mbox{-}ion de 12~V}}{AIMJINBL1021B}{fig:battery}
+\utemFigure{2.Texto/Imag/battery.png}{0.4\linewidth}{Batería \textbf{Li\mbox{-}ion de 12~V}}{AIMJINBL1021B}{fig:battery}
 
 Se eligió frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o plomo-ácido por su facilidad de recambio, seguridad y buena relación energía/peso.
 
@@ -310,7 +310,7 @@ Se eligió frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o pl
 
 Se usa el módulo DFRobot DFR0205, basado en el chip GS2678, un convertidor reductor conmutado a 350~kHz \parencite{DFRobotPowerModule}. Acepta tensiones de entrada entre 3.6 y 25~V, y ofrece tres salidas: una fija de 5~V, una ajustable entre 3.3 y 25~V, y un paso directo de la entrada. Entrega hasta 5~A con una potencia nominal de 25~W. Incluye protecciones por cortocircuito y limitación de corriente.
 
-\utemFigure{2.Texto/Imag/modulo_dc.jpg}{0.6\linewidth}{Power Module SKU DFR0205}{DFRobotPowerModule}{fig:modulo_dc}
+\utemFigure{2.Texto/Imag/modulo_dc.jpg}{0.4\linewidth}{Power Module SKU DFR0205}{DFRobotPowerModule}{fig:modulo_dc}
 
 Este regulador permite derivar el riel de 5~V (Raspberry Pi, \gls{LIDAR}, 
 \gls{Arduino}) desde la batería de 12~V con bajas pérdidas.
@@ -319,9 +319,9 @@ Este regulador permite derivar el riel de 5~V (Raspberry Pi, \gls{LIDAR},
 
 El ramal de potencia sigue la cadena: batería $\rightarrow$ fusible $\rightarrow$ interruptor maestro $\rightarrow$ reguladores/cargas. Se utiliza un fusible rápido de tipo \emph{mini blade} de 5~A y un interruptor pulsante con retención de 16~mm (soporta 3~A a 12~V). El interruptor secciona el bus de 12~V, permitiendo apagar los motores sin apagar la Raspberry Pi.
 
-\utemFigure{2.Texto/Imag/switch.jpg}{0.6\linewidth}{16mm Economical Push button Switch}{lanboo_16mm_economical_switch}{fig:switch}
+\utemFigure{2.Texto/Imag/switch.jpg}{0.4\linewidth}{16mm Economical Push button Switch}{lanboo_16mm_economical_switch}{fig:switch}
 
-\utemFigure{2.Texto/Imag/fuse.jpg}{0.6\linewidth}{Automotive Blade Fuses - Mini APM}{optifuse_apm}{fig:fuse}
+\utemFigure{2.Texto/Imag/fuse.jpg}{0.4\linewidth}{Automotive Blade Fuses - Mini APM}{optifuse_apm}{fig:fuse}
 
 \subsection{Dimensionamiento de cableado y conectores}
 
@@ -365,9 +365,6 @@ El chasis y cubiertas se fabrican mediante impresión 3D FDM en PLA+ por su faci
   \item \textbf{Impresora:} Creality Ender 3 (sistema Bowden).
   \item \textbf{Boquilla:} Latón 0.4~mm (estándar).
 \end{itemize}
-
-\utemFigure{2.Texto/Imag/pla_plus.png}{0.6\linewidth}{PLA+ Black}{esun:pla-plus}{fig:pla}
-\utemFigure{2.Texto/Imag/ender_3.jpg}{0.7\linewidth}{Creality Ender~3}{top3dshop:ender3-review}{fig:ender_3}
 
 \subsection{Diseño}
 
@@ -429,126 +426,6 @@ El flujo de trabajo combina \textit{Fusion~360} (diseño paramétrico) y \textit
 
 El PLA+ es adecuado para interiores pero se degrada con calor o UV. Se recomienda usar tornillería M3/M4 con arandelas y, para uniones frecuentes, insertos roscados (\emph{heat-set inserts}). La orientación de impresión debe alinear las capas con los esfuerzos principales para minimizar la anisotropía. Las tolerancias de ensamblaje deben ser de 0.2--0.4 mm.
 
-\section{Comparación económica}
-
-El costo total de los materiales y componentes adquiridos para la construcción del prototipo ascendió a \textbf{CLP~582.447}, con un desembolso real detallado en la Tabla~\ref{tab:costo_prototipo}. Como es habitual en proyectos de prototipado electrónico y mecánico, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en presentaciones comerciales de múltiples unidades o en kits surtidos; el costo reportado corresponde al valor de compra de dichos kits, lo que proporciona una referencia realista del desembolso necesario para la construcción del robot. En el \ref{anx:bom} se desglosa la lista de materiales completa.
-
-\begin{ThreePartTable}
-\begin{TableNotes}[para,flushleft]
-\footnotesize
-\item[a] Equipamiento de soporte externo. El cargador permite recargar las baterías entre sesiones de prueba; el transmisor HDMI permite supervisar la Raspberry Pi durante la depuración sin un monitor cableado.
-\item[b] Adquirido en presentación de múltiples unidades (30–500 piezas). Solo se empleó una fracción en el ensamblaje final; el costo reportado es el del kit completo.
-\item[c] Incluye conectores de crimpado en 18, 20, 22 y 24~AWG, colores rojo y negro. Cada caja de 100 unidades se contabiliza por su costo total.
-\item[d] Incluye cable revestido de 18, 24 y 26~AWG en configuraciones de 2 y 6 núcleos, en rollos de 2~m.
-\end{TableNotes}
-
-\small
-\setlength{\LTleft}{0pt}
-\setlength{\LTright}{0pt}
-\begin{longtable}{lrr}
-\caption{Costo del prototipo (precios reales en CLP, período 2024–2026).}
-\label{tab:costo_prototipo}\\
-\toprule
-\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\footnotesize\textit{Continuación de la tabla anterior}}\\
-\toprule
-\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
-\midrule
-\endhead
-\bottomrule
-\insertTableNotes
-\endlastfoot
-\multicolumn{3}{l}{\textit{Componentes principales}} \\ \addlinespace
-RPLidar A1 & 1 & 83.324 \\
-Raspberry Pi 4 (8 GB) & 1 & 77.272 \\
-Baterías Li-ion 12 V, 3000 mAh & 3 & 62.154 \\
-Transmisor HDMI inalámbrico\tnote{a} & 1 & 32.739 \\
-Router GL.iNet MT300N-V2 & 1 & 22.140 \\
-Regulador DC--DC (GS2678) & 1 & 18.858 \\
-Motorreductores JGA25-370 c/ encoder y ruedas & 2 & 18.038 \\
-Cargador de batería Li-ion 12 V\tnote{a} & 1 & 16.169 \\
-Chasis impreso 3D (PLA+, 1 kg) & 1 & 13.353 \\
-Hub USB alimentado & 1 & 12.400 \\
-Carcasa aluminio Raspberry Pi 4 & 1 & 9.832 \\
-Arduino Nano V3 + \emph{shield} base & 1 & 8.000 \\
-Adaptador de batería 12 V (conector Makita) & 1 & 4.940 \\
-Tarjeta microSD 64 GB clase 10 & 1 & 4.655 \\
-Driver de motores L298N & 1 & 3.000 \\
-Rueda loca (\emph{ball caster}) & 1 & 1.893 \\
-\midrule
-\multicolumn{2}{r}{\textit{Subtotal componentes principales}} & \textit{388.767} \\
-\midrule
-\multicolumn{3}{l}{\textit{Fijación, cableado y accesorios}} \\ \addlinespace
-Kit tornillos avellanada M1.6--M3\tnote{b} & 1 & 15.202 \\
-Kit tornillos Allen M3--M5\tnote{b} & 1 & 15.089 \\
-Kit insertos roscados M2--M6 (90 pzas.)\tnote{b} & 1 & 7.899 \\
-Kit insertos roscados M2--M3 (500 pzas.)\tnote{b} & 1 & 7.199 \\
-Separadores hexagonales M3×50 (10 pzas.)\tnote{b} & 1 & 8.293 \\
-Kit terminales JST 1.25 mm & 1 & 5.800 \\
-Kit DuPont 2.54 mm (620 pzas.) & 2 & 9.052 \\
-Kit terminales PH 2.0 mm (230 pzas.) & 1 & 2.507 \\
-Conectores crimpado varios AWG\tnote{c} & 6 & 6.621 \\
-Cable silicona 20 AWG, rojo y negro (5 m c/u) & 2 & 4.162 \\
-Cable revestido varios AWG\tnote{d} & 6 & 12.506 \\
-Cable RJ45 Cat-6 10 m & 1 & 5.066 \\
-Cable RJ45 Cat-6 5 m & 2 & 3.310 \\
-Cable micro USB macho 90°, 25 cm & 1 & 1.099 \\
-Cable extensión micro USB & 1 & 1.298 \\
-Conectores XT60 (5 pares)\tnote{b} & 1 & 3.478 \\
-Portafusible mini + fusible & 1 & 1.464 \\
-Interruptor pulsante 16 mm & 1 & 1.773 \\
-Divisor de línea 6 puertos & 1 & 2.832 \\
-Cinta FPV 10 cm & 1 & 1.817 \\
-\midrule
-\multicolumn{2}{r}{\textit{Subtotal fijación, cableado y accesorios}} & \textit{193.680} \\
-\midrule
-\multicolumn{3}{l}{\textit{Equipamiento de soporte (no montado en el robot)}} \\ \addlinespace
-Transmisor HDMI inalámbrico & (ya incluido) & --- \\
-Cargador de batería Li-ion 12 V & (ya incluido) & --- \\
-\midrule
-\textbf{Total prototipo} & & \textbf{582.447} \\
-\bottomrule
-\end{longtable}
-\end{ThreePartTable}
-
-El costo total del prototipo se contrasta en la Tabla~\ref{tab:comparacion_costos} con el de plataformas robóticas comerciales de prestaciones equivalentes, convertido a dólares estadounidenses al tipo de cambio referencial de 963~CLP/USD (dólar observado promedio del cuarto trimestre de 2024, según el Banco Central de Chile \citep{BCCh_DolarQ42024}).
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-\caption{Comparación de costo con plataformas comerciales.}
-\label{tab:comparacion_costos}
-\begin{tabular}{P{3.8cm} r r P{4.5cm}}
-\toprule
-\textbf{Plataforma} & \textbf{Costo (USD)} & \textbf{Costo (CLP)} & \textbf{Observación} \\
-\midrule
-Este prototipo
-  & $\sim$605
-  & 582.447
-  & Componentes accesibles; costo real documentado \\
-TurtleBot 3 Burger\tnote{a} \citep{ROBOTIS_TB3Burger}
-  & $\sim$550
-  & $\sim$522.500
-  & Kit educativo, RPi4 \\
-TurtleBot 3 Waffle Pi\tnote{a} \citep{ROBOTIS_TB3Waffle}
-  & $\sim$1.800
-  & $\sim$1.710.000
-  & Incluye LiDAR 360° y cámara \\
-Clearpath Jackal \citep{clearpath_jackal}
-  & $\sim$18.000
-  & $\sim$17.100.000
-  & Plataforma industrial \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] Precios de catálogo de ROBOTIS (\texttt{robotis.us}) consultados durante el segundo semestre de 2024, previo al incremento arancelario de 2025. A partir de 2025, ROBOTIS aplicó un recargo por aranceles recíprocos (\textit{reciprocal tariffs}), elevando el precio del TurtleBot~3 Burger a US\$\,784 y el del Waffle~Pi a US\$\,1.934. 
-\item Conversión referencial a 963 CLP/USD. Todos los precios son de catálogo, sin impuestos de internación ni envío internacional. El precio del Clearpath Jackal corresponde a la configuración base sin sensores adicionales.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
 
 % ===========================================================================
 \section{Galería fotográfica del prototipo}
