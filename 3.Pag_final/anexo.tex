@@ -938,7 +938,7 @@ htop
 \end{enumerate}
 
 \noindent
-Nótese que la navegación, el SLAM y la visualización se ejecutan en la estación de trabajo, no en el robot. La comunicación entre ambos equipos se realiza mediante la red inalámbrica dedicada descrita en la Sección~\ref{sec:ws_env_state}, compartiendo el mismo \texttt{ROS\_DOMAIN\_ID}. Esta distribución de carga permite que la Raspberry~Pi dedique sus recursos exclusivamente al control de motores y a la adquisición del sensor láser.
+Nótese que la navegación, el SLAM y la visualización se ejecutan en la estación de trabajo, no en el robot. La comunicación entre ambos equipos se realiza mediante la red inalámbrica dedicada descrita en la Sección~\ref{sec:anx_env}, compartiendo el mismo \texttt{ROS\_DOMAIN\_ID}. Esta distribución de carga permite que la Raspberry~Pi dedique sus recursos exclusivamente al control de motores y a la adquisición del sensor láser.
 
 \textbf{Nota sobre la frecuencia de \texttt{/odom}:} en hardware real, la frecuencia efectiva de publicación de \texttt{/odom} es ${\sim}30$\,Hz (limitada por \texttt{update\_rate:~30} del \emph{controller manager}), no ${\sim}50$\,Hz. Véase la Sección~\ref{subsec:verificacion_tf} para la explicación completa. En simulación con Gazebo, la frecuencia efectiva se aproxima a 50\,Hz. 
 
@@ -1404,6 +1404,227 @@ Se incluyen las vistas isométricas del modelo paramétrico desarrollado en \tex
 \hfill
 \addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_izq_posterior.png}{Vista isométrica superior–izquierda (posterior)}
 \end{utemMultiFigurePropia}
+
+
+\chapter{Configuración del \textit{workspace} y puesta en marcha}
+\label{anx:workspace}
+ 
+Este anexo documenta el entorno de ejecución, la organización del \textit{workspace} de \gls{ROS2} y los procedimientos de compilación, sincronización y arranque del prototipo. Su propósito es la reproducibilidad: permitir reconstruir el sistema sobre el cual se obtuvieron los resultados de los capítulos de validación.
+ 
+%------------------------------------------------------------------
+\section{Entorno y compatibilidad}
+\label{sec:anx_env}
+ 
+La Tabla~\ref{tab:ws_env_final} fija las versiones de los componentes que condicionan la compilación, la simulación en Gazebo y la comunicación entre nodos. El sistema se ejecuta sobre \gls{ROS2}~Foxy y Ubuntu~20.04 tanto en la estación base como en la Raspberry~Pi~4, garantizando paridad de entorno entre simulación y hardware.
+ 
+\begin{table}[H]
+\centering
+\small
+\caption{Resumen de compatibilidad del entorno de ejecución.}
+\label{tab:ws_env_final}
+\begin{tabular}{l p{9.5cm}}
+\toprule
+\textbf{Atributo} & \textbf{Valor y especificación} \\ 
+\midrule
+SO (estación base)   & Ubuntu 20.04.6 LTS, x86\_64 \\
+SO (Raspberry Pi 4)  & Ubuntu 20.04.6 LTS, aarch64 \\ \addlinespace
+\gls{ROS2}           & \texttt{foxy} (Foxy Fitzroy), \texttt{ROS\_VERSION=2}, \texttt{PYTHON\_VERSION=3} \\
+\texttt{ROS\_DOMAIN\_ID} & 0 (dominio único; sin segmentación de red) \\ \addlinespace
+Gazebo               & \texttt{gazebo11} (11.10.2) + \texttt{libgazebo11-dev} \\
+Puente Gazebo--ROS   & \texttt{gazebo\_ros\_pkgs} (3.5.2) y \texttt{gazebo\_ros2\_control} \\ \addlinespace
+DDS / RTPS           & FastDDS (eProsima Fast-RTPS), implementación por defecto \\
+Repositorio Git      & \url{https://github.com/SVN11X/tesis_black_robot} (acceso vía SSH) \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+%------------------------------------------------------------------
+\section{Red dedicada y comunicación DDS}
+\label{sec:anx_red}
+ 
+La comunicación entre la estación base y el robot se realiza sobre una red Wi-Fi dedicada en modo punto de acceso privado, con direcciones IP estáticas (Netplan) y un único \texttt{ROS\_DOMAIN\_ID=0}. Esta configuración aísla el tráfico \gls{ROS2} de otras redes, estabiliza el descubrimiento DDS y reduce la pérdida de paquetes inherente a Wi-Fi. En el punto de acceso se habilita la multidifusión y se desactiva el aislamiento de clientes (\textit{client isolation}) para permitir el descubrimiento entre nodos.
+ 
+La calidad de servicio se ajusta por tópico según el tipo de tráfico: los datos sensoriales (\texttt{/scan}, \texttt{/image}) operan en modo \texttt{best\_effort}, mientras que el control y las transformaciones (\texttt{/cmd\_vel}, \texttt{/odom}, \texttt{/tf}) emplean \texttt{reliable}.
+ 
+%------------------------------------------------------------------
+\section{Organización del \textit{workspace}}
+\label{sec:anx_org}
+ 
+El \textit{workspace} \texttt{tesis\_black\_robot} se organiza bajo el principio de paridad simulación--hardware: un mismo paquete principal conserva la descripción URDF/Xacro, los parámetros y los lanzadores, de modo que simulación y robot real comparten los mismos marcos \texttt{TF}, sensores y controladores. La sincronización entre la estación de trabajo y el robot se realiza mediante un repositorio Git común (\textit{single source of truth}), lo que reduce las inconsistencias entre los archivos de configuración de ambos entornos.
+ 
+\utemFigurePropia{2.Texto/Imag/template_folder.png}{0.85\textwidth}
+{Esquema de sincronización del paquete \texttt{articubot\_one} entre la estación de trabajo y el robot móvil.}{fig:template_folder}
+ 
+\subsection{Inventario de paquetes (\texttt{src/})}
+\begin{itemize}
+  \item \texttt{articubot\_one}: descripción del chasis diferencial, configuración de control, SLAM y navegación, y escenarios de simulación.
+  \item \texttt{diffdrive\_arduino}: interfaz \texttt{ros2\_control} entre \gls{ROS2} y el microcontrolador (encoders + L298N) y odometría.
+  \item \texttt{serial}, \texttt{serial\_motor\_demo}, \texttt{joy\_tester}: utilidades de E/S y validación.
+  \item \texttt{ros2\_control}, \texttt{ros2\_controllers}: control diferencial (\texttt{diff\_drive\_controller}, \texttt{joint\_state\_broadcaster}).
+  \item \texttt{m-explore-ros2}: exploración autónoma basada en fronteras.
+\end{itemize}
+ 
+\subsection{Estructura de carpetas del paquete principal}
+\begin{table}[H]
+\centering
+\small
+\caption{Estructura y propósito de las carpetas del paquete de \gls{ROS2}.}
+\label{tab:ws_roles}
+\begin{tabular}{>{\ttfamily}P{0.27\textwidth} P{0.65\textwidth}}
+    \toprule
+    \textbf{Carpeta} & \textbf{Rol en el sistema} \\ 
+    \midrule
+    description/ & URDF/Xacro, mallas y definiciones \textit{TF}. Establece el árbol cinemático \texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame}. \\ \addlinespace
+    config/      & Archivos YAML para controladores, SLAM, \textit{costmaps} y navegación. \\ \addlinespace
+    launch/      & Lanzadores en Python (\texttt{.launch.py}) que orquestan el \textit{bringup} de sensores, controladores y nodos. \\ \addlinespace
+    worlds/      & Entornos de simulación para Gazebo. \\ 
+    \bottomrule
+\end{tabular}
+\end{table}
+ 
+%------------------------------------------------------------------
+\section{Compilación y sincronización}
+\label{sec:anx_build}
+ 
+El \textit{workspace} se compila con \texttt{colcon build --symlink-install}, que acelera la iteración al enlazar los recursos en lugar de copiarlos. Tras compilar, se carga el entorno con \texttt{source install/setup.bash}. La estación de trabajo y el robot se mantienen sincronizados mediante Git sobre SSH (clave \texttt{ed25519} registrada en el remoto), de modo que los cambios de URDF y parámetros se propagan de forma controlada entre ambas máquinas.
+ 
+%------------------------------------------------------------------
+\section{Pruebas de puesta en marcha}
+\label{sec:anx_pruebas}
+ 
+Antes de los ensayos de validación se ejecutan las siguientes comprobaciones de arranque:
+ 
+\begin{enumerate}
+  \item \textbf{Conectividad}: \texttt{ping} bidireccional estación $\leftrightarrow$ robot y verificación de visibilidad entre nodos en el dominio configurado (\texttt{ros2 node list}).
+  \item \textbf{QoS}: confirmar que \texttt{/cmd\_vel}, \texttt{/odom} y \texttt{/tf} son \texttt{reliable} y que \texttt{/scan} e \texttt{/image} toleran pérdidas (\texttt{best\_effort}).
+  \item \textbf{Arranque}: lanzar el \textit{bringup} y verificar la presencia de \texttt{/clock} en simulación, la publicación de \texttt{/tf} y \texttt{/scan}, y la coherencia de la odometría en rectas y giros. En hardware, confirmar los puertos serie (\texttt{/dev/ttyUSB*}).
+\end{enumerate}
+ 
+\begin{verbatim}
+cd ~/tesis_black_robot
+colcon build --symlink-install
+source install/setup.bash
+ros2 launch articubot_one <launch>.launch.py
+\end{verbatim}
+ 
+Como buenas prácticas de parametrización, los archivos YAML se mantienen separados por subsistema (SLAM, \textit{costmaps}, control, \textit{behavior trees}), las constantes geométricas (\texttt{track\_width}, \textit{offsets} de sensores) se definen como variables reutilizables en \texttt{xacro}, y se respetan los nombres canónicos de los marcos \texttt{TF} para facilitar la depuración en \texttt{rviz2}.
+
+\chapter{Referencia del firmware \texttt{ROSArduinoBridge}}
+\label{anx:firmware}
+ 
+Este anexo reúne el material de referencia del firmware: el protocolo serial completo, la configuración de interrupciones a nivel de registros, la decodificación de cuadratura, la capa de comunicación de los \emph{scripts} de sintonización y los factores de escala del PSO.
+ 
+%------------------------------------------------------------------
+\section{Protocolo serial completo}
+\label{anx:protocolo}
+ 
+Cada comando es un carácter identificador seguido de argumentos separados por espacios y terminado en retorno de carro (ASCII 13). La Tabla~\ref{tab:protocolo_serial} resume el conjunto completo.
+ 
+\begin{table}[H]
+\centering
+\caption{Protocolo serial del firmware \texttt{ROSArduinoBridge}.}
+\label{tab:protocolo_serial}
+\footnotesize
+\begin{tabular}{cllll}
+\toprule
+\textbf{Cmd} & \textbf{Nombre} & \textbf{Argumentos} & \textbf{Respuesta} & \textbf{Uso} \\ 
+\midrule
+\textit{Encoders} \\
+\texttt{\textquotesingle e\textquotesingle} & \texttt{READ\_ENCODERS}  & ---                 & \texttt{enc\_L enc\_R}  & Operación \\
+\texttt{\textquotesingle r\textquotesingle} & \texttt{RESET\_ENCODERS} & ---                 & \texttt{OK}             & Diagnóstico \\ \addlinespace
+\textit{Movimiento} \\
+\texttt{\textquotesingle m\textquotesingle} & \texttt{MOTOR\_SPEEDS}   & \texttt{tL tR} (ticks) & ---                  & Operación \\
+\texttt{\textquotesingle o\textquotesingle} & \texttt{MOTOR\_RAW\_PWM} & \texttt{pL pR} ($\pm$255) & ---               & Diagnóstico \\
+\texttt{\textquotesingle k\textquotesingle} & \texttt{SET\_VEL\_MPS}   & \texttt{vL vR} (m/s)   & ---                  & Sintonización \\ \addlinespace
+\textit{PID} \\
+\texttt{\textquotesingle u\textquotesingle} & \texttt{UPDATE\_PID}     & \texttt{Kp:Kd:Ki:Ko}   & \texttt{OK}          & Sintonización \\
+\texttt{\textquotesingle z\textquotesingle} & \texttt{UPDATE\_PID\_LR} & \texttt{8 ganancias}   & \texttt{OK}          & Sintonización \\
+\texttt{\textquotesingle n\textquotesingle} & \texttt{READ\_PIDS}      & ---                    & 8 ganancias          & Diagnóstico \\
+\texttt{\textquotesingle j\textquotesingle} & \texttt{READ\_VEL\_MPS}  & ---                    & \texttt{vL vR} (m/s) & Sintonización \\ \addlinespace
+\textit{Propósito general} \\
+\texttt{\textquotesingle b\textquotesingle} & \texttt{READ\_BAUDRATE}  & ---                 & \texttt{57600}          & Diagnóstico \\
+\texttt{\textquotesingle a\textquotesingle} & \texttt{ANALOG\_READ}    & pin                 & valor (0--1023)         & Diagnóstico \\
+\texttt{\textquotesingle d\textquotesingle} & \texttt{DIGITAL\_READ}   & pin                 & valor (0/1)             & Diagnóstico \\
+\texttt{\textquotesingle w\textquotesingle} & \texttt{DIGITAL\_WRITE}  & pin valor           & ---                     & Diagnóstico \\
+\texttt{\textquotesingle x\textquotesingle} & \texttt{ANALOG\_WRITE}   & pin valor           & ---                     & Diagnóstico \\
+\texttt{\textquotesingle c\textquotesingle} & \texttt{PIN\_MODE}       & pin modo            & ---                     & Diagnóstico \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+Los comandos \texttt{\textquotesingle u\textquotesingle} (ganancias simétricas) y \texttt{\textquotesingle z\textquotesingle} (ganancias por rueda) emplean el orden $K_p{:}K_d{:}K_i{:}K_o$ (Tabla~\ref{tab:orden_pid}). El comando \texttt{\textquotesingle n\textquotesingle} devuelve las ocho ganancias para verificación. El comando \texttt{\textquotesingle r\textquotesingle} pone a cero ambos contadores y reinicia el estado interno del PID. Los comandos de propósito general no intervienen en la operación normal y se conservan para diagnóstico.
+ 
+%------------------------------------------------------------------
+\section{Configuración de interrupciones por cambio de pin}
+\label{anx:pcint}
+ 
+La configuración se realiza en \texttt{setup()} mediante manipulación directa de registros, lo que reduce la sobrecarga frente a \texttt{attachInterrupt()} y garantiza un tiempo de respuesta mínimo. Los pines de encoder se configuran como entradas con \emph{pull-up} interno (registros \texttt{DDRD}/\texttt{DDRC} y \texttt{PORTD}/\texttt{PORTC}); se habilitan las máscaras \texttt{PCMSK2} (encoder izquierdo, puerto D) y \texttt{PCMSK1} (encoder derecho, puerto C); y se activan los vectores globales \texttt{PCIE1} y \texttt{PCIE2} en \texttt{PCICR}.
+ 
+\section{Decodificación de cuadratura por tabla de estados}
+\label{anx:enc_states}
+ 
+Las rutinas de servicio de interrupción decodifican la cuadratura con una tabla de búsqueda de 16 entradas:
+ 
+\begin{equation}
+\texttt{ENC\_STATES}[16] = \{0,\,+1,\,-1,\,0,\,-1,\,0,\,0,\,+1,\,+1,\,0,\,0,\,-1,\,0,\,-1,\,+1,\,0\}
+\label{eq:encoder_states}
+\end{equation}
+ 
+El índice se construye concatenando el estado anterior (2 bits) con el actual (2 bits). Para el encoder izquierdo, la ISR del vector \texttt{PCINT2} lee los bits de \texttt{PIND}; para el derecho, la ISR de \texttt{PCINT1} lee \texttt{PINC}. El estado anterior se desplaza dos posiciones y se combina con el actual mediante OR; el resultado, enmascarado con \texttt{0x0F}, indexa \texttt{ENC\_STATES}, y el valor se suma al contador de posición. Las entradas con valor cero corresponden a transiciones inválidas o sin cambio, que se ignoran.
+ 
+%------------------------------------------------------------------
+\section{Capa de comunicación serial de los \emph{scripts} (\texttt{pyArduino})}
+\label{anx:pyarduino}
+ 
+Los \emph{scripts} de captura y sintonización se comunican con el Arduino a través de la clase \texttt{serialArduino} (\texttt{pyArduino.py}), que implementa lectura asincrónica mediante un hilo de fondo y escritura sincrónica. Al invocar \texttt{readSerialStart()}, un hilo secundario monitorea el puerto, lee cada línea, la descompone en campos numéricos y actualiza el atributo compartido \texttt{rawData}, de modo que el hilo principal consulte la última lectura sin bloquear. El envío se realiza con \texttt{sendData(datos, cmd)}; por ejemplo, \texttt{sendData([0.13, 0.13], cmd=\textquotesingle k\textquotesingle)} genera \texttt{"k 0.13 0.13\textbackslash r"}.
+ 
+\begin{table}[H]
+\centering
+\caption{Interfaz pública de la clase \texttt{serialArduino} (\texttt{pyArduino.py}).}
+\label{tab:pyarduino_api}
+\small
+\begin{tabular}{l p{9cm}}
+    \toprule
+    \textbf{Método} & \textbf{Función} \\ 
+    \midrule
+    \texttt{\_\_init\_\_(port, baud, size)} & Abre la conexión serial e inicializa el búfer de lectura. \\ \addlinespace
+    \texttt{readSerialStart()} & Lanza el hilo de lectura en segundo plano; \texttt{rawData} se actualiza de forma asincrónica. \\ \addlinespace
+    \texttt{sendData(datos, cmd)} & Envía un comando formateado como \texttt{"cmd val1 val2... \textbackslash r"}. \\ \addlinespace
+    \texttt{close()} & Detiene el hilo de lectura, espera su finalización y cierra el puerto. \\ 
+    \bottomrule
+\end{tabular}
+\end{table}
+ 
+En operación normal del robot esta clase no se utiliza: la comunicación la gestiona el \emph{plugin} \texttt{DiffDriveArduino} mediante la clase C++ \texttt{ArduinoComms}, cuyos métodos principales son \texttt{readEncoderValues()} (envía \texttt{\textquotesingle e\textquotesingle} y parsea dos enteros), \texttt{setMotorValues()} (envía \texttt{\textquotesingle m\textquotesingle}), \texttt{setPidValues()} (envía \texttt{\textquotesingle u\textquotesingle}) y \texttt{sendEmptyMsg()} (\emph{heartbeat}). La clase \texttt{Wheel} almacena el estado de cada rueda (encoder crudo, posición, velocidad, comando) y aplica el factor \texttt{rads\_per\_count} mediante \texttt{calcEncAngle()}.
+ 
+%------------------------------------------------------------------
+\section{Factores de escala del PSO y simplificaciones de la simulación}
+\label{anx:pso_escala}
+ 
+El PSO opera sobre partículas normalizadas en $[0.0001, 1]$, por lo que se definen factores de escala que mapean ese intervalo a rangos físicamente razonables (Tabla~\ref{tab:pso_scale_factors}).
+ 
+\begin{table}[H]
+\centering
+\caption{Factores de escala del PSO y rangos efectivos de búsqueda.}
+\label{tab:pso_scale_factors}
+\small
+\begin{tabular}{lll}
+    \toprule
+    \textbf{Parámetro} & \textbf{Factor de escala} & \textbf{Rango efectivo} \\ 
+    \midrule
+    \textit{ID modelo (\texttt{SCALE\_MODEL})} \\
+    & $K_m$ (m/s/PWM) & $[0.000001, \, 0.01]$ \\
+    & $\tau$          & $[0.0002, \, 2]$ \\
+    & $L$             & $[0.00005, \, 0.5]$ \\ \addlinespace
+    \textit{Ganancias PID} \\
+    & $K_p$ (\texttt{SCALE\_KP} = 40)   & $[0.004, \, 40]$ \\
+    & $K_d$ (\texttt{SCALE\_KD} = 25)   & $[0.0025, \, 25]$ \\
+    & $K_i$ (\texttt{SCALE\_KI} = 0.05) & $[0.000005, \, 0.05]$ \\ 
+    \bottomrule
+\end{tabular}
+\end{table}
+ 
+Las ganancias definitivas del firmware se ubican dentro de estos rangos, lo que confirma que el espacio de búsqueda no restringe la solución. La simulación del lazo cerrado introduce dos simplificaciones respecto del firmware: emplea una zona muerta simétrica de 2 ticks (frente a los valores asimétricos 2/1 del firmware) y, en el caso del \emph{script} de la sintonía Lambda, un \emph{clipping} explícito del término integral que no existe en el firmware real. Ambas tienen efecto marginal sobre las métricas globales y las compensa el refinamiento experimental.
 
 \end{appendices}
 
