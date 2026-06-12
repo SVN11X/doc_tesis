@@ -1302,5 +1302,108 @@ Clearpath Jackal \citep{clearpath_jackal}
 \end{table}
 
 
+\section{Plataformas robóticas de referencia}
+\label{anx:plataformas}
+ 
+A modo ilustrativo, se muestran dos plataformas comerciales basadas en \gls{ROS2}
+citadas en el estado del arte: TurtleBot, referente directo de este trabajo por su
+condición de robot diferencial de bajo costo para interiores, y Jackal, plataforma
+de investigación de gama superior.
+ 
+\begin{utemMultiFigure}{Plataformas robóticas de referencia basadas en \gls{ROS2}.}{fig:robots_referencia}
+    \addutem{0.42}{2.Texto/Imag/turtleBot4.jpg}{TurtleBot}{turtlebot4_clearpath}
+    \hfill
+    \addutem{0.42}{2.Texto/Imag/jackal.jpg}{Jackal}{clearpath_jackal}
+\end{utemMultiFigure}
+
+\section{Transformación de ganancias en la sintonía Lambda}
+\label{anx:lambda}
+ 
+La sintonía Lambda (Sección~\ref{sec:lambda}) entrega las ganancias en la forma
+serie interactuante $k_c$, $k_i$, $k_d$ definidas en la Ec.~(\ref{eq:lambda_serie}).
+Dado que el firmware del robot implementa el controlador en la forma paralela
+estándar, dichas ganancias deben convertirse a los parámetros
+$K_p$, $T_i$, $T_d$ mediante:
+ 
+\begin{equation}
+K_p = k_c \,\frac{k_i + k_d}{k_i}, \quad T_i = k_i + k_d, \quad T_d = \frac{k_i \, k_d}{k_i + k_d}
+\label{eq:lambda_paralelo}
+\end{equation}
+ 
+\noindent donde $k_c$, $k_i$ y $k_d$ son las ganancias de la forma serie de la
+Ec.~(\ref{eq:lambda_serie}). Estos valores constituyen la línea base analítica
+que se contrasta con las ganancias obtenidas por PSO en el capítulo de validación.
+ 
+\chapter{Comparación de arquitecturas de locomoción}
+\label{anx:arquitecturas}
+ 
+La arquitectura de tracción diferencial adoptada en el prototipo se justificó en el Capítulo~\ref{ch:estado_arte}. A modo de respaldo, se presenta aquí la comparación cualitativa frente a las arquitecturas Ackermann y omnidireccional (Mecanum/Swedish), que se descartaron para el alcance de este trabajo. Los criterios considerados fueron: (C1) maniobrabilidad en espacios reducidos; (C2) calidad de odometría para fusión con \gls{slam}; (C3) complejidad mecánico-cinemática y de control; (C4) eficiencia energética a baja velocidad; (C5) costo e integración con el hardware disponible; y (C6) madurez de ejemplos y controladores en \gls{ROS2}.
+ 
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+  \caption{Comparativa cualitativa de arquitecturas de locomoción.}
+  \label{tab:comparativa_arquitecturas}
+  \small
+  \begin{tabular}{l cccccc}
+    \toprule
+    \textbf{Arquitectura} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} \\ 
+    \midrule
+    Diferencial      & \textbf{Alta}     & \textbf{Alta}  & Baja          & Media         & \textbf{Baja} & \textbf{Alta} \\
+    Ackermann        & Media             & Media          & Media--Alta   & \textbf{Alta} & Media         & Media \\
+    Omnidireccional  & \textbf{Muy alta} & Media--Baja    & \textbf{Alta} & Baja          & Alta          & Media \\ 
+    \bottomrule
+  \end{tabular}
+\begin{tablenotes}
+  \footnotesize
+  \item \textbf{Criterios:} C1: Maniobrabilidad; C2: Calidad de odometría;
+  C3: Complejidad; C4: Eficiencia energética; C5: Costo;
+  C6: Soporte en \gls{ROS2}.
+  \item \textbf{Evaluación cualitativa basada en:}
+  \citep{siegwart2011introduction,campion1996structural}
+  para criterios cinemáticos (C1--C3),
+  \citep{thrun2005probabilistic} para C2,
+  \citep{taheri2015omnidirectional} para la arquitectura omnidireccional, y
+  \citep{macenski2020nav2} para C6.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+ 
+La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación y rendimiento en interiores. Las alternativas Ackermann y omnidireccional se dejan como líneas de trabajo futuro.
+ 
+%------------------------------------------------------------------
+\chapter{Parámetros de impresión 3D}
+\label{anx:impresion3d}
+ 
+El chasis y las cubiertas se imprimieron en PLA+ mediante FDM en una Creality Ender~3. Los parámetros de laminado empleados en \textit{Ultimaker Cura} se resumen a continuación:
+ 
+\begin{itemize}
+\item Altura de capa: 0.20~mm.
+\item Perímetros: 3.
+\item Relleno: 20--30\%.
+\item Temperatura de boquilla: 205--215~°C.
+\item Temperatura de cama: 55--60~°C.
+\item Boquilla: latón de 0.4~mm (estándar); 0.6~mm para piezas más robustas.
+\item Tolerancias de ensamblaje: 0.2--0.4~mm.
+\end{itemize}
+ 
+%------------------------------------------------------------------
+\chapter{Vistas isométricas del modelo 3D}
+\label{anx:renders3d}
+ 
+Se incluyen las vistas isométricas del modelo paramétrico desarrollado en \textit{Fusion~360}, complementarias a la galería fotográfica del prototipo construido (Figura~\ref{fig:galeria_prototipo}).
+ 
+\begin{utemMultiFigurePropia}{Vistas isométricas del modelo 3D del prototipo.}{fig:galeria_prototipo_3d}
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_izq_frontal.png}{Vista isométrica superior–izquierda (frontal)}
+\hfill
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_inf_der.png}{Vista isométrica inferior–derecha (inferior)}
+ 
+\vspace{1cm}
+ 
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_der.png}{Vista isométrica superior–derecha (frontal)}
+\hfill
+\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_izq_posterior.png}{Vista isométrica superior–izquierda (posterior)}
+\end{utemMultiFigurePropia}
+
 \end{appendices}
 
