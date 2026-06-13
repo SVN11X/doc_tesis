@@ -16,7 +16,7 @@ El marco \texttt{ros2\_control} y su integración con el robot, tanto en simulac
 \section{Mapeo del entorno con \texttt{slam\_toolbox}}
 \label{sec:slam_ch9}
 
-Antes de navegar hacia destinos, el robot necesita un mapa del entorno. El paquete \texttt{slam\_toolbox} lo construye de forma incremental mientras el robot se desplaza, estimando simultáneamente su posición y la estructura del espacio (SLAM), y corrigiendo la deriva acumulada al reconocer zonas ya visitadas (cierre de lazo). Los fundamentos del SLAM basado en grafos se presentaron en el Capítulo~\ref{marco_teorico}.
+Antes de navegar hacia destinos, el robot necesita un mapa del entorno. El paquete \texttt{slam\_toolbox} lo construye de forma incremental mientras el robot se desplaza, estimando simultáneamente su posición\footnote{Se evaluó \texttt{nav2\_amcl} como alternativa de localización sobre mapas preconstruidos, pero no se activó: \texttt{slam\_toolbox} en modo \texttt{localization} cumple la misma función sobre mapa serializado sin un nodo adicional, y la odometría basada solo en encoders —sin IMU— ofrece una estimación inicial insuficiente para la convergencia confiable del filtro de partículas tras giros bruscos.} y la estructura del espacio (SLAM), y corrigiendo la deriva acumulada al reconocer zonas ya visitadas (cierre de lazo). Los fundamentos del SLAM basado en grafos se presentaron en el Capítulo~\ref{marco_teorico}.
 
 \subsection{Elección del modo de operación: \texttt{online\_async}}
 
@@ -58,11 +58,6 @@ La estrategia Levenberg--Marquardt combina descenso de gradiente lejos de la sol
     \addutem{0.46}{2.Texto/Imag/fig_mapa_en_formacion_part3.png}{Mapa completo tras cierre de lazo}
 \end{utemMultiFigurePropia}
 
-\subsection{Localización AMCL (infraestructura latente)}
-\label{subsec:amcl_config}
-
-Se preparó \texttt{nav2\_amcl} como alternativa de localización sobre mapas preconstruidos, pero no se activó en las pruebas: \texttt{slam\_toolbox} en modo \texttt{localization} cumple la misma función sobre mapa serializado sin un nodo adicional, y la odometría basada solo en encoders —sin IMU— ofrece una estimación inicial insuficiente para la convergencia confiable del filtro de partículas tras giros bruscos. 
-
 % ============================================================
 \section{Navegación autónoma con Nav2}
 \label{sec:nav2_ch9}
@@ -103,20 +98,17 @@ NavFn es el módulo de planificación global de Nav2; implementa Dijkstra o A\* 
 
 \subsection{Controlador local: DWB}
 
-El controlador local genera comandos de velocidad instantáneos para seguir la ruta global adaptándose a obstáculos. Se emplea \texttt{dwb\_core::DWBLocalPlanner} (Dynamic Window-Based), que evalúa un abanico de trayectorias candidatas y selecciona la que mejor equilibra avance hacia el destino y seguridad (Tabla~\ref{tab:dwb_params_ch9}).
+El controlador local genera comandos de velocidad instantáneos para seguir la ruta global adaptándose a obstáculos. Se emplea \texttt{dwb\_core::DWBLocalPlanner} (Dynamic Window-Based), que evalúa un abanico de trayectorias candidatas y selecciona la que mejor equilibra avance hacia el destino y seguridad. Sus límites de velocidad (\texttt{max\_vel\_x} = $\pm0.13$~m/s, \texttt{max\_vel\_theta} = $0.4$~rad/s) coinciden con los del controlador diferencial (Tabla~\ref{tab:diff_drive_params}); los parámetros propios de DWB se resumen en la Tabla~\ref{tab:dwb_params_ch9}.
 
 \begin{table}[H]
 \centering
 \begin{threeparttable}
-    \caption{Parámetros dinámicos del controlador local DWB (hardware real).}
+    \caption{Parámetros dinámicos propios del controlador local DWB (hardware real).}
     \label{tab:dwb_params_ch9}
     \begin{tabular}{ll p{5.8cm}}
         \toprule
         \textbf{Parámetro}             & \textbf{Valor (real)}     & \textbf{Descripción} \\ 
         \midrule
-        \texttt{max\_vel\_x}           & +0.13 m/s                 & Velocidad lineal máxima \\
-        \texttt{min\_vel\_x}           & -0.13 m/s                 & Velocidad lineal mínima (retroceso) \\
-        \texttt{max\_vel\_theta}       & 0.4 rad/s                 & Límite de velocidad angular \\
         \texttt{acc\_lim\_x}           & 0.2 m/s$^{2}$             & Aceleración lineal máxima \\
         \texttt{acc\_lim\_theta}       & 0.4 rad/s$^{2}$           & Aceleración angular máxima \\
         \texttt{sim\_time}\tnote{a}    & 1.0 s                     & Horizonte de predicción \\
@@ -274,17 +266,7 @@ Los subsistemas descritos operan encadenados para lograr autonomía completa. \t
 \section{Verificación incremental y transferencia simulación--hardware}
 \label{sec:verificacion_ch9}
 
-La puesta en marcha sigue una progresión incremental que valida cada nivel antes de avanzar al siguiente:
-
-\begin{enumerate}
-\item \textbf{Simulación básica}: movimiento diferencial, odometría y cadena \texttt{tf} en Gazebo.
-\item \textbf{Teleoperación en simulación}: arbitraje de \texttt{twist\_mux} y \textit{dead-man switch}.
-\item \textbf{Transferencia al hardware}: se conservan los nombres de tópicos y se actualizan los YAML con los valores específicos (límites cinemáticos, frecuencias, tolerancias), la interfaz de hardware y \texttt{use\_sim\_time}.
-\item \textbf{Teleoperación en hardware}: respuesta del robot físico y calibración de odometría.
-\item \textbf{Mapeo}: \texttt{slam\_toolbox} en modo asíncrono en línea mientras se teleopera, verificando la cadena \texttt{tf} en RViz.
-\item \textbf{Navegación autónoma}: con \texttt{slam\_toolbox} activo, se habilita Nav2 y se envían metas cortas; Nav2 consume la transformación \texttt{map}$\rightarrow$\texttt{odom} de \texttt{slam\_toolbox}, sin AMCL.
-\item \textbf{Exploración autónoma}: se activa \texttt{explore\_server} una vez que Nav2 opera de forma estable.
-\end{enumerate}
+La puesta en marcha parte de la validación del gemelo digital (Capítulo~\ref{ch:robot_digital}) y transfiere el sistema al hardware mediante una progresión incremental: se conservan los nombres de tópicos y se actualizan los YAML con los valores específicos del robot real (límites cinemáticos, frecuencias, tolerancias), la interfaz de hardware y \texttt{use\_sim\_time}; luego se valida la teleoperación física y la calibración de odometría, el mapeo con \texttt{slam\_toolbox} en modo asíncrono en línea (verificando la cadena \texttt{tf} en RViz), la navegación autónoma con Nav2 —que consume la transformación \texttt{map}$\rightarrow$\texttt{odom} de \texttt{slam\_toolbox}, sin AMCL— y, finalmente, la exploración con \texttt{explore\_server} una vez que Nav2 opera de forma estable.
 
 \paragraph{Resolución de \texttt{use\_sim\_time}.}
 El archivo \texttt{nav2\_params.yaml} hereda \texttt{use\_sim\_time: True} de la simulación; en hardware real se sobrescribe en tiempo de lanzamiento con \texttt{use\_sim\_time:=false} mediante el mecanismo \texttt{RewrittenYaml} de Nav2, y lo mismo aplica a \texttt{slam\_toolbox}.
@@ -293,4 +275,4 @@ El archivo \texttt{nav2\_params.yaml} hereda \texttt{use\_sim\_time: True} de la
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_ch9}
 
-En este capítulo se ha descrito la arquitectura de navegación autónoma del robot: la configuración de \texttt{slam\_toolbox} en modo asíncrono en línea para la construcción incremental del mapa con cierre de lazo, la pila Nav2 con el planificador global NavFn (A\*) y el controlador local DWB, los mapas de costos global y local con su capa de inflación, el árbol de comportamiento con siete acciones de recuperación ante bloqueos, y el módulo de exploración autónoma de fronteras. Se mostró además cómo estos subsistemas se integran en un único ciclo percepción--mapeo--navegación--exploración sobre los mismos marcos y tópicos en simulación y hardware. Esta arquitectura, junto con el control de bajo nivel de los capítulos anteriores, constituye el núcleo funcional del robot autónomo, cuyo desempeño se evalúa en el Capítulo~\ref{ch:resultados}.
+En este capítulo se ha descrito la arquitectura de navegación autónoma del robot: la configuración de \texttt{slam\_toolbox} en modo asíncrono en línea para la construcción incremental del mapa con cierre de lazo, la pila Nav2 con el planificador global NavFn (A\*) y el controlador local DWB, los mapas de costos global y local con su capa de inflación, el árbol de comportamiento con siete acciones de recuperación ante bloqueos, y el módulo de exploración autónoma de fronteras. Estos subsistemas se integran en un único ciclo percepción--mapeo--navegación--exploración sobre los mismos marcos y tópicos en simulación y hardware. Esta arquitectura, junto con el control de bajo nivel de los capítulos anteriores, constituye el núcleo funcional del robot autónomo, cuyo desempeño se evalúa en el Capítulo~\ref{ch:resultados}.

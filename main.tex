@@ -79,6 +79,7 @@
 
 % --- Anexos ---
 \usepackage{appendix}
+\usepackage{hyperref}
 
 % --- Glosario ---
 \usepackage[toc]{glossaries}
@@ -113,7 +114,7 @@
 \urlstyle{same}
 
 % --- Hipervínculos (al final de cargas) ---
-\usepackage[hidelinks]{hyperref}
+% \usepackage[hidelinks]{hyperref}
 
 % --- Encabezados y pies ---
 \usepackage{fancyhdr}
@@ -220,12 +221,29 @@
 \titlespacing*{\chapter}{0pt}{-80pt}{40pt}
 \titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
 
-% ===== Entradas del TOC (sangrías y puntos guía) =====
+% ===== Entradas del TOC (sangrías y puntos guía compactos) =====
 \contentsmargin{0cm}
-\titlecontents{chapter}[0pt]{\addvspace{15pt}}{CAPÍTULO \thecontentslabel\quad}{}{\dotfill\contentspage}
-\titlecontents{section}[54pt]{\addvspace{5pt}}{\thecontentslabel\quad}{}{\dotfill\contentspage}
-\titlecontents{subsection}[108pt]{\addvspace{5pt}}{\thecontentslabel\quad}{}{\dotfill\contentspage}
 
+\titlecontents{chapter}
+  [0pt]
+  {\addvspace{6pt}}
+  {CAPÍTULO \thecontentslabel\quad}
+  {}
+  {\dotfill\contentspage}
+
+\titlecontents{section}
+  [28pt]
+  {\addvspace{1pt}}
+  {\thecontentslabel\quad}
+  {}
+  {\dotfill\contentspage}
+
+\titlecontents{subsection}
+  [48pt]
+  {\addvspace{0pt}}
+  {\thecontentslabel\quad}
+  {}
+  {\dotfill\contentspage}
 % =================== SOLO para TOC/LOF/LOT ===================
 % Textos de títulos
 \addto\captionsspanish{
@@ -247,38 +265,54 @@
 % ---- Redefiniciones que permiten MULTIPÁGINA y pegan el contenido al título ----
 \makeatletter
 
-% 1. Tabla de Contenido (Versión manual para evitar conflictos)
+% 1. Tabla de Contenido compacta
 \renewcommand{\tableofcontents}{%
   \clearpage
   {\centering\normalfont\normalsize\bfseries \contentsname \par}
   \vspace{1ex}
-  \UTEMPaginaHeader\par\vspace{1ex}  % ← antes del contenido
-  \@afterheading
-  \@starttoc{toc}
+  \UTEMPaginaHeader\par\vspace{1ex}
+  \begingroup
+    \singlespacing
+    \setlength{\parskip}{0pt}
+    \setlength{\parindent}{0pt}
+    \@afterheading
+    \@starttoc{toc}
+  \endgroup
   \clearpage
 }
 
-% 2. Lista de Figuras (Estas ya funcionaban, pero las dejamos igual de limpias)
+% 2. Índice de ilustraciones compacto
 \renewcommand{\listoffigures}{%
-    \clearpage
-    {\centering\normalfont\normalsize\bfseries \listfigurename \par}%
-    \vspace{1ex}%
-    \UTEMPaginaHeader\par\vspace{1ex}%
+  \clearpage
+  {\centering\normalfont\normalsize\bfseries \listfigurename \par}%
+  \vspace{1ex}%
+  \UTEMPaginaHeader\par\vspace{1ex}%
+  \begingroup
+    \singlespacing
+    \setlength{\parskip}{0pt}
+    \setlength{\parindent}{0pt}
     \@afterheading
     \@starttoc{lof}%
-    \clearpage
+  \endgroup
+  \clearpage
 }
 
-% 3. Lista de Tablas
+% 3. Índice de tablas compacto
 \renewcommand{\listoftables}{%
-    \clearpage
-    {\centering\normalfont\normalsize\bfseries \listtablename \par}%
-    \vspace{1ex}%
-    \UTEMPaginaHeader\par\vspace{1ex}%
+  \clearpage
+  {\centering\normalfont\normalsize\bfseries \listtablename \par}%
+  \vspace{1ex}%
+  \UTEMPaginaHeader\par\vspace{1ex}%
+  \begingroup
+    \singlespacing
+    \setlength{\parskip}{0pt}
+    \setlength{\parindent}{0pt}
     \@afterheading
     \@starttoc{lot}%
-    \clearpage
+  \endgroup
+  \clearpage
 }
+
 \makeatother
 
 % ===== Etiqueta de TABLA en captions (a juego con Figura) =====

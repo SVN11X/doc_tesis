@@ -28,13 +28,13 @@ La separación de dominios reduce los acoples electromagnéticos y facilita el d
 \label{sec:criterios_potencia}
 % ============================================================
 
-La selección de los componentes de potencia —batería Li-ion de 12 V, convertidor \emph{buck} DFR0205, fusible e interruptor— se documentó en el Capítulo~\ref{ch:componentes}. El bus de 12 V se dimensiona por el peor caso eléctrico, la condición de \emph{stall} (eje bloqueado), de aproximadamente 1.8 A por motor a 12 V según la hoja de datos del JGA25-370; el riel de 5 V se obtiene mediante el convertidor \emph{buck} desde el bus de 12 V, por su mayor eficiencia frente a un regulador lineal, y los reguladores se seleccionan con un margen de 1.5 a 2.0 veces la corriente continua prevista. El presupuesto de potencia por subsistema, las protecciones (fusible rápido de 10 A e interruptor maestro con retención) y el dimensionamiento de cableado se detallan en el Anexo~\ref{anx:hardware_ros2} y en el Capítulo~\ref{ch:componentes}.
+La selección de los componentes de potencia —batería Li-ion de 12 V, convertidor \emph{buck} DFR0205, fusible e interruptor— se documentó en el Capítulo~\ref{ch:componentes}. El bus de 12 V se dimensiona por el peor caso eléctrico, la condición de \emph{stall} (eje bloqueado), de aproximadamente 1.8 A por motor a 12 V según la hoja de datos del JGA25-370; el riel de 5 V se obtiene mediante el convertidor \emph{buck} desde el bus de 12 V, por su mayor eficiencia frente a un regulador lineal, y los reguladores se seleccionan con un margen de 1.5 a 2.0 veces la corriente continua prevista. El presupuesto de potencia por subsistema, las protecciones (fusible rápido de 10 A e interruptor maestro con retención) y el dimensionamiento de cableado se detallan en el \ref{anx:hardware_ros2} y en el Capítulo~\ref{ch:componentes}.
 
 % ============================================================
 \section{Esquema de conexiones eléctricas y de datos}
 % ============================================================
 
-La Figura~\ref{fig:esquema_conexiones} resume la distribución de potencia (12 V y 5 V), el retorno de masas en estrella y los enlaces de datos (USB/TTL) entre los componentes. La asignación de pines entre el \gls{Arduino}, el driver L298N y los encoders se detalla en el Anexo~\ref{anx:hardware_ros2}.
+La Figura~\ref{fig:esquema_conexiones} resume la distribución de potencia (12 V y 5 V), el retorno de masas en estrella y los enlaces de datos (USB/TTL) entre los componentes. La asignación de pines entre el \gls{Arduino}, el driver L298N y los encoders se detalla en el \ref{anx:hardware_ros2}.
 
 \utemFigurePropia{2.Texto/Imag/circuit_diagram_bb.png}{0.95\textwidth}
 {Esquema de conexiones eléctricas del robot diferencial.}{fig:esquema_conexiones}
@@ -56,7 +56,7 @@ En la configuración de hardware, el archivo \texttt{launch\_robot.launch.py} or
 \subsection{Multiplexación de velocidad: \texttt{twist\_mux}}
 \label{sec:twist_mux}
 
-El nodo \texttt{twist\_mux} escucha varios tópicos de tipo \texttt{Twist} y reenvía solo el de mayor prioridad: la teleoperación tiene prioridad sobre la navegación autónoma e implementa un \textit{dead-man switch} (requiere mantener presionado un botón de habilitación para publicar comandos). La salida se remapea a \texttt{/diff\_cont/cmd\_vel\_unstamped}, entrada del controlador diferencial. La configuración de entradas (tópicos, prioridades y \textit{timeouts}) se detalla en el Anexo~\ref{anx:hardware_ros2}.
+El nodo \texttt{twist\_mux} escucha varios tópicos de tipo \texttt{Twist} y reenvía solo el de mayor prioridad: la teleoperación tiene prioridad sobre la navegación autónoma e implementa un \textit{dead-man switch} (requiere mantener presionado un botón de habilitación para publicar comandos). La salida se remapea a \texttt{/diff\_cont/cmd\_vel\_unstamped}, entrada del controlador diferencial. La configuración de entradas (tópicos, prioridades y \textit{timeouts}) se detalla en el \ref{anx:hardware_ros2}.
 
 \subsection{Convenciones de marcos \texttt{tf}}
 \label{sec:tf_frames}
@@ -74,14 +74,14 @@ En hardware, \texttt{map}$\rightarrow$\texttt{odom} la publica \texttt{slam\_too
 \label{sec:lidar}
 % ============================================================
 
-El RPLIDAR A1, cuyas especificaciones se detallaron en el Capítulo~\ref{ch:componentes}, se integra mediante el paquete \texttt{rplidar\_ros}, que establece la comunicación serie y publica los barridos en el tópico \texttt{/scan} como mensajes \texttt{sensor\_msgs/LaserScan}, consumidos por \texttt{slam\_toolbox} (para construir el mapa) y por los \textit{costmaps} de Nav2 (para evitar obstáculos). La configuración del driver (\texttt{serial\_port}, \texttt{frame\_id}, \texttt{angle\_compensate}, \texttt{scan\_mode}) se resume en el Anexo~\ref{anx:hardware_ros2}.
+El RPLIDAR A1, cuyas especificaciones se detallaron en el Capítulo~\ref{ch:componentes}, se integra mediante el paquete \texttt{rplidar\_ros}, que establece la comunicación serie y publica los barridos en el tópico \texttt{/scan} como mensajes \texttt{sensor\_msgs/LaserScan}, consumidos por \texttt{slam\_toolbox} (para construir el mapa) y por los \textit{costmaps} de Nav2 (para evitar obstáculos). La configuración del driver (\texttt{serial\_port}, \texttt{frame\_id}, \texttt{angle\_compensate}, \texttt{scan\_mode}) se resume en el \ref{anx:hardware_ros2}.
 
 % ============================================================
 \section{Perfiles de calidad de servicio (QoS) por tópico}
 \label{sec:qos_profiles}
 % ============================================================
 
-En una red inalámbrica, la pérdida ocasional de paquetes es inevitable, por lo que \gls{ROS2} permite configurar políticas de \textit{QoS} por tópico. Solo \texttt{/scan\_raw} y \texttt{/scan} se configuran explícitamente en \texttt{scan\_filter\_node.py}: el primero como \texttt{best\_effort} para tolerar pérdidas aisladas del barrido láser, y el segundo como \texttt{reliable} para coincidir con la suscripción de \texttt{slam\_toolbox} y los \textit{costmaps} de Nav2, que rechazan publicadores \texttt{best\_effort} por incompatibilidad de QoS. El resto de los tópicos usa los valores por defecto de sus nodos; destaca \texttt{/tf\_static} con durabilidad \texttt{transient\_local}: esta propiedad \textit{latched} permite que los nodos suscritos tras el arranque del \texttt{robot\_state\_publisher} reciban igualmente las transformaciones estáticas, evitando pérdidas de cadena TF al iniciar SLAM o navegación con retraso. La tabla completa de perfiles configurados u observados se incluye en el Anexo~\ref{anx:hardware_ros2}.
+En una red inalámbrica, la pérdida ocasional de paquetes es inevitable, por lo que \gls{ROS2} permite configurar políticas de \textit{QoS} por tópico. Solo \texttt{/scan\_raw} y \texttt{/scan} se configuran explícitamente en \texttt{scan\_filter\_node.py}: el primero como \texttt{best\_effort} para tolerar pérdidas aisladas del barrido láser, y el segundo como \texttt{reliable} para coincidir con la suscripción de \texttt{slam\_toolbox} y los \textit{costmaps} de Nav2, que rechazan publicadores \texttt{best\_effort} por incompatibilidad de QoS. El resto de los tópicos usa los valores por defecto de sus nodos; destaca \texttt{/tf\_static} con durabilidad \texttt{transient\_local}: esta propiedad \textit{latched} permite que los nodos suscritos tras el arranque del \texttt{robot\_state\_publisher} reciban igualmente las transformaciones estáticas, evitando pérdidas de cadena TF al iniciar SLAM o navegación con retraso. La tabla completa de perfiles configurados u observados se incluye en el \ref{anx:hardware_ros2}.
 
 % ============================================================
 \section{Sincronización temporal}
@@ -98,7 +98,7 @@ La precisión temporal es esencial para la coherencia de las transformaciones y 
 \label{sec:udev}
 % ============================================================
 
-Para evitar que los nombres de los puertos serie cambien entre reinicios (\texttt{ttyUSB0} y \texttt{ttyUSB1} pueden intercambiarse al reconectar), se definen reglas \texttt{udev} en la Raspberry~Pi que crean enlaces simbólicos estables a partir de atributos únicos de cada dispositivo: \texttt{/dev/motor\_controller} para el \gls{Arduino} y \texttt{/dev/rplidar} para el \gls{LIDAR}. La regla del \gls{Arduino} incorpora además un \texttt{PROGRAM} que deshabilita el \textit{hangup-on-close} de la línea serie, evitando el reinicio automático del microcontrolador al abrir el puerto —un efecto colateral del chip CH340 al activar \gls{DTR}. El mapeo completo de dispositivos y los archivos de reglas se detallan en el Anexo~\ref{anx:hardware_ros2}.
+Para evitar que los nombres de los puertos serie cambien entre reinicios (\texttt{ttyUSB0} y \texttt{ttyUSB1} pueden intercambiarse al reconectar), se definen reglas \texttt{udev} en la Raspberry~Pi que crean enlaces simbólicos estables a partir de atributos únicos de cada dispositivo: \texttt{/dev/motor\_controller} para el \gls{Arduino} y \texttt{/dev/rplidar} para el \gls{LIDAR}. La regla del \gls{Arduino} incorpora además un \texttt{PROGRAM} que deshabilita el \textit{hangup-on-close} de la línea serie, evitando el reinicio automático del microcontrolador al abrir el puerto —un efecto colateral del chip CH340 al activar \gls{DTR}. El mapeo completo de dispositivos y los archivos de reglas se detallan en el \ref{anx:hardware_ros2}.
 
 % ============================================================
 \section{Parámetros del controlador diferencial}

@@ -19,7 +19,7 @@ El archivo \texttt{robot.urdf.xacro} actúa como compositor principal y fuente d
 \section{Arquitectura de software y aporte original}
 \label{sec:atribucion}
 
-El \textit{workspace} del proyecto (\texttt{tesis\_black\_robot}) integra paquetes de tres orígenes: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La atribución detallada de cada paquete —origen, licencia, modificaciones realizadas y naturaleza de la contribución del autor— se documenta en el Anexo~\ref{anx:gemelo_digital}, lo que permite distinguir con transparencia el aporte original de la tesis respecto del trabajo previo de la comunidad de código abierto. La configuración del entorno y la organización completa del \textit{workspace} se documentan en el Anexo~\ref{anx:workspace}.
+El \textit{workspace} del proyecto (\texttt{tesis\_black\_robot}) integra paquetes de tres orígenes: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La atribución detallada de cada paquete —origen, licencia, modificaciones realizadas y naturaleza de la contribución del autor— se documenta en el \ref{anx:gemelo_digital}, lo que permite distinguir con transparencia el aporte original de la tesis respecto del trabajo previo de la comunidad de código abierto. La configuración del entorno y la organización completa del \textit{workspace} se documentan en el \ref{anx:workspace}.
 
 \noindent
 En síntesis, el aporte original del autor comprende: (a) el diseño completo del modelo URDF/Xacro y la parametrización de todo el sistema de control, SLAM y navegación en \texttt{articubot\_one}; (b) la extensión del protocolo serial del firmware con comandos en unidades físicas y ganancias asimétricas; (c) el desarrollo íntegro de la cadena de sintonización automática del PID por PSO; y (d) la integración, configuración y validación del sistema completo. Los paquetes de terceros aportaron infraestructura reutilizable (interfaz de hardware, biblioteca serial, explorador de fronteras), que fue configurada y adaptada según los requerimientos del prototipo.
@@ -85,7 +85,7 @@ La parametrización se centraliza mediante propiedades reutilizables: modificar 
 
 \subsection{Validación estructural del URDF}
 
-La auditoría del modelo confirma la jerarquía declarada y el conteo de elementos cinemáticos —7 \textit{links} y 6 \textit{joints} (2 continuos y 4 fijos)—, verificados sobre el árbol de transformaciones generado con \texttt{ros2 run tf2\_tools view\_frames}. El árbol TF y el detalle del conteo se incluyen en el Anexo~\ref{anx:gemelo_digital}.
+La auditoría del modelo confirma la jerarquía declarada y el conteo de elementos cinemáticos —7 \textit{links} y 6 \textit{joints} (2 continuos y 4 fijos)—, verificados sobre el árbol de transformaciones generado con \texttt{ros2 run tf2\_tools view\_frames}. El árbol TF y el detalle del conteo se incluyen en el \ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
 \section{Composición modular y selección de \textit{backend}}
@@ -119,7 +119,7 @@ Con el robot físico (\texttt{use\_ros2\_control=true}, \texttt{sim\_mode=false}
 \section{Convenciones de marcos y cadena de transformaciones}
 \label{sec:tf-convenciones}
 
-Se adopta la convención estándar de ROS definida en \gls{REP103}~\cite{rep103}: \texttt{x} hacia adelante, \texttt{y} hacia la izquierda, \texttt{z} hacia arriba, con ángulos en radianes y regla de la mano derecha. La organización de la cadena de marcos sigue \gls{REP105}~\cite{rep105}, que estandariza los marcos \texttt{map}, \texttt{odom} y \texttt{base\_link} para plataformas móviles, y se publica con \texttt{robot\_state\_publisher}; los orígenes de cada marco corresponden a los valores declarados en la Tabla~\ref{tab:parametros_robot}. El correcto funcionamiento exige \texttt{robot\_state\_publisher} activo con la descripción del robot cargada; los procedimientos de verificación y las acciones correctivas ante marcos o tópicos ausentes se documentan en el Anexo~\ref{anx:workspace}. La Tabla~\ref{tab:topics_frames} resume el mapeo entre componentes, marcos y tópicos.
+Se adopta la convención estándar de ROS definida en \gls{REP103}~\cite{rep103}: \texttt{x} hacia adelante, \texttt{y} hacia la izquierda, \texttt{z} hacia arriba, con ángulos en radianes y regla de la mano derecha. La organización de la cadena de marcos sigue \gls{REP105}~\cite{rep105}, que estandariza los marcos \texttt{map}, \texttt{odom} y \texttt{base\_link} para plataformas móviles, y se publica con \texttt{robot\_state\_publisher}; los orígenes de cada marco corresponden a los valores declarados en la Tabla~\ref{tab:parametros_robot}. El correcto funcionamiento exige \texttt{robot\_state\_publisher} activo con la descripción del robot cargada; los procedimientos de verificación y las acciones correctivas ante marcos o tópicos ausentes se documentan en el \ref{anx:workspace}. La Tabla~\ref{tab:topics_frames} resume el mapeo entre componentes, marcos y tópicos.
 
 \begin{table}[H]
 \centering
@@ -140,7 +140,7 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 %------------------------------------------------------------------
 \section{Modelado del sensor láser en simulación}
 
-El escáner láser se modela en el marco \texttt{laser\_frame} con los parámetros declarados en la Tabla~\ref{tab:parametros_robot}. El plugin \texttt{libgazebo\_ros\_ray\_sensor.so} genera los datos y los publica en \texttt{/scan} con formato \texttt{sensor\_msgs/LaserScan}, de modo que el láser virtual se comporta como el RPLidar A1 físico. Al conservar los nombres de marcos y tópicos entre simulación y hardware, los archivos de configuración de SLAM y navegación se reutilizan sin cambios estructurales. La comparación visual de los rayos del \gls{LIDAR} entre Gazebo y RViz se incluye en el Anexo~\ref{anx:gemelo_digital}.
+El escáner láser se modela en el marco \texttt{laser\_frame} con los parámetros declarados en la Tabla~\ref{tab:parametros_robot}. El plugin \texttt{libgazebo\_ros\_ray\_sensor.so} genera los datos y los publica en \texttt{/scan} con formato \texttt{sensor\_msgs/LaserScan}, de modo que el láser virtual se comporta como el RPLidar A1 físico. Al conservar los nombres de marcos y tópicos entre simulación y hardware, los archivos de configuración de SLAM y navegación se reutilizan sin cambios estructurales. La comparación visual de los rayos del \gls{LIDAR} entre Gazebo y RViz se incluye en el \ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
 \section{Control diferencial: interfaz y \textit{backend}}

@@ -5,7 +5,7 @@
 \renewcommand{\thesection}{ANEXO \arabic{section}.}
 \renewcommand{\thesubsection}{\thesection\arabic{subsection}}
 
-\clearpage
+
 \appendix
 \addappheadtotoc
 \appendixpage
@@ -17,52 +17,18 @@
 
 El presente anexo contiene el diagrama esquemático integral de las conexiones eléctricas y de datos del prototipo. El esquema complementa la descripción de la Sección~\ref{sec:criterios_potencia} y la Figura~\ref{fig:esquema_conexiones} del Capítulo~\ref{chap:robot_real}, proporcionando el nivel de detalle necesario para la reproducción y verificación del cableado.
 
-\subsection*{Dominio de potencia (12\,V y 5\,V)}
+\subsection{Dominio de potencia (\texorpdfstring{12\,V y 5\,V}{12V y 5V})}
 
-El bus de 12\,V parte del paquete de batería Li-ion 3S (tensión nominal 10.8\,V, plena carga 12.6\,V) a través de un fusible de protección tipo \textit{mini blade} de 10\,A, dimensionado según el presupuesto de potencia de la Tabla~\ref{tab:power_budget_filled}. El interruptor general (pulsante de 16\,mm con retención) actúa como \textbf{maestro sobre la línea de 12\,V}: al accionarse, de-energiza la totalidad del sistema —tanto la actuación (L298N y motores) como la lógica alimentada por el convertidor \textit{buck} (Raspberry~Pi y periféricos)—, por lo que conduce la corriente total del bus. En consecuencia, el apagado seguro exige detener primero el sistema operativo de la Raspberry~Pi y solo después accionar el interruptor (Anexo~\ref{anx:guia_startup}). El regulador \textit{buck} DFRobot DFR0205, basado en el convertidor GS2678, reduce la tensión a 5\,V estables con eficiencia superior al 90\,\% para alimentar la Raspberry~Pi~4 y los periféricos USB. La topología de masas sigue un esquema en estrella, convergiendo los retornos de potencia y lógica en un punto común próximo al terminal negativo de la batería.
+El bus de 12\,V parte del paquete de batería Li-ion 3S (tensión nominal 10.8\,V, plena carga 12.6\,V) a través de un fusible de protección tipo \textit{mini blade} de 10\,A, dimensionado según el presupuesto de potencia de la Tabla~\ref{tab:power_budget_filled}. El interruptor general (pulsante de 16\,mm con retención) actúa como \textbf{maestro sobre la línea de 12\,V}: al accionarse, de-energiza la totalidad del sistema —tanto la actuación (L298N y motores) como la lógica alimentada por el convertidor \textit{buck} (Raspberry~Pi y periféricos)—, por lo que conduce la corriente total del bus. En consecuencia, el apagado seguro exige detener primero el sistema operativo de la Raspberry~Pi y solo después accionar el interruptor (\ref{anx:guia_startup}). El regulador \textit{buck} DFRobot DFR0205, basado en el convertidor GS2678, reduce la tensión a 5\,V estables con eficiencia superior al 90\,\% para alimentar la Raspberry~Pi~4 y los periféricos USB. La topología de masas sigue un esquema en estrella, convergiendo los retornos de potencia y lógica en un punto común próximo al terminal negativo de la batería.
 
-\subsection*{Dominio de control y señales}
+\subsection{Dominio de control y señales}
 
 Las conexiones de señales se organizan en dos niveles. El primero conecta el Arduino~Nano con los encoders de cuadratura y el driver de motores: los canales A y B del encoder izquierdo se conectan a D3 (PD3) y D2 (PD2) mediante interrupciones por cambio de pin (PCINT2, puerto D), y los del encoder derecho a A4 (PC4) y A5 (PC5) mediante PCINT1 (puerto C). Los pines de habilitación del L298N (ENA en D13, ENB en D12) se mantienen en estado HIGH permanente, mientras que la velocidad y dirección de cada motor se regulan mediante PWM aplicado a los pines de entrada IN1--IN4 (D6, D10, D9, D5), como se describe en el Capítulo~\ref{ch:setup_arduino}. El segundo nivel conecta la Raspberry~Pi~4 con el Arduino~Nano mediante enlace serial USB a 57\,600~baud (símbolo persistente \texttt{/dev/motor\_controller}), con el RPLidar~A1 por un segundo puerto USB y con el receptor del mando inalámbrico por un tercero.
 
-\subsection*{Tabla de asignación de pines del Arduino Nano}
-
-\begin{table}[H]
-\centering
-\caption{Asignación de pines del \gls{Arduino} V3 en el prototipo.}
-\label{tab:anx_pinout}
-\small
-\begin{tabular}{llll}
-\toprule
-\textbf{Pin Arduino} & \textbf{Función} & \textbf{Destino} & \textbf{Tipo} \\
-\midrule
-\multicolumn{4}{l}{\textit{Control de motores}} \\  \addlinespace
-D6 (PWM)    & PWM avance izq.\ (\texttt{LEFT\_MOTOR\_FORWARD})   & L298N IN1  & Salida, \texttt{analogWrite} \\
-D10 (PWM)   & PWM retroceso izq.\ (\texttt{LEFT\_MOTOR\_BACKWARD}) & L298N IN2  & Salida, \texttt{analogWrite} \\
-D13         & Habilitación izq.\ (\texttt{LEFT\_MOTOR\_ENABLE})   & L298N ENA  & Salida digital (HIGH fijo) \\  \addlinespace
-D9 (PWM)    & PWM avance der.\ (\texttt{RIGHT\_MOTOR\_FORWARD})  & L298N IN3  & Salida, \texttt{analogWrite} \\
-D5 (PWM)    & PWM retroceso der.\ (\texttt{RIGHT\_MOTOR\_BACKWARD}) & L298N IN4  & Salida, \texttt{analogWrite} \\
-D12         & Habilitación der.\ (\texttt{RIGHT\_MOTOR\_ENABLE})  & L298N ENB  & Salida digital (HIGH fijo) \\
-\midrule
-\multicolumn{4}{l}{\textit{Lectura de encoders}} \\  \addlinespace
-D3 (PD3)    & Canal A enc.\ izq.\ (\texttt{LEFT\_ENC\_PIN\_A})    & Encoder Hall izq. & Entrada, PCINT2 \\
-D2 (PD2)    & Canal B enc.\ izq.\ (\texttt{LEFT\_ENC\_PIN\_B})    & Encoder Hall izq. & Entrada, PCINT2 \\  \addlinespace
-A4 (PC4)    & Canal A enc.\ der.\ (\texttt{RIGHT\_ENC\_PIN\_A})   & Encoder Hall der. & Entrada, PCINT1 \\
-A5 (PC5)    & Canal B enc.\ der.\ (\texttt{RIGHT\_ENC\_PIN\_B})   & Encoder Hall der. & Entrada, PCINT1 \\
-\midrule
-\multicolumn{4}{l}{\textit{Comunicación y alimentación}} \\  \addlinespace
-USB (TX/RX) & Comunicación serial  & Raspberry Pi 4 (\texttt{/dev/motor\_controller}) & Serial, 57\,600 baud \\
-5V          & Alimentación         & Encoder VCC    & --- \\
-GND         & Referencia           & Estrella de masas & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\clearpage
 \section{Lista de materiales (\textit{Bill of Materials})}
 \label{anx:bom}
 
-La siguiente tabla consolida todos los componentes utilizados en la construcción del prototipo. Esta lista permite estimar el costo de reproducción y verificar la completitud del inventario; el desembolso real se detalla en el Anexo~\ref{anx:costos}.
+La siguiente tabla consolida todos los componentes utilizados en la construcción del prototipo. Esta lista permite estimar el costo de reproducción y verificar la completitud del inventario; el desembolso real se detalla en el \ref{anx:costos}.
 
 \begin{table}[H]
 \centering
@@ -159,7 +125,7 @@ Soportes                    & Según geometría (voladizos $>$45°) \\
 \end{tabular}
 \end{table}
 
-\clearpage
+
 \section{Datos de sintonización PID y convergencia PSO}
 \label{anx:pid_data}
 
@@ -171,7 +137,7 @@ Los datos de la prueba en lazo abierto se almacenaron en \texttt{step\_response\
 
 \subsection{Parámetros FODT identificados}
 
-El PSO es estocástico, por lo que cada ejecución produce parámetros ligeramente distintos. La Tabla~\ref{tab:anx_fodt} corresponde a la corrida de \texttt{SintonizacionAutomatica.py}, empleada para obtener las ganancias PID iniciales que, tras el refinamiento experimental (Sección~\ref{subsec:refinamiento_iterativo}), constituyen las ganancias definitivas del firmware. La Tabla~\ref{tab:anx_fodt_lambda} corresponde a una corrida independiente (\texttt{SintonizacionLambda.py}) utilizada únicamente como base para el cálculo de la sintonía Lambda con fines comparativos; dicha sintonía se descartó por su sobreimpulso superior al 40\,\% y no determinó el diseño final. Ambas corridas son consistentes en $K_m$ y $\tau$; la diferencia se concentra en el retardo $L$, de baja magnitud relativa. La tabla consolidada del cuerpo es la Tabla~\ref{tab:fodt_params_pso} del Capítulo~\ref{ch:resultados}.
+El PSO es estocástico, por lo que cada ejecución produce parámetros ligeramente distintos. La Tabla~\ref{tab:anx_fodt} corresponde a la corrida de \texttt{SintonizacionAutomatica.py}, empleada para obtener las ganancias PID iniciales que, tras el refinamiento experimental (Sección~\ref{subsec:refinamiento_iterativo}), constituyen las ganancias definitivas del firmware. La Tabla~\ref{tab:anx_fodt_lambda} corresponde a una corrida independiente (\texttt{SintonizacionLambda.py}) utilizada únicamente como base para el cálculo de la sintonía Lambda con fines comparativos; dicha sintonía se descartó por su sobreimpulso superior al 40\,\% y no determinó el diseño final. Ambas corridas son consistentes en $K_m$ y $\tau$; la diferencia se concentra en el retardo $L_d$, de baja magnitud relativa. La tabla consolidada del cuerpo es la Tabla~\ref{tab:fodt_params_pso} del Capítulo~\ref{ch:resultados}.
 
 \begin{table}[H]
 \centering
@@ -180,7 +146,7 @@ El PSO es estocástico, por lo que cada ejecución produce parámetros ligeramen
 \label{tab:anx_fodt}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L$ \textbf{(s)} \\
+\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L_d$ \textbf{(s)} \\
 \midrule
 Izquierda & $0.000913$ & $0.3291$ & $0.0215$ \\
 Derecha   & $0.000890$ & $0.3485$ & $0.0001$ \\
@@ -188,7 +154,7 @@ Derecha   & $0.000890$ & $0.3485$ & $0.0001$ \\
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item Corrida utilizada para las ganancias PID iniciales. $K_m$ y $\tau$ son consistentes entre corridas; el retardo $L$ presenta mayor variabilidad por su baja magnitud relativa.
+\item Corrida utilizada para las ganancias PID iniciales. $K_m$ y $\tau$ son consistentes entre corridas; el retardo $L_d$ presenta mayor variabilidad por su baja magnitud relativa.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -199,7 +165,7 @@ Derecha   & $0.000890$ & $0.3485$ & $0.0001$ \\
 \label{tab:anx_fodt_lambda}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L$ \textbf{(s)} \\
+\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L_d$ \textbf{(s)} \\
 \midrule
 Izquierda & $0.000913$ & $0.3291$ & $0.0001$ \\
 Derecha   & $0.000890$ & $0.3485$ & $0.0845$ \\
@@ -207,11 +173,11 @@ Derecha   & $0.000890$ & $0.3485$ & $0.0845$ \\
 \end{tabular}
 \end{table}
 
-\subsection*{A6.3\quad Convergencia del algoritmo PSO}
+\subsection{Convergencia del algoritmo PSO}
 
-La optimización usa 50~partículas y 150~generaciones. Los gráficos siguientes muestran la evolución de la función de costo (mejor global) tanto para la identificación del modelo como para la optimización de ganancias.
+La optimización usa 50~partículas y 150~generaciones. Se monitoreó la evolución de la función de costo (mejor global) tanto en la identificación del modelo como en la optimización de ganancias, verificándose la convergencia antes de alcanzar el límite de generaciones.
 
-\subsection*{A6.4\quad Ganancias PID finales y parámetros del firmware}
+\subsection{Ganancias PID finales y parámetros del firmware}
 
 \begin{table}[H]
 \centering
@@ -235,7 +201,40 @@ La optimización usa 50~partículas y 150~generaciones. Los gráficos siguientes
 \end{tabular}
 \end{table}
 
-\clearpage
+
+\section{Firmware ROSArduinoBridge: datos complementarios}
+\label{anx:firmware}
+
+Este anexo complementa el Capítulo~\ref{ch:setup_arduino} con los datos experimentales y los detalles de implementación del firmware (configuración de registros y rutinas de interrupción, clases \texttt{ArduinoComms} y \texttt{Wheel}, capa serial asíncrona y factores de escala del PSO).
+
+\subsection{Muestras experimentales de cuentas por vuelta}
+\label{sec:anx_muestras_cuentas}
+
+Para obtener el número de cuentas por vuelta completa de rueda se hicieron girar ambas ruedas diez vueltas completas, registrando las cuentas acumuladas en cada repetición (Tabla~\ref{tab:muestras_cuentas}). Los promedios y el valor unificado adoptado (\texttt{ENC\_TICKS\_PER\_REV} = 1980) se reportan en la Sección~\ref{sec:cpr_promedios}.
+
+\begin{table}[H]
+\centering
+\caption{Muestras del número de cuentas en los encoders por revolución.}
+\label{tab:muestras_cuentas}
+\begin{tabular}{S[table-format=2.0] S[table-format=4.0] S[table-format=4.0]}
+\toprule
+\textbf{N$^{\circ}$} & {\textbf{Cuentas Der.}} & {\textbf{Cuentas Izq.}} \\ 
+\midrule
+1  & 1966 & 1978 \\
+2  & 1960 & 1948 \\
+3  & 2002 & 1966 \\
+4  & 1980 & 1970 \\
+5  & 1972 & 1972 \\
+6  & 1964 & 1978 \\
+7  & 1980 & 1957 \\
+8  & 1980 & 1975 \\
+9  & 1980 & 1962 \\
+10 & 1978 & 1979 \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+
+
 \section{Puesta en marcha y configuración del \textit{workspace}}
 \label{anx:guia_startup}
 \label{anx:workspace}
@@ -314,22 +313,22 @@ La Figura~\ref{fig:gantt} presenta la planificación temporal del proyecto, orga
 
 \utemFigurePropia{2.Texto/Imag/carta_gantt.pdf}{0.95\textwidth}{Carta Gantt del proyecto.}{fig:gantt}
 
-\clearpage
+
 
 \section{Transformación de ganancias en la sintonía Lambda}
 \label{anx:lambda}
  
-La sintonía Lambda (Sección~\ref{sec:lambda}) entrega las ganancias en la forma serie interactuante $k_c$, $k_i$, $k_d$ de la Ec.~(\ref{eq:lambda_serie}). Dado que el firmware implementa el controlador en forma paralela estándar, dichas ganancias se convierten a $K_p$, $T_i$, $T_d$ mediante:
+La sintonía Lambda (Sección~\ref{sec:lambda}) entrega las ganancias en la forma serie interactuante $k_c$, $\tau_I$, $\tau_D$ de la Ec.~(\ref{eq:lambda_serie}). Dado que el firmware implementa el controlador en forma paralela estándar, dichas ganancias se convierten a $K_p$, $T_i$, $T_d$ mediante:
  
 \begin{equation}
-K_p = k_c \,\frac{k_i + k_d}{k_i}, \quad T_i = k_i + k_d, \quad T_d = \frac{k_i \, k_d}{k_i + k_d}
+K_p = k_c \,\frac{\tau_I + \tau_D}{\tau_I}, \quad T_i = \tau_I + \tau_D, \quad T_d = \frac{\tau_I \, \tau_D}{\tau_I + \tau_D}
 \label{eq:lambda_paralelo}
 \end{equation}
  
 \noindent
 Estos valores constituyen la línea base analítica que se contrasta con las ganancias obtenidas por PSO en el capítulo de validación.
 
-\clearpage
+
 \section{Comparación de arquitecturas de locomoción}
 \label{anx:arquitecturas}
  
@@ -360,11 +359,23 @@ La arquitectura de tracción diferencial adoptada se justificó en el Capítulo~
  
 La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación y rendimiento en interiores. Las alternativas Ackermann y omnidireccional se dejan como líneas de trabajo futuro.
 
-\clearpage
+
+\section{Plataformas robóticas de referencia}
+\label{anx:plataformas}
+
+Las plataformas comerciales de referencia citadas en el Capítulo~\ref{ch:estado_arte} —TurtleBot y Jackal— se ilustran en la Figura~\ref{fig:robots_referencia}. Ambas comparten una arquitectura de software basada en \gls{ROS2} e integración de sensores \gls{LIDAR}.
+
+\begin{utemMultiFigure}{Plataformas robóticas de referencia basadas en \gls{ROS2}.}{fig:robots_referencia}
+    \addutem{0.42}{2.Texto/Imag/turtleBot4.jpg}{TurtleBot}{turtlebot4_clearpath}
+    \hfill
+    \addutem{0.42}{2.Texto/Imag/jackal.jpg}{Jackal}{clearpath_jackal}
+\end{utemMultiFigure}
+
+
 \section{Comparación económica}
 \label{anx:costos}
 
-El costo total de los materiales adquiridos para el prototipo ascendió a \textbf{CLP~582.447} (Tabla~\ref{tab:costo_prototipo}). Como es habitual en prototipado, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en kits de múltiples unidades; el costo reportado corresponde al valor de compra de dichos kits, lo que ofrece una referencia realista del desembolso. La lista de materiales completa se desglosa en el Anexo~\ref{anx:bom}.
+El costo total de los materiales adquiridos para el prototipo ascendió a \textbf{CLP~582.447} (Tabla~\ref{tab:costo_prototipo}). Como es habitual en prototipado, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en kits de múltiples unidades; el costo reportado corresponde al valor de compra de dichos kits, lo que ofrece una referencia realista del desembolso. La lista de materiales completa se desglosa en el \ref{anx:bom}.
 
 \begin{ThreePartTable}
 \begin{TableNotes}[para,flushleft]
@@ -479,15 +490,9 @@ Clearpath Jackal \citep{clearpath_jackal}
 \end{threeparttable}
 \end{table}
 
-El costo del prototipo (≈ US\$ 605) es comparable al del TurtleBot~3 Burger en su precio de catálogo de 2024 (≈ US\$ 550) y sustancialmente inferior al del Waffle~Pi y al de plataformas de investigación como el Jackal. Más que un menor costo absoluto frente al modelo base, el aporte de este trabajo reside en que el firmware de bajo nivel y la interfaz de hardware se desarrollaron desde cero sobre componentes genéricos, sin depender de hardware ni firmware propietarios, lo que habilita personalización completa a un costo equivalente.
+El costo del prototipo ($\approx$ US\$ 605) es comparable al del TurtleBot~3 Burger en su precio de catálogo de 2024 ($\approx$ US\$ 550) y sustancialmente inferior al del Waffle~Pi y al de plataformas de investigación como el Jackal. Más que un menor costo absoluto frente al modelo base, el aporte de este trabajo reside en que el firmware de bajo nivel y la interfaz de hardware se desarrollaron desde cero sobre componentes genéricos, sin depender de hardware ni firmware propietarios, lo que habilita personalización completa a un costo equivalente.
 
-\begin{utemMultiFigure}{Plataformas robóticas de referencia basadas en \gls{ROS2}.}{fig:robots_referencia}
-    \addutem{0.42}{2.Texto/Imag/turtleBot4.jpg}{TurtleBot}{turtlebot4_clearpath}
-    \hfill
-    \addutem{0.42}{2.Texto/Imag/jackal.jpg}{Jackal}{clearpath_jackal}
-\end{utemMultiFigure}
 
-\clearpage
 
 %======================================================================
 \section{Especificaciones técnicas de los componentes}
@@ -495,7 +500,6 @@ El costo del prototipo (≈ US\$ 605) es comparable al del TurtleBot~3 Burger en
 
 Este anexo reúne las especificaciones de hoja de datos de los componentes del prototipo y el detalle del subsistema de alimentación, trasladados desde el Capítulo~\ref{ch:componentes} para no interrumpir su lectura. En el cuerpo del capítulo se conservan únicamente los parámetros que alimentan el modelo, el control o la validación.
 
-%----------------------------------------------------------------------
 \subsection{Motorreductor JGA25-370}
 
 \begin{itemize}
@@ -507,7 +511,6 @@ Este anexo reúne las especificaciones de hoja de datos de los componentes del p
   \item \textbf{Peso}: $\sim$110~g.
 \end{itemize}
 
-%----------------------------------------------------------------------
 \subsection{Driver de motores L298N}
 
 \begin{itemize}
@@ -518,7 +521,6 @@ Este anexo reúne las especificaciones de hoja de datos de los componentes del p
   \item Control de velocidad mediante \gls{PWM} en pines ENA y ENB.
 \end{itemize}
 
-%----------------------------------------------------------------------
 \subsection{Arduino Nano V3 (ATmega328P)}
 \citep{ArduinoNanoStore,ArduinoDocsNano,Atmega328PDatasheet}
 \begin{itemize}
@@ -528,7 +530,6 @@ Este anexo reúne las especificaciones de hoja de datos de los componentes del p
   \item Interrupciones externas en D2 y D3, y por cambio de pin (PCINT).
 \end{itemize}
 
-%----------------------------------------------------------------------
 \subsection{Sensor LiDAR RPLidar A1M8}
 Según \citep{SlamtecA1Datasheet}:
 \begin{itemize}
@@ -540,7 +541,6 @@ Según \citep{SlamtecA1Datasheet}:
   \item Peso: $\sim$170~g.
 \end{itemize}
 
-%----------------------------------------------------------------------
 \subsection{Computador de a bordo: alternativas evaluadas}
 
 Frente a la Raspberry Pi~4 seleccionada, se evaluaron las siguientes alternativas:
@@ -551,22 +551,21 @@ Frente a la Raspberry Pi~4 seleccionada, se evaluaron las siguientes alternativa
 \end{itemize}
 Dado el alcance del proyecto, la Raspberry Pi~4 resultó la opción más equilibrada.
 
-%----------------------------------------------------------------------
-\section{Subsistema de alimentación}
+\subsection{Subsistema de alimentación}
 
-\subsection{Batería}
+\subsubsection*{Batería}
 
-Se utiliza una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita), elegida frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o plomo-ácido por su facilidad de recambio, seguridad y buena relación energía/peso.
+Se utiliza una batería Li-ion $\approx$12~V (3S, 10.8~V nominal) en formato deslizante (compatible con herramientas Makita), elegida frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o plomo-ácido por su facilidad de recambio, seguridad y buena relación energía/peso.
 
 \utemFigure{2.Texto/Imag/battery.png}{0.4\linewidth}{Batería Li\mbox{-}ion de 12~V.}{AIMJINBL1021B}{fig:battery}
 
-\subsection{Regulador DC-DC (buck)}
+\subsubsection*{Regulador DC-DC (buck)}
 
 Se usa el módulo DFRobot DFR0205, basado en el chip GS2678, un convertidor reductor conmutado a 350~kHz \parencite{DFRobotPowerModule}. Acepta tensiones de entrada entre 3.6 y 25~V y ofrece una salida fija de 5~V, una ajustable entre 3.3 y 25~V y un paso directo de la entrada, entregando hasta 5~A (25~W) con protecciones por cortocircuito y limitación de corriente. Este regulador deriva el riel de 5~V (Raspberry Pi, \gls{LIDAR}, \gls{Arduino}) desde la batería de 12~V con bajas pérdidas.
 
 \utemFigure{2.Texto/Imag/modulo_dc.jpg}{0.4\linewidth}{Power Module SKU DFR0205.}{DFRobotPowerModule}{fig:modulo_dc}
 
-\subsection{Protecciones e interruptores}
+\subsubsection*{Protecciones e interruptores}
 
 El ramal de potencia sigue la cadena: batería $\rightarrow$ fusible $\rightarrow$ interruptor maestro $\rightarrow$ reguladores/cargas. Se utiliza un fusible rápido tipo \emph{mini blade} de 10~A, que protege el cableado aguas abajo, y un interruptor maestro que secciona el bus de 12~V para cortar la potencia del sistema de forma segura.
 
@@ -574,7 +573,7 @@ El ramal de potencia sigue la cadena: batería $\rightarrow$ fusible $\rightarro
 
 \utemFigure{2.Texto/Imag/fuse.jpg}{0.4\linewidth}{Fusible automotriz tipo \emph{blade} Mini APM.}{optifuse_apm}{fig:fuse}
 
-\subsection{Dimensionamiento de cableado y conectores}
+\subsubsection*{Dimensionamiento de cableado y conectores}
 
 La Tabla~\ref{tab:cableado_conectores} resume el dimensionamiento estimado de los ramales de potencia. Los valores de corriente y longitud se ajustan durante el comisionamiento final.
 
@@ -647,7 +646,7 @@ La Tabla~\ref{tab:atribucion} identifica cada paquete del \textit{workspace} \te
 \end{tabular}
 \end{table}
 
-\section{Validación estructural del URDF}
+\subsection{Validación estructural del URDF}
 
 La auditoría del modelo confirma la jerarquía declarada y el conteo de elementos cinemáticos (Tabla~\ref{tab:urdf_evidencia}), verificados sobre el árbol de transformaciones generado con \texttt{ros2 run tf2\_tools view\_frames} (Figura~\ref{fig:tf_tree}).
 
@@ -672,7 +671,7 @@ Total de \textit{joints}     & 6 — 2 continuos (\texttt{left\_wheel\_joint}, \
 \end{tabular}
 \end{table}
 
-\section{Capturas de verificación}
+\subsection{Capturas de verificación}
 
 \utemFigurePropia{2.Texto/Imag/lidar_rviz_obstaculos.png}{0.95\textwidth}
 {Captura de RViz mostrando el modelo del robot con marcos TF activos y barrido láser.}
@@ -684,10 +683,11 @@ Total de \textit{joints}     & 6 — 2 continuos (\texttt{left\_wheel\_joint}, \
     \addutem{0.4}{2.Texto/Imag/rviz_laser_robot.png}{Visualización en RViz}
 \end{utemMultiFigurePropia}
 
-\chapter{Configuración de hardware e integración ROS 2}
+
+\section{Configuración de hardware e integración ROS 2}
 \label{anx:hardware_ros2}
 
-\section{Presupuesto de potencia y protecciones}
+\subsection{Presupuesto de potencia y protecciones}
 
 El bus de 12 V se dimensiona por el peor caso eléctrico (condición de \emph{stall}). La Tabla~\ref{tab:power_budget_filled} presenta el presupuesto de potencia por subsistema; los reguladores se seleccionan con un margen de 1.5 a 2.0 veces la corriente continua prevista. Los valores numéricos deben confirmarse en banco durante el comisionamiento.
 
@@ -728,13 +728,10 @@ El bus de 12 V se dimensiona por el peor caso eléctrico (condición de \emph{st
 {Presupuesto de potencia por subsistema. Los motores dominan el consumo de pico en el riel de 12 V; la Raspberry Pi domina el consumo continuo en el riel de 5 V.}
 {fig:power_budget_chart}
 
-\subsection*{Protecciones}
+\paragraph{Protecciones.}
+Las protecciones se definen por dominio. En el riel de 12 V se incorpora, en serie y aguas arriba del distribuidor, un fusible rápido tipo \textit{mini blade} de 10 A. El peor caso del presupuesto (Tabla~\ref{tab:power_budget_filled}) arroja un pico instantáneo de 5.17 A en la batería bajo concurrencia de \emph{stall} de motores y demanda pico simultánea del riel de 5 V; el fusible de 10 A cubre dicho pico con un margen cercano al 90\,\%, evitando aperturas espurias ante los transitorios de arranque, y protege el cableado ante cortocircuitos, conservando selectividad respecto a la protección interna del L298N. Se complementa con diodos de rueda libre según la hoja de datos del L298N. Un interruptor maestro con retención (16 mm) se ubica en serie con la línea de 12 V, aguas abajo del fusible, y de-energiza la totalidad del sistema —actuación y lógica— al accionarse; por su posición, conduce la corriente total del bus (1.59 A continuos y hasta 5.17 A de pico), por lo que su capacidad nominal se selecciona por encima de dicho pico.
 
-Las protecciones se definen por dominio. En el riel de 12 V se incorpora, en serie y aguas arriba del distribuidor, un fusible rápido tipo \textit{mini blade} de 10 A. El peor caso del presupuesto (Tabla~\ref{tab:power_budget_filled}) arroja un pico instantáneo de 5.17 A en la batería bajo concurrencia de \emph{stall} de motores y demanda pico simultánea del riel de 5 V; el fusible de 10 A cubre dicho pico con un margen cercano al 90\,\%, evitando aperturas espurias ante los transitorios de arranque, y protege el cableado ante cortocircuitos, conservando selectividad respecto a la protección interna del L298N. Se complementa con diodos de rueda libre según la hoja de datos del L298N.
-
-Un interruptor maestro con retención (16 mm) se ubica en serie con la línea de 12 V, aguas abajo del fusible, y de-energiza la totalidad del sistema —actuación y lógica— al accionarse. Por su posición, conduce la corriente total del bus: 1.59 A continuos y hasta 5.17 A de pico (Tabla~\ref{tab:power_budget_filled}), por lo que su capacidad nominal se selecciona por encima de dicho pico. Se ubica en un portafusible y soporte accesibles para facilitar el mantenimiento.
-
-\section{Asignación de pines}
+\subsection{Asignación de pines}
 
 \begin{table}[H]
 \centering
@@ -768,7 +765,7 @@ Un interruptor maestro con retención (16 mm) se ubica en serie con la línea de
 \end{threeparttable}
 \end{table}
 
-\section{Configuración de twist\_mux}
+\subsection{Configuración de twist\_mux}
 
 \begin{table}[H]
 \centering
@@ -784,7 +781,7 @@ Teleoperación (joy) & \texttt{cmd\_vel\_joy}   & 100 & 0.5 \\
 \end{tabular}
 \end{table}
 
-\section{Configuración del driver LiDAR}
+\subsection{Configuración del driver LiDAR}
 
 \begin{table}[H]
 \centering
@@ -802,7 +799,7 @@ Teleoperación (joy) & \texttt{cmd\_vel\_joy}   & 100 & 0.5 \\
 \end{tabular}
 \end{table}
 
-\section{Perfiles de calidad de servicio (QoS)}
+\subsection{Perfiles de calidad de servicio (QoS)}
 
 \begin{table}[H]
 \centering
@@ -824,7 +821,7 @@ Teleoperación (joy) & \texttt{cmd\_vel\_joy}   & 100 & 0.5 \\
 \end{tabular}
 \end{table}
 
-\section{Nombres persistentes de dispositivo (udev)}
+\subsection{Nombres persistentes de dispositivo (udev)}
 
 \begin{table}[H]
 \centering
@@ -850,4 +847,88 @@ Teleoperación (joy) & \texttt{cmd\_vel\_joy}   & 100 & 0.5 \\
 \end{table}
 
 Las reglas se distribuyen en tres archivos dentro de \texttt{/etc/udev/rules.d/} (uno por dispositivo y modo de conexión) y se activan recargando el \textit{daemon} de udev (\texttt{udevadm control --reload-rules} y \texttt{udevadm trigger}), tras lo cual se verifica la creación de los enlaces simbólicos.
+
+
+\section{Formato de reporte de pruebas pendientes}
+\label{anx:protocolo_resultados}
+ 
+Este anexo recoge el formato de reporte de las pruebas cuya ejecución requiere un entorno de mayor superficie que el recinto disponible (navegación autónoma, exploración de fronteras e indicadores de mapeo en hardware real). Las tablas se completarán al ejecutar el protocolo descrito en el Capítulo~\ref{ch:resultados}.
+ 
+\subsection{Mapeo en hardware real}
+ 
+\begin{table}[H]
+\centering
+\caption{Indicadores del mapeo en hardware real (pendiente de medición).}
+\label{tab:slam_real_indicadores}
+\begin{tabular}{ll}
+\toprule
+\textbf{Indicador} & \textbf{Valor} \\
+\midrule
+Tiempo total de mapeo & --- \\
+Distancia recorrida (odometría) & --- \\
+Número de nodos del grafo & --- \\
+Resolución del mapa & 0.05 m/celda \\
+Cierre de lazo detectado & --- \\
+Alineación de paredes & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\subsection{Navegación autónoma con Nav2}
+ 
+\begin{table}[H]
+\centering
+\caption{Resultados de navegación autónoma en simulación (pendiente de ejecución).}
+\label{tab:nav_sim}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Escenario} & \textbf{Éxitos} & \textbf{Fallos} & \textbf{Tasa (\%)} & $\bar{t}$ (s) & $\sigma_t$ (s) \\
+\midrule
+Meta directa & --- & --- & --- & --- & --- \\
+Con obstáculo & --- & --- & --- & --- & --- \\
+Pasillo/puerta & --- & --- & --- & --- & --- \\
+\midrule
+\textbf{Total} & --- & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\begin{table}[H]
+\centering
+\caption{Resultados de navegación autónoma en hardware real (pendiente de ejecución).}
+\label{tab:nav_real}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Escenario} & \textbf{Éxitos} & \textbf{Fallos} & \textbf{Tasa (\%)} & $\bar{t}$ (s) & $\sigma_t$ (s) \\
+\midrule
+Meta directa & --- & --- & --- & --- & --- \\
+Con obstáculo & --- & --- & --- & --- & --- \\
+Pasillo/puerta & --- & --- & --- & --- & --- \\
+\midrule
+\textbf{Total} & --- & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\subsection{Exploración autónoma de fronteras}
+ 
+\begin{table}[H]
+\centering
+\caption{Indicadores de exploración autónoma (pendiente de ejecución).}
+\label{tab:explore_sim}
+\begin{tabular}{lll}
+\toprule
+\textbf{Indicador} & \textbf{Simulación} & \textbf{Hardware real} \\
+\midrule
+Tiempo hasta finalización & --- & --- \\
+Metas generadas & --- & --- \\
+Metas alcanzadas & --- & --- \\
+Metas fallidas/abortadas & --- & --- \\
+Cobertura estimada (\%) & --- & --- \\
+Distancia total recorrida & --- & --- \\
+Intervenciones manuales & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \end{appendices}

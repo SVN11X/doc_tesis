@@ -14,7 +14,7 @@ El prototipo adopta una arquitectura de tracción diferencial con dos ruedas mot
 {Arquitectura móvil de tracción diferencial: dos ruedas motrices y una rueda loca (caster).}
 {BECChassisLong}{fig:chasis-2wd-caster}
 
-La rueda loca aporta estabilidad sin influir en la dirección, de modo que el control se ejerce íntegramente mediante la diferencia de velocidad entre las dos ruedas motrices. Las alternativas Ackermann y omnidireccional, junto con la comparación cualitativa que respalda la elección de la arquitectura diferencial, se documentan en el Anexo~\ref{anx:arquitecturas}.
+La rueda loca aporta estabilidad sin influir en la dirección, de modo que el control se ejerce íntegramente mediante la diferencia de velocidad entre las dos ruedas motrices. Las alternativas Ackermann y omnidireccional, junto con la comparación cualitativa que respalda la elección de la arquitectura diferencial, se documentan en el \ref{anx:arquitecturas}.
 
 \subsection{Ruedas motrices}
 
@@ -57,7 +57,7 @@ Se emplea un rodillo esférico tipo \emph{ball caster} como rueda de apoyo. Su e
 %------------------------------------------------------------------
 \section{Actuación: motores DC con caja reductora}
 
-Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM), seleccionado por su tensión nominal compatible con el sistema (12~V), su corriente dentro del margen del driver L298N y su caja reductora integrada de relación $N_g\approx45$, que entrega el par necesario para la tracción y cuya relación interviene directamente en el cálculo de la resolución del encoder (Sección~\ref{sec:encoder}). Las especificaciones técnicas completas se detallan en el Anexo~\ref{anx:componentes}.
+Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM), seleccionado por su tensión nominal compatible con el sistema (12~V), su corriente dentro del margen del driver L298N y su caja reductora integrada de relación $N_g\approx45$, que entrega el par necesario para la tracción y cuya relación interviene directamente en el cálculo de la resolución del encoder (Sección~\ref{sec:encoder}). Las especificaciones técnicas completas se detallan en el \ref{anx:componentes}.
 
 \utemFigure{2.Texto/Imag/motor.jpg}{0.5\linewidth}{Motor modelo JGA25-370, 12~V, 130~RPM.}{nfp_gm25_370_en}{fig:motor}
 
@@ -88,22 +88,22 @@ Con rueda de diámetro $d_w=67\,\text{mm}$ ($C\approx0.2105\,\text{m}$), la reso
 %------------------------------------------------------------------
 \section{Driver de motores L298N}
 
-Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino} \citep{STMicro_L298N_Datasheet}. Entrega hasta 2~A continuos por canal y se controla mediante \gls{PWM} en los pines ENA y ENB; sus especificaciones completas se incluyen en el Anexo~\ref{anx:componentes}. Su zona muerta constituye una de las no linealidades que el refinamiento experimental del controlador PID compensa, tal como se anticipó en el Capítulo~\ref{marco_teorico}.
+Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino} \citep{STMicro_L298N_Datasheet}. Entrega hasta 2~A continuos por canal y se controla mediante \gls{PWM} en los pines ENA y ENB; sus especificaciones completas se incluyen en el \ref{anx:componentes}. Su zona muerta constituye una de las no linealidades que el refinamiento experimental del controlador PID compensa, tal como se anticipó en el Capítulo~\ref{marco_teorico}.
 
 %------------------------------------------------------------------
 \section{Microcontrolador de bajo nivel: Arduino Nano V3}
 
-Se emplea un \gls{Arduino}~Nano~V3 (ATmega328P, 16~MHz, lógica de 5~V) para ejecutar las tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad a 30~Hz. De esta forma se aísla el lazo de control del \emph{jitter} del sistema operativo de la Raspberry Pi, que se dedica a \gls{ROS2}, SLAM y navegación. Se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Su ATmega328P de 8 bits (2~KB de SRAM) queda por debajo de los requisitos de \gls{microRos}~\cite{microros} —el \textit{framework} de \gls{ROS2} para microcontroladores de 32 bits—, por lo que la integración con el grafo de \gls{ROS2} se resuelve mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}); una migración futura a plataformas de 32 bits (p. ej. ESP32 o RP2040) conservaría la misma arquitectura mecánica y de control. Las especificaciones técnicas completas se incluyen en el Anexo~\ref{anx:componentes}.
+Se emplea un \gls{Arduino}~Nano~V3 (ATmega328P, 16~MHz, lógica de 5~V) para ejecutar las tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad a 30~Hz. De esta forma se aísla el lazo de control del \emph{jitter} del sistema operativo de la Raspberry Pi, que se dedica a \gls{ROS2}, SLAM y navegación. Se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Su ATmega328P de 8 bits (2~KB de SRAM) queda por debajo de los requisitos de \gls{microRos}~\cite{microros} —el \textit{framework} de \gls{ROS2} para microcontroladores de 32 bits—, por lo que la integración con el grafo de \gls{ROS2} se resuelve mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}); una migración futura a plataformas de 32 bits (p. ej. ESP32 o RP2040) conservaría la misma arquitectura mecánica y de control. Las especificaciones técnicas completas se incluyen en el \ref{anx:componentes}.
 
 %------------------------------------------------------------------
 \section{Raspberry Pi 4 (8 GB)}
 
-La Raspberry Pi~4 (8~GB) \parencite{RaspberryPi4Specs} ejecuta Ubuntu~20.04 y \gls{ROS2}~Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) y los nodos de SLAM y navegación. Se seleccionó por su compatibilidad oficial con Ubuntu~20.04 y \gls{ROS2}~Foxy, su rendimiento suficiente para SLAM 2D y Nav2 (4 núcleos Cortex-A72 a 1.8~GHz, 8~GB de RAM) y su conectividad integrada (USB para el \gls{LIDAR}, Wi-Fi y Ethernet para teleoperación, GPIO) \citep{RaspberryPi4Specs, RaspberryPi4Datasheet}. Las alternativas evaluadas (Jetson Orin Nano, ODROID-N2+ y BeagleBone Black) se documentan en el Anexo~\ref{anx:componentes}; dado el alcance del proyecto, la Raspberry Pi~4 es la opción más equilibrada.
+La Raspberry Pi~4 (8~GB) \parencite{RaspberryPi4Specs} ejecuta Ubuntu~20.04 y \gls{ROS2}~Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) y los nodos de SLAM y navegación. Se seleccionó por su compatibilidad oficial con Ubuntu~20.04 y \gls{ROS2}~Foxy, su rendimiento suficiente para SLAM 2D y Nav2 (4 núcleos Cortex-A72 a 1.8~GHz, 8~GB de RAM) y su conectividad integrada (USB para el \gls{LIDAR}, Wi-Fi y Ethernet para teleoperación, GPIO) \citep{RaspberryPi4Specs, RaspberryPi4Datasheet}. Las alternativas evaluadas (Jetson Orin Nano, ODROID-N2+ y BeagleBone Black) se documentan en el \ref{anx:componentes}; dado el alcance del proyecto, la Raspberry Pi~4 es la opción más equilibrada.
 
 %------------------------------------------------------------------
 \section{Sensor LiDAR para mapeo y navegación}
 
-El sensor principal de percepción es el RPLidar~A1M8, un escáner láser 2D de 360° por triangulación. La justificación de un \gls{LIDAR}~2D frente a alternativas como cámaras RGB-D, ultrasonido o \gls{LIDAR}~3D para interiores planos de bajo costo se presentó en el Capítulo~\ref{ch:estado_arte}; aquí se resumen las características relevantes para el mapeo: alcance de 0.15--12~m, resolución angular $\le 1^\circ$ y frecuencia de barrido típica de 5.5~Hz, con integración nativa en \gls{ROS2} mediante el paquete \texttt{rplidar\_ros}. Las especificaciones completas se incluyen en el Anexo~\ref{anx:componentes}.
+El sensor principal de percepción es el RPLidar~A1M8, un escáner láser 2D de 360° por triangulación. La justificación de un \gls{LIDAR}~2D frente a alternativas como cámaras RGB-D, ultrasonido o \gls{LIDAR}~3D para interiores planos de bajo costo se presentó en el Capítulo~\ref{ch:estado_arte}; aquí se resumen las características relevantes para el mapeo: alcance de 0.15--12~m, resolución angular $\le 1^\circ$ y frecuencia de barrido típica de 5.5~Hz, con integración nativa en \gls{ROS2} mediante el paquete \texttt{rplidar\_ros}. Las especificaciones completas se incluyen en el \ref{anx:componentes}.
 
 \utemFigure{2.Texto/Imag/a1m8.jpg}{0.4\linewidth}{Láser 2D RPLIDAR A1M8.}{NaylampA1M8R5}{fig:lidar}
 
@@ -112,13 +112,13 @@ Las superficies transparentes o especulares producen lecturas erráticas, mitiga
 %------------------------------------------------------------------
 \section{Alimentación y distribución de energía}
 
-El sistema se alimenta con una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita), de la cual un convertidor reductor (buck) DFRobot DFR0205 deriva el riel de 5~V para la Raspberry Pi, el \gls{LIDAR} y el \gls{Arduino}. El ramal de potencia sigue la cadena batería~$\rightarrow$~fusible (10~A)~$\rightarrow$~interruptor maestro~$\rightarrow$~reguladores/cargas, lo que permite seccionar el bus de 12~V de forma segura. Las especificaciones de la batería y el regulador, las protecciones y el dimensionamiento de cableado y conectores se detallan en el Anexo~\ref{anx:componentes}.
+El sistema se alimenta con una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita), de la cual un convertidor reductor (buck) DFRobot DFR0205 deriva el riel de 5~V para la Raspberry Pi, el \gls{LIDAR} y el \gls{Arduino}. El ramal de potencia sigue la cadena batería~$\rightarrow$~fusible (10~A)~$\rightarrow$~interruptor maestro~$\rightarrow$~reguladores/cargas, lo que permite seccionar el bus de 12~V de forma segura. Las especificaciones de la batería y el regulador, las protecciones y el dimensionamiento de cableado y conectores se detallan en el \ref{anx:componentes}.
 
 %------------------------------------------------------------------
 \section{Fabricación y diseño 3D}
 \label{sec:fab_3d}
 
-El chasis y las cubiertas se fabrican mediante impresión 3D FDM en PLA+, a partir de un modelado paramétrico en \textit{Fusion~360} organizado por componentes (carcasa, tapas de acceso, soporte de \gls{LIDAR}, subchasis y alojamientos electrónicos). El material, el equipo de impresión y los parámetros de laminado completos se detallan en el Anexo~\ref{anx:impresion3d}. Las cotas generales se presentan en la Figura~\ref{fig:medidas_robot_2d} y las dimensiones relevantes en la Tabla~\ref{tab:dimensiones_robot}.
+El chasis y las cubiertas se fabrican mediante impresión 3D FDM en PLA+, a partir de un modelado paramétrico en \textit{Fusion~360} organizado por componentes (carcasa, tapas de acceso, soporte de \gls{LIDAR}, subchasis y alojamientos electrónicos). El material, el equipo de impresión y los parámetros de laminado completos se detallan en el \ref{anx:impresion3d}. Las cotas generales se presentan en la Figura~\ref{fig:medidas_robot_2d} y las dimensiones relevantes en la Tabla~\ref{tab:dimensiones_robot}.
 
 \utemFigurePropia{2.Texto/Imag/medidas_robot_2d.pdf}{0.9\linewidth}{Medidas del chasis (vista 2D).}{fig:medidas_robot_2d}
 
@@ -154,7 +154,7 @@ Espesor de pared nominal     & 10 mm  & Paredes de la carcasa impresa en 3D. \\
 
 \utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.6\linewidth}{Vista lateral del prototipo construido.}{fig:prototipo}
 
-Vistas adicionales del prototipo y las vistas isométricas del modelo 3D se incluyen en el Anexo~\ref{anx:renders3d}.
+Vistas adicionales del prototipo y las vistas isométricas del modelo 3D se incluyen en el \ref{anx:renders3d}.
 
 %------------------------------------------------------------------
 \section{Parámetros físicos del modelo}

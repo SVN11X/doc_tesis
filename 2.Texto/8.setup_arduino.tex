@@ -19,24 +19,7 @@ El firmware se organiza en seis archivos dentro de un único directorio de proye
 %------------------------------------------------------------------
 \section{Constantes físicas y conversión de unidades}
 
-El archivo principal declara las constantes físicas del robot, que deben ser coherentes con el modelo URDF del gemelo digital y con los parámetros de \texttt{ros2\_control}. Las dos fundamentales son \texttt{WHEEL\_DIAMETER} = 0.067 m (radio 0.0335 m, coincidente con \texttt{wheel\_radius} en \texttt{my\_controllers.yaml}) y \texttt{ENC\_TICKS\_PER\_REV} = 1980, obtenida experimentalmente (Sección~\ref{sec:cpr_experimental}) y declarada también como \texttt{enc\_counts\_per\_rev} en \texttt{ros2\_control.xacro}. Esta coherencia es crítica: si los valores difirieran, la odometría publicada por el \texttt{diff\_drive\_controller} no se correspondería con el movimiento real de las ruedas. La Tabla~\ref{tab:trazabilidad_constantes} verifica la consistencia de las constantes compartidas entre el firmware y el \emph{plugin}.
-
-\begin{table}[H]
-\small
-\centering
-\caption{Trazabilidad de constantes compartidas entre el firmware y el \emph{plugin} de \texttt{ros2\_control}.}
-\label{tab:trazabilidad_constantes}
-\begin{tabular}{P{3cm} P{3.5cm} P{3.5cm} P{2.2cm}}
-\toprule
-\textbf{Magnitud} & \textbf{Firmware (Arduino)} & \textbf{Plugin (\texttt{ros2\_control})} & \textbf{Consistencia} \\
-\midrule
-Cuentas por rev.  & \texttt{ENC\_TICKS\_PER\_REV} = 1980 & \texttt{enc\_counts\_per\_rev} = 1980 & \checkmark \\
-Diámetro de rueda & \texttt{WHEEL\_DIAMETER} = 0.067 m & \texttt{wheel\_radius} $\times 2$ = 0.067 m & \checkmark \\
-Frecuencia de control & \texttt{PID\_RATE} = 30 Hz & \texttt{loop\_rate} = 30 & \checkmark \\
-Velocidad serial   & \texttt{BAUDRATE} = 57600 & \texttt{baud\_rate} = 57600 & \checkmark \\
-\bottomrule
-\end{tabular}
-\end{table}
+El archivo principal declara las constantes físicas del robot, que deben ser coherentes con el modelo URDF del gemelo digital y con los parámetros de \texttt{ros2\_control}. Las dos fundamentales son \texttt{WHEEL\_DIAMETER} = 0.067 m (radio 0.0335 m, coincidente con \texttt{wheel\_radius} en \texttt{my\_controllers.yaml}) y \texttt{ENC\_TICKS\_PER\_REV} = 1980, obtenida experimentalmente (Sección~\ref{sec:cpr_experimental}) y declarada también como \texttt{enc\_counts\_per\_rev} en \texttt{ros2\_control.xacro}. Esta coherencia es crítica: si los valores difirieran, la odometría publicada por el \texttt{diff\_drive\_controller} no se correspondería con el movimiento real de las ruedas. La Tabla~\ref{tab:trazabilidad_parametros} del Capítulo~\ref{chap:robot_real} verifica la consistencia de las constantes compartidas entre el firmware y el \emph{plugin}.
 
 A partir de estas constantes, el firmware precalcula en \texttt{setup()} un factor de conversión entre velocidad lineal (m/s, la unidad estándar en \textit{ROS}~2) y \emph{ticks/frame} del controlador PID:
 
@@ -61,46 +44,22 @@ La comunicación entre la \gls{RaspberryPi} y el \gls{Arduino} se realiza por US
 \item \texttt{\textquotesingle z\textquotesingle} (\texttt{UPDATE\_PID\_LR}): carga ocho ganancias (cuatro por rueda), permitiendo ganancias asimétricas sin recompilar.
 \end{itemize}
 
-El comando \texttt{\textquotesingle o\textquotesingle} (\texttt{MOTOR\_RAW\_PWM}) aplica PWM directo en lazo abierto desactivando el PID, y se emplea para la captura de la respuesta al escalón (Sección~\ref{sec:captura_lazo_abierto}). El intercambio típico de mensajes durante la operación se ilustra en la Figura~\ref{fig:secuencia_control}.
+El comando \texttt{\textquotesingle o\textquotesingle} (\texttt{MOTOR\_RAW\_PWM}) aplica PWM directo en lazo abierto desactivando el PID, y se emplea para la captura de la respuesta al escalón (Sección~\ref{sec:captura_lazo_abierto}). El protocolo completo —incluidos los comandos de lectura del PID y los de diagnóstico de propósito general— se documenta en el \ref{anx:firmware}. El intercambio típico de mensajes durante la operación se ilustra en la Figura~\ref{fig:secuencia_control}.
 
 %------------------------------------------------------------------
 \section{Lectura de encoders y obtención de cuentas por vuelta}
 \label{sec:cpr_experimental}
 
-Cada rueda incorpora un encoder incremental de cuadratura de dos canales. Para capturar todos los flancos sin pérdida de pulsos, el firmware usa el mecanismo de \emph{Pin Change Interrupts} (PCINT) del ATmega328P: el encoder izquierdo (\texttt{PD3}/\texttt{PD2}, puerto D) se atiende con el vector \texttt{PCINT2} y el derecho (\texttt{PC4}/\texttt{PC5}, puerto C) con \texttt{PCINT1}. La decodificación de cuadratura se resuelve con una tabla de búsqueda de 16 entradas (\texttt{ENC\_STATES}), indexada por la concatenación del estado anterior y actual de los canales, que asigna un incremento de $+1$, $-1$ o $0$ a cada transición. Frente a una cadena de comparaciones condicionales, este método ofrece un tiempo de ejecución constante e independiente del sentido de giro —lo que reduce el \emph{jitter} a velocidades elevadas— y maneja implícitamente las transiciones inválidas asignándoles incremento cero. La asignación de pines se presentó en la Tabla~\ref{tab:pinout_arduino_l298n}.
+Cada rueda incorpora un encoder incremental de cuadratura de dos canales. Para capturar todos los flancos sin pérdida de pulsos, el firmware usa el mecanismo de \emph{Pin Change Interrupts} (PCINT) del ATmega328P: el encoder izquierdo (\texttt{PD3}/\texttt{PD2}, puerto D) se atiende con el vector \texttt{PCINT2} y el derecho (\texttt{PC4}/\texttt{PC5}, puerto C) con \texttt{PCINT1}. La decodificación de cuadratura se resuelve con una tabla de búsqueda de 16 entradas (\texttt{ENC\_STATES}), indexada por la concatenación del estado anterior y actual de los canales, que asigna un incremento de $+1$, $-1$ o $0$ a cada transición. Frente a una cadena de comparaciones condicionales, este método ofrece un tiempo de ejecución constante e independiente del sentido de giro —lo que reduce el \emph{jitter} a velocidades elevadas— y maneja implícitamente las transiciones inválidas asignándoles incremento cero. La configuración de registros y la implementación de las rutinas de interrupción se detallan en el \ref{anx:firmware}; la asignación de pines se presentó en la Tabla~\ref{tab:pinout_arduino_l298n}.
 
 \subsection{Obtención experimental de cuentas por vuelta}
 \label{sec:cpr_promedios}
 
-Para emplear una odometría consistente con el modelo cinemático (Capítulo~\ref{marco_teorico}) se requiere el número de cuentas por vuelta completa de rueda. Se hicieron girar ambas ruedas diez vueltas completas, registrando las cuentas acumuladas (Tabla~\ref{tab:muestras_cuentas}).
-
-\begin{table}[H]
-\centering
-\caption{Muestras del número de cuentas en los encoders por revolución.}
-\label{tab:muestras_cuentas}
-\begin{tabular}{S[table-format=2.0] S[table-format=4.0] S[table-format=4.0]}
-\toprule
-\textbf{N$^{\circ}$} & {\textbf{Cuentas Der.}} & {\textbf{Cuentas Izq.}} \\ 
-\midrule
-1  & 1966 & 1978 \\
-2  & 1960 & 1948 \\
-3  & 2002 & 1966 \\
-4  & 1980 & 1970 \\
-5  & 1972 & 1972 \\
-6  & 1964 & 1978 \\
-7  & 1980 & 1957 \\
-8  & 1980 & 1975 \\
-9  & 1980 & 1962 \\
-10 & 1978 & 1979 \\ 
-\bottomrule
-\end{tabular}
-\end{table}
-
-Los promedios resultantes son:
+Para emplear una odometría consistente con el modelo cinemático (Capítulo~\ref{marco_teorico}) se requiere el número de cuentas por vuelta completa de rueda. Se hicieron girar ambas ruedas diez vueltas completas, registrando las cuentas acumuladas; las muestras se reportan en la Tabla~\ref{tab:muestras_cuentas} del \ref{anx:firmware}. Los promedios resultantes son:
 
 \begin{align}
-\bar{R}_R &= \frac{1}{10} \sum_{i=1}^{10} n_{R(i)} = 1976 \label{eq:promedio_cuentas_R} \\
-\bar{R}_L &= \frac{1}{10} \sum_{i=1}^{10} n_{L(i)} = 1969 \label{eq:promedio_cuentas_L}
+\bar{N}_R &= \frac{1}{10} \sum_{i=1}^{10} n_{R(i)} = 1976 \label{eq:promedio_cuentas_R} \\
+\bar{N}_L &= \frac{1}{10} \sum_{i=1}^{10} n_{L(i)} = 1969 \label{eq:promedio_cuentas_L}
 \end{align}
 
 Dado que la diferencia entre ruedas es inferior al 0.4\%, se adopta un valor unificado de \texttt{ENC\_TICKS\_PER\_REV} = 1980, lo que simplifica la conversión de unidades sin introducir un error significativo en la odometría. Ante un cambio de motores o encoders, basta repetir este experimento y actualizar la constante.
@@ -108,7 +67,7 @@ Dado que la diferencia entre ruedas es inferior al 0.4\%, se adopta un valor uni
 %------------------------------------------------------------------
 \section{Accionamiento de motores mediante el puente H L298N}
 
-El módulo \texttt{motor\_driver} refleja el cableado entre el \gls{Arduino} y el L298N descrito en el Capítulo~\ref{chap:robot_real} (Figura~\ref{fig:esquema_conexiones}, Tabla~\ref{tab:pinout_arduino_l298n}). Los pines de habilitación se mantienen permanentemente en alto, de modo que la velocidad no se regula por el pin de habilitación sino por el PWM aplicado a los pines de dirección. La función \texttt{setMotorSpeed()} recibe un valor con signo en $[-255, 255]$: el signo determina el sentido (escribe el PWM en el pin \emph{forward} y fuerza a cero el \emph{backward}, o a la inversa) y el valor absoluto se satura a 255 para proteger la salida. La envoltura \texttt{setMotorSpeeds()} aplica la operación a ambas ruedas.
+El módulo \texttt{motor\_driver} refleja el cableado entre el \gls{Arduino} y el L298N descrito en el Capítulo~\ref{chap:robot_real} (Figura~\ref{fig:esquema_conexiones}, \ref{anx:hardware_ros2}). Los pines de habilitación se mantienen permanentemente en alto, de modo que la velocidad no se regula por el pin de habilitación sino por el PWM aplicado a los pines de dirección. La función \texttt{setMotorSpeed()} recibe un valor con signo en $[-255, 255]$: el signo determina el sentido (escribe el PWM en el pin \emph{forward} y fuerza a cero el \emph{backward}, o a la inversa) y el valor absoluto se satura a 255 para proteger la salida. La envoltura \texttt{setMotorSpeeds()} aplica la operación a ambas ruedas.
 
 %------------------------------------------------------------------
 \section{Control PID en el firmware}
@@ -169,7 +128,7 @@ v_{\min} = \frac{1}{\text{CPR}} \cdot C \cdot f_{\text{PID}}
 \end{equation}
 
 \noindent
-con CPR $= 1980$ cuentas/vuelta, $C = \pi d = 0.2105$ m y $f_{\text{PID}} = 30$ Hz. Para impedir que el PID reaccione a variaciones inferiores a este piso de cuantización, \texttt{doPID()} aplica una zona muerta (\textit{deadband}): cuando $|e[k]|$ no supera un umbral, se fuerza $e[k] = 0$. El umbral es configurable por rueda: la rueda derecha usa 1 tick y la izquierda 2, para compensar la mayor fricción estática residual de su motor. Ambos valores son imperceptibles en la trayectoria, pero suficientes para eliminar el ciclo límite (\textit{limit cycle}) observado en la validación experimental.
+con CPR $= 1980$ cuentas/vuelta, $C = \pi d_w = 0.2105$ m y $f_{\text{PID}} = 30$ Hz. Para impedir que el PID reaccione a variaciones inferiores a este piso de cuantización, \texttt{doPID()} aplica una zona muerta (\textit{deadband}): cuando $|e[k]|$ no supera un umbral, se fuerza $e[k] = 0$. El umbral es configurable por rueda: la rueda derecha usa 1 tick y la izquierda 2, para compensar la mayor fricción estática residual de su motor. Ambos valores son imperceptibles en la trayectoria, pero suficientes para eliminar el ciclo límite (\textit{limit cycle}) observado en la validación experimental.
 
 La función \texttt{updatePID()} se invoca cada \texttt{PID\_INTERVAL} ($\approx 33$ ms): lee los encoders, verifica la bandera \texttt{moving} (si está desactivada y persiste movimiento residual, reinicia el PID para no corregir un error fantasma por inercia), ejecuta \texttt{doPID()} para ambas ruedas y aplica las salidas mediante \texttt{setMotorSpeeds()}.
 
@@ -197,7 +156,19 @@ $K_o$ & 50    & 50    \\
 \section{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
 
-Las ganancias se determinaron mediante un procedimiento que combina la optimización por enjambre de partículas (PSO) con un ciclo de refinamiento experimental sobre el hardware real. Este enfoque híbrido reconoce que la metaheurística proporciona un punto de partida basado en un modelo identificado, pero las condiciones reales (fricción variable, holguras, respuesta no lineal del L298N) requieren un ajuste fino observable solo en la planta física. El procedimiento, implementado en \emph{scripts} de Python en \texttt{arduino\_firmware/pid\_config/}, se ejecutó de forma independiente para cada rueda y consta de cuatro etapas: captura de la respuesta al escalón en lazo abierto, identificación del modelo FODT por PSO, optimización de ganancias por simulación en lazo cerrado, y validación experimental con refinamiento iterativo.
+Las ganancias se determinaron mediante un procedimiento que combina la optimización por enjambre de partículas (PSO) con un ciclo de refinamiento experimental sobre el hardware real. Este enfoque híbrido reconoce que la metaheurística proporciona un punto de partida basado en un modelo identificado, pero las condiciones reales (fricción variable, holguras, respuesta no lineal del L298N) requieren un ajuste fino observable solo en la planta física. El procedimiento, implementado en \emph{scripts} de Python en \texttt{arduino\_firmware/pid\_config/}, se ejecutó de forma independiente para cada rueda y se resume a continuación:
+
+\begin{center}
+\fbox{\begin{minipage}{0.92\linewidth}
+\ttfamily\small
+\textbf{Para cada rueda:}\\
+1. Capturar la respuesta al escalón en lazo abierto (PWM\_STEP, comando 'o').\\
+2. Identificar el modelo FODT (Km, tau, Ld) por PSO sobre los datos capturados.\\
+3. Optimizar (Kp, Ki, Kd) por PSO en lazo cerrado simulado (función de costo J).\\
+4. Cargar ganancias (comando 'z'), recapturar con el PID activo y refinar
+\hspace*{1.2em}manualmente; repetir hasta cumplir seguimiento, sobreimpulso y asentamiento.
+\end{minipage}}
+\end{center}
 
 \subsection{Etapa 1: Captura de la respuesta al escalón en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -207,13 +178,12 @@ El primer paso obtiene datos de la dinámica de la planta en lazo abierto, sin P
 El procedimiento aplica, en $t=1.0$ s, un escalón de PWM de valor \texttt{PWM\_STEP} = 143 mediante el comando \texttt{\textquotesingle o\textquotesingle}, determinado de forma iterativa como el valor que produce una velocidad de estado estacionario de $\approx 0.13$ m/s en ambas ruedas —el punto de operación nominal del robot. La velocidad se calcula a partir de la diferencia de cuentas entre muestras consecutivas leídas con el comando \texttt{\textquotesingle e\textquotesingle}:
 
 \begin{equation}
-v[k] = \frac{\Delta\texttt{enc}[k]}{T_s \cdot \texttt{PID\_RATE}} 
-       \cdot \frac{\pi \cdot d}{N_{\text{enc}}}
+v[k] = \frac{\Delta\texttt{enc}[k]}{N_{\text{enc}}} \cdot \frac{\pi \cdot d_w}{T_s}
 \label{eq:vel_lazo_abierto}
 \end{equation}
 
 \noindent
-con $T_s = 0.1$ s, \texttt{PID\_RATE} = 30 Hz, $d = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almacenan con la entrada en PWM y la salida en m/s, de modo que el modelo FODT identificado tenga unidades m/s/PWM. La Figura~\ref{fig:respuesta_lazo_abierto_pso} muestra la respuesta obtenida: ambas ruedas alcanzan $\approx 0.129$–$0.130$ m/s sin oscilaciones, confirmando que el escalón es adecuado para identificar la dinámica en el rango operativo. 
+con $T_s = 0.1$ s, $d_w = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almacenan con la entrada en PWM y la salida en m/s, de modo que el modelo FODT identificado tenga unidades m/s/PWM. La Figura~\ref{fig:respuesta_lazo_abierto_pso} muestra la respuesta obtenida: ambas ruedas alcanzan $\approx 0.129$–$0.130$ m/s sin oscilaciones, confirmando que el escalón es adecuado para identificar la dinámica en el rango operativo. La capa de comunicación serial asíncrona empleada por los \emph{scripts} (clase \texttt{serialArduino}) se describe en el \ref{anx:firmware}; en operación normal esta capa no se utiliza, pues la comunicación la gestiona el \emph{plugin} \texttt{DiffDriveArduino}.
 
 \utemFigurePropia{2.Texto/Imag/respuesta_escalon_final_pso.png}{0.92\textwidth}
 {Respuesta al escalón en lazo abierto (\texttt{PWM} $= 143$). Ambas ruedas alcanzan $\approx 0.13$ m/s sin controlador PID activo.}
@@ -224,12 +194,12 @@ con $T_s = 0.1$ s, \texttt{PID\_RATE} = 30 Hz, $d = 0.067$ m y $N_{\text{enc}} =
 La segunda etapa identifica, para cada motor, un modelo de primer orden con retardo (FODT) de la forma dada en la Ecuación~\eqref{eq:fodt} del Marco Teórico, con ganancia estática $K_m$ en m/s/PWM ($\approx 0.0009$ para estos motores). La identificación se formula como la minimización del error cuadrático medio entre la respuesta simulada del modelo y los datos capturados; la simulación se realiza por integración de Euler en tiempo discreto:
 
 \begin{equation}
-y[k] = y[k-1] + \frac{\Delta t}{\tau}\,\bigl(K_m \cdot u[k - d] - y[k-1]\bigr)
+y[k] = y[k-1] + \frac{\Delta t}{\tau}\,\bigl(K_m \cdot u[k - n_d] - y[k-1]\bigr)
 \label{eq:euler_fodt}
 \end{equation}
 
 \noindent
-donde $d = \lfloor L / \Delta t \rfloor$ es el retardo en muestras. El PSO explora el espacio de parámetros con un enjambre de 50 partículas durante 150 generaciones.
+donde $n_d = \lfloor L_d / \Delta t \rfloor$ es el retardo en muestras y $L_d$ el tiempo muerto del modelo FODT. El PSO explora el espacio de parámetros con un enjambre de 50 partículas durante 150 generaciones; los factores de escala que acotan el rango de búsqueda se detallan en el \ref{anx:firmware}.
 
 El algoritmo PSO empleado, con factor de constricción de Clerc--Kennedy, se formuló en la Sección~\ref{sec:pso_marco} (Ecuación~\ref{eq:pso_vel_marco_teorico}). En la implementación de \texttt{pyPso.py} se utilizan los hiperparámetros de la Tabla~\ref{tab:pso_hiperparametros}, correspondientes a la parametrización canónica ($c_1 = c_2 = 2.05$, $\varphi = 4.1 > 4$, $\chi = 0.7298$) con inercia decreciente $w^g = (G-g)/G$, que favorece la exploración inicial y la explotación final. Las posiciones se acotan a $x_i \ge 0.0001$ para preservar la estabilidad numérica.
 
@@ -255,7 +225,7 @@ $w^g$  & \texttt{w}         & $(G - g)/G$ & Inercia decreciente lineal. \\
 
 \subsection{Etapa 3: Optimización de ganancias por simulación en lazo cerrado}
 
-Identificado el modelo FODT, un segundo PSO (50 partículas, 150 generaciones) busca las ganancias $(K_p, K_i, K_d)$ que producen la mejor respuesta en lazo cerrado, evaluadas con la función de costo de la Ecuación~\eqref{eq:costo_pso}, con $w_{\text{mse}} = 1$ y $w_{\text{OS}} = 3$ —este último establece el énfasis sobre el sobreimpulso y es el parámetro con impacto sustantivo en la dirección de búsqueda. La función no penaliza el tiempo de establecimiento; los tiempos de subida y asentamiento se evalúan \emph{post hoc} y se reportan en el Capítulo~\ref{ch:resultados}. La simulación del lazo cerrado reproduce la estructura del PID del firmware, incluyendo la división por $K_o = 50$ y la saturación, de modo que las ganancias optimizadas son transferibles al Arduino. El resultado se entrega en el formato del comando \texttt{\textquotesingle z\textquotesingle}, listo para cargarse sin recompilar. 
+Identificado el modelo FODT, un segundo PSO (50 partículas, 150 generaciones) busca las ganancias $(K_p, K_i, K_d)$ que producen la mejor respuesta en lazo cerrado, evaluadas con la función de costo de la Ecuación~\eqref{eq:costo_pso}, con $w_{\text{mse}} = 1$ y $w_{\text{OS}} = 3$ —este último establece el énfasis sobre el sobreimpulso y es el parámetro con impacto sustantivo en la dirección de búsqueda. La función no penaliza el tiempo de establecimiento; los tiempos de subida y asentamiento se evalúan \emph{post hoc} y se reportan en el Capítulo~\ref{ch:resultados}. La simulación del lazo cerrado reproduce la estructura del PID del firmware, incluyendo la división por $K_o = 50$ y la saturación, de modo que las ganancias optimizadas son transferibles al Arduino. El resultado se entrega en el formato del comando \texttt{\textquotesingle z\textquotesingle}, listo para cargarse sin recompilar. Las diferencias entre la simulación y el firmware final (zona muerta y anti-windup) se documentan en el \ref{anx:firmware}; su efecto sobre las métricas globales es marginal y lo compensa el refinamiento experimental de la Etapa 4.
 
 \utemFigurePropia{2.Texto/Imag/identificacion_y_sintonizacion_pso.png}{0.95\textwidth}
 {Procedimiento de sintonización en dos etapas. Izquierda: identificación FODT por PSO sobre la respuesta al escalón en lazo abierto. Derecha: simulación del PID resultante de un segundo PSO sobre el modelo identificado. Arriba: rueda izquierda; abajo: rueda derecha.}
@@ -298,7 +268,7 @@ La comunicación entre el firmware y \textit{ROS}~2 se realiza a través de un \
 
 \subsection{Configuración, arranque y delegación de ganancias}
 
-El método \texttt{configure()} lee del archivo \texttt{ros2\_control.xacro} los parámetros \texttt{loop\_rate} (30), \texttt{device} (\texttt{/dev/motor\_controller}), \texttt{baud\_rate} (57600) y \texttt{enc\_counts\_per\_rev} (1980), coincidentes con las constantes del firmware (Tabla~\ref{tab:trazabilidad_constantes}). A partir de este último, la clase \texttt{Wheel} calcula el factor de conversión:
+El método \texttt{configure()} lee del archivo \texttt{ros2\_control.xacro} los parámetros \texttt{loop\_rate} (30), \texttt{device} (\texttt{/dev/motor\_controller}), \texttt{baud\_rate} (57600) y \texttt{enc\_counts\_per\_rev} (1980), coincidentes con las constantes del firmware (Tabla~\ref{tab:trazabilidad_parametros}). A partir de este último, la clase \texttt{Wheel} calcula el factor de conversión:
 
 \begin{equation}
 \texttt{rads\_per\_count} = \frac{2\pi}{\texttt{enc\_counts\_per\_rev}} = \frac{2\pi}{1980} \approx 0.003173 \text{ rad/cuenta}
@@ -317,7 +287,7 @@ En cada iteración, \texttt{read()} envía el comando \texttt{\textquotesingle e
 \end{equation}
 
 \noindent
-y envía el resultado con el comando \texttt{\textquotesingle m\textquotesingle}. La consistencia depende de que \texttt{loop\_rate} (plugin) coincida con \texttt{PID\_RATE} (firmware): ambos en 30 Hz, de modo que un \emph{tick/frame} en el plugin equivale exactamente a uno en el PID del Arduino. La cadena completa de conversión de unidades se ilustra en la Figura~\ref{fig:conversion_unidades}. Los parámetros geométricos del \texttt{diff\_drive\_controller} se presentaron en la Tabla~\ref{tab:diff_drive_params} del Capítulo~\ref{chap:robot_real}.
+y envía el resultado con el comando \texttt{\textquotesingle m\textquotesingle}. La consistencia depende de que \texttt{loop\_rate} (plugin) coincida con \texttt{PID\_RATE} (firmware): ambos en 30 Hz, de modo que un \emph{tick/frame} en el plugin equivale exactamente a uno en el PID del Arduino. La capa de transporte serial (clase \texttt{ArduinoComms}) y el detalle de la clase \texttt{Wheel} se documentan en el \ref{anx:firmware}; la cadena completa de conversión de unidades se ilustra en la Figura~\ref{fig:conversion_unidades}. Los parámetros geométricos del \texttt{diff\_drive\_controller} se presentaron en la Tabla~\ref{tab:diff_drive_params} del Capítulo~\ref{chap:robot_real}.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

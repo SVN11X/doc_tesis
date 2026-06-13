@@ -1,7 +1,7 @@
 \chapter{Resultados experimentales}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial, tanto en simulación (Gazebo) como en hardware real. Las pruebas se organizan según la progresión incremental: odometría y control diferencial, mapeo con \texttt{slam\_toolbox}, navegación autónoma con Nav2 y exploración de fronteras. Para cada etapa se describen el procedimiento, las métricas, los datos obtenidos y las observaciones derivadas, con el objetivo de cuantificar el desempeño y documentar las desviaciones entre simulación y hardware. Las pruebas de navegación y exploración, cuyos escenarios requieren un entorno de mayor extensión que el disponible, quedan planificadas según el protocolo descrito y se reportarán en las tablas correspondientes una vez ejecutadas en el entorno definitivo.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial, tanto en simulación (Gazebo) como en hardware real. Las pruebas se organizan según la progresión incremental: odometría y control diferencial, mapeo con \texttt{slam\_toolbox}, navegación autónoma con Nav2 y exploración de fronteras. Para cada etapa se describen el procedimiento, las métricas, los datos obtenidos y las observaciones derivadas, con el objetivo de cuantificar el desempeño y documentar las desviaciones entre simulación y hardware. Las pruebas de navegación y exploración, cuyos escenarios requieren un entorno de mayor extensión que el disponible, quedan planificadas según el protocolo descrito; el formato de reporte se recoge en el \ref{anx:protocolo_resultados} y se completará una vez ejecutadas en el entorno definitivo.
 
 % ===========================================================================
 \section{Descripción del entorno experimental}
@@ -16,7 +16,7 @@ Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04. La con
 {Vista general del mundo de simulación \texttt{obstacles.world} en Gazebo.}
 {fig:gazebo_world_overview}
 
-\begin{utemMultiFigurePropia}{Secuencia de navegación en simulación.}{fig:sample_nav_sim_v1}
+\begin{utemMultiFigurePropia}{Secuencia de navegación en simulación (evidencia cualitativa; las métricas cuantitativas se reportan en §\ref{sec:resultados_nav2}).}{fig:sample_nav_sim_v1}
     \addutem{0.46}{2.Texto/Imag/sample_nav_sim_part1.png}{Comienzo}
     \hfill
     \addutem{0.46}{2.Texto/Imag/sample_nav_sim_part2.png}{Transición}
@@ -215,7 +215,7 @@ La distancia reportada por \texttt{/odom} es sistemáticamente inferior a la te�
 \end{threeparttable}
 \end{table}
 
-La alta variabilidad apunta a factores no controlados (superficie, zona muerta del L298N). Excluyendo las dos repeticiones de mayor deriva (pruebas 2 y 3, $\pm 20^\circ$), la deriva media de las restantes es $6.1^\circ$. En ambos casos, la magnitud refuerza la necesidad de una IMU para corregir la orientación, consistente con la decisión de no activar AMCL (Sección~\ref{subsec:amcl_config}).
+La alta variabilidad apunta a factores no controlados (superficie, zona muerta del L298N). Excluyendo las dos repeticiones de mayor deriva (pruebas 2 y 3, $\pm 20^\circ$), la deriva media de las restantes es $6.1^\circ$. En ambos casos, la magnitud refuerza la necesidad de una IMU para corregir la orientación, consistente con la decisión de no activar AMCL (Capítulo~\ref{chap:app_control_nav}).
 
 \subsection{Cadena de transformaciones \texttt{tf}}
 \label{subsec:verificacion_tf}
@@ -246,7 +246,7 @@ Se aplicó un escalón de velocidad de $0.13$ m/s con las ganancias definitivas 
 \label{tab:fodt_params_pso}
 \begin{tabular}{lccc}
 \toprule
-\textbf{Rueda} & $K_m$ (m/s/PWM) & $\tau$ (s) & $L$ (s)\tnote{a} \\
+\textbf{Rueda} & $K_m$ (m/s/PWM) & $\tau$ (s) & $L_d$ (s)\tnote{a} \\
 \midrule
 Izquierda & 0.000913 & 0.3291 & 0.0215 / 0.0001 \\
 Derecha   & 0.000890 & 0.3485 & 0.0001 / 0.0845 \\
@@ -254,7 +254,7 @@ Derecha   & 0.000890 & 0.3485 & 0.0001 / 0.0845 \\
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item[a] El PSO es estocástico: $K_m$ y $\tau$ son consistentes entre corridas, mientras que el retardo $L$ varía. Se reportan los valores de las dos corridas empleadas, respectivamente, para la sintonía PSO y para la comparación con Lambda.
+\item[a] El PSO es estocástico: $K_m$ y $\tau$ son consistentes entre corridas, mientras que el retardo $L_d$ varía. Se reportan los valores de las dos corridas empleadas, respectivamente, para la sintonía PSO y para la comparación con Lambda.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -294,7 +294,7 @@ Se calcularon ganancias Lambda ($\lambda = 3\tau$) sobre el mismo modelo FODT. L
 \footnotesize
 \begin{tabular}{l ccc ccc}
 \toprule
-\textbf{Método} & $K_p$ & $K_i$ & $K_d$ & \textbf{Sobreimp. (\%)} & $t_r$ (s) & $e_{ss}$ (m/s) \\
+\textbf{Método} & $k_p$ & $k_i$ & $k_d$ & \textbf{Sobreimp. (\%)} & $t_r$ (s) & $e_{ss}$ (m/s) \\
 \midrule
 Firmware (Izq.) & 0.7017 & 0.09867 & 0.8902 & 15.63 & 0.600 & 0.00488 \\
 Lambda (Izq.)   & 2.7193 & 7.50238 & 0.0823 & 46.42 & 0.200 & 0.00015 \\
@@ -304,7 +304,7 @@ Lambda (Der.)   & 2.8241 & 7.22823 & 0.1064 & 44.15 & 0.200 & 0.00005 \\
 \end{tabular}
 \begin{tablenotes}
 \scriptsize
-\item[a] Las ganancias del firmware se expresan en la escala continua estándar para compararlas con Lambda: los términos proporcional y derivativo se escalan por $f_\lambda \approx 22.80$, y el integral incorpora además el período de muestreo del lazo.
+\item[a] Ganancias efectivas en escala continua ($k_p=K_p/K_o$, etc.) para comparar con Lambda: los términos proporcional y derivativo se escalan por $f_\lambda \approx 22.80$, y el integral incorpora además el período de muestreo del lazo.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -358,25 +358,7 @@ Alineación de paredes & Bordes definidos \\
 \subsection{Mapeo en hardware real}
 \label{subsec:mapa_real}
 
-El procedimiento se repitió en el entorno físico, obteniéndose mapas utilizables. La calidad depende críticamente de la velocidad de desplazamiento: las mejores capturas se lograron entre 0.06 y 0.09 m/s, rango que permite al \gls{LIDAR} completar un barrido entre actualizaciones del grafo. Los indicadores cuantitativos (Tabla~\ref{tab:slam_real_indicadores}) quedan pendientes de medición sistemática.
-
-\begin{table}[H]
-\centering
-\caption{Indicadores del mapeo en hardware real (pendiente de medición).}
-\label{tab:slam_real_indicadores}
-\begin{tabular}{ll}
-\toprule
-\textbf{Indicador} & \textbf{Valor} \\
-\midrule
-Tiempo total de mapeo & --- \\
-Distancia recorrida (odometría) & --- \\
-Número de nodos del grafo & --- \\
-Resolución del mapa & 0.05 m/celda \\
-Cierre de lazo detectado & --- \\
-Alineación de paredes & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
+El procedimiento se repitió en el entorno físico, obteniéndose mapas utilizables. La calidad depende críticamente de la velocidad de desplazamiento: las mejores capturas se lograron entre 0.06 y 0.09 m/s, rango que permite al \gls{LIDAR} completar un barrido entre actualizaciones del grafo. Los indicadores cuantitativos (tiempo, distancia, nodos del grafo y cierre de lazo) quedan pendientes de medición sistemática; el formato de reporte, idéntico al de la Tabla~\ref{tab:slam_sim_indicadores}, se recoge en el \ref{anx:protocolo_resultados}.
 
 \subsection{Comparación cualitativa de mapas}
 \label{subsec:comparacion_mapas}
@@ -405,46 +387,12 @@ Zonas de sombra láser & Mínimas & Presentes \\
 \subsection{Protocolo de pruebas}
 \label{subsec:protocolo_nav}
 
-Se definieron tres escenarios (cinco repeticiones cada uno): meta directa sin obstáculos ($\approx 3$ m), meta con obstáculo intermedio (caja) y meta en pasillo/puerta (espacio estrecho). La meta se envía desde RViz y se considera éxito si el robot la alcanza dentro de la tolerancia \texttt{xy\_goal\_tolerance} (0.25 m en simulación, 0.22 m en hardware). Estos escenarios exceden la extensión del recinto físico disponible, por lo que su ejecución en hardware queda planificada para un entorno de mayor superficie; las Tablas~\ref{tab:nav_sim} y~\ref{tab:nav_real} se completarán con los resultados.
-
-\begin{table}[H]
-\centering
-\caption{Resultados de navegación autónoma en simulación (pendiente de ejecución).}
-\label{tab:nav_sim}
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Escenario} & \textbf{Éxitos} & \textbf{Fallos} & \textbf{Tasa (\%)} & $\bar{t}$ (s) & $\sigma_t$ (s) \\
-\midrule
-Meta directa & --- & --- & --- & --- & --- \\
-Con obstáculo & --- & --- & --- & --- & --- \\
-Pasillo/puerta & --- & --- & --- & --- & --- \\
-\midrule
-\textbf{Total} & --- & --- & --- & --- & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Resultados de navegación autónoma en hardware real (pendiente de ejecución).}
-\label{tab:nav_real}
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Escenario} & \textbf{Éxitos} & \textbf{Fallos} & \textbf{Tasa (\%)} & $\bar{t}$ (s) & $\sigma_t$ (s) \\
-\midrule
-Meta directa & --- & --- & --- & --- & --- \\
-Con obstáculo & --- & --- & --- & --- & --- \\
-Pasillo/puerta & --- & --- & --- & --- & --- \\
-\midrule
-\textbf{Total} & --- & --- & --- & --- & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
+Se definieron tres escenarios (cinco repeticiones cada uno): meta directa sin obstáculos ($\approx 3$ m), meta con obstáculo intermedio (caja) y meta en pasillo/puerta (espacio estrecho). La meta se envía desde RViz y se considera éxito si el robot la alcanza dentro de la tolerancia \texttt{xy\_goal\_tolerance} (0.25 m en simulación, 0.22 m en hardware). Estos escenarios exceden la extensión del recinto físico disponible, por lo que su ejecución queda planificada para un entorno de mayor superficie; el formato de reporte (tasa de éxito, tiempo medio y desviación por escenario, en simulación y hardware) se recoge en el \ref{anx:protocolo_resultados}.
 
 \subsection{Tipos de fallo y estrategias de recuperación}
 \label{subsec:analisis_fallos}
 
-La Tabla~\ref{tab:fallos_nav} clasifica los modos de fallo previstos y la acción de recuperación del árbol de comportamiento que los atiende; la columna de resultado se completará con la tasa de recuperación observada.
+La Tabla~\ref{tab:fallos_nav} clasifica los modos de fallo previstos y la acción de recuperación del árbol de comportamiento que los atiende; la tasa de recuperación observada se reportará junto con los resultados de navegación.
 
 \begin{table}[H]
 \centering
@@ -452,14 +400,14 @@ La Tabla~\ref{tab:fallos_nav} clasifica los modos de fallo previstos y la acció
 \caption{Tipos de fallo y estrategias de recuperación.}
 \label{tab:fallos_nav}
 \small
-\begin{tabular}{p{3.2cm} p{3.5cm} p{4cm} p{2.4cm}}
+\begin{tabular}{p{3.5cm} p{4cm} p{4.5cm}}
 \toprule
-\textbf{Tipo de fallo} & \textbf{Causa probable} & \textbf{Recuperación} & \textbf{Resultado} \\
+\textbf{Tipo de fallo} & \textbf{Causa probable} & \textbf{Recuperación} \\
 \midrule
-Costmap bloqueado & Obstáculo no mapeado & \texttt{ClearCostmap}\tnote{a} & --- \\
-Ruta inválida & Espacio muy estrecho & Replaneación (4~Hz) & --- \\
-Robot atascado & Deslizamiento en giro & \texttt{Spin} + \texttt{BackUp} & --- \\
-Timeout de navegación & Oscilación local & Abortar y reintentar & --- \\
+Costmap bloqueado & Obstáculo no mapeado & \texttt{ClearCostmap}\tnote{a} \\
+Ruta inválida & Espacio muy estrecho & Replaneación (4~Hz) \\
+Robot atascado & Deslizamiento en giro & \texttt{Spin} + \texttt{BackUp} \\
+Timeout de navegación & Oscilación local & Abortar y reintentar \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
@@ -473,26 +421,7 @@ Timeout de navegación & Oscilación local & Abortar y reintentar & --- \\
 \section{Resultados de exploración autónoma de fronteras}
 \label{sec:resultados_exploracion}
 
-La exploración se evalúa colocando el robot en una esquina y lanzando \texttt{explore\_server}, registrando el número de metas generadas y alcanzadas, la cobertura y las intervenciones manuales. Al igual que la navegación, requiere un área mayor que la disponible, por lo que las Tablas~\ref{tab:explore_sim} y~\ref{tab:explore_real} quedan planificadas.
-
-\begin{table}[H]
-\centering
-\caption{Indicadores de exploración autónoma (pendiente de ejecución).}
-\label{tab:explore_sim}
-\begin{tabular}{lll}
-\toprule
-\textbf{Indicador} & \textbf{Simulación} & \textbf{Hardware real} \\
-\midrule
-Tiempo hasta finalización & --- & --- \\
-Metas generadas & --- & --- \\
-Metas alcanzadas & --- & --- \\
-Metas fallidas/abortadas & --- & --- \\
-Cobertura estimada (\%) & --- & --- \\
-Distancia total recorrida & --- & --- \\
-Intervenciones manuales & --- & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
+La exploración se evalúa colocando el robot en una esquina y lanzando \texttt{explore\_server}, registrando el número de metas generadas y alcanzadas, la cobertura y las intervenciones manuales. Al igual que la navegación, requiere un área mayor que la disponible, por lo que su ejecución queda planificada; el formato de reporte se recoge en el \ref{anx:protocolo_resultados}.
 
 % ===========================================================================
 \section{Coherencia simulación -- hardware real}
@@ -533,13 +462,13 @@ Respecto de los criterios de paridad definidos al construir el gemelo digital (C
 \subsection{Adaptaciones en la transferencia simulación -- hardware}
 \label{subsec:adaptaciones_transfer}
 
-La transferencia al hardware requirió: fijar \texttt{use\_sim\_time:=false}; activar las reglas \texttt{udev} de nombres persistentes (\texttt{/dev/motor\_controller}, \texttt{/dev/rplidar}); reducir la velocidad lineal máxima de $0.26$ a $0.13$ m/s y la frecuencia del controlador DWB de 20 a 10 Hz; y habilitar el retroceso (\texttt{min\_vel\_x} $= -0.13$ m/s). El detalle completo de las diferencias de configuración entre entornos se documenta en el Capítulo~\ref{chap:app_control_nav}.
+La transferencia al hardware requirió fijar \texttt{use\_sim\_time:=false}, activar las reglas \texttt{udev} de nombres persistentes, ajustar los límites cinemáticos y las frecuencias del controlador, y habilitar el retroceso. El detalle completo de las diferencias de configuración entre entornos se documenta en los Capítulos~\ref{chap:robot_real} y~\ref{chap:app_control_nav}.
 
 % ===========================================================================
-\section{Viabilidad en la Raspberry Pi 4: recursos y autonomía}
+\section{Viabilidad en la Raspberry Pi 4}
 \label{sec:recursos_computacionales}
 
-Durante las sesiones de SLAM y navegación superiores a 10~min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5~V, comportamiento consistente con el margen del convertidor frente al presupuesto de potencia (Tabla~\ref{tab:power_budget_filled}); la etapa de potencia opera con reserva suficiente para la carga del prototipo y para la incorporación futura de sensores. La caracterización cuantitativa del uso de recursos de cómputo (CPU, RAM, temperatura del SoC, latencia de \texttt{/scan}) y de la autonomía energética queda pendiente de medición sistemática.
+Durante las sesiones de SLAM y navegación superiores a 10~min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5~V, comportamiento consistente con el margen del convertidor frente al presupuesto de potencia (\ref{anx:hardware_ros2}); la etapa de potencia opera con reserva suficiente para la carga del prototipo y la incorporación futura de sensores. La caracterización cuantitativa del uso de cómputo y de la autonomía energética queda pendiente de medición sistemática.
 
 % ===========================================================================
 \section*{Conclusión del capítulo}
@@ -547,4 +476,4 @@ Durante las sesiones de SLAM y navegación superiores a 10~min de operación con
 
 La odometría basada en encoders de 1980 CPR ofrece precisión adecuada para trayectorias cortas (error medio 3.63\% en 2 m en hardware real), pero la deriva angular media de $11.7^\circ$ por giro completo se propaga al mapa, confirmando la necesidad de una IMU. La sintonización PSO+experimental produce bajo sobreimpulso (10.66\%--15.63\%) a costa de un mayor tiempo de subida; el \emph{ripple} residual ($\approx 0.005$ m/s) proviene de la cuantización del encoder y no afecta la navegación, y la zona muerta asimétrica suprime los ciclos límite. El mapeo SLAM produce mapas utilizables en ambos entornos; en hardware la calidad depende de mantener velocidades bajas (0.06--0.09 m/s) para que el \gls{LIDAR} complete un barrido entre actualizaciones del grafo. La etapa de potencia se mostró estable durante toda la experimentación, sin síntomas de sobrecarga ni estrangulamiento térmico.
 
-La validación de la navegación autónoma y la exploración de fronteras quedó limitada por la extensión del recinto físico disponible, que no admite los escenarios definidos (meta a $\approx 3$ m, pasillo). El protocolo, las métricas y la infraestructura de pruebas están definidos, de modo que estas evaluaciones pueden completarse en un entorno de mayor superficie para cerrar cuantitativamente la validación del sistema integrado.
+La validación de la navegación autónoma y la exploración de fronteras quedó limitada por la extensión del recinto físico disponible, que no admite los escenarios definidos (meta a $\approx 3$ m, pasillo). El protocolo, las métricas y la infraestructura de pruebas están definidos (\ref{anx:protocolo_resultados}), de modo que estas evaluaciones pueden completarse en un entorno de mayor superficie para cerrar cuantitativamente la validación del sistema integrado.
