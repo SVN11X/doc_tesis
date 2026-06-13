@@ -5,12 +5,12 @@ Este capítulo desarrolla el gemelo digital del robot móvil diferencial, cuyo p
 
 El archivo \texttt{robot.urdf.xacro} actúa como compositor principal y fuente de verdad de la geometría y la cinemática, e incluye \texttt{robot\_core.xacro} (estructura del chasis y tren motriz) y \texttt{lidar.xacro} (escáner láser). La selección del \textit{backend} de control es explícita y se detalla en la Sección~\ref{sec:backend}.
 
-\utemFigurePropia{2.Texto/Imag/sim_entorno_general.jpg}{0.92\textwidth}
+\utemFigurePropia{2.Texto/Imag/sim_entorno_general.jpg}{0.9\textwidth}
 {Entorno de simulación en Gazebo con elementos de prueba y el robot diferencial.}
 {fig:sim_entorno_general}
 
 \begin{utemMultiFigurePropia}{Comparación visual entre el prototipo físico (izquierda) y su gemelo digital en Gazebo (derecha).}{fig:comparacion_fisico_virtual}
-    \addutem{0.44}{2.Texto/Imag/fig_robot_real.png}{Real}
+    \addutem{0.35}{2.Texto/Imag/fig_robot_real.png}{Real}
     \hfill
     \addutem{0.44}{2.Texto/Imag/fig_robot_sim.png}{Simulación}
 \end{utemMultiFigurePropia}
@@ -19,31 +19,7 @@ El archivo \texttt{robot.urdf.xacro} actúa como compositor principal y fuente d
 \section{Arquitectura de software y aporte original}
 \label{sec:atribucion}
 
-El \textit{workspace} del proyecto (\texttt{tesis\_black\_robot}) integra paquetes de tres orígenes: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La Tabla~\ref{tab:atribucion} identifica cada paquete, su origen, su licencia, las modificaciones realizadas y la naturaleza de la contribución del autor, lo que permite distinguir con transparencia el aporte original de la tesis respecto del trabajo previo de la comunidad de código abierto. La configuración del entorno y la organización completa del \textit{workspace} se documentan en el Anexo~\ref{anx:workspace}.
-
-\begin{table}[H]
-\centering
-\caption{Atribución de paquetes del \textit{workspace} \texttt{tesis\_black\_robot/src}.}
-\label{tab:atribucion}
-\footnotesize
-\begin{tabular}{P{2.5cm} P{2.2cm} P{1.2cm} P{7.0cm}}
-    \toprule
-    \textbf{Paquete} & \textbf{Origen} & \textbf{Lic.} & \textbf{Modificaciones realizadas} \\ 
-    \midrule
-    \texttt{articubot\_one} & Basado en \texttt{my\_bot} \cite{NewansMyBot} & BSD & \textbf{Desarrollo principal.} Rediseño total de la descripción (\texttt{.xacro}) con las dimensiones reales del prototipo (Tabla~\ref{tab:parametros_modelo}). Creación de los archivos de configuración (\texttt{.yaml}), árboles de comportamiento (\texttt{.xml}), escenarios de lanzamiento y el mundo de simulación. Se conservó únicamente la estructura base. \\
-    \midrule
-    \texttt{ROSArduinoBridge} & \textit{Fork} de \cite{ROSArduinoBridge} & BSD & Adición de comandos seriales específicos (\texttt{SET\_VEL\_MPS}, \texttt{READ\_VEL\_MPS}, \texttt{READ\_PIDS}, \texttt{UPDATE\_PID\_LR}), conversión \textit{ticks/frame}, ganancias PID asimétricas optimizadas vía PSO y reconfiguración de pines para el L298N. \\
-    \midrule
-    \texttt{pid\_config/} & Desarrollo propio & --- & \textbf{Original.} Suite en Python y C++ para captura de respuesta al escalón, identificación FODT, algoritmo PSO y comunicación serial asíncrona. \\
-    \midrule
-    \texttt{diffdrive\_arduino} & \textit{Fork} de \cite{NewansDiffDrive} & BSD & Modificación del método \texttt{start()} para delegar la sintonización al firmware (ganancias PSO). Ajuste de parámetros en \texttt{xacro}: \textit{counts per rev} (1980) y frecuencia de lazo (30~Hz), según la Tabla~\ref{tab:parametros_modelo}. \\
-    \midrule
-    \texttt{m-explore-ros2} & Dependencia \cite{MExploreROS2} & BSD & Sin cambios en el código. Configuración centralizada en el paquete principal para exploración autónoma de fronteras compatible con Foxy. \\
-    \midrule
-    \texttt{gazebo\_ros2\_control} & Dependencia (ros-controls) & Apache & Compilación desde fuente para asegurar compatibilidad con el controlador diferencial en Foxy. \\
-    \bottomrule
-\end{tabular}
-\end{table}
+El \textit{workspace} del proyecto (\texttt{tesis\_black\_robot}) integra paquetes de tres orígenes: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La atribución detallada de cada paquete —origen, licencia, modificaciones realizadas y naturaleza de la contribución del autor— se documenta en el Anexo~\ref{anx:gemelo_digital}, lo que permite distinguir con transparencia el aporte original de la tesis respecto del trabajo previo de la comunidad de código abierto. La configuración del entorno y la organización completa del \textit{workspace} se documentan en el Anexo~\ref{anx:workspace}.
 
 \noindent
 En síntesis, el aporte original del autor comprende: (a) el diseño completo del modelo URDF/Xacro y la parametrización de todo el sistema de control, SLAM y navegación en \texttt{articubot\_one}; (b) la extensión del protocolo serial del firmware con comandos en unidades físicas y ganancias asimétricas; (c) el desarrollo íntegro de la cadena de sintonización automática del PID por PSO; y (d) la integración, configuración y validación del sistema completo. Los paquetes de terceros aportaron infraestructura reutilizable (interfaz de hardware, biblioteca serial, explorador de fronteras), que fue configurada y adaptada según los requerimientos del prototipo.
@@ -82,7 +58,7 @@ La Tabla~\ref{tab:parametros_robot} documenta cómo se declaran en los archivos 
 \texttt{chassis\_mass}   & 2.24 kg & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\ \addlinespace
 \multicolumn{4}{l}{\textit{Tracción y ruedas}} \\
 \texttt{wheel\_radius}    & 0.0335 m & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
-Diámetro (Gazebo)         & 0.067 m ($2 \times R$) & \texttt{<wheel\_diameter>} & \texttt{gazebo\_control.xacro} \\
+Diámetro (Gazebo)         & 0.067 m ($2 \times r$) & \texttt{<wheel\_diameter>} & \texttt{gazebo\_control.xacro} \\
 Separación                & 0.188 m & \texttt{<wheel\_separation>} & \texttt{gazebo\_control.xacro} \\
 \texttt{caster\_wheel}    & $x=0.21$ m; $z$ calculado & \texttt{origin xyz} & \texttt{robot\_core.xacro} \\
 Fricción caster           & $\mu_1 = \mu_2 = 0.001$ & \texttt{<gazebo reference>} & \texttt{robot\_core.xacro} \\ \addlinespace
@@ -107,34 +83,9 @@ El modelo se organiza como un árbol jerárquico de eslabones (\textit{links}) c
 
 La parametrización se centraliza mediante propiedades reutilizables: modificar una dimensión —por ejemplo, el radio de rueda— actualiza automáticamente la geometría visual, la envolvente de colisión y los cálculos de inercia.
 
-\utemFigurePropia{2.Texto/Imag/urdf_closeup.png}{0.9\textwidth}
-{Modelo digital del robot: ubicación del sensor láser y ruedas (vista cercana).}
-{fig:urdf_closeup}
-
 \subsection{Validación estructural del URDF}
 
-La auditoría del modelo confirma la jerarquía declarada y el conteo de elementos cinemáticos (Tabla~\ref{tab:urdf_evidencia}), verificados sobre el árbol de transformaciones generado con \texttt{ros2 run tf2\_tools view\_frames} (Figura~\ref{fig:tf_tree}).
-
-\utemFigurePropia{2.Texto/Imag/tf_tree.pdf}{0.90\textwidth}
-{Árbol de transformaciones \texttt{tf} generado con \texttt{ros2 run tf2\_tools view\_frames}.}
-{fig:tf_tree}
-
-\begin{table}[H]
-\centering
-\caption{Estructura jerárquica y conteo de elementos del URDF, confirmados por auditoría.}
-\label{tab:urdf_evidencia}
-\small
-\begin{tabular}{l p{9cm}}
-\toprule
-\textbf{Elemento} & \textbf{Composición} \\
-\midrule
-Hijos de \texttt{base\_link} & \texttt{base\_footprint}, \texttt{chassis}, \texttt{left\_wheel}, \texttt{right\_wheel} \\
-Hijos de \texttt{chassis}    & \texttt{laser\_frame}, \texttt{caster\_wheel} \\ \addlinespace
-Total de \textit{links}      & 7 \\
-Total de \textit{joints}     & 6 — 2 continuos (\texttt{left\_wheel\_joint}, \texttt{right\_wheel\_joint}) y 4 fijos (\texttt{caster\_wheel\_joint}, \texttt{laser\_joint}, \texttt{base\_footprint\_joint}, \texttt{chassis\_joint}) \\
-\bottomrule
-\end{tabular}
-\end{table}
+La auditoría del modelo confirma la jerarquía declarada y el conteo de elementos cinemáticos —7 \textit{links} y 6 \textit{joints} (2 continuos y 4 fijos)—, verificados sobre el árbol de transformaciones generado con \texttt{ros2 run tf2\_tools view\_frames}. El árbol TF y el detalle del conteo se incluyen en el Anexo~\ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
 \section{Composición modular y selección de \textit{backend}}
@@ -168,17 +119,7 @@ Con el robot físico (\texttt{use\_ros2\_control=true}, \texttt{sim\_mode=false}
 \section{Convenciones de marcos y cadena de transformaciones}
 \label{sec:tf-convenciones}
 
-Se adopta la convención estándar de ROS definida en \gls{REP103}~\cite{rep103}: \texttt{x} hacia adelante, \texttt{y} hacia la izquierda, \texttt{z} hacia arriba, con ángulos en radianes y regla de la mano derecha. La organización de la cadena de marcos sigue \gls{REP105}~\cite{rep105}, que estandariza los marcos \texttt{map}, \texttt{odom} y \texttt{base\_link} para plataformas móviles, y se publica con \texttt{robot\_state\_publisher}. Los marcos relevantes son:
-
-\begin{itemize}
-\item \texttt{base\_link} $\rightarrow$ \texttt{base\_footprint}: fijo, origen en $(0,0,0)$. Proyección del robot sobre el suelo.
-\item \texttt{base\_link} $\rightarrow$ \texttt{left\_wheel}: origen en $y = +0.094$ m, orientación $(-\pi/2, 0, 0)$.
-\item \texttt{base\_link} $\rightarrow$ \texttt{right\_wheel}: origen en $y = -0.094$ m, orientación $(+\pi/2, 0, 0)$.
-\item \texttt{chassis} $\rightarrow$ \texttt{laser\_frame}: origen en $x = 0.17$ m, $z = 0.125$ m.
-\item \texttt{chassis} $\rightarrow$ \texttt{caster\_wheel}: origen en $x = 0.21$ m, $z$ calculado.
-\end{itemize}
-
-El correcto funcionamiento exige \texttt{robot\_state\_publisher} activo con la descripción del robot cargada; los procedimientos de verificación y las acciones correctivas ante marcos o tópicos ausentes se documentan en el Anexo~\ref{anx:workspace}. La Tabla~\ref{tab:topics_frames} resume el mapeo entre componentes, marcos y tópicos.
+Se adopta la convención estándar de ROS definida en \gls{REP103}~\cite{rep103}: \texttt{x} hacia adelante, \texttt{y} hacia la izquierda, \texttt{z} hacia arriba, con ángulos en radianes y regla de la mano derecha. La organización de la cadena de marcos sigue \gls{REP105}~\cite{rep105}, que estandariza los marcos \texttt{map}, \texttt{odom} y \texttt{base\_link} para plataformas móviles, y se publica con \texttt{robot\_state\_publisher}; los orígenes de cada marco corresponden a los valores declarados en la Tabla~\ref{tab:parametros_robot}. El correcto funcionamiento exige \texttt{robot\_state\_publisher} activo con la descripción del robot cargada; los procedimientos de verificación y las acciones correctivas ante marcos o tópicos ausentes se documentan en el Anexo~\ref{anx:workspace}. La Tabla~\ref{tab:topics_frames} resume el mapeo entre componentes, marcos y tópicos.
 
 \begin{table}[H]
 \centering
@@ -196,20 +137,10 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 \end{tabular}
 \end{table}
 
-\utemFigurePropia{2.Texto/Imag/lidar_rviz_obstaculos.png}{0.95\textwidth}
-{Captura de RViz mostrando el modelo del robot con marcos TF activos y barrido láser.}
-{fig:rviz_tf_scan_validacion}
-
 %------------------------------------------------------------------
 \section{Modelado del sensor láser en simulación}
 
-El escáner láser se modela en el marco \texttt{laser\_frame} con 360 muestras por vuelta, rango de 0.08 a 12 m y ángulos de barrido $[-3.14, 3.14]$ rad. El plugin \texttt{libgazebo\_ros\_ray\_sensor.so} genera los datos y los publica en \texttt{/scan} con formato \texttt{sensor\_msgs/LaserScan}, de modo que el láser virtual se comporta como el RPLidar A1 físico. Al conservar los nombres de marcos y tópicos entre simulación y hardware, los archivos de configuración de SLAM y navegación se reutilizan sin cambios estructurales.
-
-\begin{utemMultiFigurePropia}{Comparación visual de los rayos de \gls{LIDAR} entre Gazebo y RViz.}{fig:comparacion_rayos_lidar}
-    \addutem{0.4}{2.Texto/Imag/gazebo_laser_robot.png}{Visualización en Gazebo}
-    \hfill
-    \addutem{0.4}{2.Texto/Imag/rviz_laser_robot.png}{Visualización en RViz}
-\end{utemMultiFigurePropia}
+El escáner láser se modela en el marco \texttt{laser\_frame} con los parámetros declarados en la Tabla~\ref{tab:parametros_robot}. El plugin \texttt{libgazebo\_ros\_ray\_sensor.so} genera los datos y los publica en \texttt{/scan} con formato \texttt{sensor\_msgs/LaserScan}, de modo que el láser virtual se comporta como el RPLidar A1 físico. Al conservar los nombres de marcos y tópicos entre simulación y hardware, los archivos de configuración de SLAM y navegación se reutilizan sin cambios estructurales. La comparación visual de los rayos del \gls{LIDAR} entre Gazebo y RViz se incluye en el Anexo~\ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
 \section{Control diferencial: interfaz y \textit{backend}}
@@ -261,19 +192,19 @@ Antes de proceder a SLAM y navegación, el gemelo digital debe superar las verif
     \caption{Resumen de criterios de aceptación, métricas objetivo y herramientas de verificación.}
     \label{tab:criterios_aceptacion_resumen}
     \footnotesize
-    \begin{tabular}{cllll >{\ttfamily}l}
+    \begin{tabular}{ccllll >{\ttfamily}l}
         \toprule
-        \textbf{N°} & \textbf{Criterio} & \textbf{Métrica} & \textbf{Umbral} & \textbf{Herramienta} & \textbf{Fuente/Script} \\ 
+        \textbf{N°} & \textbf{Nivel} & \textbf{Criterio} & \textbf{Métrica} & \textbf{Umbral} & \textbf{Herramienta} & \textbf{Fuente/Script} \\ 
         \midrule
-        1 & Coherencia TF        & Marcos sueltos     & 0               & \textit{view\_frames} & run\_verificacion\_tf.sh \\
-        2 & TFs clave            & Activas\tnote{a}   & 5 de 5          & \textit{tf2\_echo}    & run\_verificacion\_tf.sh \\
-        3 & Giro 360°            & Error angular      & < 0.05 rad\tnote{c} & \textit{topic echo} & Prueba manual \\
-        4 & Avance 1 m           & Desv. lateral      & < 0.02 m\tnote{c} & \textit{topic echo} & Prueba manual \\
-        5 & Reloj simulac.       & Freq. \texttt{/clock} & $\geq$ 400 Hz & \textit{topic hz} & gazebo\_params.yaml \\
-        6 & Freq. \texttt{/scan} & Publicación        & $\sim$10 Hz   & \textit{topic hz} & lidar.xacro \\
-        7 & Freq. \texttt{/odom} & Publicación        & $\sim$30 Hz\tnote{d}   & \textit{topic hz} & my\_controllers.yaml \\
-        8 & Tasa de control      & \texttt{update\_rate} & 30 $\pm$ 1 Hz & \textit{topic hz} & my\_controllers.yaml \\
-        9 & Paridad parám.       & Discrepancia\tnote{b} & 0             & Auditoría & Tabla \ref{tab:parametros_robot} \\ 
+        1 & 2 & Coherencia TF        & Marcos sueltos     & 0               & \textit{view\_frames} & run\_verificacion\_tf.sh \\
+        2 & 2 & TFs clave            & Activas\tnote{a}   & 5 de 5          & \textit{tf2\_echo}    & run\_verificacion\_tf.sh \\
+        3 & 4 & Giro 360°            & Error angular      & < 0.05 rad\tnote{c} & \textit{topic echo} & Prueba manual \\
+        4 & 5 & Avance 1 m           & Desv. lateral      & < 0.02 m\tnote{c} & \textit{topic echo} & Prueba manual \\
+        5 & 1 & Reloj simulac.       & Freq. \texttt{/clock} & $\geq$ 400 Hz & \textit{topic hz} & gazebo\_params.yaml \\
+        6 & 6 & Freq. \texttt{/scan} & Publicación        & $\sim$10 Hz   & \textit{topic hz} & lidar.xacro \\
+        7 & 3 & Freq. \texttt{/odom} & Publicación        & $\sim$30 Hz\tnote{d}   & \textit{topic hz} & my\_controllers.yaml \\
+        8 & 3 & Tasa de control      & \texttt{update\_rate} & 30 $\pm$ 1 Hz & \textit{topic hz} & my\_controllers.yaml \\
+        9 & 7 & Paridad parám.       & Discrepancia\tnote{b} & 0             & Auditoría & Tabla \ref{tab:parametros_robot} \\ 
         \bottomrule
     \end{tabular}
     \begin{tablenotes}
@@ -286,22 +217,8 @@ Antes de proceder a SLAM y navegación, el gemelo digital debe superar las verif
 \end{threeparttable}
 \end{table}
 
-\subsection{Procedimiento de validación incremental}
-\label{subsec:procedimiento_pruebas}
+La validación del gemelo digital se ejecuta de forma incremental en siete niveles: (1) reloj y tiempo simulado; (2) geometría y cadena TF; (3) carga y activación de controladores; (4) respuesta a teleoperación; (5) contacto y fricción de ruedas; (6) publicación y \texttt{frame\_id} del sensor láser; y (7) auditoría final de paridad de parámetros, indicados en la columna Nivel de la Tabla~\ref{tab:criterios_aceptacion_resumen}. La superación de cada nivel condiciona el avance al siguiente y, finalmente, a las pruebas de SLAM y navegación.
 
-La validación del gemelo digital se ejecuta de forma incremental, verificando cada nivel antes de avanzar al siguiente: (1) reloj y tiempo simulado (\texttt{use\_sim\_time}, \texttt{/clock} estable); (2) geometría y cadena TF completa; (3) carga y activación de controladores; (4) respuesta a teleoperación; (5) contacto y fricción de ruedas; (6) publicación y \texttt{frame\_id} del sensor láser; y (7) auditoría final de paridad de parámetros. Cada nivel corresponde a uno o más criterios de la Tabla~\ref{tab:criterios_aceptacion_resumen}, y su superación condiciona el avance a las pruebas de SLAM y navegación. El flujo se resume en la Figura~\ref{fig:flowchart_validacion}.
-
-\utemFigurePropia{2.Texto/Imag/fig_flowchart_validacion.png}{0.9\textwidth}
-{Diagrama de flujo del procedimiento de validación incremental del gemelo digital.}
-{fig:flowchart_validacion}
-
-Las pruebas de respuesta cinemática —avance rectilíneo y recorrido combinado en L— se ilustran en la Figura~\ref{fig:pruebas_cinematica}; su evaluación cuantitativa frente a los umbrales de la Tabla~\ref{tab:criterios_aceptacion_resumen} se presenta en el Capítulo~\ref{ch:resultados}.
-
-\begin{utemMultiFigurePropia}{Pruebas de respuesta cinemática del gemelo digital: avance rectilíneo (izquierda) y recorrido combinado en L (derecha).}{fig:pruebas_cinematica}
-    \addutem{0.4}{2.Texto/Imag/fig_trayectoria_recta_part3.png}{Avance rectilíneo}
-    \hfill
-    \addutem{0.4}{2.Texto/Imag/fig_trayectoria_L_part3.png}{Recorrido en L}
-\end{utemMultiFigurePropia}
 
 %------------------------------------------------------------------
 \section{Riesgos y mitigaciones simulación--realidad}

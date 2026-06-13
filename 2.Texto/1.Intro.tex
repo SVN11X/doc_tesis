@@ -2,32 +2,22 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{INTRODUCCIÓN}
 
-% -------------------------------------------------------------------
-% 1. CONTEXTO Y MOTIVACIÓN
-% -------------------------------------------------------------------
+El abaratamiento de los sensores, del cómputo embebido y de los \textit{frameworks} de código abierto ha puesto la robótica móvil autónoma al alcance de proyectos académicos de pregrado. Plataformas como \gls{ROS2}, computadores de placa única como la Raspberry Pi y escáneres láser \gls{LIDAR} de gama media permiten hoy abordar, con recursos modestos, problemas que hasta hace poco eran exclusivos de laboratorios especializados. Este trabajo aprovecha esa convergencia para construir y documentar un robot móvil diferencial completo, de bajo costo, capaz de mapear interiores y navegar de forma autónoma.
 
-La robótica móvil ha experimentado un crecimiento sostenido durante las últimas décadas, impulsado por la convergencia de avances en sensores, algoritmos de percepción y plataformas de cómputo embebido de bajo costo. Lo que hasta hace poco era dominio exclusivo de laboratorios universitarios y grandes empresas tecnológicas, hoy se encuentra al alcance de desarrolladores independientes y proyectos académicos de pregrado gracias a la disponibilidad de \textit{frameworks} de código abierto como \gls{ROS2}, computadores de placa única como la Raspberry Pi y sensores accesibles como los escáneres láser \gls{LIDAR} de gama media.
+En particular, el problema de la localización y mapeo simultáneos (\gls{slam}) constituye uno de los desafíos clásicos de la robótica móvil: un robot que ingresa a un entorno desconocido necesita construir un mapa de dicho espacio al mismo tiempo que estima su propia posición dentro de él. La solución de este problema habilita capacidades de navegación autónoma —la posibilidad de que el robot planifique y ejecute trayectorias hacia destinos definidos por el usuario, evitando obstáculos de forma segura— fundamentales para aplicaciones de inspección, monitoreo, logística interior y asistencia personal.
 
-En particular, el problema de la localización y mapeo simultáneos (\gls{slam}) constituye uno de los desafíos clásicos de la robótica móvil: un robot que ingresa a un entorno desconocido necesita construir un mapa de dicho espacio al mismo tiempo que estima su propia posición dentro de él. La solución de este problema habilita capacidades de navegación autónoma —la posibilidad de que el robot planifique y ejecute trayectorias hacia destinos definidos por el usuario, evitando obstáculos de forma segura— que resultan fundamentales para aplicaciones de inspección, monitoreo, logística interior y asistencia personal.
-
-El ecosistema \gls{ROS2} en su distribución Foxy, junto con herramientas como \texttt{slam\_toolbox} para mapeo y la pila de navegación Nav2, ofrece una arquitectura modular y probada que permite integrar estos algoritmos sobre hardware heterogéneo. Sin embargo, la implementación práctica de un sistema completo —desde el firmware de control de motores hasta la exploración autónoma de fronteras— involucra decisiones de diseño interdependientes en mecánica, electrónica, control y software que rara vez se documentan de forma integral en la literatura académica. Este trabajo aborda precisamente esa brecha: el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial con capacidad de mapeo 2D y navegación autónoma.
+El ecosistema \gls{ROS2}, junto con herramientas como \texttt{slam\_toolbox} para mapeo y la pila de navegación Nav2, ofrece una arquitectura modular y probada para integrar estos algoritmos sobre hardware heterogéneo. Sin embargo, la implementación práctica de un sistema completo —desde el firmware de control de motores hasta la exploración autónoma— involucra decisiones de diseño interdependientes en mecánica, electrónica, control y software que rara vez se documentan de forma integral en la literatura. Este trabajo aborda esa brecha: el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial con capacidad de mapeo 2D y navegación autónoma.
 
 % -------------------------------------------------------------------
-% 2. PLANTEAMIENTO DEL PROBLEMA
-% -------------------------------------------------------------------
-
 \section*{Planteamiento del problema}
 \phantomsection
 \addcontentsline{toc}{section}{Planteamiento del problema}
 
-El desarrollo de un robot móvil autónomo para interiores plantea un conjunto de problemas acoplados que deben resolverse de manera coordinada. En primer lugar, el robot debe ser capaz de percibir su entorno mediante sensores y estimar su posición con precisión suficiente para que los algoritmos de mapeo y navegación operen correctamente; esto exige un subsistema de odometría basado en encoders de cuadratura y un control diferencial de velocidad que compense las asimetrías mecánicas del tren motriz. En segundo lugar, los datos sensoriales y la odometría deben integrarse en un marco de referencia único y coherente, lo que requiere que los distintos módulos de software —denominados \textit{nodos} en \gls{ROS2}— compartan un árbol de transformaciones geométricas (\texttt{tf}) correctamente configurado y sincronizado. En tercer lugar, la construcción del mapa, la localización y la planificación de rutas deben ejecutarse en tiempo real sobre hardware con recursos computacionales limitados (una Raspberry Pi 4), lo que impone restricciones sobre la complejidad de los algoritmos y la frecuencia de actualización.
+El desarrollo de un robot móvil autónomo para interiores plantea un conjunto de problemas acoplados que deben resolverse de manera coordinada. En primer lugar, el robot debe percibir su entorno mediante sensores y estimar su posición con precisión suficiente para que los algoritmos de mapeo y navegación operen correctamente; esto exige un subsistema de odometría basado en encoders de cuadratura y un control diferencial de velocidad que compense las asimetrías mecánicas del tren motriz. En segundo lugar, los datos sensoriales y la odometría deben integrarse en un marco de referencia único y coherente, lo que requiere que los distintos módulos de software —denominados \textit{nodos} en \gls{ROS2}— compartan un árbol de transformaciones geométricas (\texttt{tf}) correctamente configurado y sincronizado. En tercer lugar, la construcción del mapa, la localización y la planificación de rutas deben ejecutarse en tiempo real sobre hardware con recursos computacionales limitados (una Raspberry Pi 4), lo que impone restricciones sobre la complejidad de los algoritmos y la frecuencia de actualización.
 
 A estos desafíos técnicos se suma la necesidad de validar el sistema de forma progresiva, primero en un entorno simulado (Gazebo) y luego en hardware real, manteniendo la mayor paridad posible entre ambas configuraciones para minimizar el esfuerzo de transferencia y facilitar la detección de errores. La pregunta central que guía este trabajo es: \textit{¿es viable construir, con componentes accesibles y herramientas de código abierto, un robot móvil diferencial capaz de generar mapas 2D de interiores y navegar de forma autónoma hacia destinos seleccionados por el usuario, alcanzando niveles de desempeño suficientes para aplicaciones académicas y de demostración?}
 
 % -------------------------------------------------------------------
-% 3. JUSTIFICACIÓN
-% -------------------------------------------------------------------
-
 \section*{Justificación}
 \phantomsection
 \addcontentsline{toc}{section}{Justificación}
@@ -36,94 +26,79 @@ Este proyecto se justifica desde tres perspectivas complementarias. Desde el pun
 
 Desde el punto de vista \textbf{tecnológico}, el ecosistema \gls{ROS2} se ha consolidado como el estándar de facto para el desarrollo de software robótico, tanto en la academia como en la industria. Documentar de forma detallada la implementación de un sistema completo sobre esta plataforma —incluyendo el firmware de bajo nivel, la integración con \texttt{ros2\_control}, la configuración de SLAM y Nav2, y la sintonización experimental del controlador PID— genera un recurso de referencia aprovechable por futuros estudiantes e investigadores.
 
-Desde el punto de vista \textbf{práctico}, la robótica móvil autónoma tiene aplicaciones directas en inspección de infraestructuras, logística de almacenes, monitoreo ambiental y asistencia en el hogar. Si bien el prototipo desarrollado tiene un alcance académico y de demostración, las técnicas y la arquitectura empleadas son directamente escalables a plataformas de mayor envergadura.
+Desde el punto de vista \textbf{práctico}, la robótica móvil autónoma tiene aplicaciones directas en inspección, logística, monitoreo y asistencia. Si bien el prototipo desarrollado tiene un alcance académico y de demostración, las técnicas y la arquitectura empleadas son escalables a plataformas de mayor envergadura.
 
 % -------------------------------------------------------------------
-% 4. OBJETIVOS
-% -------------------------------------------------------------------
-
 \section*{Objetivo general}
 \phantomsection
 \addcontentsline{toc}{section}{Objetivo general}
 
-Diseñar e implementar un prototipo de robot móvil diferencial capaz de generar un mapa bidimensional de su entorno y navegar de forma autónoma hacia destinos seleccionados por el usuario, utilizando el \textit{middleware} \gls{ROS2} (distribución Foxy) como plataforma de integración de software.
+Diseñar e implementar un prototipo de robot móvil diferencial capaz de generar un mapa 2D de su entorno y navegar de forma autónoma hacia destinos por explorar, usando ROS 2 sobre una Raspberry Pi 4.
 
 \section*{Objetivos específicos}
 \phantomsection
 \addcontentsline{toc}{section}{Objetivos específicos}
 
 \begin{description}
-\item[\ObEsp.\label{oe1}] Diseñar y construir la plataforma mecánica y electrónica del robot, integrando motores \gls{DC} con caja reductora, encoders de cuadratura, un driver de potencia L298N, un escáner láser RPLidar A1 y una Raspberry Pi 4 como computador de a bordo.
+\item[\ObEsp.\label{oe1}] Diseñar y construir un prototipo de robot móvil diferencial, validado previamente mediante un gemelo digital en el simulador Gazebo.
 
-\item[\ObEsp.\label{oe2}] Implementar un firmware de control de bajo nivel en un \gls{Arduino}, incluyendo la lectura de encoders por interrupciones, el protocolo de comunicación serial con la Raspberry Pi y un controlador PID diferencial sintonizado mediante optimización por enjambre de partículas (PSO) con refinamiento experimental iterativo.
+\item[\ObEsp.\label{oe2}] Implementar el sistema de control de bajo nivel, incluyendo modelo cinemático diferencial, odometría por encoders y controlador PID en lazo cerrado sobre las velocidades de las ruedas.
 
-\item[\ObEsp.\label{oe3}] Desarrollar un modelo digital del robot (URDF/xacro) que permita la validación previa en simulación con Gazebo, manteniendo paridad de configuración con el hardware real.
+\item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo y la navegación autónoma del robot: SLAM basado en grafos de poses con SLAM Toolbox (optimización del grafo mediante el solver Ceres) para generar mapas 2D del entorno, y navegación con el framework Nav2 de ROS 2, con planificación global basada en A*, control local mediante el controlador de ventana dinámica (DWB), mapas de costos con inflación y árboles de comportamiento para la recuperación ante bloqueos.
 
-\item[\ObEsp.\label{oe4}] Configurar y desplegar el paquete \texttt{slam\_toolbox} en modo asíncrono en línea para la construcción de mapas 2D basados en escaneo láser, con optimización de grafo y cierre de lazo.
-
-\item[\ObEsp.\label{oe5}] Integrar la pila de navegación Nav2 —con planificador global NavFn (A*), controlador local DWB y árbol de comportamiento— para la navegación autónoma del robot hacia metas definidas por el usuario.
-
-\item[\ObEsp.\label{oe6}] Implementar un módulo de exploración autónoma de fronteras que permita al robot generar sus propias metas de navegación hacia zonas no exploradas del mapa.
-
-\item[\ObEsp.\label{oe7}] Validar experimentalmente el desempeño del sistema completo, tanto en simulación como en hardware real, documentando métricas de odometría, mapeo, navegación y exploración.
+\item[\ObEsp.\label{oe4}] Integrar la exploración autónoma basada en fronteras (\texttt{explore\_lite}, \texttt{m-explore-ros2}) para generar metas de navegación hacia zonas no mapeadas sin intervención manual continua.
 \end{description}
 
 % -------------------------------------------------------------------
-% 5. ALCANCES Y LIMITACIONES
-% -------------------------------------------------------------------
-
 \section*{Alcances y limitaciones}
 \phantomsection
 \addcontentsline{toc}{section}{Alcances y limitaciones}
 \label{sec:alcances}
 
 \paragraph{Alcances.}
-El alcance de este trabajo comprende el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial. El sistema opera en entornos interiores estáticos o con obstáculos de baja dinámica, sobre superficies planas y lisas. La percepción del entorno se basa exclusivamente en un escáner láser 2D (RPLidar A1), y la odometría se obtiene únicamente de los encoders de las ruedas. La navegación autónoma se valida en escenarios controlados con metas enviadas manualmente desde RViz o generadas automáticamente por el explorador de fronteras. El software se desarrolla sobre \gls{ROS2} Foxy con Ubuntu 20.04, y las pruebas experimentales se realizan tanto en simulación (Gazebo 11) como en hardware real.
+El alcance de este trabajo comprende el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial. El sistema opera en entornos interiores estáticos o con obstáculos de baja dinámica, sobre superficies planas y lisas. La percepción del entorno se basa exclusivamente en un escáner láser 2D (RPLidar A1), y la odometría se obtiene únicamente de los encoders de las ruedas. La navegación autónoma se ejercita con metas enviadas manualmente desde RViz o generadas automáticamente por el explorador de fronteras. El software se desarrolla sobre \gls{ROS2} Foxy con Ubuntu 20.04, y la validación experimental abarca la odometría, el control diferencial y el mapeo SLAM, evaluados de forma cuantitativa tanto en simulación (Gazebo 11) como en hardware real, junto con la navegación y la exploración validadas en simulación.
 
 \paragraph{Limitaciones.}
-El prototipo no incorpora fusión sensorial (no se integra \gls{IMU} ni cámara en la pila de navegación), lo que limita la precisión de la odometría en trayectorias largas y giros cerrados. El sistema no aborda entornos exteriores, superficies irregulares ni obstáculos dinámicos rápidos. La distribución \gls{ROS2} Foxy alcanzó su fin de vida (\textit{end-of-life}) en junio de 2023~\citep{ROS2FoxyEOL2023}, lo que restringe el acceso a actualizaciones de seguridad y nuevas funcionalidades. Se optó por mantener esta distribución porque el desarrollo del proyecto se inició cuando Foxy era la versión estable recomendada, y la migración a una distribución posterior habría implicado resolver incompatibilidades en paquetes clave (\texttt{gazebo\_ros2\_control}, \texttt{slam\_toolbox}, \texttt{diffdrive\_arduino}) cuya portabilidad no estaba garantizada al momento de la decisión. La capacidad de cómputo de la Raspberry Pi 4, aunque suficiente para la operación básica, no permite ejecutar algoritmos de SLAM visual (como RTAB-Map) de forma concurrente con Nav2 sin degradación de rendimiento.
+El prototipo no incorpora fusión sensorial (no se integra \gls{IMU} ni cámara en la pila de navegación), lo que limita la precisión de la odometría en trayectorias largas y giros cerrados. El sistema no aborda entornos exteriores, superficies irregulares ni obstáculos dinámicos rápidos. Adicionalmente, el recinto interior disponible para las pruebas en hardware, de superficie reducida, permitió validar la odometría, el control y el mapeo, pero no alberga los escenarios de navegación de largo recorrido ni de exploración de áreas extensas; estas pruebas en hardware quedan condicionadas a la disponibilidad de un espacio mayor. La distribución \gls{ROS2} Foxy alcanzó su fin de vida (\textit{end-of-life}) en junio de 2023~\citep{ROS2FoxyEOL2023}, lo que restringe el acceso a actualizaciones de seguridad y nuevas funcionalidades; se optó por mantenerla porque el desarrollo se inició cuando Foxy era la versión estable recomendada, y la migración a una distribución posterior habría implicado resolver incompatibilidades en paquetes clave (\texttt{gazebo\_ros2\_control}, \texttt{slam\_toolbox}, \texttt{diffdrive\_arduino}) cuya portabilidad no estaba garantizada. Por último, la capacidad de cómputo de la Raspberry Pi 4, aunque suficiente para la operación básica, no permite ejecutar algoritmos de SLAM visual de forma concurrente con Nav2 sin degradación de rendimiento.
 
 % -------------------------------------------------------------------
-% 6. METODOLOGÍA DEL PROYECTO
-% -------------------------------------------------------------------
-
 \section*{Metodología}
 \phantomsection
 \addcontentsline{toc}{section}{Metodología}
 
-El desarrollo del proyecto se organizó en seis etapas secuenciales, siguiendo una estrategia de validación incremental que permite verificar cada subsistema antes de agregar complejidad:
+El desarrollo del presente trabajo de título se basa en una metodología experimental e iterativa, estructurada en seis etapas principales que abarcan desde el diseño en simulación hasta la validación en hardware real.
 
-\paragraph{Etapa 1: Investigación y fundamentación.}
-Se realizó una revisión del estado del arte sobre SLAM y navegación autónoma con \gls{ROS2} en robots diferenciales para interiores. Paralelamente, se construyó el marco teórico con los fundamentos de odometría diferencial, control PID y sintonía Lambda, y los principios del SLAM basado en grafos.
+\paragraph{Primera etapa: Diseño gemelo digital y simulación.}
+Se diseñará el modelo URDF/xacro del robot diferencial y se validará como gemelo digital en Gazebo, verificando la cinemática, la odometría y la cadena de transformaciones del sistema.
 
-\paragraph{Etapa 2: Diseño y selección de componentes.}
-Se definió la arquitectura física del robot (tracción diferencial con rueda loca), se seleccionaron los componentes electrónicos y mecánicos mediante análisis comparativo, y se diseñó el chasis mediante modelado 3D e impresión aditiva en PLA+.
+\paragraph{Segunda etapa: Construcción del hardware.}
+Se construirá la plataforma física integrando Raspberry Pi 4, Arduino Nano, driver L298N, encoders incrementales y RPLidar A1, con comunicación serial y reglas udev para dispositivos persistentes.
 
-\paragraph{Etapa 3: Desarrollo del gemelo digital.}
-Se construyó el modelo URDF/xacro parametrizado del robot y se validó la cinemática, la odometría y el control diferencial en simulación con Gazebo, utilizando \texttt{ros2\_control} con el \textit{backend} de simulación.
+\paragraph{Tercera etapa: Control de bajo nivel.}
+Se implementará el firmware de control PID discreto en Arduino Nano con sintonización automática de ganancias mediante optimización por enjambre de partículas (PSO), y se desarrollará la interfaz de hardware mediante un plugin de \texttt{ros2\_control} que vincula el firmware con ROS 2 para comandar las velocidades de las ruedas. Finalmente, se verificará la coherencia de parámetros cinemáticos entre simulación y hardware.
 
-\paragraph{Etapa 4: Construcción física e integración.}
-Se ensambló la plataforma física, se implementó el firmware del \gls{Arduino} con protocolo serial y control PID, y se integró con la Raspberry Pi 4 mediante el plugin \texttt{DiffDriveArduino} de \texttt{ros2\_control}. Se sintonizaron las ganancias PID mediante un procedimiento asistido por PSO con refinamiento experimental iterativo.
+\paragraph{Cuarta etapa: SLAM y navegación autónoma.}
+Se configurará SLAM Toolbox para el mapeo 2D del entorno mediante SLAM basado en grafos de poses, y se implementará la navegación autónoma con el framework Nav2, definiendo planificador global (A*), controlador local (DWB), mapas de costos con inflación y árboles de comportamiento para la recuperación ante bloqueos.
 
-\paragraph{Etapa 5: Configuración de SLAM, navegación y exploración.}
-Se desplegó \texttt{slam\_toolbox} para mapeo, Nav2 para navegación autónoma (NavFn + DWB + árbol de comportamiento) y \texttt{explore\_server} para exploración de fronteras, configurando parámetros a partir de la documentación oficial y mediante ajustes iterativos.
+\paragraph{Quinta etapa: Exploración y validación final.}
+Se integrará la exploración autónoma de fronteras (\texttt{explore\_lite}, \texttt{m-explore-ros2}) y se validará el sistema completo en entorno real mediante pruebas cuantitativas de odometría, mapeo SLAM, navegación y exploración, incluyendo teleoperación con mando inalámbrico como mecanismo de seguridad.
 
-\paragraph{Etapa 6: Validación experimental.}
-Se ejecutó un protocolo de pruebas que evaluó de forma cuantitativa la odometría, el control PID, el mapeo SLAM, la navegación autónoma y la exploración de fronteras, tanto en simulación como en hardware real, documentando métricas, fotografías y comparaciones entre ambos entornos.
+\paragraph{Sexta etapa: Documentación.}
+Confección de documento que introduzca todo lo planteado en las etapas anteriores. Luego se sigue con la revisión final y entrega del manuscrito.
 
-\noindent La planificación temporal de estas etapas se documenta mediante una carta Gantt incluida en el \ref{anx:gantt}.
+\noindent La planificación temporal de estas etapas se documenta mediante una carta Gantt incluida en el Anexo~\ref{anx:gantt}.
 
-
+% -------------------------------------------------------------------
 \section*{Organización del documento}
 \phantomsection
 \addcontentsline{toc}{section}{Organización del documento}
 
-El presente trabajo se estructura en nueve capítulos numerados, además de esta introducción y las conclusiones finales como secciones no numeradas.
+El presente trabajo se estructura en ocho capítulos numerados, además de esta introducción y de las conclusiones finales.
 
 El \textbf{Capítulo~\ref{ch:estado_arte}} presenta el estado del arte en SLAM, sensores de percepción y navegación autónoma con \gls{ROS2}, justificando las decisiones de diseño adoptadas. El \textbf{Capítulo~\ref{marco_teorico}} desarrolla el marco teórico: odometría diferencial, modelado FODT, control PID, sintonía Lambda, optimización PSO y los fundamentos del SLAM basado en grafos.
 
 El \textbf{Capítulo~\ref{ch:componentes}} describe los componentes seleccionados para el prototipo. El \textbf{Capítulo~\ref{ch:robot_digital}} presenta el diseño del gemelo digital (URDF/xacro) y su validación en Gazebo. El \textbf{Capítulo~\ref{chap:robot_real}} documenta la construcción física del robot, la arquitectura eléctrica y la integración con \texttt{ros2\_control}.
 
-El \textbf{Capítulo~\ref{ch:setup_arduino}} detalla el firmware de bajo nivel implementado en el \gls{Arduino}, incluyendo el protocolo serial y la sintonización PID mediante PSO con refinamiento experimental. El \textbf{Capítulo~\ref{chap:app_control_nav}} describe la arquitectura de navegación: \texttt{slam\_toolbox}, Nav2 y exploración de fronteras. Finalmente, el \textbf{Capítulo~\ref{ch:resultados}} presenta los resultados experimentales, comparando simulación y hardware real en odometría, control PID, mapeo SLAM, navegación y exploración.
+El \textbf{Capítulo~\ref{ch:setup_arduino}} detalla el firmware de bajo nivel implementado en el \gls{Arduino}, incluyendo el protocolo serial y la sintonización del controlador. El \textbf{Capítulo~\ref{chap:app_control_nav}} describe la arquitectura de navegación: mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración de fronteras. Finalmente, el \textbf{Capítulo~\ref{ch:resultados}} presenta los resultados experimentales, comparando simulación y hardware real.
 
 La \textbf{Bibliografía}, el \textbf{Glosario} y los \textbf{Anexos} complementan el documento con las referencias consultadas, la definición de siglas y el material de soporte (esquemas eléctricos, archivos de configuración, guía de puesta en marcha y carta Gantt).

@@ -11,17 +11,6 @@ La odometría estima la pose del robot a partir del desplazamiento de sus ruedas
 
 \subsection{Modelo cinemático}
 
-% [SUGERENCIA] Considera insertar aquí UNA figura del diagrama cinemático
-% del robot diferencial (r, L, pose q=(x,y,theta), omega_R, omega_L), que
-% ancla las Ec. (\ref{eq:w_ruedas})--(\ref{eq:pose_theta}). Es la única
-% figura que este capítulo justifica. Inserta con tu entorno de figura
-% estándar, por ejemplo:
-% \begin{figure}[H]\centering
-%   \includegraphics[width=0.6\textwidth]{2.Texto/Imag/cinematica_diff.png}
-%   \caption{Geometría del robot de tracción diferencial.}
-%   \label{fig:cinematica_diff}
-% \end{figure}
-
 Considérese un robot con dos ruedas motrices de radio $r$, separadas por una distancia $L$. La pose del centro del eje de ruedas es $q = (x, y, \theta)$. Las velocidades angulares de las ruedas se obtienen de los encoders:
 
 \begin{equation}
@@ -44,9 +33,7 @@ y_{k+1} &= y_k + T_s \, v_k \sin\theta_k \label{eq:pose_y} \\
 \theta_{k+1} &= \theta_k + T_s \, \omega_k \label{eq:pose_theta}
 \end{align}
 
-\subsection{Integración en ROS2}
-
-En \gls{ROS2}, la odometría se publica en el tópico \texttt{/odom} (mensaje \texttt{nav\_msgs/Odometry}). El controlador \texttt{diff\_drive\_controller} convierte los comandos \texttt{/cmd\_vel} en velocidades de rueda mediante el modelo inverso de las Ec.~(\ref{eq:v_lineal})--(\ref{eq:v_angular}) e integra la pose a partir de los pulsos de los encoders.
+En las ecuaciones anteriores $r$ y $L$ se expresan en metros, $T_s$ en segundos, $\omega_{R,L}$ y $\omega$ en rad/s, y $v$ en m/s. En \gls{ROS2}, el controlador \texttt{diff\_drive\_controller} aplica el modelo inverso de las Ec.~(\ref{eq:v_lineal})--(\ref{eq:v_angular}) para convertir los comandos \texttt{/cmd\_vel} en velocidades de rueda e integra la pose a partir de los pulsos de los encoders, publicándola en \texttt{/odom} (\texttt{nav\_msgs/Odometry}).
 
 %------------------------------------------------------------------
 \section{Identificación: modelo de primer orden con retardo (FODT)}
@@ -55,21 +42,21 @@ En \gls{ROS2}, la odometría se publica en el tópico \texttt{/odom} (mensaje \t
 Para sintonizar el controlador PID se identifica un modelo de primer orden con retardo (FODT, \textit{First Order Plus Dead Time}) a partir de la respuesta del sistema ante un escalón \citep{ogata2003ingenieria}. La función de transferencia en Laplace es:
 
 \begin{equation}
-G(s) = \frac{K}{1 + \tau s} e^{-L s}
+G(s) = \frac{K}{1 + \tau s}\, \mathrm{e}^{-L_d s}
 \label{eq:fodt}
 \end{equation}
 
-donde $K$ es la ganancia estática, $\tau$ la constante de tiempo y $L$ el retardo puro. En tiempo discreto, para un escalón de amplitud $\Delta u$:
+donde $K$ es la ganancia estática, $\tau$ la constante de tiempo y $L_d$ el retardo puro (tiempo muerto). En tiempo discreto, para un escalón de amplitud $\Delta u$:
 
 \begin{equation}
 y(k) = \begin{cases}
-0, & k T_s \leq L \\[4pt]
-K \left(1 - e^{-(k T_s - L)/\tau}\right) \Delta u, & k T_s \geq L
+0, & k T_s \leq L_d \\[4pt]
+K \left(1 - \mathrm{e}^{-(k T_s - L_d)/\tau}\right) \Delta u, & k T_s \geq L_d
 \end{cases}
 \label{eq:fodt_discreto}
 \end{equation}
 
-Este modelo se identifica experimentalmente capturando la velocidad de las ruedas ante un escalón de PWM en lazo abierto; los parámetros $(K, \tau, L)$ se obtienen minimizando el error cuadrático medio entre la respuesta real y la simulada.
+Este modelo se identifica experimentalmente capturando la velocidad de las ruedas ante un escalón de PWM en lazo abierto; los parámetros $(K, \tau, L_d)$ se obtienen minimizando el error cuadrático medio entre la respuesta real y la simulada.
 
 %------------------------------------------------------------------
 \section{Control PID}
@@ -84,7 +71,7 @@ u(t) = K_p \, e(t) + K_i \int_0^t e(\tau) d\tau + K_d \frac{d e(t)}{dt}
 \label{eq:pid_continuo}
 \end{equation}
 
-donde $e(t) = r(t) - y(t)$ es el error. Para su implementación digital se utiliza la forma discreta (diferencias finitas y regla del trapecio para la integral):
+donde $e(t) = r(t) - y(t)$ es el error. Para su implementación digital se utiliza la forma discreta (diferencias finitas y regla del trapecio para la integral), empleada en los códigos de control descritos más adelante:
 
 \begin{equation}
 u[k] = u[k-1] + K_p (e[k] - e[k-1]) + K_i T_s \frac{e[k] + e[k-1]}{2} + K_d \frac{e[k] - 2e[k-1] + e[k-2]}{T_s}
@@ -100,7 +87,7 @@ u[k] = u[k-1] + \frac{K_p \cdot e[k] - K_d \bigl(\Delta_{\text{in}}[k] - \Delta_
 \label{eq:pid_firmware}
 \end{equation}
 
-donde $\Delta_{\text{in}}[k]$ es el cambio en la velocidad medida, $I[k]$ el término integral —actualizado solo si la salida no está saturada, lo que proporciona \textit{anti-windup}— y $K_o$ un divisor de escala que permite operar con ganancias enteras. La relación con las ganancias efectivas es $k_{p,\text{ef}} = K_p / K_o$, $k_{d,\text{ef}} = K_d / K_o$, $k_{i,\text{ef}} = K_i / K_o$. La configuración y el ajuste de estas ganancias se detallan en el capítulo de firmware y sintonización.
+donde $\Delta_{\text{in}}[k]$ es el cambio en la velocidad medida, $I[k]$ el término integral —actualizado solo si la salida no está saturada, lo que proporciona \textit{anti-windup}— y $K_o$ un divisor de escala (adimensional) que permite operar con ganancias enteras. La relación con las ganancias efectivas es $k_{p,\text{ef}} = K_p / K_o$, $k_{d,\text{ef}} = K_d / K_o$, $k_{i,\text{ef}} = K_i / K_o$. La configuración y el ajuste de estas ganancias se detallan en el capítulo de firmware y sintonización.
 
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID}
@@ -118,14 +105,14 @@ v_{i,j}^{g+1} &= \chi\left[\, w^g\, v_{i,j}^{g} + c_1 r_1\,(p_{i,j} - x_{i,j}^{g
 x_{i,j}^{g+1} &= x_{i,j}^{g} + v_{i,j}^{g+1} \label{eq:pso_pos_marco_teorico}
 \end{align}
 
-donde $x_{i,j}^{g}$ y $v_{i,j}^{g}$ son la posición y velocidad de la componente $j$ de la partícula $i$; $p_{i,j}$ y $p_{j}^{*}$ son las componentes $j$ de la mejor posición individual y global; $w^g = (G - g)/G$ es el factor de inercia, con $G$ el número máximo de generaciones; $c_1$ y $c_2$ son las constantes de aceleración cognitiva y social; $r_1, r_2 \sim \mathcal{U}(0,1)$ son números aleatorios muestreados de forma independiente para cada partícula, componente y generación; y $\chi$ es el factor de constricción de Clerc--Kennedy que multiplica el conjunto de la actualización para garantizar la convergencia \citep{CK2002}.
+donde $x_{i,j}^{g}$ y $v_{i,j}^{g}$ son la posición y la velocidad de búsqueda (no física) de la componente $j$ de la partícula $i$; $p_{i,j}$ y $p_{j}^{*}$ son las componentes $j$ de la mejor posición individual y global; $w^g = (G - g)/G$ es el factor de inercia, con $G$ el número máximo de generaciones; $c_1$ y $c_2$ son las constantes de aceleración cognitiva y social; $r_1, r_2 \sim \mathcal{U}(0,1)$ son números aleatorios muestreados de forma independiente para cada partícula, componente y generación; y $\chi$ es el factor de constricción de Clerc--Kennedy \citep{CK2002}.
 
 \begin{equation}
 \chi = \frac{2}{\left|2 - \varphi - \sqrt{\varphi^2 - 4\varphi}\right|}, \quad \varphi = c_1 + c_2 > 4
 \label{eq:constriccion}
 \end{equation}
 
-\noindent En este trabajo se emplea la parametrización canónica $c_1 = c_2 = 2.05$, que da $\varphi = 4.1$ y $\chi \approx 0.7298$ \citep{CK2002}. La combinación del factor de constricción con un peso de inercia decreciente acelera la exploración inicial del espacio de búsqueda y favorece la explotación en las últimas generaciones.
+\noindent En este trabajo se emplea la parametrización canónica $c_1 = c_2 = 2.05$, que da $\varphi = 4.1$ y $\chi \approx 0.7298$ \citep{CK2002}. El factor de constricción gobierna la convergencia del enjambre, mientras que el peso de inercia decreciente $w^g$ modula el balance exploración–explotación, acelerando la búsqueda inicial y favoreciendo la explotación en las últimas generaciones.
 
 La calidad de un conjunto de ganancias se evalúa mediante la función de costo:
 
@@ -139,35 +126,24 @@ donde $\text{MSE}(e)$ es el error cuadrático medio entre la respuesta controlad
 \subsection{Sintonía Lambda (línea base)}
 \label{sec:lambda}
 
-% [CAMBIO] Lambda reducido a línea base. La transformación serie<->paralelo
-% (Ec. lambda_paralelo) se traslada al Anexo \ref{anx:lambda}.
 La sintonía Lambda es un método analítico que cancela los polos del proceso con los ceros del controlador, dejando un único polo en lazo cerrado en $s = -1/\lambda$, donde el parámetro $\lambda$ —fijado como un múltiplo de la constante de tiempo $\tau$— ajusta la velocidad de respuesta \citep{ogata2003ingenieria}. Para el modelo FODT de la Ec.~(\ref{eq:fodt}) y un controlador serie interactuante, las reglas de sintonía son:
 
 \begin{equation}
-k_c = \frac{\tau}{K (L/2 + \lambda)}, \quad k_i = \tau, \quad k_d = \frac{L}{2}
+k_c = \frac{\tau}{K\,(L_d/2 + \lambda)}, \quad \tau_I = \tau, \quad \tau_D = \frac{L_d}{2}
 \label{eq:lambda_serie}
 \end{equation}
 
-La conversión de estas ganancias a la forma paralela estándar ($K_p$, $T_i$, $T_d$) empleada por el firmware se detalla en el Anexo~\ref{anx:lambda}. El valor de $\lambda$ adoptado para la línea base, orientado a una respuesta robusta, se indica en el capítulo de sintonización. Las ganancias resultantes se comparan con las obtenidas por PSO en el capítulo de validación.
+donde $k_c$ es la ganancia del controlador y $\tau_I$, $\tau_D$ los tiempos integral y derivativo de la forma serie. Su conversión a la forma paralela estándar ($K_p$, $T_i$, $T_d$) empleada por el firmware se detalla en el Anexo~\ref{anx:lambda}. El valor de $\lambda$ adoptado para la línea base, orientado a una respuesta robusta, se indica en el capítulo de sintonización. Las ganancias resultantes se comparan con las obtenidas por PSO en el capítulo de validación.
 
 %------------------------------------------------------------------
 \section{SLAM: Localización y Mapeo Simultáneos}
 \label{sec:slam}
 
-La odometría pura acumula deriva, por lo que se requiere estimar conjuntamente la trayectoria del robot y el mapa del entorno (\textit{Simultaneous Localization and Mapping}, SLAM) \citep{thrun2005probabilistic, bailey2006slam}. El problema se formula como la distribución de probabilidad conjunta:
+La odometría pura acumula deriva, por lo que se estima conjuntamente la trayectoria del robot y el mapa del entorno (\textit{Simultaneous Localization and Mapping}, SLAM): formalmente, la distribución conjunta de la trayectoria y el mapa condicionada a las observaciones y los comandos de control \citep{thrun2005probabilistic, bailey2006slam}.
 
-\begin{equation}
-p(X_{1:t}, M \mid Z_{1:t}, U_{1:t})
-\label{eq:slam_prob}
-\end{equation}
+Entre los enfoques basados en filtros y los basados en grafos, este trabajo adopta el segundo mediante \texttt{slam\_toolbox} en modo asíncrono en línea —selección fundamentada en el Capítulo~\ref{ch:estado_arte}—, que construye un grafo cuyos nodos son poses y cuyas aristas son restricciones de odometría y de cierre de lazo, lo resuelve por optimización no lineal (Gauss--Newton, Levenberg--Marquardt) y entrega el mapa incremental y la transformación $\text{map} \rightarrow \text{odom}$ requerida por Nav2 \citep{grisetti2010tutorial, macenski2020slamtoolbox}.
 
-donde $X_{1:t}$ es la trayectoria, $M$ el mapa, $Z_{1:t}$ las observaciones y $U_{1:t}$ los comandos de control.
-
-\subsection{Arquitecturas y cierre de lazo}
-
-Existen dos enfoques predominantes. Los métodos \textbf{basados en filtros} (EKF, FastSLAM) son incrementales pero presentan dificultades ante cierres de lazo grandes \citep{montemerlo2002fastslam}. Los métodos \textbf{basados en grafos} construyen un grafo cuyos nodos son poses y cuyas aristas representan restricciones relativas (odometría, cierres de lazo), resuelto por optimización no lineal (Gauss–Newton, Levenberg–Marquardt) y con mayor consistencia global \citep{grisetti2010tutorial}. Este trabajo adopta el enfoque basado en grafos mediante \texttt{slam\_toolbox} en modo asíncrono en línea, cuya selección se fundamentó en el Capítulo~\ref{ch:estado_arte}; el sistema entrega el mapa incremental y la transformación $\text{map} \rightarrow \text{odom}$ requerida por Nav2 \citep{macenski2020slamtoolbox}.
-
-El mecanismo que distingue al SLAM de la odometría pura es el \textit{cierre de lazo}: al reconocer una región previamente observada mediante los barridos del \gls{LIDAR}~2D, el sistema añade una restricción al grafo de poses y reoptimiza la trayectoria completa, corrigiendo la deriva acumulada y mejorando la consistencia del mapa.
+El cierre de lazo distingue al SLAM de la odometría pura: al reconocer una región previamente observada mediante los barridos del \gls{LIDAR}~2D, el sistema añade una restricción al grafo de poses y reoptimiza la trayectoria completa, corrigiendo la deriva acumulada y mejorando la consistencia del mapa.
 
 %------------------------------------------------------------------
 \section{Planificación de trayectorias y control local}
@@ -186,14 +162,14 @@ donde $g(n)$ es el costo acumulado desde el nodo inicial hasta $n$ y $h(n)$ una 
 
 \subsection{Controlador local DWB (\textit{Dynamic Window-Based})}
 
-El controlador DWB genera comandos de velocidad instantáneos evaluando trayectorias candidatas dentro de una ventana dinámica definida por las restricciones cinemáticas del robot \citep{macenski2020nav2}. Para cada par $(v, \omega)$ admisible se simula la trayectoria durante un horizonte $t_{\text{sim}}$ y se evalúa una función objetivo compuesta por varios críticos:
+El controlador DWB genera comandos de velocidad evaluando trayectorias candidatas dentro de una ventana dinámica acotada por las restricciones cinemáticas del robot \citep{macenski2020nav2}. Para cada par $(v, \omega)$ admisible se simula la trayectoria y se evalúa una función objetivo ponderada por críticos (distancia a la ruta global, a la meta y a obstáculos, entre otros):
 
 \begin{equation}
 J(v, \omega) = \sum_{k} w_k \cdot C_k(v, \omega)
 \label{eq:dwb_cost}
 \end{equation}
 
-donde $C_k$ son funciones de costo individuales (distancia a la ruta global, distancia a la meta, proximidad a obstáculos, entre otras) y $w_k$ sus pesos. El par $(v, \omega)$ que minimiza $J$ se selecciona como comando. Las restricciones cinemáticas del robot diferencial limitan la ventana de búsqueda:
+seleccionándose como comando el par $(v, \omega)$ que la minimiza. La ventana de búsqueda queda limitada por:
 
 \begin{align}
 v &\in [v_{\min},\; v_{\max}] \cap [v_{\text{actual}} - a_{\max} \Delta t,\; v_{\text{actual}} + a_{\max} \Delta t] \label{eq:dwb_v} \\
@@ -202,30 +178,30 @@ v &\in [v_{\min},\; v_{\max}] \cap [v_{\text{actual}} - a_{\max} \Delta t,\; v_{
 
 \subsection{Capa de inflación de los costmaps}
 
-Sobre la representación en cuadrícula de costos introducida en el Capítulo~\ref{ch:estado_arte}, la capa de inflación propaga radialmente el costo de cada obstáculo para mantener un margen de seguridad acorde a la geometría del robot. El costo decae exponencialmente con la distancia $d$ al obstáculo más cercano:
+La capa de inflación propaga radialmente el costo de cada obstáculo para mantener un margen de seguridad acorde a la geometría del robot. El costo decae exponencialmente con la distancia $d$ al obstáculo más cercano:
 
 \begin{equation}
 \text{costo}(d) = \begin{cases}
 254 & \text{si } d \leq r_{\text{inscrito}} \\
-\lfloor 253 \cdot e^{-\alpha(d - r_{\text{inscrito}})} \rfloor & \text{si } r_{\text{inscrito}} < d \leq r_{\text{inflación}} \\
+\lfloor 253 \cdot \mathrm{e}^{-\beta(d - r_{\text{inscrito}})} \rfloor & \text{si } r_{\text{inscrito}} < d \leq r_{\text{inflación}} \\
 0 & \text{si } d > r_{\text{inflación}}
 \end{cases}
 \label{eq:inflation}
 \end{equation}
 
-donde $r_{\text{inscrito}}$ es el radio del robot —dentro del cual toda celda es letal—, $r_{\text{inflación}}$ el radio máximo de influencia y $\alpha$ la tasa de decaimiento. Los valores adoptados para simulación y hardware se especifican en el capítulo de implementación de la navegación.
+donde $r_{\text{inscrito}}$ es el radio del robot —dentro del cual toda celda es letal—, $r_{\text{inflación}}$ el radio máximo de influencia y $\beta$ la tasa de decaimiento. Los valores adoptados para simulación y hardware se especifican en el capítulo de implementación de la navegación.
 
 \subsection{Orquestación: árbol de comportamiento y recuperación}
 
-La lógica de navegación se orquesta mediante un árbol de comportamiento (\textit{Behavior Tree}), estructura jerárquica que coordina la replanificación periódica y las acciones de recuperación. Frente a una máquina de estados finitos, el árbol de comportamiento ofrece modularidad y reactividad: permite insertar o reordenar comportamientos —limpieza de costmaps, retroceso, giro en el lugar— sin reescribir la lógica global, lo que facilita definir respuestas de recuperación ante bloqueos. Su configuración concreta se detalla en el capítulo de navegación.
+La lógica de navegación se orquesta mediante un árbol de comportamiento (\textit{Behavior Tree}), estructura jerárquica que coordina la replanificación periódica y las acciones de recuperación. Frente a una máquina de estados finitos, ofrece modularidad y reactividad: permite insertar o reordenar comportamientos —limpieza de costmaps, retroceso, giro en el lugar— sin reescribir la lógica global, lo que facilita definir respuestas de recuperación ante bloqueos. Su configuración concreta se detalla en el capítulo de navegación.
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion_marco}
 
-La navegación autónoma asume un mapa conocido; la exploración autónoma resuelve el caso complementario, en que el mapa se construye mientras el robot decide hacia dónde avanzar. El enfoque basado en fronteras define una \textit{frontera} como el conjunto de celdas libres conocidas adyacentes a celdas aún no observadas en el mapa de ocupación generado por SLAM \citep{yamauchi1997frontier}. El robot selecciona iterativamente una frontera como meta —según un criterio de cercanía o de ganancia de información—, la alcanza mediante Nav2 e incorpora las nuevas observaciones al mapa, repitiendo el proceso hasta que no quedan fronteras alcanzables. De este modo, la exploración reutiliza la pila de mapeo y navegación descrita, cerrando el ciclo percepción–mapeo–navegación sobre la misma arquitectura.
+La exploración autónoma resuelve el caso en que el mapa se construye mientras el robot decide hacia dónde avanzar. El enfoque basado en fronteras define una \textit{frontera} como el conjunto de celdas libres conocidas adyacentes a celdas aún no observadas en el mapa de ocupación generado por SLAM \citep{yamauchi1997frontier}. El robot selecciona iterativamente una frontera como meta —según cercanía o ganancia de información—, la alcanza mediante Nav2 e incorpora las nuevas observaciones al mapa, repitiendo el proceso hasta agotar las fronteras alcanzables. Así, la exploración reutiliza la pila de mapeo y navegación descrita, cerrando el ciclo percepción–mapeo–navegación sobre la misma arquitectura.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
-En este capítulo se han presentado los fundamentos teóricos del proyecto: el modelo cinemático del robot diferencial y su implementación como odometría discreta, la identificación de sistemas mediante modelos FODT, el control PID y su sintonización analítica (Lambda, como línea base) y metaheurística (PSO), los principios del SLAM basado en grafos y el rol del cierre de lazo, la planificación con A\* y el control local con DWB sobre mapas de costo con inflación, y el fundamento de la exploración basada en fronteras. Estos conceptos constituyen la base sobre la cual se diseñan, implementan y validan los subsistemas descritos en los capítulos siguientes.
+En este capítulo se han presentado los fundamentos teóricos del proyecto: el modelo cinemático del robot diferencial y su implementación como odometría discreta, la identificación de sistemas mediante modelos FODT, el control PID discreto y su sintonización analítica (Lambda, como línea base) y metaheurística (PSO), los principios del SLAM basado en grafos y el rol del cierre de lazo, la planificación con A\* y el control local con DWB sobre mapas de costo con inflación, y el fundamento de la exploración basada en fronteras. Estos conceptos constituyen la base sobre la cual se diseñan, implementan y validan los subsistemas descritos en los capítulos siguientes.

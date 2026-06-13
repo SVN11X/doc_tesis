@@ -34,10 +34,10 @@ Se seleccionaron ruedas estándar de goma para la tracción, por su robustez, ec
     \toprule
     \textbf{Parámetro} & {\textbf{Valor (mm)}} & \textbf{Valor (m)} & \textbf{Observación} \\ 
     \midrule
-    Diámetro ($d$)      & 67.00  & 0.06700 & Dato del fabricante \\
+    Diámetro ($d_w$)      & 67.00  & 0.06700 & Dato del fabricante \\
     Ancho               & 26.00  & 0.02600 & Dato del fabricante \\ \addlinespace
-    Radio ($r$)         & 33.50  & 0.03350 & Derivado ($r = d/2$) \\
-    Circunferencia ($C$) & 210.49 & 0.21049 & Derivado ($C = \pi d$) \\ 
+    Radio ($r$)         & 33.50  & 0.03350 & Derivado ($r = d_w/2$) \\
+    Circunferencia ($C$) & 210.49 & 0.21049 & Derivado ($C = \pi d_w$) \\ 
     \bottomrule
   \end{tabular}
   \begin{tablenotes}
@@ -57,19 +57,9 @@ Se emplea un rodillo esférico tipo \emph{ball caster} como rueda de apoyo. Su e
 %------------------------------------------------------------------
 \section{Actuación: motores DC con caja reductora}
 
-Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM), seleccionado por su tensión nominal compatible (12~V), su par suficiente para superar el rozamiento estático y pequeñas pendientes, su corriente dentro del margen del driver L298N, su bajo \emph{backlash} y su caja reductora integrada (relación aproximada 1:45), que convierte alta velocidad y bajo par en una salida de menor velocidad y mayor par, adecuada para tracción. La relación de reducción $G\approx45$ interviene directamente en el cálculo de la resolución del encoder (Sección~\ref{sec:encoder}).
+Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM), seleccionado por su tensión nominal compatible con el sistema (12~V), su corriente dentro del margen del driver L298N y su caja reductora integrada de relación $N_g\approx45$, que entrega el par necesario para la tracción y cuya relación interviene directamente en el cálculo de la resolución del encoder (Sección~\ref{sec:encoder}). Las especificaciones técnicas completas se detallan en el Anexo~\ref{anx:componentes}.
 
 \utemFigure{2.Texto/Imag/motor.jpg}{0.5\linewidth}{Motor modelo JGA25-370, 12~V, 130~RPM.}{nfp_gm25_370_en}{fig:motor}
-
-\paragraph{Especificaciones técnicas relevantes}
-\begin{itemize}
-  \item \textbf{Tensión nominal}: 12~V DC.
-  \item \textbf{Velocidad sin carga}: 130~RPM.
-  \item \textbf{Corriente sin carga}: 0.05--0.15~A.
-  \item \textbf{Ratio de reducción}: aproximadamente 1:45.
-  \item \textbf{Torque nominal}: $\sim$1~kg$\cdot$cm; torque de bloqueo $\sim$3.6~kg$\cdot$cm a 2~A.
-  \item \textbf{Peso}: $\sim$110~g.
-\end{itemize}
 
 %------------------------------------------------------------------
 \section{Encoder de cuadratura}
@@ -84,151 +74,51 @@ Se selecciona un encoder incremental en cuadratura de efecto Hall integrado a la
 La resolución en el eje de salida (rueda) se calcula como:
 
 \begin{equation}
-\mathrm{CPR}_{\text{salida}} = N_{\mathrm{Hall}} \cdot s \cdot G
+\mathrm{CPR}_{\text{salida}} = N_{\mathrm{Hall}} \cdot s \cdot N_g
 \end{equation}
 
-donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $s=4$ (decodificación en cuadratura completa) y $G\approx45$ (relación de reducción). Así:
+donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $s=4$ (decodificación en cuadratura completa) y $N_g\approx45$ (relación de reducción). Así:
 
 \begin{equation}
 \mathrm{CPR}_{\text{salida}} = 11 \times 4 \times 45 = 1980 \text{ cuentas/vuelta}
 \end{equation}
 
-Con rueda de diámetro $d=67\,\text{mm}$ ($C\approx0.2105\,\text{m}$), la resolución lineal es $\approx 1980 / 0.2105 \approx 9.41 \times 10^3$ cuentas/m. Este valor ($N_e = 1980$) corresponde a la resolución del encoder empleada en las ecuaciones de odometría del Capítulo~\ref{marco_teorico} y en la calibración del firmware.
+Con rueda de diámetro $d_w=67\,\text{mm}$ ($C\approx0.2105\,\text{m}$), la resolución lineal es $\approx 1980 / 0.2105 \approx 9.41 \times 10^3$ cuentas/m. Este valor ($N_e = 1980$) corresponde a la resolución del encoder empleada en las ecuaciones de odometría del Capítulo~\ref{marco_teorico} y en la calibración del firmware.
 
 %------------------------------------------------------------------
 \section{Driver de motores L298N}
 
-Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino} \citep{STMicro_L298N_Datasheet}. Sus principales especificaciones son:
-
-\begin{itemize}
-  \item Topología: puente H dual para motores DC bidireccionales.
-  \item Alimentación de motores: el módulo \emph{breakout} típico opera entre 7--35~V debido al regulador 78M05 integrado.
-  \item Alimentación lógica: 4.5--7~V (típico 5~V, compatible TTL).
-  \item Corriente por canal: 2.0~A continua; 3.0~A pico no repetitivo ($t \leq 100$~ms).
-  \item Control de velocidad mediante \gls{PWM} en pines ENA y ENB.
-\end{itemize}
-
-La zona muerta del L298N constituye una de las no linealidades que el refinamiento experimental del controlador PID compensa, tal como se anticipó en el Capítulo~\ref{marco_teorico}.
+Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino} \citep{STMicro_L298N_Datasheet}. Entrega hasta 2~A continuos por canal y se controla mediante \gls{PWM} en los pines ENA y ENB; sus especificaciones completas se incluyen en el Anexo~\ref{anx:componentes}. Su zona muerta constituye una de las no linealidades que el refinamiento experimental del controlador PID compensa, tal como se anticipó en el Capítulo~\ref{marco_teorico}.
 
 %------------------------------------------------------------------
 \section{Microcontrolador de bajo nivel: Arduino Nano V3}
 
-Se emplea un \gls{Arduino}~Nano~V3 (ATmega328P) para ejecutar las tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad. De esta forma se aísla el lazo de control del \emph{jitter} del sistema operativo de la Raspberry Pi: el PID corre a 30~Hz en el microcontrolador mientras la Raspberry Pi se dedica a \gls{ROS2}, SLAM y navegación.
-
-\paragraph{Especificaciones técnicas} \citep{ArduinoNanoStore,ArduinoDocsNano,Atmega328PDatasheet}
-\begin{itemize}
-  \item Microcontrolador: ATmega328P a 16~MHz, lógica de 5~V.
-  \item Memoria: 32~KB Flash, 2~KB SRAM.
-  \item E/S: 14 digitales (6 PWM), 8 analógicas (10 bits).
-  \item Interrupciones externas en D2 y D3, y por cambio de pin (PCINT).
-\end{itemize}
-
-\subsection{Justificación e integración}
-
-El \gls{Arduino}~Nano se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Su microcontrolador ATmega328P de 8 bits (2~KB de SRAM) queda por debajo de los requisitos mínimos de \gls{microRos}~\cite{microros} —el \textit{framework} de \gls{ROS2} para microcontroladores de 32 bits—, por lo que la integración con el grafo de \gls{ROS2} se resolvió mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}). Plataformas como ESP32, Teensy~4.x o Raspberry Pi Pico (RP2040) sí cumplen esos requisitos y constituyen candidatas naturales para una migración futura que conserve la misma arquitectura mecánica y de control.
+Se emplea un \gls{Arduino}~Nano~V3 (ATmega328P, 16~MHz, lógica de 5~V) para ejecutar las tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad a 30~Hz. De esta forma se aísla el lazo de control del \emph{jitter} del sistema operativo de la Raspberry Pi, que se dedica a \gls{ROS2}, SLAM y navegación. Se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Su ATmega328P de 8 bits (2~KB de SRAM) queda por debajo de los requisitos de \gls{microRos}~\cite{microros} —el \textit{framework} de \gls{ROS2} para microcontroladores de 32 bits—, por lo que la integración con el grafo de \gls{ROS2} se resuelve mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}); una migración futura a plataformas de 32 bits (p. ej. ESP32 o RP2040) conservaría la misma arquitectura mecánica y de control. Las especificaciones técnicas completas se incluyen en el Anexo~\ref{anx:componentes}.
 
 %------------------------------------------------------------------
 \section{Raspberry Pi 4 (8 GB)}
 
-La Raspberry Pi~4 (8~GB) \parencite{RaspberryPi4Specs} ejecuta Ubuntu~20.04 y \gls{ROS2}~Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) y los nodos de SLAM y navegación. Se seleccionó por su compatibilidad oficial con Ubuntu~20.04 y \gls{ROS2}~Foxy, su rendimiento suficiente para SLAM 2D y Nav2 (4 núcleos Cortex-A72 a 1.8~GHz, 8~GB de RAM), su conectividad integrada (USB para el \gls{LIDAR}, Wi-Fi y Ethernet para teleoperación, GPIO) y su amplio ecosistema de documentación \citep{RaspberryPi4Specs, RaspberryPi4Datasheet}.
-
-\subsection{Alternativas consideradas}
-\begin{itemize}
-  \item \textbf{NVIDIA Jetson Orin Nano}: mayor potencia para IA, pero mayor costo y complejidad.
-  \item \textbf{ODROID-N2+}: buen rendimiento, pero ecosistema menos maduro para \gls{ROS2}.
-  \item \textbf{BeagleBone Black}: PRUs para tiempo real, pero CPU limitada para SLAM.
-\end{itemize}
-
-Dado el alcance del proyecto, la Raspberry Pi~4 es la opción más equilibrada.
+La Raspberry Pi~4 (8~GB) \parencite{RaspberryPi4Specs} ejecuta Ubuntu~20.04 y \gls{ROS2}~Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) y los nodos de SLAM y navegación. Se seleccionó por su compatibilidad oficial con Ubuntu~20.04 y \gls{ROS2}~Foxy, su rendimiento suficiente para SLAM 2D y Nav2 (4 núcleos Cortex-A72 a 1.8~GHz, 8~GB de RAM) y su conectividad integrada (USB para el \gls{LIDAR}, Wi-Fi y Ethernet para teleoperación, GPIO) \citep{RaspberryPi4Specs, RaspberryPi4Datasheet}. Las alternativas evaluadas (Jetson Orin Nano, ODROID-N2+ y BeagleBone Black) se documentan en el Anexo~\ref{anx:componentes}; dado el alcance del proyecto, la Raspberry Pi~4 es la opción más equilibrada.
 
 %------------------------------------------------------------------
 \section{Sensor LiDAR para mapeo y navegación}
 
-El sensor principal de percepción es el RPLidar~A1M8, un escáner láser 2D de 360° por triangulación. La justificación de un \gls{LIDAR}~2D frente a alternativas como cámaras RGB-D, ultrasonido o \gls{LIDAR}~3D para interiores planos de bajo costo se presentó en el Capítulo~\ref{ch:estado_arte}; esta sección detalla sus especificaciones y las consideraciones de integración y montaje relevantes para el prototipo. El sensor se integra de forma nativa en \gls{ROS2} mediante el paquete \texttt{rplidar\_ros}.
+El sensor principal de percepción es el RPLidar~A1M8, un escáner láser 2D de 360° por triangulación. La justificación de un \gls{LIDAR}~2D frente a alternativas como cámaras RGB-D, ultrasonido o \gls{LIDAR}~3D para interiores planos de bajo costo se presentó en el Capítulo~\ref{ch:estado_arte}; aquí se resumen las características relevantes para el mapeo: alcance de 0.15--12~m, resolución angular $\le 1^\circ$ y frecuencia de barrido típica de 5.5~Hz, con integración nativa en \gls{ROS2} mediante el paquete \texttt{rplidar\_ros}. Las especificaciones completas se incluyen en el Anexo~\ref{anx:componentes}.
 
 \utemFigure{2.Texto/Imag/a1m8.jpg}{0.4\linewidth}{Láser 2D RPLIDAR A1M8.}{NaylampA1M8R5}{fig:lidar}
 
-\paragraph{Especificaciones} según \citep{SlamtecA1Datasheet}
-\begin{itemize}
-  \item Alcance: 0.15--12~m.
-  \item Frecuencia de barrido: 1--10~Hz (típico 5.5~Hz).
-  \item Tasa de muestreo: hasta 8000 muestras/s (revisión R5).
-  \item Resolución angular: $\le 1^\circ$.
-  \item Alimentación: sistema de escaneo a 5~V, consumo total $\sim$450~mA.
-  \item Peso: $\sim$170~g.
-\end{itemize}
-
-\subsection{Riesgos y mitigación}
-\begin{itemize}
-  \item \textbf{Superficies transparentes o especulares}: producen lecturas erráticas; se mitigan con capas de inflación conservadoras en el costmap (Capítulo de navegación).
-  \item \textbf{Vibraciones}: se amortigua el montaje del sensor y se limitan las aceleraciones bruscas del robot.
-\end{itemize}
+Las superficies transparentes o especulares producen lecturas erráticas, mitigadas con capas de inflación conservadoras en el costmap (capítulo de navegación); el montaje del sensor se amortigua y se limitan las aceleraciones bruscas para reducir el efecto de las vibraciones.
 
 %------------------------------------------------------------------
 \section{Alimentación y distribución de energía}
 
-\subsection{Batería}
-
-Se utiliza una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita), elegida frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o plomo-ácido por su facilidad de recambio, seguridad y buena relación energía/peso.
-
-\utemFigure{2.Texto/Imag/battery.png}{0.4\linewidth}{Batería Li\mbox{-}ion de 12~V.}{AIMJINBL1021B}{fig:battery}
-
-\subsection{Regulador DC-DC (buck)}
-
-Se usa el módulo DFRobot DFR0205, basado en el chip GS2678, un convertidor reductor conmutado a 350~kHz \parencite{DFRobotPowerModule}. Acepta tensiones de entrada entre 3.6 y 25~V y ofrece una salida fija de 5~V, una ajustable entre 3.3 y 25~V y un paso directo de la entrada, entregando hasta 5~A (25~W) con protecciones por cortocircuito y limitación de corriente. Este regulador deriva el riel de 5~V (Raspberry Pi, \gls{LIDAR}, \gls{Arduino}) desde la batería de 12~V con bajas pérdidas.
-
-\utemFigure{2.Texto/Imag/modulo_dc.jpg}{0.4\linewidth}{Power Module SKU DFR0205.}{DFRobotPowerModule}{fig:modulo_dc}
-
-\subsection{Protecciones e interruptores}
-
-El ramal de potencia sigue la cadena: batería $\rightarrow$ fusible $\rightarrow$ interruptor maestro $\rightarrow$ reguladores/cargas. Se utiliza un fusible rápido tipo \emph{mini blade} de 10~A, que protege el cableado aguas abajo, y un interruptor maestro que secciona el bus de 12~V para cortar la potencia del sistema de forma segura.
-
-\utemFigure{2.Texto/Imag/switch.jpg}{0.4\linewidth}{Interruptor maestro de 16~mm.}{lanboo_16mm_economical_switch}{fig:switch}
-
-\utemFigure{2.Texto/Imag/fuse.jpg}{0.4\linewidth}{Fusible automotriz tipo \emph{blade} Mini APM.}{optifuse_apm}{fig:fuse}
-
-\subsection{Dimensionamiento de cableado y conectores}
-
-La Tabla~\ref{tab:cableado_conectores} resume el dimensionamiento estimado de los ramales de potencia. Los valores de corriente y longitud se ajustan durante el comisionamiento final.
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-  \caption{Dimensionamiento de cableado y conectores.}
-  \label{tab:cableado_conectores}
-  \small
-  \begin{tabular}{P{4.2cm} c c c P{3.2cm}}
-    \toprule
-    \textbf{Ramal de potencia / señal} & \textbf{$I_{max}$ (A)} & \textbf{Long. (m)} & \textbf{$\Delta V$ adm.}\tnote{b} & \textbf{AWG / Conector}\tnote{a} \\
-    \midrule
-Batería $\rightarrow$ switch principal        & 5.2\tnote{c} & 0.15 & $<0.24$\,V & 14 AWG / XT60    \\
-Switch $\rightarrow$ regulador DC-DC (5V)     & 5.0 & 0.15 & $<0.36$\,V & 18 AWG / Bornera \\
-Línea 12V $\rightarrow$ driver motores (L298N)& 3.6 & 0.20 & $<0.60$\,V & 18 AWG / Bornera \\
-Línea 5V $\rightarrow$ SBC (Raspberry Pi 4)  & 3.0 & 0.25 & $<0.25$\,V & 22 AWG / USB-C   \\
-    \bottomrule
-  \end{tabular}
-  \begin{tablenotes}
-    \footnotesize
-    \item[a] Los calibres son orientativos; se recomienda cable de silicona multifilar para facilitar el ruteo.
-    \item[b] Caída de tensión admisible, calculada como porcentaje del voltaje nominal del ramal.
-    \item[c] Pico instantáneo del sistema; protegido por el fusible de 10~A aguas arriba.
-  \end{tablenotes}
-\end{threeparttable}
-\end{table}
+El sistema se alimenta con una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita), de la cual un convertidor reductor (buck) DFRobot DFR0205 deriva el riel de 5~V para la Raspberry Pi, el \gls{LIDAR} y el \gls{Arduino}. El ramal de potencia sigue la cadena batería~$\rightarrow$~fusible (10~A)~$\rightarrow$~interruptor maestro~$\rightarrow$~reguladores/cargas, lo que permite seccionar el bus de 12~V de forma segura. Las especificaciones de la batería y el regulador, las protecciones y el dimensionamiento de cableado y conectores se detallan en el Anexo~\ref{anx:componentes}.
 
 %------------------------------------------------------------------
 \section{Fabricación y diseño 3D}
 \label{sec:fab_3d}
 
-\subsection{Material y equipo}
-
-El chasis y las cubiertas se fabrican mediante impresión 3D FDM en PLA+, por su facilidad de impresión, baja deformación y estabilidad dimensional. La impresión se realiza en una Creality Ender~3 con boquilla de latón de 0.4~mm y filamento de 1.75~mm almacenado con desecante. El PLA+ es adecuado para interiores, aunque se degrada con el calor o la radiación UV.
-
-\subsection{Diseño}
-
-El modelado 3D se realizó en \textit{Fusion~360} de forma paramétrica, organizando el proyecto por componentes (carcasa, tapas de acceso, soporte de \gls{LIDAR}, subchasis y alojamientos electrónicos). Se contemplaron holguras típicas para FDM (0.2--0.4~mm) y se añadieron chaflanes para reducir concentraciones de tensión. Las uniones de uso frecuente emplean insertos roscados por calor (\emph{heat-set}) con tornillería M3/M4, y la orientación de impresión se alineó con los esfuerzos principales para mitigar la anisotropía. Los parámetros de laminado completos se detallan en el Anexo~\ref{anx:impresion3d}.
-
-Las cotas generales se presentan en la Figura~\ref{fig:medidas_robot_2d} y las dimensiones relevantes en la Tabla~\ref{tab:dimensiones_robot}.
+El chasis y las cubiertas se fabrican mediante impresión 3D FDM en PLA+, a partir de un modelado paramétrico en \textit{Fusion~360} organizado por componentes (carcasa, tapas de acceso, soporte de \gls{LIDAR}, subchasis y alojamientos electrónicos). El material, el equipo de impresión y los parámetros de laminado completos se detallan en el Anexo~\ref{anx:impresion3d}. Las cotas generales se presentan en la Figura~\ref{fig:medidas_robot_2d} y las dimensiones relevantes en la Tabla~\ref{tab:dimensiones_robot}.
 
 \utemFigurePropia{2.Texto/Imag/medidas_robot_2d.pdf}{0.9\linewidth}{Medidas del chasis (vista 2D).}{fig:medidas_robot_2d}
 
@@ -259,21 +149,12 @@ Espesor de pared nominal     & 10 mm  & Paredes de la carcasa impresa en 3D. \\
 \end{table}
 
 % ===========================================================================
-\section{Galería fotográfica del prototipo}
+\section{Prototipo construido}
 \label{sec:galeria}
-\begin{utemMultiFigurePropia}{Galería fotográfica del prototipo construido.}{fig:galeria_prototipo}
 
-\addutem{0.36}{2.Texto/Imag/fig_prototipo_planta.jpg}{Vista en planta}
-\hfill
-\addutem{0.42}{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{Vista lateral izquierda}
+\utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.6\linewidth}{Vista lateral del prototipo construido.}{fig:prototipo}
 
-\vspace{1cm}
-\addutem{0.42}{2.Texto/Imag/fig_prototipo_lateral_derecha.jpg}{Vista lateral derecha}
-\hfill
-\addutem{0.42}{2.Texto/Imag/fig_prototipo_frontal.jpg}{Vista frontal}
-\end{utemMultiFigurePropia}
-
-Las vistas isométricas del modelo 3D se incluyen en el Anexo~\ref{anx:renders3d}.
+Vistas adicionales del prototipo y las vistas isométricas del modelo 3D se incluyen en el Anexo~\ref{anx:renders3d}.
 
 %------------------------------------------------------------------
 \section{Parámetros físicos del modelo}
@@ -291,10 +172,10 @@ La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos del prototi
 \textbf{Símbolo} & \textbf{Parámetro} & \textbf{Valor} & \textbf{Origen} \\
 \midrule
 $r$   & Radio de rueda                   & 0.0335 m           & Tabla~\ref{tab:ruedas-especificaciones} \\
-$C$   & Circunferencia de rueda          & 0.2105 m           & $\pi d$ \\
+$C$   & Circunferencia de rueda          & 0.2105 m           & $\pi d_w$ \\
 $L$   & Distancia entre ruedas           & 0.188 m            & Tabla~\ref{tab:dimensiones_robot} \\
 $N_e$ & Resolución del encoder (salida)  & 1980 cuentas/vuelta & $11 \times 4 \times 45$ \\
-$G$   & Relación de reducción            & $\approx$45        & Motorreductor JGA25-370 \\
+$N_g$ & Relación de reducción            & $\approx$45        & Motorreductor JGA25-370 \\
 $T_s$ & Período del lazo PID             & $1/30$ s           & Firmware del \gls{Arduino} \\
 \bottomrule
 \end{tabular}

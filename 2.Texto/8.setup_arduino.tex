@@ -61,13 +61,13 @@ La comunicación entre la \gls{RaspberryPi} y el \gls{Arduino} se realiza por US
 \item \texttt{\textquotesingle z\textquotesingle} (\texttt{UPDATE\_PID\_LR}): carga ocho ganancias (cuatro por rueda), permitiendo ganancias asimétricas sin recompilar.
 \end{itemize}
 
-El comando \texttt{\textquotesingle o\textquotesingle} (\texttt{MOTOR\_RAW\_PWM}) aplica PWM directo en lazo abierto desactivando el PID, y se emplea para la captura de la respuesta al escalón (Sección~\ref{sec:captura_lazo_abierto}). El protocolo completo —incluidos los comandos de lectura del PID y los de diagnóstico de propósito general— se documenta en el Anexo~\ref{anx:firmware}. El intercambio típico de mensajes durante la operación se ilustra en la Figura~\ref{fig:secuencia_control}.
+El comando \texttt{\textquotesingle o\textquotesingle} (\texttt{MOTOR\_RAW\_PWM}) aplica PWM directo en lazo abierto desactivando el PID, y se emplea para la captura de la respuesta al escalón (Sección~\ref{sec:captura_lazo_abierto}). El intercambio típico de mensajes durante la operación se ilustra en la Figura~\ref{fig:secuencia_control}.
 
 %------------------------------------------------------------------
 \section{Lectura de encoders y obtención de cuentas por vuelta}
 \label{sec:cpr_experimental}
 
-Cada rueda incorpora un encoder incremental de cuadratura de dos canales. Para capturar todos los flancos sin pérdida de pulsos, el firmware usa el mecanismo de \emph{Pin Change Interrupts} (PCINT) del ATmega328P: el encoder izquierdo (\texttt{PD3}/\texttt{PD2}, puerto D) se atiende con el vector \texttt{PCINT2} y el derecho (\texttt{PC4}/\texttt{PC5}, puerto C) con \texttt{PCINT1}. La decodificación de cuadratura se resuelve con una tabla de búsqueda de 16 entradas (\texttt{ENC\_STATES}), indexada por la concatenación del estado anterior y actual de los canales, que asigna un incremento de $+1$, $-1$ o $0$ a cada transición. Frente a una cadena de comparaciones condicionales, este método ofrece un tiempo de ejecución constante e independiente del sentido de giro —lo que reduce el \emph{jitter} a velocidades elevadas— y maneja implícitamente las transiciones inválidas asignándoles incremento cero. La configuración de registros y la implementación de las rutinas de interrupción se detallan en el Anexo~\ref{anx:firmware}; la asignación de pines se presentó en la Tabla~\ref{tab:pinout_arduino_l298n}.
+Cada rueda incorpora un encoder incremental de cuadratura de dos canales. Para capturar todos los flancos sin pérdida de pulsos, el firmware usa el mecanismo de \emph{Pin Change Interrupts} (PCINT) del ATmega328P: el encoder izquierdo (\texttt{PD3}/\texttt{PD2}, puerto D) se atiende con el vector \texttt{PCINT2} y el derecho (\texttt{PC4}/\texttt{PC5}, puerto C) con \texttt{PCINT1}. La decodificación de cuadratura se resuelve con una tabla de búsqueda de 16 entradas (\texttt{ENC\_STATES}), indexada por la concatenación del estado anterior y actual de los canales, que asigna un incremento de $+1$, $-1$ o $0$ a cada transición. Frente a una cadena de comparaciones condicionales, este método ofrece un tiempo de ejecución constante e independiente del sentido de giro —lo que reduce el \emph{jitter} a velocidades elevadas— y maneja implícitamente las transiciones inválidas asignándoles incremento cero. La asignación de pines se presentó en la Tabla~\ref{tab:pinout_arduino_l298n}.
 
 \subsection{Obtención experimental de cuentas por vuelta}
 \label{sec:cpr_promedios}
@@ -213,7 +213,7 @@ v[k] = \frac{\Delta\texttt{enc}[k]}{T_s \cdot \texttt{PID\_RATE}}
 \end{equation}
 
 \noindent
-con $T_s = 0.1$ s, \texttt{PID\_RATE} = 30 Hz, $d = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almacenan con la entrada en PWM y la salida en m/s, de modo que el modelo FODT identificado tenga unidades m/s/PWM. La Figura~\ref{fig:respuesta_lazo_abierto_pso} muestra la respuesta obtenida: ambas ruedas alcanzan $\approx 0.129$–$0.130$ m/s sin oscilaciones, confirmando que el escalón es adecuado para identificar la dinámica en el rango operativo. La capa de comunicación serial asíncrona empleada por los \emph{scripts} (clase \texttt{serialArduino}) se describe en el Anexo~\ref{anx:firmware}; en operación normal esta capa no se utiliza, pues la comunicación la gestiona el \emph{plugin} \texttt{DiffDriveArduino}.
+con $T_s = 0.1$ s, \texttt{PID\_RATE} = 30 Hz, $d = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almacenan con la entrada en PWM y la salida en m/s, de modo que el modelo FODT identificado tenga unidades m/s/PWM. La Figura~\ref{fig:respuesta_lazo_abierto_pso} muestra la respuesta obtenida: ambas ruedas alcanzan $\approx 0.129$–$0.130$ m/s sin oscilaciones, confirmando que el escalón es adecuado para identificar la dinámica en el rango operativo. 
 
 \utemFigurePropia{2.Texto/Imag/respuesta_escalon_final_pso.png}{0.92\textwidth}
 {Respuesta al escalón en lazo abierto (\texttt{PWM} $= 143$). Ambas ruedas alcanzan $\approx 0.13$ m/s sin controlador PID activo.}
@@ -229,7 +229,7 @@ y[k] = y[k-1] + \frac{\Delta t}{\tau}\,\bigl(K_m \cdot u[k - d] - y[k-1]\bigr)
 \end{equation}
 
 \noindent
-donde $d = \lfloor L / \Delta t \rfloor$ es el retardo en muestras. El PSO explora el espacio de parámetros con un enjambre de 50 partículas durante 150 generaciones; los factores de escala que acotan el rango de búsqueda se detallan en el Anexo~\ref{anx:firmware}.
+donde $d = \lfloor L / \Delta t \rfloor$ es el retardo en muestras. El PSO explora el espacio de parámetros con un enjambre de 50 partículas durante 150 generaciones.
 
 El algoritmo PSO empleado, con factor de constricción de Clerc--Kennedy, se formuló en la Sección~\ref{sec:pso_marco} (Ecuación~\ref{eq:pso_vel_marco_teorico}). En la implementación de \texttt{pyPso.py} se utilizan los hiperparámetros de la Tabla~\ref{tab:pso_hiperparametros}, correspondientes a la parametrización canónica ($c_1 = c_2 = 2.05$, $\varphi = 4.1 > 4$, $\chi = 0.7298$) con inercia decreciente $w^g = (G-g)/G$, que favorece la exploración inicial y la explotación final. Las posiciones se acotan a $x_i \ge 0.0001$ para preservar la estabilidad numérica.
 
@@ -255,7 +255,7 @@ $w^g$  & \texttt{w}         & $(G - g)/G$ & Inercia decreciente lineal. \\
 
 \subsection{Etapa 3: Optimización de ganancias por simulación en lazo cerrado}
 
-Identificado el modelo FODT, un segundo PSO (50 partículas, 150 generaciones) busca las ganancias $(K_p, K_i, K_d)$ que producen la mejor respuesta en lazo cerrado, evaluadas con la función de costo de la Ecuación~\eqref{eq:costo_pso}, con $w_{\text{mse}} = 1$ y $w_{\text{OS}} = 3$ —este último establece el énfasis sobre el sobreimpulso y es el parámetro con impacto sustantivo en la dirección de búsqueda. La función no penaliza el tiempo de establecimiento; los tiempos de subida y asentamiento se evalúan \emph{post hoc} y se reportan en el Capítulo~\ref{ch:resultados}. La simulación del lazo cerrado reproduce la estructura del PID del firmware, incluyendo la división por $K_o = 50$ y la saturación, de modo que las ganancias optimizadas son transferibles al Arduino. El resultado se entrega en el formato del comando \texttt{\textquotesingle z\textquotesingle}, listo para cargarse sin recompilar. Las diferencias entre la simulación y el firmware final (zona muerta y anti-windup) se documentan en el Anexo~\ref{anx:firmware}; su efecto sobre las métricas globales es marginal y lo compensa el refinamiento experimental de la Etapa 4.
+Identificado el modelo FODT, un segundo PSO (50 partículas, 150 generaciones) busca las ganancias $(K_p, K_i, K_d)$ que producen la mejor respuesta en lazo cerrado, evaluadas con la función de costo de la Ecuación~\eqref{eq:costo_pso}, con $w_{\text{mse}} = 1$ y $w_{\text{OS}} = 3$ —este último establece el énfasis sobre el sobreimpulso y es el parámetro con impacto sustantivo en la dirección de búsqueda. La función no penaliza el tiempo de establecimiento; los tiempos de subida y asentamiento se evalúan \emph{post hoc} y se reportan en el Capítulo~\ref{ch:resultados}. La simulación del lazo cerrado reproduce la estructura del PID del firmware, incluyendo la división por $K_o = 50$ y la saturación, de modo que las ganancias optimizadas son transferibles al Arduino. El resultado se entrega en el formato del comando \texttt{\textquotesingle z\textquotesingle}, listo para cargarse sin recompilar. 
 
 \utemFigurePropia{2.Texto/Imag/identificacion_y_sintonizacion_pso.png}{0.95\textwidth}
 {Procedimiento de sintonización en dos etapas. Izquierda: identificación FODT por PSO sobre la respuesta al escalón en lazo abierto. Derecha: simulación del PID resultante de un segundo PSO sobre el modelo identificado. Arriba: rueda izquierda; abajo: rueda derecha.}
@@ -317,7 +317,7 @@ En cada iteración, \texttt{read()} envía el comando \texttt{\textquotesingle e
 \end{equation}
 
 \noindent
-y envía el resultado con el comando \texttt{\textquotesingle m\textquotesingle}. La consistencia depende de que \texttt{loop\_rate} (plugin) coincida con \texttt{PID\_RATE} (firmware): ambos en 30 Hz, de modo que un \emph{tick/frame} en el plugin equivale exactamente a uno en el PID del Arduino. La capa de transporte serial (clase \texttt{ArduinoComms}) y el detalle de la clase \texttt{Wheel} se documentan en el Anexo~\ref{anx:firmware}; la cadena completa de conversión de unidades se ilustra en la Figura~\ref{fig:conversion_unidades}. Los parámetros geométricos del \texttt{diff\_drive\_controller} se presentaron en la Tabla~\ref{tab:diff_drive_params} del Capítulo~\ref{chap:robot_real}.
+y envía el resultado con el comando \texttt{\textquotesingle m\textquotesingle}. La consistencia depende de que \texttt{loop\_rate} (plugin) coincida con \texttt{PID\_RATE} (firmware): ambos en 30 Hz, de modo que un \emph{tick/frame} en el plugin equivale exactamente a uno en el PID del Arduino. La cadena completa de conversión de unidades se ilustra en la Figura~\ref{fig:conversion_unidades}. Los parámetros geométricos del \texttt{diff\_drive\_controller} se presentaron en la Tabla~\ref{tab:diff_drive_params} del Capítulo~\ref{chap:robot_real}.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
