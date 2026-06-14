@@ -48,15 +48,17 @@ G_m(s) = \frac{K_m}{1 + \tau s}\, \mathrm{e}^{-L_d s}
 
 donde $K_m$ es la ganancia estática del motor, $\tau$ la constante de tiempo y $L_d$ el retardo puro (tiempo muerto). En este trabajo, $K_m$ se expresa en m/s/PWM, ya que la planta identificada corresponde a la velocidad lineal de rueda ante una entrada PWM.
 
+En tiempo discreto, para un escalón de amplitud $\Delta u$ y período de captura $T_{\mathrm{cap}}$:
+
 \begin{equation}
-y(k) = \begin{cases}
-0, & k T_s \leq L_d \\[4pt]
-K \left(1 - \mathrm{e}^{-(k T_s - L_d)/\tau}\right) \Delta u, & k T_s \geq L_d
+y[k] = \begin{cases}
+0, & k T_{\mathrm{cap}} \leq L_d \\[4pt]
+K_m \left(1 - \mathrm{e}^{-(k T_{\mathrm{cap}} - L_d)/\tau}\right) \Delta u, & k T_{\mathrm{cap}} \geq L_d
 \end{cases}
 \label{eq:fodt_discreto}
 \end{equation}
 
-Este modelo se identifica experimentalmente, de forma independiente para cada rueda, capturando la velocidad ante un escalón de PWM en lazo abierto; los parámetros $(K, \tau, L_d)$ se obtienen minimizando el error cuadrático medio entre la respuesta real y la simulada.
+Este modelo se identifica experimentalmente, de forma independiente para cada rueda, capturando la velocidad ante un escalón de PWM en lazo abierto; los parámetros $(K_m, \tau, L_d)$ se obtienen minimizando el error cuadrático medio entre la respuesta real y la simulada.
 
 %------------------------------------------------------------------
 \section{Control PID}
@@ -82,10 +84,10 @@ El controlador se aplica por separado a cada rueda, con errores $e_R[k]$ y $e_L[
 
 \subsection{Variante implementada en el firmware del Arduino}
 
-El firmware ejecuta dos lazos PID independientes (rueda derecha e izquierda) a $T_s = 1/30$~s (30~Hz), que regulan la velocidad de rueda medida en \textit{ticks/frame}: $m[k]$ es la velocidad medida (conteo de cuadratura en el período de control) y $e[k] = m_{\mathrm{ref}}[k] - m[k]$ el error. La variante emplea derivada sobre la medición —que evita el \textit{derivative kick}— y se expresa de forma incremental como:
+El firmware ejecuta dos lazos PID independientes (rueda derecha e izquierda) a $T_s = 1/30$~s (30~Hz), que regulan la velocidad de cada rueda medida en \textit{ticks/frame}. Para cada rueda $j \in \{R,L\}$, $m_j[k]$ es la velocidad medida y $e_j[k] = m^{ref}_j[k] - m_j[k]$ es el error discreto de velocidad. La variante emplea derivada sobre la medición —que evita el \textit{derivative kick}— y se expresa de forma incremental como:
 
 \begin{equation}
-u[k] = u[k-1] + \frac{K_p \, e[k] - K_d \bigl(m[k] - m[k-1]\bigr) + I[k]}{K_o}
+u_j[k] = u_j[k-1] + \frac{K_{p,j} \, e_j[k] - K_{d,j} \bigl(m_j[k] - m_j[k-1]\bigr) + I_j[k]}{K_{o,j}}, \qquad j \in \{R,L\}
 \label{eq:pid_firmware}
 \end{equation}
 

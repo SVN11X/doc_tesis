@@ -83,7 +83,7 @@ donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $c_q=4$ (decodificaci�
 %------------------------------------------------------------------
 \section{Driver de motores L298N}
 
-Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino} \citep{STMicro_L298N_Datasheet}. Entrega hasta 2~A continuos por canal y se controla mediante \gls{PWM} en los pines ENA y ENB; sus especificaciones completas se incluyen en el \ref{anx:componentes}. Su zona muerta constituye una de las no linealidades que el refinamiento experimental del controlador PID compensa, tal como se anticipó en el Capítulo~\ref{marco_teorico}.
+Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino} \citep{STMicro_L298N_Datasheet}. Entrega hasta 2~A continuos por canal. En la implementación final, los pines de habilitación ENA y ENB se mantienen en estado HIGH, mientras que la velocidad y el sentido de giro se controlan aplicando \gls{PWM} sobre los pines de dirección IN1--IN4; sus especificaciones completas se incluyen en el \ref{anx:componentes}. Su zona muerta constituye una de las no linealidades que el refinamiento experimental del controlador PID compensa, tal como se anticipó en el Capítulo~\ref{marco_teorico}.
 
 %------------------------------------------------------------------
 \section{Microcontrolador de bajo nivel: Arduino Nano V3}
@@ -98,7 +98,7 @@ La Raspberry Pi~4 (8~GB) \parencite{RaspberryPi4Specs} ejecuta Ubuntu~20.04 y \g
 %------------------------------------------------------------------
 \section{Sensor LiDAR para mapeo y navegación}
 
-El sensor principal de percepción es el RPLidar~A1M8, un escáner láser 2D de 360° por triangulación. La justificación de un \gls{LIDAR}~2D frente a alternativas como cámaras RGB-D, ultrasonido o \gls{LIDAR}~3D para interiores planos de bajo costo se presentó en el Capítulo~\ref{ch:estado_arte}; aquí se resumen las características relevantes para el mapeo: alcance de 0.15--12~m, resolución angular $\le 1^\circ$ y frecuencia de barrido típica de 5.5~Hz, con integración en \gls{ROS2} mediante un nodo serial propio, \texttt{rplidar\_serial\_publisher.py}, que implementa la lectura del protocolo del RPLidar A1, publica mensajes \texttt{sensor\_msgs/LaserScan} en el tópico \texttt{/scan} y utiliza el marco \texttt{laser\_frame}.. Las especificaciones completas se incluyen en el \ref{anx:componentes}.
+El sensor principal de percepción es el RPLidar~A1M8, un escáner láser 2D de 360° por triangulación. La justificación de un \gls{LIDAR}~2D frente a alternativas como cámaras RGB-D, ultrasonido o \gls{LIDAR}~3D para interiores planos de bajo costo se presentó en el Capítulo~\ref{ch:estado_arte}; aquí se resumen las características relevantes para el mapeo: alcance de 0.15--12~m, resolución angular $\le 1^\circ$ y frecuencia de barrido típica de 5.5~Hz, con integración en \gls{ROS2} mediante un nodo serial propio, \texttt{rplidar\_serial\_publisher.py}, que implementa la lectura del protocolo del RPLidar A1, publica mensajes \texttt{sensor\_msgs/LaserScan} en el tópico \texttt{/scan} y utiliza el marco \texttt{laser\_frame}. Las especificaciones completas se incluyen en el \ref{anx:componentes}.
 
 \utemFigure{2.Texto/Imag/a1m8.jpg}{0.4\linewidth}{Láser 2D RPLIDAR A1M8.}{NaylampA1M8R5}{fig:lidar}
 

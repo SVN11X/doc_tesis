@@ -530,7 +530,7 @@ Este anexo reúne las especificaciones de hoja de datos de los componentes del p
   \item Alimentación de motores: el módulo \emph{breakout} típico opera entre 7--35~V debido al regulador 78M05 integrado.
   \item Alimentación lógica: 4.5--7~V (típico 5~V, compatible TTL).
   \item Corriente por canal: 2.0~A continua; 3.0~A pico no repetitivo ($t \leq 100$~ms).
-  \item Control de velocidad mediante \gls{PWM} en pines ENA y ENB.
+  \item Control de velocidad mediante \gls{PWM} aplicado a los pines de dirección IN1--IN4; los pines ENA y ENB se mantienen en estado HIGH.
 \end{itemize}
 
 \subsection{Arduino Nano V3 (ATmega328P)}
