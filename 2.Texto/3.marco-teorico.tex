@@ -42,11 +42,11 @@ En las ecuaciones anteriores $r$ y $L$ se expresan en metros, $T_s$ en segundos,
 Para sintonizar el controlador PID se identifica un modelo de primer orden con retardo (FODT, \textit{First Order Plus Dead Time}) a partir de la respuesta del sistema ante un escalón \citep{ogata2003ingenieria}. La función de transferencia en Laplace es:
 
 \begin{equation}
-G(s) = \frac{K}{1 + \tau s}\, \mathrm{e}^{-L_d s}
+G_m(s) = \frac{K_m}{1 + \tau s}\, \mathrm{e}^{-L_d s}
 \label{eq:fodt}
 \end{equation}
 
-donde $K$ es la ganancia estática, $\tau$ la constante de tiempo y $L_d$ el retardo puro (tiempo muerto). En tiempo discreto, para un escalón de amplitud $\Delta u$:
+donde $K_m$ es la ganancia estática del motor, $\tau$ la constante de tiempo y $L_d$ el retardo puro (tiempo muerto). En este trabajo, $K_m$ se expresa en m/s/PWM, ya que la planta identificada corresponde a la velocidad lineal de rueda ante una entrada PWM.
 
 \begin{equation}
 y(k) = \begin{cases}

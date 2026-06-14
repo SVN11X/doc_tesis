@@ -76,12 +76,13 @@ El controlador de velocidad de cada rueda se implementa en \texttt{diff\_control
 La ley de control implementada en \texttt{doPID()} corresponde a la forma incremental con derivada sobre la medición presentada en la Sección~\ref{sec:pid} (Ecuación~\ref{eq:pid_firmware}). El error se define en \emph{ticks/frame} como:
 
 \begin{equation}
-e[k] = \texttt{TargetTicksPerFrame} - m[k], \qquad m[k] = \texttt{Encoder}[k] - \texttt{PrevEnc}[k]
+e_j[k] = m^{ref}_j[k] - m_j[k], \qquad 
+m_j[k] = \texttt{Encoder}_j[k] - \texttt{PrevEnc}_j[k], \qquad j \in \{R,L\}
 \label{eq:error_pid}
 \end{equation}
 
 \noindent
-donde $m[k]$ es la velocidad medida de la rueda en \emph{ticks/frame}, y la salida incremental se acumula y satura a $[-255, 255]$. Sobre esa base, la implementación embebida incorpora tres elementos específicos: el divisor de escala $K_o$, el anti-windup condicional y una zona muerta por cuantización.
+donde $m_j[k]$ es la velocidad medida de la rueda $j$ en \emph{ticks/frame}, $m^{ref}_j[k]$ es su referencia y $e_j[k]$ el error discreto de velocidad de rueda.
 
 \subsection{Divisor de escala \texorpdfstring{$K_o$}{Ko} y convención de orden}
 \label{sec:ko_convention}
@@ -194,12 +195,12 @@ El primer paso obtiene datos de la dinámica de la planta en lazo abierto, sin P
 El procedimiento aplica, en $t=1.0$ s, un escalón de PWM de valor \texttt{PWM\_STEP} = 143 mediante el comando \texttt{\textquotesingle o\textquotesingle}, determinado de forma iterativa como el valor que produce una velocidad de estado estacionario de $\approx 0.13$ m/s en ambas ruedas —el punto de operación nominal del robot. La velocidad se calcula a partir de la diferencia de cuentas entre muestras consecutivas leídas con el comando \texttt{\textquotesingle e\textquotesingle}:
 
 \begin{equation}
-v[k] = \frac{\Delta\texttt{enc}[k]}{N_{\text{enc}}} \cdot \frac{\pi \cdot d_w}{T_{\mathrm{cap}}}
+v_j[k] = \frac{\Delta\texttt{enc}_j[k]}{N_e} \cdot \frac{\pi \cdot d_w}{T_{\mathrm{cap}}}, \qquad j \in \{R,L\}
 \label{eq:vel_lazo_abierto}
 \end{equation}
 
 \noindent
-con $T_{\mathrm{cap}} = 0.1$ s (período de muestreo de la captura), $d_w = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almacenan con la entrada en PWM y la salida en m/s, de modo que el modelo FODT identificado tenga unidades m/s/PWM. La Figura~\ref{fig:respuesta_lazo_abierto_pso} muestra la respuesta obtenida: ambas ruedas alcanzan $\approx 0.129$–$0.130$ m/s sin oscilaciones, confirmando que el escalón es adecuado para identificar la dinámica en el rango operativo. La capa de comunicación serial asíncrona empleada por los \emph{scripts} (clase \texttt{serialArduino}) se describe en el \ref{anx:firmware}; en operación normal esta capa no se utiliza, pues la comunicación la gestiona el \emph{plugin} \texttt{DiffDriveArduino}.
+con $T_{\mathrm{cap}} = 0.1$ s como período de muestreo de la captura, $d_w = 0.067$ m y $N_e = 1980$ cuentas/vuelta. La variable $v_j[k]$ representa la velocidad lineal de la rueda $j$, no la velocidad lineal del robot.
 
 \utemFigurePropia{2.Texto/Imag/respuesta_escalon_final_pso.png}{0.92\textwidth}
 {Respuesta al escalón en lazo abierto (\texttt{PWM} $= 143$). Ambas ruedas alcanzan $\approx 0.13$ m/s sin controlador PID activo.}
