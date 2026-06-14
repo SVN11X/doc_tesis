@@ -33,7 +33,7 @@ slam\_toolbox & Cierre de lazo, edición de mapas y bajo impacto computacional &
 \section{Sensores para percepción en interiores}
 \label{sec:sensores}
 
-La elección del sensor principal determina la calidad del mapeo y condiciona la pila de navegación. Para un robot diferencial que opera en interiores planos sobre una Raspberry~Pi~4, las cámaras RGB-D y los \gls{LIDAR}~3D resultan inadecuados por su fragilidad ante cambios de iluminación o por su costo y carga computacional incompatibles con la plataforma. El \gls{LIDAR}~2D ofrece la relación más equilibrada entre precisión, campo de visión de $360^\circ$ en el plano horizontal, tasa de actualización y consumo, a costa de no detectar obstáculos fuera de su plano de barrido, limitación asumible en entornos estructurados de interior. Por ello se selecciona el RPLidar~A1 \citep{SlamtecA1Datasheet}, cuya integración nativa con \texttt{slam\_toolbox} y con los mapas de costo de Nav2 lo hace idóneo para construir mapas de ocupación 2D en este prototipo.
+Para un robot diferencial que opera en interiores planos sobre una Raspberry~Pi~4, el \gls{LIDAR}~2D ofrece la mejor relación entre precisión, campo de visión de $360^\circ$, tasa de actualización y consumo, frente al mayor costo y carga computacional de las cámaras RGB-D y los \gls{LIDAR}~3D, incompatibles con la plataforma. Se selecciona el RPLidar~A1 \citep{SlamtecA1Datasheet} por su integración nativa con \texttt{slam\_toolbox} y con los mapas de costo de Nav2 para construir mapas de ocupación 2D, asumiendo la limitación de no detectar obstáculos fuera del plano de barrido en entornos estructurados de interior.
 
 %------------------------------------------------------------------
 \section{Navegación autónoma con Nav2}
@@ -57,7 +57,7 @@ La validación de robots móviles antes de su despliegue físico se apoya cada v
 \section{Plataformas robóticas de referencia}
 \label{sec:plataformas}
 
-En el ámbito educativo e investigativo, la serie TurtleBot (Open Robotics) constituye el referente más cercano a este trabajo: robots diferenciales de bajo costo orientados a la enseñanza de ROS/\gls{ROS2} \citep{turtlebotROS}, mientras que plataformas de gama superior como Jackal (Clearpath Robotics) \citep{clearpath_jackal} ofrecen mejor rendimiento a un costo que limita su accesibilidad académica. Todas comparten una arquitectura basada en \gls{ROS2} e integración de sensores \gls{LIDAR}, lo que respalda el enfoque adoptado: construir un robot diferencial de bajo costo con \gls{ROS2}, \gls{LIDAR}~2D y navegación autónoma.
+La serie TurtleBot (Open Robotics) \citep{turtlebotROS} es el referente más cercano a este trabajo —robots diferenciales de bajo costo para enseñanza de ROS/\gls{ROS2}—, mientras que plataformas de gama superior como Jackal (Clearpath Robotics) \citep{clearpath_jackal} ofrecen mejor rendimiento a un costo que limita su accesibilidad académica. Su arquitectura común (\gls{ROS2} e integración de sensores \gls{LIDAR}) respalda el enfoque adoptado en este prototipo.
 
 %------------------------------------------------------------------
 \section{Trabajos relacionados}
@@ -91,7 +91,7 @@ Gökçe et al. \citep{gokcce2021particle} aplicaron optimización por enjambre d
 \end{tabular}
 \end{table}
 
-El aporte de este trabajo radica en la integración documentada y validada de extremo a extremo sobre una plataforma de bajo costo: frente a Gökçe et al., extiende la sintonización PSO con un ciclo de refinamiento experimental sobre el hardware real para compensar no linealidades —fricción de Coulomb y zona muerta del driver L298N— no capturadas por el modelo FODT (\textit{First Order plus Dead Time}); frente a Tran~Ngoc et al., añade validación cruzada simulación–realidad con datos de hardware físico; y frente a Amadi et al., incorpora un gemelo digital completo y un módulo de exploración autónoma de fronteras.
+El aporte de este trabajo es la integración documentada y validada de extremo a extremo sobre una plataforma de bajo costo: combina sintonización PSO con un ciclo de refinamiento experimental sobre hardware real —para compensar no linealidades como la fricción de Coulomb y la zona muerta del driver L298N no capturadas por el modelo FODT (\textit{First Order plus Dead Time})—, validación cruzada simulación–realidad, gemelo digital completo y exploración autónoma de fronteras, elementos no reunidos simultáneamente en los trabajos analizados.
 
 %------------------------------------------------------------------
 \section{Decisiones de diseño}
@@ -102,9 +102,9 @@ A partir de la revisión anterior, se adoptan las siguientes decisiones de dise�
 \begin{enumerate}
 \item \textbf{Algoritmo SLAM}: \texttt{slam\_toolbox} en modo asíncrono en línea \citep{ngoc2023efficient}.
 \item \textbf{Sensor principal}: \gls{LIDAR}~2D RPLidar~A1.
-\item \textbf{Pila de navegación}: Nav2 con planificador global NavFn (A\*) y controlador local DWB, con árbol de comportamiento para recuperación ante fallos.
-\item \textbf{Framework de control}: \texttt{ros2\_control} con \texttt{diff\_drive\_controller} \citep{amadi2024introduction}, adaptado al protocolo serial con \gls{Arduino} mediante el plugin \texttt{DiffDriveArduino}.
-\item \textbf{Sintonización PID}: procedimiento híbrido PSO + refinamiento experimental sobre hardware real \citep{gokcce2021particle}.
+\item \textbf{Pila de navegación}: Nav2 con planificador global NavFn (A\*), controlador local DWB y árbol de comportamiento para recuperación.
+\item \textbf{Framework de control}: \texttt{ros2\_control} con \texttt{diff\_drive\_controller} \citep{amadi2024introduction} y plugin \texttt{DiffDriveArduino} sobre protocolo serial con \gls{Arduino}.
+\item \textbf{Sintonización PID}: PSO + refinamiento experimental sobre hardware real \citep{gokcce2021particle}.
 \item \textbf{Exploración autónoma}: estrategia basada en fronteras (\texttt{m-explore-ros2}) sobre el mapa de \texttt{slam\_toolbox}, integrada con Nav2.
 \item \textbf{Estrategia de validación}: validación cruzada entre el gemelo digital (Gazebo) y el hardware real, con métricas de odometría, control PID, SLAM, navegación y exploración \citep{ngoc2023efficient}.
 \end{enumerate}

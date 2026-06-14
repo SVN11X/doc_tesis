@@ -47,8 +47,8 @@ Para la evaluación cuantitativa se definieron las métricas de la Tabla~\ref{ta
 Error de posición en línea recta & m & Medición física + odometría & Odometría \\
 Deriva angular en giro de 360° & grados & Medición visual + \texttt{/odom} & Odometría \\
 Tiempo de respuesta al escalón\tnote{a} & s & Modelo FODT identificado & Control PID \\
-Sobreimpulso & \% & Análisis de la respuesta & Control PID \\
-Error en estado estacionario & m/s & \texttt{/motor\_vels} & Control PID \\
+Sobreimpulso & \% & Modelo FODT identificado & Control PID \\
+Error en estado estacionario & m/s & Modelo FODT identificado & Control PID \\
 Tiempo de construcción del mapa & s & Cronometraje + \texttt{ros2 bag} & SLAM \\
 Consistencia del mapa & --- & Inspección visual en RViz & SLAM \\
 Cierre de lazo & --- & Alineación de paredes en RViz & SLAM \\
@@ -59,7 +59,7 @@ Cobertura de exploración & \% & Área mapeada / área total & Exploración \\
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item[a] Calculado mediante simulación sobre el modelo FODT identificado, no por medición directa sobre el hardware.
+\item[a] Las métricas del controlador PID se calculan mediante simulación sobre el modelo FODT identificado con las ganancias que operan en el robot, no por medición directa sobre el hardware.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -88,15 +88,21 @@ correspondientes a sobreimpulso máximo ($M_p$), tiempo de subida ($t_r$, 10\%--
 \subsection{Prueba de trayectoria rectilínea}
 \label{subsec:prueba_recta}
 
-\textbf{Procedimiento:} se envió una velocidad lineal constante de $0.13$ m/s durante el tiempo correspondiente a $2.00$ m teóricos, con cinco repeticiones; se midió la distancia real con cinta métrica y se comparó con \texttt{/odom}. El error porcentual se define como:
+\textbf{Procedimiento:} se envió una velocidad lineal constante de $0.13$ m/s durante el tiempo correspondiente a $2.00$ m teóricos, con cinco repeticiones; se midió la distancia real con cinta métrica y se comparó con \texttt{/odom}. El error porcentual se define según el entorno. En simulación, donde la odometría del plugin de Gazebo coincide con la verdad de terreno (\textit{ground truth}), el indicador cuantifica el error de seguimiento de consigna (diferencia entre la distancia comandada y la ejecutada por el controlador):
 
 \begin{equation}
-e_{\text{odom}} = \frac{|d_{\text{teórica}} - d_{\text{medida}}|}{d_{\text{teórica}}} \times 100 \quad [\%]
-\label{eq:error_odom}
+e_{\text{seg}} = \frac{|d_{\text{teórica}} - d_{\text{odom}}|}{d_{\text{teórica}}} \times 100 \quad [\%],
+\qquad d_{\text{odom}} = d_{\text{GT}}
+\label{eq:error_seg}
 \end{equation}
 
 \noindent
-En hardware real, $d_{\text{medida}}$ es la distancia física medida con cinta, por lo que el indicador cuantifica el error de odometría propiamente tal (discrepancia entre encoders y realidad). En simulación, la odometría del plugin de Gazebo coincide con la verdad de terreno (\textit{ground truth}), de modo que el indicador cuantifica el error de seguimiento de consigna (diferencia entre distancia comandada y ejecutada por el controlador), no un error de odometría en sentido estricto.
+En hardware real, donde $d_{\text{real}}$ es la distancia física medida con cinta, el indicador cuantifica el error de odometría propiamente tal (discrepancia entre la odometría de encoders y la realidad):
+
+\begin{equation}
+e_{\text{odom}} = \frac{|d_{\text{odom}} - d_{\text{real}}|}{d_{\text{real}}} \times 100 \quad [\%]
+\label{eq:error_odom}
+\end{equation}
 
 \begin{table}[H]
 \centering
@@ -118,7 +124,7 @@ En hardware real, $d_{\text{medida}}$ es la distancia física medida con cinta, 
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item[a] En Gazebo la odometría coincide con el \textit{ground truth}; se reporta una sola columna.
+\item[a] En Gazebo la odometría coincide con el \textit{ground truth}; se reporta una sola columna. Error según la Ec.~\ref{eq:error_seg}.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -149,7 +155,7 @@ El error en simulación no refleja imprecisión de la odometría —ideal en Gaz
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item En hardware, $d_{\text{medida}}$ es la distancia física con cinta; el error cuantifica la discrepancia encoders--realidad (Ec.~\ref{eq:error_odom}).
+\item El error cuantifica la discrepancia entre la odometría de encoders ($d_{\text{odom}}$) y la distancia física medida con cinta ($d_{\text{real}}$), según la Ec.~\ref{eq:error_odom}.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -168,20 +174,20 @@ La distancia reportada por \texttt{/odom} es sistemáticamente inferior a la te�
 \label{tab:odom_giro_sim}
 \begin{tabular}{ccccc}
 \toprule
-\textbf{Prueba} & \textbf{Teórico (\textdegree)} & \textbf{Odom. (\textdegree)} & \textbf{Real GT (\textdegree)} & \textbf{Error (\%)}\tnote{a} \\
+\textbf{Prueba} & \textbf{Teórico (\textdegree)} & \textbf{Odom. (\textdegree)} & \textbf{Real GT (\textdegree)} & \textbf{Desv. (\textdegree)}\tnote{a} \\
 \midrule
-1 & 360.0 & 335.86 & 335.86 & 6.71 \\
-2 & 360.0 & 347.40 & 347.40 & 3.50 \\
-3 & 360.0 & 346.62 & 346.62 & 3.72 \\
-4 & 360.0 & 347.40 & 347.40 & 3.50 \\
-5 & 360.0 & 337.41 & 337.41 & 6.28 \\
+1 & 360.0 & 335.86 & 335.86 & 24.14 \\
+2 & 360.0 & 347.40 & 347.40 & 12.60 \\
+3 & 360.0 & 346.62 & 346.62 & 13.38 \\
+4 & 360.0 & 347.40 & 347.40 & 12.60 \\
+5 & 360.0 & 337.41 & 337.41 & 22.59 \\
 \midrule
-\multicolumn{4}{r}{\textbf{Error medio}} & \textbf{4.74} \\
+\multicolumn{4}{r}{\textbf{Desviación media}} & \textbf{17.1} \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
 \footnotesize
-\item[a] Error $= |360^\circ - \text{GT}| / 360^\circ \times 100$. El ángulo teórico corresponde al tiempo de comando, no a la lectura de \texttt{/odom}.
+\item[a] Desviación $= 360^\circ$ (comandado) $-$ GT; cuantifica el seguimiento de consigna (sub-rotación), no la deriva de la odometría. El ángulo teórico corresponde al tiempo de comando.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -304,7 +310,7 @@ Lambda (Der.)   & 2.8241 & 7.22823 & 0.1064 & 44.15 & 0.200 & 0.00005 \\
 \end{tabular}
 \begin{tablenotes}
 \scriptsize
-\item[a] Ganancias efectivas en escala continua ($k_p=K_p/K_o$, etc.) para comparar con Lambda: los términos proporcional y derivativo se escalan por $f_\lambda \approx 22.80$, y el integral incorpora además el período de muestreo del lazo.
+\item[a] Ganancias en forma estándar continua, para comparar con Lambda. Las del firmware se obtienen como $k_p = K_p^{\text{fw}}/f_u$ y $k_d = K_d^{\text{fw}}/f_u$, con el factor de conversión de unidades $f_u = \texttt{PWM\_NOMINAL}\cdot K_o/\texttt{MPS\_TO\_TICKS} = 143\cdot 50/313.56 \approx 22.80$; el término integral incorpora además el período de muestreo del lazo: $k_i = (K_i^{\text{fw}}/f_u)\cdot f_{\text{PID}}$.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -387,7 +393,7 @@ Zonas de sombra láser & Mínimas & Presentes \\
 \subsection{Protocolo de pruebas}
 \label{subsec:protocolo_nav}
 
-Se definieron tres escenarios (cinco repeticiones cada uno): meta directa sin obstáculos ($\approx 3$ m), meta con obstáculo intermedio (caja) y meta en pasillo/puerta (espacio estrecho). La meta se envía desde RViz y se considera éxito si el robot la alcanza dentro de la tolerancia \texttt{xy\_goal\_tolerance} (0.25 m en simulación, 0.22 m en hardware). Estos escenarios exceden la extensión del recinto físico disponible, por lo que su ejecución queda planificada para un entorno de mayor superficie; el formato de reporte (tasa de éxito, tiempo medio y desviación por escenario, en simulación y hardware) se recoge en el \ref{anx:protocolo_resultados}.
+Se definieron tres escenarios (cinco repeticiones cada uno): meta directa sin obstáculos ($\approx 3$ m), meta con obstáculo intermedio (caja) y meta en pasillo/puerta (espacio estrecho). La meta se envía desde RViz y se considera éxito si el robot la alcanza dentro de la tolerancia \texttt{xy\_goal\_tolerance} del \texttt{goal\_checker} (0.25 m en simulación, 0.10 m en hardware). Estos escenarios exceden la extensión del recinto físico disponible, por lo que su ejecución queda planificada para un entorno de mayor superficie; el formato de reporte (tasa de éxito, tiempo medio y desviación por escenario, en simulación y hardware) se recoge en el \ref{anx:protocolo_resultados}.
 
 \subsection{Tipos de fallo y estrategias de recuperación}
 \label{subsec:analisis_fallos}
@@ -451,8 +457,8 @@ Exploración & Cobertura (\%) & Pendiente & Pendiente \\
 \begin{tablenotes}
 \footnotesize
 \item[a] En simulación, Gazebo gestiona la dinámica de los motores mediante su motor de física, por lo que el PID del firmware no interviene y no es evaluable. Los indicadores de la columna ``hardware real'' provienen del modelo FODT identificado experimentalmente con las ganancias que operan en el robot (Sección~\ref{sec:resultados_pid}).
-\item[b] No estrictamente comparable: en Gazebo el error refleja el seguimiento de consigna (odometría $=$ \textit{ground truth}); en hardware refleja la discrepancia entre encoders y la medición física.
-\item[c] Tampoco comparable directamente: en simulación cuantifica el seguimiento de consigna (el robot recorre $\approx 343^\circ$ de los $360^\circ$ comandados por dinámica y discretización); en hardware cuantifica la deriva de la odometría respecto de la orientación física. Se reportan en sus unidades nativas y no deben restarse.
+\item[b] No estrictamente comparable: en Gazebo el error refleja el seguimiento de consigna (odometría $=$ \textit{ground truth}, Ec.~\ref{eq:error_seg}); en hardware refleja la discrepancia entre encoders y la medición física (Ec.~\ref{eq:error_odom}).
+\item[c] Tampoco comparable directamente: en simulación cuantifica el seguimiento de consigna (el robot recorre $\approx 343^\circ$ de los $360^\circ$ comandados por dinámica y discretización); en hardware cuantifica la deriva de la odometría respecto de la orientación física. Se reportan en sus unidades nativas (grados) y no deben restarse.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

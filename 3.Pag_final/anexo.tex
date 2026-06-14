@@ -34,54 +34,62 @@ La siguiente tabla consolida todos los componentes utilizados en la construcció
 \centering
 \caption{Lista de materiales completa del prototipo.}
 \label{tab:anx_bom}
-\footnotesize
-\begin{tabular}{clcll}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.10}
+
+\begin{tabularx}{\textwidth}{@{}c P{0.24\textwidth} c P{0.30\textwidth} >{\raggedright\arraybackslash}X@{}}
 \toprule
 \textbf{N°} & \textbf{Componente} & \textbf{Cant.} & \textbf{Referencia / Modelo} & \textbf{Función} \\
 \midrule
-\multicolumn{5}{l}{\textbf{Estructura y locomoción}} \\
+\multicolumn{5}{@{}l}{\textbf{Estructura y locomoción}} \\
 \midrule
-1  & Chasis (impresión 3D, PLA+) & 1   & Diseño propio, eSUN PLA+       & Soporte estructural \\
-2  & Motorreductor DC 12\,V 130\,RPM & 2 & JGA25-370                        & Actuación \\
-3  & Rueda de goma 67\,mm            & 2 & Compatible JGA25                  & Tracción \\
+1  & Chasis (impresión 3D, PLA+) & 1 & Diseño propio, eSUN PLA+ & Soporte estructural \\
+2  & Motorreductor DC 12\,V 130\,RPM & 2 & JGA25-370 & Actuación \\
+3  & Rueda de goma 67\,mm & 2 & Compatible JGA25 & Tracción \\
 4  & Rueda loca (\textit{ball caster}) & 1 & Rodillo esférico 2.8$\times$4.5\,cm & Apoyo \\
 \midrule
-\multicolumn{5}{l}{\textbf{Sensores}} \\
+
+\multicolumn{5}{@{}l}{\textbf{Sensores}} \\
 \midrule
-5  & Encoder de cuadratura Hall       & 2 & JGA25-371 (11 PPR, integrado)     & Odometría \\
-6  & Escáner láser 2D              & 1 & RPLidar A1M8-R5 (Slamtec)         & Mapeo y navegación \\
+5  & Encoder de cuadratura Hall & 2 & JGA25-371 (11 PPR, integrado) & Odometría \\
+6  & Escáner láser 2D & 1 & RPLidar A1M8-R5 (Slamtec) & Mapeo y navegación \\
 \midrule
-\multicolumn{5}{l}{\textbf{Electrónica de control}} \\
+
+\multicolumn{5}{@{}l}{\textbf{Electrónica de control}} \\
 \midrule
-7  & Computador de bordo              & 1 & Raspberry Pi 4 Model B (8\,GB)    & Cómputo de alto nivel, \gls{ROS2} \\
-8  & Microcontrolador                 & 1 & \gls{Arduino} V3 (ATmega328P)      & Control de bajo nivel, PID \\
-9 & Driver de motores                & 1 & Módulo L298N (puente H dual)     & Potencia a motores \\
+7  & Computador de bordo & 1 & Raspberry Pi 4 Model B (8\,GB) & Cómputo de alto nivel, \gls{ROS2} \\
+8  & Microcontrolador & 1 & \gls{Arduino} V3 (ATmega328P) & Control de bajo nivel, PID \\
+9  & Driver de motores & 1 & Módulo L298N (puente H dual) & Potencia a motores \\
 \midrule
-\multicolumn{5}{l}{\textbf{Alimentación y protecciones}} \\
+
+\multicolumn{5}{@{}l}{\textbf{Alimentación y protecciones}} \\
 \midrule
-10 & Batería Li-ion 3S               & 1 & Compatible Makita BL1021B (10,8\,V nom.) & Fuente de energía \\
-11 & Regulador buck DC-DC             & 1 & DFRobot DFR0205 (GS2678)          & Conversión 12\,V $\rightarrow$ 5\,V \\
-12 & Interruptor maestro con retención & 1 & LANBOO 16\,mm                   & Corte general de la línea de 12\,V \\
-13 & Fusible mini blade               & 1 & OptiFuse APM 10\,A                & Protección de cortocircuito \\
-14 & Portafusible                     & 1 & Compatible mini blade              & Soporte para fusible \\
+10 & Batería Li-ion 3S & 1 & Compatible Makita BL1021B (10,8\,V nom.) & Fuente de energía \\
+11 & Regulador buck DC-DC & 1 & DFRobot DFR0205 (GS2678) & Conversión 12\,V $\rightarrow$ 5\,V \\
+12 & Interruptor maestro con retención & 1 & LANBOO 16\,mm & Corte general de la línea de 12\,V \\
+13 & Fusible mini blade & 1 & OptiFuse APM 10\,A & Protección de cortocircuito \\
+14 & Portafusible & 1 & Compatible mini blade & Soporte para fusible \\
 \midrule
-\multicolumn{5}{l}{\textbf{Conectividad y periféricos}} \\
+
+\multicolumn{5}{@{}l}{\textbf{Conectividad y periféricos}} \\
 \midrule
-15 & Tarjeta microSD                  & 1 & 32--64\,GB, clase 10              & SO de la Raspberry Pi \\
-16 & Cable USB-A a mini-USB           & 1 & Para \gls{Arduino}                  & Serial Arduino--Pi \\
-17 & Cable USB-A a micro-USB          & 1 & Para RPLidar A1                    & Datos + alimentación \gls{LIDAR} \\
-18 & Mando inalámbrico               & 1 & Compatible \texttt{joy} de \gls{ROS2} & Teleoperación \\
-19 & Travel router                    & 1 & GL.iNet o equivalente              & Red dedicada Pi--PC \\
+15 & Tarjeta microSD & 1 & 32--64\,GB, clase 10 & SO de la Raspberry Pi \\
+16 & Cable USB-A a mini-USB & 1 & Para \gls{Arduino} & Serial Arduino--Pi \\
+17 & Cable USB-A a micro-USB & 1 & Para RPLidar A1 & Datos + alimentación \gls{LIDAR} \\
+18 & Mando inalámbrico & 1 & Compatible \texttt{joy} de \gls{ROS2} & Teleoperación \\
+19 & Travel router & 1 & GL.iNet o equivalente & Red dedicada Pi--PC \\
 \midrule
-\multicolumn{5}{l}{\textbf{Cableado y misceláneos}} \\
+
+\multicolumn{5}{@{}l}{\textbf{Cableado y misceláneos}} \\
 \midrule
-20 & Cable AWG 18--20 (rojo/negro)    & ---  & Calibre según sección         & Bus de potencia \\
-21 & Conectores Dupont M/F            & ---  & Pines 2.54\,mm                   & señales encoder/L298N \\
-22 & Tornillería M3                  & ---  & M3$\times$8, M3$\times$12       & Fijación de componentes \\
-23 & Separadores hex. M3              & ---  & Nylon o latón                   & Montaje de placas \\
-24 & Cinta termorretractil / Bridas   & ---  & Varios diámetros                & Aislación y ordenamiento \\
+20 & Cable AWG 18--20 (rojo/negro) & --- & Calibre según sección & Bus de potencia \\
+21 & Conectores Dupont M/F & --- & Pines 2.54\,mm & Señales encoder/L298N \\
+22 & Tornillería M3 & --- & M3$\times$8, M3$\times$12 & Fijación de componentes \\
+23 & Separadores hex. M3 & --- & Nylon o latón & Montaje de placas \\
+24 & Cinta termorretráctil / bridas & --- & Varios diámetros & Aislación y ordenamiento \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \section{Planos mecánicos, vistas 3D y parámetros de impresión}
@@ -209,16 +217,15 @@ Este anexo complementa el Capítulo~\ref{ch:setup_arduino} con los datos experim
 
 \subsection{Muestras experimentales de cuentas por vuelta}
 \label{sec:anx_muestras_cuentas}
-
-Para obtener el número de cuentas por vuelta completa de rueda se hicieron girar ambas ruedas diez vueltas completas, registrando las cuentas acumuladas en cada repetición (Tabla~\ref{tab:muestras_cuentas}). Los promedios y el valor unificado adoptado (\texttt{ENC\_TICKS\_PER\_REV} = 1980) se reportan en la Sección~\ref{sec:cpr_promedios}.
-
+Para determinar experimentalmente el número de cuentas por revolución de rueda, se hizo girar cada rueda una vuelta completa, repitiendo la medición diez veces y registrando la cuenta del encoder en cada repetición (Tabla~\ref{tab:muestras_cuentas}). Los promedios por rueda y el valor unificado adoptado (\texttt{ENC\_TICKS\_PER\_REV} $= N_e = 1980$ cuentas/vuelta) se reportan en la Sección~\ref{sec:cpr_promedios}.
 \begin{table}[H]
 \centering
+\begin{threeparttable}
 \caption{Muestras del número de cuentas en los encoders por revolución.}
 \label{tab:muestras_cuentas}
 \begin{tabular}{S[table-format=2.0] S[table-format=4.0] S[table-format=4.0]}
 \toprule
-\textbf{N$^{\circ}$} & {\textbf{Cuentas Der.}} & {\textbf{Cuentas Izq.}} \\ 
+\textbf{N$^{\circ}$} & {$N_{e,R}$ \textbf{(cuentas)}} & {$N_{e,L}$ \textbf{(cuentas)}} \\
 \midrule
 1  & 1966 & 1978 \\
 2  & 1960 & 1948 \\
@@ -229,9 +236,14 @@ Para obtener el número de cuentas por vuelta completa de rueda se hicieron gira
 7  & 1980 & 1957 \\
 8  & 1980 & 1975 \\
 9  & 1980 & 1962 \\
-10 & 1978 & 1979 \\ 
+10 & 1978 & 1979 \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[] $N_{e,R}$ y $N_{e,L}$: cuentas por revolución de las ruedas derecha e izquierda. El firmware emplea un único valor $N_e = 1980$ para ambas ruedas.
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 

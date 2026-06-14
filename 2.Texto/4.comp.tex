@@ -57,7 +57,7 @@ Se emplea un rodillo esférico tipo \emph{ball caster} como rueda de apoyo. Su e
 %------------------------------------------------------------------
 \section{Actuación: motores DC con caja reductora}
 
-Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM), seleccionado por su tensión nominal compatible con el sistema (12~V), su corriente dentro del margen del driver L298N y su caja reductora integrada de relación $N_g\approx45$, que entrega el par necesario para la tracción y cuya relación interviene directamente en el cálculo de la resolución del encoder (Sección~\ref{sec:encoder}). Las especificaciones técnicas completas se detallan en el \ref{anx:componentes}.
+Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM en vacío), seleccionado por su tensión nominal compatible con el sistema (12~V), su corriente dentro del margen del driver L298N (0.45~A nominal y 1.3~A de bloqueo a 12~V, frente a los 2~A/canal del L298N) y su caja reductora integrada de relación de reducción nominal $N_g = 46{:}1$, que entrega el par necesario para la tracción y cuya relación interviene en el cálculo de la resolución del encoder (Sección~\ref{sec:encoder}). Las especificaciones técnicas completas se detallan en el \ref{anx:componentes}.
 
 \utemFigure{2.Texto/Imag/motor.jpg}{0.5\linewidth}{Motor modelo JGA25-370, 12~V, 130~RPM.}{nfp_gm25_370_en}{fig:motor}
 
@@ -71,19 +71,14 @@ Se selecciona un encoder incremental en cuadratura de efecto Hall integrado a la
 
 \subsection{Resolución efectiva}
 
-La resolución en el eje de salida (rueda) se calcula como:
+La resolución en el eje de salida (rueda) se compone de la resolución del sensor Hall, la decodificación en cuadratura y la relación de reducción:
 
 \begin{equation}
-\mathrm{CPR}_{\text{salida}} = N_{\mathrm{Hall}} \cdot s \cdot N_g
+N_e = N_{\mathrm{Hall}} \cdot c_q \cdot N_g
+\label{eq:resolucion_encoder}
 \end{equation}
 
-donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $s=4$ (decodificación en cuadratura completa) y $N_g\approx45$ (relación de reducción). Así:
-
-\begin{equation}
-\mathrm{CPR}_{\text{salida}} = 11 \times 4 \times 45 = 1980 \text{ cuentas/vuelta}
-\end{equation}
-
-Con rueda de diámetro $d_w=67\,\text{mm}$ ($C\approx0.2105\,\text{m}$), la resolución lineal es $\approx 1980 / 0.2105 \approx 9.41 \times 10^3$ cuentas/m. Este valor ($N_e = 1980$) corresponde a la resolución del encoder empleada en las ecuaciones de odometría del Capítulo~\ref{marco_teorico} y en la calibración del firmware.
+donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $c_q=4$ (decodificación en cuadratura completa) y $N_g$ la relación de reducción, nominalmente $46{:}1$ según el fabricante, lo que arrojaría un valor teórico de $11 \times 4 \times 46 = 2024$ cuentas/vuelta. En lugar de ese valor nominal, la resolución se determinó \textbf{experimentalmente} girando cada rueda una vuelta completa y repitiendo la medición diez veces por rueda (\ref{sec:anx_muestras_cuentas}); el valor unificado adoptado es $N_e = 1980$ cuentas/vuelta (véase Sección~\ref{sec:cpr_promedios}), cargado en la constante \texttt{ENC\_TICKS\_PER\_REV} del firmware y empleado en las ecuaciones de odometría del Capítulo~\ref{marco_teorico}. La diferencia respecto del valor nominal ($\approx 2\%$) corresponde a la desviación entre la relación de reducción real y la nominal del fabricante.
 
 %------------------------------------------------------------------
 \section{Driver de motores L298N}
@@ -93,7 +88,7 @@ Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo 
 %------------------------------------------------------------------
 \section{Microcontrolador de bajo nivel: Arduino Nano V3}
 
-Se emplea un \gls{Arduino}~Nano~V3 (ATmega328P, 16~MHz, lógica de 5~V) para ejecutar las tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad a 30~Hz. De esta forma se aísla el lazo de control del \emph{jitter} del sistema operativo de la Raspberry Pi, que se dedica a \gls{ROS2}, SLAM y navegación. Se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Su ATmega328P de 8 bits (2~KB de SRAM) queda por debajo de los requisitos de \gls{microRos}~\cite{microros} —el \textit{framework} de \gls{ROS2} para microcontroladores de 32 bits—, por lo que la integración con el grafo de \gls{ROS2} se resuelve mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}); una migración futura a plataformas de 32 bits (p. ej. ESP32 o RP2040) conservaría la misma arquitectura mecánica y de control. Las especificaciones técnicas completas se incluyen en el \ref{anx:componentes}.
+Se emplea un \gls{Arduino}~Nano~V3 (ATmega328P, 16~MHz, lógica de 5~V) para ejecutar las tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad a 30~Hz, aislando el lazo de control del \emph{jitter} del sistema operativo de la Raspberry Pi, que se dedica a \gls{ROS2}, SLAM y navegación. Se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Al ser un microcontrolador de 8 bits no compatible con \gls{microRos}~\cite{microros}, su integración con el grafo de \gls{ROS2} se resuelve mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}). Las especificaciones técnicas completas se incluyen en el \ref{anx:componentes}.
 
 %------------------------------------------------------------------
 \section{Raspberry Pi 4 (8 GB)}
@@ -167,6 +162,7 @@ La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos del prototi
 \caption{Parámetros físicos del prototipo empleados en el modelo y el firmware.}
 \label{tab:parametros_modelo}
 \small
+\begin{threeparttable}
 \begin{tabular}{c l l l}
 \toprule
 \textbf{Símbolo} & \textbf{Parámetro} & \textbf{Valor} & \textbf{Origen} \\
@@ -174,11 +170,17 @@ La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos del prototi
 $r$   & Radio de rueda                   & 0.0335 m           & Tabla~\ref{tab:ruedas-especificaciones} \\
 $C$   & Circunferencia de rueda          & 0.2105 m           & $\pi d_w$ \\
 $L$   & Distancia entre ruedas           & 0.188 m            & Tabla~\ref{tab:dimensiones_robot} \\
-$N_e$ & Resolución del encoder (salida)  & 1980 cuentas/vuelta & $11 \times 4 \times 45$ \\
-$N_g$ & Relación de reducción            & $\approx$45        & Motorreductor JGA25-370 \\
-$T_s$ & Período del lazo PID             & $1/30$ s           & Firmware del \gls{Arduino} \\
+$N_g$ & Relación de reducción            & 46:1 (nominal)     & Datasheet JGA25-370 \\
+$N_e$ & Resolución del encoder (salida)  & 1980 cuentas/vuelta\tnote{a} & Experimental (\ref{sec:anx_muestras_cuentas}) \\
+$c_q$ & Factor de cuadratura             & 4                  & Decodificación A/B \\
+$T_s$ & Período de control (PID y odometría) & $1/30$ s       & Firmware \gls{Arduino} / \texttt{ros2\_control} \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}
+  \footnotesize
+  \item[a] Valor determinado experimentalmente (media de diez mediciones por rueda, \ref{sec:anx_muestras_cuentas}) y cargado en \texttt{ENC\_TICKS\_PER\_REV}. El valor nominal teórico $11 \times c_q \times 46 = 2024$ difiere $\approx 2\%$ por la desviación entre la relación de reducción real y la nominal.
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 %------------------------------------------------------------------

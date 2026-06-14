@@ -13,8 +13,6 @@ El firmware cumple cinco funciones principales: leer los encoders incrementales 
 
 El firmware se organiza en seis archivos dentro de un único directorio de proyecto Arduino, de modo que cada responsabilidad (decodificación de comandos, lectura de encoders, accionamiento de motores y cálculo de control) pueda modificarse o probarse de forma independiente. El archivo principal \texttt{ROSArduinoBridge.ino} actúa como coordinador: declara las constantes físicas, implementa el \emph{parser} serial, ejecuta el lazo de control periódico y gestiona la auto-detención. Los módulos \texttt{commands.h} (vocabulario de comandos ASCII), \texttt{encoder\_driver} (pines y rutinas de interrupción), \texttt{motor\_driver} (accionamiento del L298N) y \texttt{diff\_controller.h} (estructura y cálculo del PID) se incluyen como cabeceras y archivos complementarios. Las constantes físicas (diámetro de rueda, separación entre ejes, cuentas por vuelta) se declaran en un único punto y se propagan al resto de los módulos, lo que facilita la trazabilidad con el modelo cinemático del Capítulo~\ref{marco_teorico} y el gemelo digital del Capítulo~\ref{ch:robot_digital}.
 
-\utemFigurePropia{2.Texto/Imag/arbol_archivos_firmware.png}{0.95\textwidth}
-{Estructura del proyecto \texttt{ROSArduinoBridge} y responsabilidad de cada archivo.}{fig:arbol_firmware}
 
 %------------------------------------------------------------------
 \section{Constantes físicas y conversión de unidades}
@@ -29,7 +27,7 @@ A partir de estas constantes, el firmware precalcula en \texttt{setup()} un fact
   \label{eq:mps_to_ticks}
 \end{align}
 
-El cálculo se realiza una sola vez para evitar divisiones en punto flotante durante el ciclo de control. Adicionalmente, \texttt{PID\_RATE} fija el lazo en 30 Hz (intervalo $T_e = 1000/30 \approx 33$ ms, \texttt{PID\_INTERVAL}) y \texttt{AUTO\_STOP\_INTERVAL} define un plazo de seguridad de 2000 ms tras el cual los motores se detienen si no se recibe ningún comando, protegiendo al robot ante pérdidas de comunicación con la \gls{RaspberryPi}.
+El cálculo se realiza una sola vez para evitar divisiones en punto flotante durante el ciclo de control. Adicionalmente, \texttt{PID\_RATE} fija el lazo en 30 Hz (intervalo $T_s = 1000/30 \approx 33$ ms, \texttt{PID\_INTERVAL}) y \texttt{AUTO\_STOP\_INTERVAL} = 2000 ms fija el plazo de la auto-detención de seguridad descrita en la Sección~\ref{sec:bucle_principal}.
 
 %------------------------------------------------------------------
 \section{Protocolo de comunicación serial}
@@ -55,7 +53,7 @@ Cada rueda incorpora un encoder incremental de cuadratura de dos canales. Para c
 \subsection{Obtención experimental de cuentas por vuelta}
 \label{sec:cpr_promedios}
 
-Para emplear una odometría consistente con el modelo cinemático (Capítulo~\ref{marco_teorico}) se requiere el número de cuentas por vuelta completa de rueda. Se hicieron girar ambas ruedas diez vueltas completas, registrando las cuentas acumuladas; las muestras se reportan en la Tabla~\ref{tab:muestras_cuentas} del \ref{anx:firmware}. Los promedios resultantes son:
+Para emplear una odometría consistente con el modelo cinemático (Capítulo~\ref{marco_teorico}) se requiere el número de cuentas por vuelta completa de rueda. Se hizo girar cada rueda una vuelta completa, repitiendo la medición diez veces y registrando las cuentas obtenidas en cada repetición; las muestras se reportan en la Tabla~\ref{tab:muestras_cuentas} del \ref{anx:firmware}. Los promedios resultantes son:
 
 \begin{align}
 \bar{N}_R &= \frac{1}{10} \sum_{i=1}^{10} n_{R(i)} = 1976 \label{eq:promedio_cuentas_R} \\
@@ -78,17 +76,17 @@ El controlador de velocidad de cada rueda se implementa en \texttt{diff\_control
 La ley de control implementada en \texttt{doPID()} corresponde a la forma incremental con derivada sobre la medición presentada en la Sección~\ref{sec:pid} (Ecuación~\ref{eq:pid_firmware}). El error se define en \emph{ticks/frame} como:
 
 \begin{equation}
-e[k] = \texttt{TargetTicksPerFrame} - (\texttt{Encoder}[k] - \texttt{PrevEnc}[k])
+e[k] = \texttt{TargetTicksPerFrame} - m[k], \qquad m[k] = \texttt{Encoder}[k] - \texttt{PrevEnc}[k]
 \label{eq:error_pid}
 \end{equation}
 
 \noindent
-y la salida incremental se acumula y satura a $[-255, 255]$. Sobre esa base, la implementación embebida incorpora tres elementos específicos: el divisor de escala $K_o$, el anti-windup condicional y una zona muerta por cuantización.
+donde $m[k]$ es la velocidad medida de la rueda en \emph{ticks/frame}, y la salida incremental se acumula y satura a $[-255, 255]$. Sobre esa base, la implementación embebida incorpora tres elementos específicos: el divisor de escala $K_o$, el anti-windup condicional y una zona muerta por cuantización.
 
 \subsection{Divisor de escala \texorpdfstring{$K_o$}{Ko} y convención de orden}
 \label{sec:ko_convention}
 
-El parámetro $K_o$ no es una ganancia PID en el sentido clásico, sino un divisor de escala global que normaliza la salida del controlador. Las ganancias \emph{efectivas} que actúan sobre el sistema son $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. Esta formulación, heredada del proyecto original \texttt{ros\_arduino\_bridge}~\cite{ROSArduinoBridge}, permite trabajar con ganancias enteras de mayor magnitud, mejorando la resolución del ajuste: la diferencia entre $K_p = 16.00$ y $K_p = 16.42$ representa un cambio fino del 2.6\% que sería difícil de expresar con la ganancia efectiva directa (0.3200 frente a 0.3284). Además, la acumulación del término integral se realiza antes de la división por $K_o$, lo que reduce errores de redondeo en la aritmética de baja precisión del ATmega328P.
+El parámetro $K_o$ no es una ganancia PID en el sentido clásico, sino un divisor de escala global que normaliza la salida del controlador. Las ganancias \emph{efectivas} que actúan sobre el sistema son $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. Esta formulación, heredada del proyecto original \texttt{ros\_arduino\_bridge}~\cite{ROSArduinoBridge}, permite trabajar con ganancias de mayor magnitud, mejorando la resolución del ajuste: la diferencia entre $K_p = 16.00$ y $K_p = 16.42$ representa un cambio fino del 2.6\% que sería difícil de expresar con la ganancia efectiva directa (0.3200 frente a 0.3284). Además, la acumulación del término integral se realiza antes de la división por $K_o$, lo que reduce errores de redondeo en la aritmética de baja precisión del ATmega328P.
 
 El firmware adopta el orden $K_p{:}K_d{:}K_i{:}K_o$ —distinto de la convención académica $K_p, K_i, K_d$— tanto en la estructura \texttt{SetPointInfo} como en los comandos seriales \texttt{\textquotesingle u\textquotesingle} y \texttt{\textquotesingle z\textquotesingle}. La Tabla~\ref{tab:orden_pid} fija esta correspondencia, que debe respetarse al armar tramas seriales o interpretar la salida del comando de lectura del PID.
 
@@ -110,7 +108,7 @@ El firmware adopta el orden $K_p{:}K_d{:}K_i{:}K_o$ —distinto de la convenció
     \end{tabular}
     \begin{tablenotes}
       \footnotesize
-      \item Orden $K_p, K_d, K_i, K_o$ heredado de \emph{ROSArduinoBridge}; el segundo parámetro es $K_d$ y el tercero $K_i$. El divisor $K_o$ normaliza la salida según $u[k] = (K_p e[k] - K_d(y[k]-y[k-1]) + I[k])/K_o$.
+      \item Orden $K_p, K_d, K_i, K_o$ heredado de \emph{ROSArduinoBridge}; el segundo parámetro es $K_d$ y el tercero $K_i$. El divisor $K_o$ normaliza la salida incremental según $u[k] = u[k-1] + \bigl(K_p\,e[k] - K_d\,(m[k]-m[k-1]) + I[k]\bigr)/K_o$, con $m[k] = \texttt{Encoder}[k]-\texttt{PrevEnc}[k]$.
     \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -156,19 +154,37 @@ $K_o$ & 50    & 50    \\
 \section{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
 
-Las ganancias se determinaron mediante un procedimiento que combina la optimización por enjambre de partículas (PSO) con un ciclo de refinamiento experimental sobre el hardware real. Este enfoque híbrido reconoce que la metaheurística proporciona un punto de partida basado en un modelo identificado, pero las condiciones reales (fricción variable, holguras, respuesta no lineal del L298N) requieren un ajuste fino observable solo en la planta física. El procedimiento, implementado en \emph{scripts} de Python en \texttt{arduino\_firmware/pid\_config/}, se ejecutó de forma independiente para cada rueda y se resume a continuación:
+Las ganancias se determinaron mediante un procedimiento que combina la optimización por enjambre de partículas (PSO) con un ciclo de refinamiento experimental sobre el hardware real. Este enfoque híbrido reconoce que la metaheurística proporciona un punto de partida basado en un modelo identificado, pero las condiciones reales (fricción variable, holguras, respuesta no lineal del L298N) requieren un ajuste fino observable solo en la planta física. El procedimiento, implementado en \emph{scripts} de Python en \texttt{arduino\_firmware/pid\_config/}, se ejecutó de forma independiente para cada rueda y se resume en el Algoritmo~\ref{alg:sintonizacion}.
 
-\begin{center}
-\fbox{\begin{minipage}{0.92\linewidth}
-\ttfamily\small
-\textbf{Para cada rueda:}\\
-1. Capturar la respuesta al escalón en lazo abierto (PWM\_STEP, comando 'o').\\
-2. Identificar el modelo FODT (Km, tau, Ld) por PSO sobre los datos capturados.\\
-3. Optimizar (Kp, Ki, Kd) por PSO en lazo cerrado simulado (función de costo J).\\
-4. Cargar ganancias (comando 'z'), recapturar con el PID activo y refinar
-\hspace*{1.2em}manualmente; repetir hasta cumplir seguimiento, sobreimpulso y asentamiento.
-\end{minipage}}
-\end{center}
+\begin{algorithm}[H]
+\caption{Sintonización del PID asistida por PSO (por rueda).}
+\label{alg:sintonizacion}
+\begin{algorithmic}[1]
+\Require Datos de lazo abierto $(u_{\text{pwm}}[k],\,v[k])$ capturados a $T_{\mathrm{cap}} = 0.1$ s
+\Ensure Ganancias $(K_p, K_d, K_i)$ en el formato del comando \texttt{\textquotesingle z\textquotesingle}
+\State Suavizar $v[k]$ y estimar la velocidad de estado estacionario $v_{ss}$
+\Statex \textit{// Etapa A: identificación del modelo FODT}
+\State Inicializar PSO $\;(S=50,\;G=150,\;\chi=0.7298,\;c_1=c_2=2.05)$
+\For{$g = 1$ \textbf{to} $G$}
+    \For{cada partícula (modelo candidato $\{K_m,\tau,L_d\}$)}
+        \State Simular el FODT por Euler a paso $T_{\mathrm{cap}}$ (Ec.~\ref{eq:euler_fodt})
+        \State Evaluar $J_{\text{ID}} = \mathrm{MSE}(v - \hat{v})$
+    \EndFor
+    \State Actualizar mejores posiciones local y global
+\EndFor
+\State $\{K_m,\tau,L_d\} \gets$ mejor modelo global
+\Statex \textit{// Etapa B: optimización de las ganancias del PID}
+\State Reinicializar PSO $\;(S=50,\;G=150)$
+\For{$g = 1$ \textbf{to} $G$}
+    \For{cada partícula (ganancias candidatas $\{K_p,K_d,K_i\}$)}
+        \State Simular el PID del firmware sobre el FODT a paso $T_s = 1/30$ s
+        \State Evaluar $J = w_{\mathrm{mse}}\,\mathrm{MSE} + w_{\mathrm{OS}}\,(\text{sobrepaso})^2$
+    \EndFor
+    \State Actualizar mejores posiciones local y global
+\EndFor
+\State \textbf{devolver} $(K_p, K_d, K_i)$ del mejor global
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Etapa 1: Captura de la respuesta al escalón en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -178,12 +194,12 @@ El primer paso obtiene datos de la dinámica de la planta en lazo abierto, sin P
 El procedimiento aplica, en $t=1.0$ s, un escalón de PWM de valor \texttt{PWM\_STEP} = 143 mediante el comando \texttt{\textquotesingle o\textquotesingle}, determinado de forma iterativa como el valor que produce una velocidad de estado estacionario de $\approx 0.13$ m/s en ambas ruedas —el punto de operación nominal del robot. La velocidad se calcula a partir de la diferencia de cuentas entre muestras consecutivas leídas con el comando \texttt{\textquotesingle e\textquotesingle}:
 
 \begin{equation}
-v[k] = \frac{\Delta\texttt{enc}[k]}{N_{\text{enc}}} \cdot \frac{\pi \cdot d_w}{T_s}
+v[k] = \frac{\Delta\texttt{enc}[k]}{N_{\text{enc}}} \cdot \frac{\pi \cdot d_w}{T_{\mathrm{cap}}}
 \label{eq:vel_lazo_abierto}
 \end{equation}
 
 \noindent
-con $T_s = 0.1$ s, $d_w = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almacenan con la entrada en PWM y la salida en m/s, de modo que el modelo FODT identificado tenga unidades m/s/PWM. La Figura~\ref{fig:respuesta_lazo_abierto_pso} muestra la respuesta obtenida: ambas ruedas alcanzan $\approx 0.129$–$0.130$ m/s sin oscilaciones, confirmando que el escalón es adecuado para identificar la dinámica en el rango operativo. La capa de comunicación serial asíncrona empleada por los \emph{scripts} (clase \texttt{serialArduino}) se describe en el \ref{anx:firmware}; en operación normal esta capa no se utiliza, pues la comunicación la gestiona el \emph{plugin} \texttt{DiffDriveArduino}.
+con $T_{\mathrm{cap}} = 0.1$ s (período de muestreo de la captura), $d_w = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almacenan con la entrada en PWM y la salida en m/s, de modo que el modelo FODT identificado tenga unidades m/s/PWM. La Figura~\ref{fig:respuesta_lazo_abierto_pso} muestra la respuesta obtenida: ambas ruedas alcanzan $\approx 0.129$–$0.130$ m/s sin oscilaciones, confirmando que el escalón es adecuado para identificar la dinámica en el rango operativo. La capa de comunicación serial asíncrona empleada por los \emph{scripts} (clase \texttt{serialArduino}) se describe en el \ref{anx:firmware}; en operación normal esta capa no se utiliza, pues la comunicación la gestiona el \emph{plugin} \texttt{DiffDriveArduino}.
 
 \utemFigurePropia{2.Texto/Imag/respuesta_escalon_final_pso.png}{0.92\textwidth}
 {Respuesta al escalón en lazo abierto (\texttt{PWM} $= 143$). Ambas ruedas alcanzan $\approx 0.13$ m/s sin controlador PID activo.}
@@ -191,17 +207,17 @@ con $T_s = 0.1$ s, $d_w = 0.067$ m y $N_{\text{enc}} = 1980$. Los datos se almac
 
 \subsection{Etapa 2: Identificación del modelo FODT}
 
-La segunda etapa identifica, para cada motor, un modelo de primer orden con retardo (FODT) de la forma dada en la Ecuación~\eqref{eq:fodt} del Marco Teórico, con ganancia estática $K_m$ en m/s/PWM ($\approx 0.0009$ para estos motores). La identificación se formula como la minimización del error cuadrático medio entre la respuesta simulada del modelo y los datos capturados; la simulación se realiza por integración de Euler en tiempo discreto:
+La segunda etapa identifica, para cada motor, un modelo de primer orden con retardo (FODT) de la forma dada en la Ecuación~\eqref{eq:fodt} del Marco Teórico, con ganancia estática $K_m$ en m/s/PWM ($\approx 0.0009$ para estos motores). La identificación se formula como la minimización del error cuadrático medio entre la respuesta simulada del modelo y los datos capturados; la simulación se realiza por integración de Euler en tiempo discreto al período de captura $T_{\mathrm{cap}}$:
 
 \begin{equation}
-y[k] = y[k-1] + \frac{\Delta t}{\tau}\,\bigl(K_m \cdot u[k - n_d] - y[k-1]\bigr)
+y[k] = y[k-1] + \frac{T_{\mathrm{cap}}}{\tau}\,\bigl(K_m \cdot u[k - n_d] - y[k-1]\bigr)
 \label{eq:euler_fodt}
 \end{equation}
 
 \noindent
-donde $n_d = \lfloor L_d / \Delta t \rfloor$ es el retardo en muestras y $L_d$ el tiempo muerto del modelo FODT. El PSO explora el espacio de parámetros con un enjambre de 50 partículas durante 150 generaciones; los factores de escala que acotan el rango de búsqueda se detallan en el \ref{anx:firmware}.
+donde $n_d = \lfloor L_d / T_{\mathrm{cap}} \rfloor$ es el retardo en muestras y $L_d$ el tiempo muerto del modelo FODT. El PSO explora el espacio de parámetros con un enjambre de 50 partículas durante 150 generaciones; los factores de escala que acotan el rango de búsqueda se detallan en el \ref{anx:firmware}.
 
-El algoritmo PSO empleado, con factor de constricción de Clerc--Kennedy, se formuló en la Sección~\ref{sec:pso_marco} (Ecuación~\ref{eq:pso_vel_marco_teorico}). En la implementación de \texttt{pyPso.py} se utilizan los hiperparámetros de la Tabla~\ref{tab:pso_hiperparametros}, correspondientes a la parametrización canónica ($c_1 = c_2 = 2.05$, $\varphi = 4.1 > 4$, $\chi = 0.7298$) con inercia decreciente $w^g = (G-g)/G$, que favorece la exploración inicial y la explotación final. Las posiciones se acotan a $x_i \ge 0.0001$ para preservar la estabilidad numérica.
+El algoritmo PSO empleado, con factor de constricción de Clerc--Kennedy, se formuló en la Sección~\ref{sec:pso_marco} (Ecuación~\ref{eq:pso_vel_marco_teorico}). En la implementación de \texttt{pyPso.py} se utilizan los hiperparámetros de la Tabla~\ref{tab:pso_hiperparametros}, correspondientes a la parametrización canónica ($c_1 = c_2 = 2.05$, $\varphi = 4.1 > 4$, $\chi = 0.7298$) con inercia decreciente $w_{\mathrm{in}}^{g} = (G-g)/G$, que favorece la exploración inicial y la explotación final. Las posiciones se acotan a $x_i \ge 0.0001$ para preservar la estabilidad numérica.
 
 \begin{table}[H]
 \centering
@@ -212,12 +228,12 @@ El algoritmo PSO empleado, con factor de constricción de Clerc--Kennedy, se for
         \toprule
         \textbf{Símbolo} & \textbf{Variable} & \textbf{Valor} & \textbf{Descripción} \\ 
         \midrule
-$N$    & \texttt{swarmsize} & 50   & Tamaño del enjambre. \\
-$G$    & \texttt{maxgen}    & 150  & Generaciones máximas. \\
-$c_1$  & \texttt{c1}        & 2.05 & Coeficiente cognitivo. \\
-$c_2$  & \texttt{c2}        & 2.05 & Coeficiente social ($\varphi = 4.1$). \\
-$\chi$ & \texttt{C}         & 0.7298 & Factor de constricción. \\
-$w^g$  & \texttt{w}         & $(G - g)/G$ & Inercia decreciente lineal. \\
+$S$              & \texttt{swarmsize} & 50   & Tamaño del enjambre. \\
+$G$              & \texttt{maxgen}    & 150  & Generaciones máximas. \\
+$c_1$            & \texttt{c1}        & 2.05 & Coeficiente cognitivo. \\
+$c_2$            & \texttt{c2}        & 2.05 & Coeficiente social ($\varphi = 4.1$). \\
+$\chi$           & \texttt{C}         & 0.7298 & Factor de constricción. \\
+$w_{\mathrm{in}}^{g}$ & \texttt{w}    & $(G - g)/G$ & Inercia decreciente lineal. \\
         \bottomrule
     \end{tabular}
 \end{threeparttable}
@@ -225,7 +241,7 @@ $w^g$  & \texttt{w}         & $(G - g)/G$ & Inercia decreciente lineal. \\
 
 \subsection{Etapa 3: Optimización de ganancias por simulación en lazo cerrado}
 
-Identificado el modelo FODT, un segundo PSO (50 partículas, 150 generaciones) busca las ganancias $(K_p, K_i, K_d)$ que producen la mejor respuesta en lazo cerrado, evaluadas con la función de costo de la Ecuación~\eqref{eq:costo_pso}, con $w_{\text{mse}} = 1$ y $w_{\text{OS}} = 3$ —este último establece el énfasis sobre el sobreimpulso y es el parámetro con impacto sustantivo en la dirección de búsqueda. La función no penaliza el tiempo de establecimiento; los tiempos de subida y asentamiento se evalúan \emph{post hoc} y se reportan en el Capítulo~\ref{ch:resultados}. La simulación del lazo cerrado reproduce la estructura del PID del firmware, incluyendo la división por $K_o = 50$ y la saturación, de modo que las ganancias optimizadas son transferibles al Arduino. El resultado se entrega en el formato del comando \texttt{\textquotesingle z\textquotesingle}, listo para cargarse sin recompilar. Las diferencias entre la simulación y el firmware final (zona muerta y anti-windup) se documentan en el \ref{anx:firmware}; su efecto sobre las métricas globales es marginal y lo compensa el refinamiento experimental de la Etapa 4.
+Identificado el modelo FODT, un segundo PSO (50 partículas, 150 generaciones) busca las ganancias $(K_p, K_i, K_d)$ que producen la mejor respuesta en lazo cerrado, evaluadas con la función de costo de la Ecuación~\eqref{eq:costo_pso}, con $w_{\text{mse}} = 1$ y $w_{\text{OS}} = 3$ —este último establece el énfasis sobre el sobreimpulso y es el parámetro con impacto sustantivo en la dirección de búsqueda. La función no penaliza el tiempo de establecimiento; los tiempos de subida y asentamiento se evalúan \emph{post hoc} y se reportan en el Capítulo~\ref{ch:resultados}. La simulación del lazo cerrado reproduce la estructura del PID del firmware —incluyendo la forma incremental, la división por $K_o = 50$, el anti-windup y la zona muerta— y se integra al período del firmware ($T_s = 1/30$ s), distinto del período de captura $T_{\mathrm{cap}}$ usado en la identificación, de modo que las ganancias optimizadas son transferibles al Arduino. El resultado se entrega en el formato del comando \texttt{\textquotesingle z\textquotesingle}, listo para cargarse sin recompilar.
 
 \utemFigurePropia{2.Texto/Imag/identificacion_y_sintonizacion_pso.png}{0.95\textwidth}
 {Procedimiento de sintonización en dos etapas. Izquierda: identificación FODT por PSO sobre la respuesta al escalón en lazo abierto. Derecha: simulación del PID resultante de un segundo PSO sobre el modelo identificado. Arriba: rueda izquierda; abajo: rueda derecha.}
@@ -234,7 +250,7 @@ Identificado el modelo FODT, un segundo PSO (50 partículas, 150 generaciones) b
 \subsection{Etapa 4: Validación experimental y refinamiento iterativo}
 \label{subsec:refinamiento_iterativo}
 
-Las ganancias del PSO se consideran un punto de partida informado, no el resultado final, porque el modelo FODT no captura no linealidades del sistema real (zona muerta del L298N, holguras del reductor, fricción de Coulomb) y se identificó en un único punto de operación ($\approx 0.13$ m/s). El ciclo de refinamiento carga las ganancias en el firmware, recaptura la respuesta al escalón con el controlador activo y evalúa el seguimiento de la referencia, el sobreimpulso, el tiempo de asentamiento y la ausencia de oscilaciones; si alguna rueda no cumple, se ajustan manualmente sus ganancias y se repite. En la práctica, el ciclo requirió entre tres y cinco iteraciones por rueda, con ajustes sustanciales: $K_p$ aumentó entre 19\% y 28\%, $K_d$ se redujo entre 35\% y 54\%, y $K_i$ se incrementó varios órdenes de magnitud para compensar la fricción estática observada (Tabla~\ref{tab:pso_vs_firmware}). Esto confirma que el PSO acota la zona de búsqueda y caracteriza la dinámica, mientras que el criterio experimental tiene un peso significativo en las ganancias definitivas —algo esperable dado que el modelo no captura los fenómenos no lineales de la planta.
+Las ganancias del PSO se consideran un punto de partida informado, no el resultado final, porque el modelo FODT no captura no linealidades del sistema real (zona muerta del L298N, holguras del reductor, fricción de Coulomb) y se identificó en un único punto de operación ($\approx 0.13$ m/s). El ciclo de refinamiento carga las ganancias en el firmware, recaptura la respuesta al escalón con el controlador activo (\texttt{ControlLazoCerrado.py}) y evalúa el seguimiento de la referencia, el sobreimpulso, el tiempo de asentamiento y la ausencia de oscilaciones; si alguna rueda no cumple, se ajustan manualmente sus ganancias y se repite. En la práctica, el ciclo requirió entre tres y cinco iteraciones por rueda, con ajustes sustanciales: $K_p$ aumentó entre 19\% y 28\%, $K_d$ se redujo entre 35\% y 54\%, y $K_i$ se incrementó varios órdenes de magnitud para compensar la fricción estática observada (Tabla~\ref{tab:pso_vs_firmware}). Esto confirma que el PSO acota la zona de búsqueda y caracteriza la dinámica, mientras que el criterio experimental tiene un peso significativo en las ganancias definitivas —algo esperable dado que el modelo no captura los fenómenos no lineales de la planta.
 
 \begin{table}[H]
 \centering
@@ -257,6 +273,7 @@ La ganancia integral difiere por rueda: la derecha opera con $K_i = 0.001$ (sufi
 
 %------------------------------------------------------------------
 \section{Bucle principal y auto-detención}
+\label{sec:bucle_principal}
 
 La función \texttt{loop()} coordina cíclicamente tres tareas: atiende el \emph{parser} serial de forma no bloqueante; ejecuta \texttt{updatePID()} cuando se cumple \texttt{PID\_INTERVAL}, incrementando \texttt{nextPID} para recuperarse si una iteración se retrasa; y evalúa la auto-detención. Esta última detiene los motores y desactiva la bandera \texttt{moving} si transcurren más de \texttt{AUTO\_STOP\_INTERVAL} (2000 ms) desde el último comando de movimiento; cada comando \texttt{\textquotesingle m\textquotesingle}, \texttt{\textquotesingle o\textquotesingle} o \texttt{\textquotesingle k\textquotesingle} reinicia el temporizador. Esta salvaguarda es crítica: si la \gls{RaspberryPi} se reinicia, pierde la conexión Wi-Fi o el nodo de navegación falla, el robot se detiene en un plazo máximo de dos segundos en lugar de continuar de forma descontrolada. El período de 33 ms del ciclo se refleja en el diagrama de secuencia de la Figura~\ref{fig:secuencia_control}.
 
@@ -279,7 +296,7 @@ El método \texttt{start()} inicializa la comunicación serial y envía un \emph
 
 \subsection{Ciclos de lectura y escritura}
 
-En cada iteración, \texttt{read()} envía el comando \texttt{\textquotesingle e\textquotesingle}, recibe los contadores absolutos, calcula la posición angular acumulada de cada rueda como $\theta = \texttt{enc} \times \texttt{rads\_per\_count}$ y la velocidad angular como $\omega = (\theta[k] - \theta[k-1])/\Delta t$. Estas magnitudes se exponen por las \emph{state interfaces} y alimentan la odometría que el \texttt{diff\_drive\_controller} publica en \texttt{/odom} junto con la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}. El método \texttt{write()} realiza la conversión inversa, traduciendo la velocidad angular comandada (rad/s) a \emph{ticks/frame}:
+En cada iteración, \texttt{read()} envía el comando \texttt{\textquotesingle e\textquotesingle}, recibe los contadores absolutos, calcula la posición angular acumulada de cada rueda como $\theta = \texttt{enc} \times \texttt{rads\_per\_count}$ y la velocidad angular como $\omega = (\theta[k] - \theta[k-1])/T_s$, con $T_s = 1/\texttt{loop\_rate} = 1/30$ s. Estas magnitudes se exponen por las \emph{state interfaces} y alimentan la odometría que el \texttt{diff\_drive\_controller} publica en \texttt{/odom} junto con la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}. El método \texttt{write()} realiza la conversión inversa, traduciendo la velocidad angular comandada (rad/s) a \emph{ticks/frame}:
 
 \begin{equation}
 \texttt{ticks\_per\_frame} = \frac{\omega_{\text{cmd}}}{\texttt{rads\_per\_count} \times \texttt{loop\_rate}}

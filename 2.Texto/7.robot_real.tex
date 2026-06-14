@@ -12,11 +12,10 @@ La plataforma se organiza en dos dominios acoplados con responsabilidades claram
 \begin{enumerate}
 \item \textbf{Dominio de potencia}: un bus principal a 12 V alimenta los actuadores (motores DC a través del puente H L298N) y un bus regulado a 5 V alimenta la lógica y los sensores (Raspberry Pi, \gls{LIDAR} y periféricos). Esta separación evita que las perturbaciones eléctricas de los motores afecten a la electrónica sensible.
 
-\item \textbf{Dominio de comunicaciones}: un enlace serie USB/TTL conecta la Raspberry Pi con el \gls{Arduino} (control de motores y encoders), y un enlace serie conecta el escáner láser RPLIDAR A1. En el plano lógico, la gráfica de nodos \gls{ROS2} contempla:
+\item \textbf{Dominio de comunicaciones}: un enlace serie USB/TTL conecta la Raspberry Pi con el \gls{Arduino} (control de motores y encoders), y un enlace serie por UART de los pines GPIO conecta el escáner láser RPLIDAR A1. En el plano lógico, la gráfica de nodos \gls{ROS2} contempla:
 \begin{itemize}
-\item \texttt{rplidar\_ros} para la publicación de los barridos del láser.
-\item Los nodos \texttt{joy} y \texttt{teleop\_twist\_joy} para la teleoperación.
-\item \texttt{twist\_mux} para arbitrar las fuentes de velocidad.
+\item \texttt{rplidar\_serial\_publisher.py} (driver serial propio) para la publicación de los barridos del láser.
+\item Los nodos \texttt{joy} y \texttt{teleop\_twist\_joy} para la teleoperación y \texttt{twist\_mux} para arbitrar las fuentes de velocidad, ejecutados en el lanzamiento de teleoperación/navegación.
 \item \texttt{diff\_drive\_controller} y \texttt{joint\_state\_broadcaster} gestionados por el \texttt{controller\_manager} de \texttt{ros2\_control}.
 \end{itemize}
 \end{enumerate}
@@ -28,13 +27,13 @@ La separación de dominios reduce los acoples electromagnéticos y facilita el d
 \label{sec:criterios_potencia}
 % ============================================================
 
-La selección de los componentes de potencia —batería Li-ion de 12 V, convertidor \emph{buck} DFR0205, fusible e interruptor— se documentó en el Capítulo~\ref{ch:componentes}. El bus de 12 V se dimensiona por el peor caso eléctrico, la condición de \emph{stall} (eje bloqueado), de aproximadamente 1.8 A por motor a 12 V según la hoja de datos del JGA25-370; el riel de 5 V se obtiene mediante el convertidor \emph{buck} desde el bus de 12 V, por su mayor eficiencia frente a un regulador lineal, y los reguladores se seleccionan con un margen de 1.5 a 2.0 veces la corriente continua prevista. El presupuesto de potencia por subsistema, las protecciones (fusible rápido de 10 A e interruptor maestro con retención) y el dimensionamiento de cableado se detallan en el \ref{anx:hardware_ros2} y en el Capítulo~\ref{ch:componentes}.
+La selección de los componentes de potencia —batería Li-ion de 12 V, convertidor \emph{buck} DFR0205, fusible e interruptor— se documentó en el Capítulo~\ref{ch:componentes}. El bus de 12 V se dimensiona por el peor caso eléctrico, la condición de \emph{stall} (eje bloqueado), de aproximadamente 1.3 A por motor a 12 V (corriente de bloqueo según la hoja de datos del JGA25-370); el riel de 5 V se obtiene mediante el convertidor \emph{buck} desde el bus de 12 V, por su mayor eficiencia frente a un regulador lineal, y los reguladores se seleccionan con un margen de 1.5 a 2.0 veces la corriente continua prevista. El presupuesto de potencia por subsistema, las protecciones (fusible rápido de 10 A e interruptor maestro con retención) y el dimensionamiento de cableado se detallan en el \ref{anx:hardware_ros2} y en el Capítulo~\ref{ch:componentes}.
 
 % ============================================================
 \section{Esquema de conexiones eléctricas y de datos}
 % ============================================================
 
-La Figura~\ref{fig:esquema_conexiones} resume la distribución de potencia (12 V y 5 V), el retorno de masas en estrella y los enlaces de datos (USB/TTL) entre los componentes. La asignación de pines entre el \gls{Arduino}, el driver L298N y los encoders se detalla en el \ref{anx:hardware_ros2}.
+La Figura~\ref{fig:esquema_conexiones} resume la distribución de potencia (12 V y 5 V), el retorno de masas en estrella y los enlaces de datos (USB/TTL y UART) entre los componentes. La asignación de pines entre el \gls{Arduino}, el driver L298N y los encoders se detalla en el \ref{anx:hardware_ros2}.
 
 \utemFigurePropia{2.Texto/Imag/circuit_diagram_bb.png}{0.95\textwidth}
 {Esquema de conexiones eléctricas del robot diferencial.}{fig:esquema_conexiones}
@@ -47,16 +46,17 @@ La Figura~\ref{fig:esquema_conexiones} resume la distribución de potencia (12 V
 En la configuración de hardware, el archivo \texttt{launch\_robot.launch.py} orquesta el arranque de:
 
 \begin{enumerate}
-\item \texttt{robot\_state\_publisher}: publica las transformaciones del robot.
-\item \texttt{twist\_mux}: arbitra las fuentes de velocidad (teleoperación y navegación autónoma).
-\item \texttt{controller\_manager}: gestiona la interfaz de hardware y los controladores.
+\item \texttt{robot\_state\_publisher} (vía \texttt{rsp.launch.py}): publica las transformaciones del robot.
+\item \texttt{controller\_manager} (\texttt{ros2\_control\_node}, con arranque diferido de 3 s): gestiona la interfaz de hardware y los controladores.
 \item Spawners de controladores: activan \texttt{diff\_cont} (control diferencial) y \texttt{joint\_broad} (estado de articulaciones).
 \end{enumerate}
+
+La teleoperación (\texttt{joy}, \texttt{teleop\_twist\_joy}), el multiplexor \texttt{twist\_mux} y la pila de SLAM/navegación se inician en un lanzamiento aparte (lado PC), de modo que la Raspberry Pi ejecuta únicamente la base diferencial y el sensor láser.
 
 \subsection{Multiplexación de velocidad: \texttt{twist\_mux}}
 \label{sec:twist_mux}
 
-El nodo \texttt{twist\_mux} escucha varios tópicos de tipo \texttt{Twist} y reenvía solo el de mayor prioridad: la teleoperación tiene prioridad sobre la navegación autónoma e implementa un \textit{dead-man switch} (requiere mantener presionado un botón de habilitación para publicar comandos). La salida se remapea a \texttt{/diff\_cont/cmd\_vel\_unstamped}, entrada del controlador diferencial. La configuración de entradas (tópicos, prioridades y \textit{timeouts}) se detalla en el \ref{anx:hardware_ros2}.
+El nodo \texttt{twist\_mux}, que forma parte del lanzamiento de teleoperación/navegación, escucha varios tópicos de tipo \texttt{Twist} y reenvía solo el de mayor prioridad: la teleoperación tiene prioridad sobre la navegación autónoma e implementa un \textit{dead-man switch} (requiere mantener presionado un botón de habilitación para publicar comandos). La salida se remapea a \texttt{/diff\_cont/cmd\_vel\_unstamped}, entrada del controlador diferencial. La configuración de entradas (tópicos, prioridades y \textit{timeouts}) se detalla en el \ref{anx:hardware_ros2}.
 
 \subsection{Convenciones de marcos \texttt{tf}}
 \label{sec:tf_frames}
@@ -74,20 +74,20 @@ En hardware, \texttt{map}$\rightarrow$\texttt{odom} la publica \texttt{slam\_too
 \label{sec:lidar}
 % ============================================================
 
-El RPLIDAR A1, cuyas especificaciones se detallaron en el Capítulo~\ref{ch:componentes}, se integra mediante el paquete \texttt{rplidar\_ros}, que establece la comunicación serie y publica los barridos en el tópico \texttt{/scan} como mensajes \texttt{sensor\_msgs/LaserScan}, consumidos por \texttt{slam\_toolbox} (para construir el mapa) y por los \textit{costmaps} de Nav2 (para evitar obstáculos). La configuración del driver (\texttt{serial\_port}, \texttt{frame\_id}, \texttt{angle\_compensate}, \texttt{scan\_mode}) se resume en el \ref{anx:hardware_ros2}.
+El RPLIDAR A1, cuyas especificaciones se detallaron en el Capítulo~\ref{ch:componentes}, se integra mediante un driver serial propio: el nodo \texttt{rplidar\_serial\_publisher.py} (paquete \texttt{articubot\_one}), que implementa directamente el protocolo serie del A1 —inspirado en \texttt{sllidar\_ros2}— en lugar del paquete \texttt{rplidar\_ros}. El nodo abre el puerto \texttt{/dev/rlidar\_gpio} (UART por GPIO) a 115200 baudios; al arranque ejecuta un \texttt{reset} y una verificación de \texttt{info}/\texttt{health} (aborta si el láser está en estado de error), agrupa las lecturas en sectores angulares fijos y publica los barridos en el tópico \texttt{/scan} como mensajes \texttt{sensor\_msgs/LaserScan} en el marco \texttt{laser\_frame}, con rango mínimo de 0.15~m y frecuencia configurada de 10~Hz (efectiva $\approx 8.9$~Hz). Estos barridos los consumen \texttt{slam\_toolbox} (para construir el mapa) y los \textit{costmaps} de Nav2 (para evitar obstáculos). La configuración del driver se resume en el \ref{anx:hardware_ros2}.
 
 % ============================================================
 \section{Perfiles de calidad de servicio (QoS) por tópico}
 \label{sec:qos_profiles}
 % ============================================================
 
-En una red inalámbrica, la pérdida ocasional de paquetes es inevitable, por lo que \gls{ROS2} permite configurar políticas de \textit{QoS} por tópico. Solo \texttt{/scan\_raw} y \texttt{/scan} se configuran explícitamente en \texttt{scan\_filter\_node.py}: el primero como \texttt{best\_effort} para tolerar pérdidas aisladas del barrido láser, y el segundo como \texttt{reliable} para coincidir con la suscripción de \texttt{slam\_toolbox} y los \textit{costmaps} de Nav2, que rechazan publicadores \texttt{best\_effort} por incompatibilidad de QoS. El resto de los tópicos usa los valores por defecto de sus nodos; destaca \texttt{/tf\_static} con durabilidad \texttt{transient\_local}: esta propiedad \textit{latched} permite que los nodos suscritos tras el arranque del \texttt{robot\_state\_publisher} reciban igualmente las transformaciones estáticas, evitando pérdidas de cadena TF al iniciar SLAM o navegación con retraso. La tabla completa de perfiles configurados u observados se incluye en el \ref{anx:hardware_ros2}.
+En una red inalámbrica la pérdida ocasional de paquetes es inevitable, por lo que \gls{ROS2} permite configurar políticas de \textit{QoS} por tópico. El driver del láser publica \texttt{/scan} con el perfil de datos de sensor (\texttt{qos\_profile\_sensor\_data}: \texttt{best\_effort}, \texttt{keep\_last} con profundidad 5), que es la convención para escáneres láser y resulta compatible con la suscripción de datos de sensor de \texttt{slam\_toolbox} y de los \textit{costmaps} de Nav2. El tópico \texttt{/tf\_static} usa durabilidad \texttt{transient\_local}: esta propiedad \textit{latched} permite que los nodos suscritos tras el arranque del \texttt{robot\_state\_publisher} reciban igualmente las transformaciones estáticas, evitando pérdidas de cadena TF al iniciar SLAM o navegación con retraso. El \textit{middleware} empleado es CycloneDDS (\texttt{RMW\_IMPLEMENTATION=rmw\_cyclonedds\_cpp}). La tabla completa de perfiles configurados u observados se incluye en el \ref{anx:hardware_ros2}.
 
 % ============================================================
 \section{Sincronización temporal}
 % ============================================================
 
-La precisión temporal es esencial para la coherencia de las transformaciones y el SLAM. En la Raspberry Pi, el servicio NTP estabiliza la referencia temporal, y las marcas de tiempo de los mensajes \texttt{/odom} se asignan en la Pi al leer los datos seriales, no en el Arduino. El lazo de control embebido a 30 Hz reduce la sensibilidad a fluctuaciones de publicación. La Figura~\ref{fig:secuencia_control} ilustra un ciclo completo de control con su temporización.
+La precisión temporal es esencial para la coherencia de las transformaciones y el SLAM. En la Raspberry Pi, el servicio de sincronización horaria \texttt{chrony} (cliente NTP) estabiliza la referencia temporal, y las marcas de tiempo de los mensajes \texttt{/odom} se asignan en la Pi al leer los datos seriales, no en el Arduino. El lazo de control embebido a 30 Hz reduce la sensibilidad a fluctuaciones de publicación. La Figura~\ref{fig:secuencia_control} ilustra un ciclo completo de control con su temporización.
 
 \utemFigurePropia{2.Texto/Imag/fig_secuencia_control.png}{0.95\textwidth}
 {Diagrama de secuencia temporal de un ciclo completo de control.}
@@ -98,7 +98,7 @@ La precisión temporal es esencial para la coherencia de las transformaciones y 
 \label{sec:udev}
 % ============================================================
 
-Para evitar que los nombres de los puertos serie cambien entre reinicios (\texttt{ttyUSB0} y \texttt{ttyUSB1} pueden intercambiarse al reconectar), se definen reglas \texttt{udev} en la Raspberry~Pi que crean enlaces simbólicos estables a partir de atributos únicos de cada dispositivo: \texttt{/dev/motor\_controller} para el \gls{Arduino} y \texttt{/dev/rplidar} para el \gls{LIDAR}. La regla del \gls{Arduino} incorpora además un \texttt{PROGRAM} que deshabilita el \textit{hangup-on-close} de la línea serie, evitando el reinicio automático del microcontrolador al abrir el puerto —un efecto colateral del chip CH340 al activar \gls{DTR}. El mapeo completo de dispositivos y los archivos de reglas se detallan en el \ref{anx:hardware_ros2}.
+Para evitar que los nombres de los puertos serie cambien entre reinicios, se definen nombres persistentes para cada dispositivo: el \gls{Arduino} se conecta por USB y se expone como \texttt{/dev/motor\_controller} mediante una regla \texttt{udev}, mientras que el \gls{LIDAR} se conecta por UART de los pines GPIO y se referencia como \texttt{/dev/rlidar\_gpio} (la conexión USB original del A1 quedó en desuso). La regla \texttt{udev} del \gls{Arduino} incorpora además un \texttt{PROGRAM} que deshabilita el \textit{hangup-on-close} de la línea serie —reforzado en el arranque con \texttt{stty -hupcl}—, evitando el reinicio automático del microcontrolador al abrir el puerto, un efecto colateral del chip CH340 al activar \gls{DTR}. El mapeo completo de dispositivos y los archivos de reglas se detallan en el \ref{anx:hardware_ros2}.
 
 % ============================================================
 \section{Parámetros del controlador diferencial}
@@ -127,7 +127,7 @@ El archivo \texttt{my\_controllers.yaml} centraliza la configuración del \textt
 \section{Interfaz de hardware: plugin \texttt{DiffDriveArduino}}
 \label{sec:hw_interface}
 
-El plugin \texttt{DiffDriveArduino} actúa como puente entre \texttt{ros2\_control} y el firmware del \gls{Arduino}, traduciendo velocidades angulares (rad/s) al formato de \emph{ticks/frame} del protocolo serial y convirtiendo los contadores de encoder en posiciones y velocidades que alimentan la odometría. Sus parámetros críticos —ruta del dispositivo (\texttt{/dev/motor\_controller}), baudrate (57600), frecuencia del lazo (30 Hz) y cuentas por revolución (1980)— son consistentes con las constantes del firmware.
+El plugin \texttt{DiffDriveArduino} actúa como puente entre \texttt{ros2\_control} y el firmware del \gls{Arduino}, traduciendo velocidades angulares (rad/s) al formato de \emph{ticks/frame} del protocolo serial y convirtiendo los contadores de encoder en posiciones y velocidades que alimentan la odometría. Sus parámetros críticos —\texttt{device}=\texttt{/dev/motor\_controller}, \texttt{baud\_rate}=57600, \texttt{loop\_rate}=30~Hz, \texttt{enc\_counts\_per\_rev}=1980 y \texttt{timeout}=2000~ms, declarados en \texttt{ros2\_control.xacro}— son consistentes con las constantes del firmware.
 
 Este apartado describe el plugin a nivel de interfaz y flujo; su implementación detallada —los ciclos de lectura/escritura, la clase \texttt{ArduinoComms}, la clase \texttt{Wheel} y la conversión de unidades— se desarrolla en la Sección~\ref{sec:integracion_ros2}. La Figura~\ref{fig:conversion_unidades} resume el flujo de conversión y la Figura~\ref{fig:secuencia_start} muestra la secuencia de inicialización del método \texttt{start()}.
 
@@ -169,9 +169,9 @@ El mecanismo de auto-detención del firmware (\texttt{AUTO\_STOP\_INTERVAL}) det
 \cmidrule(r){1-3} \cmidrule(l){4-6}
 \textbf{Parámetro} & \textbf{Archivo} & \textbf{Valor} & \textbf{Parámetro} & \textbf{Archivo} & \textbf{Valor} \\ 
 \midrule
-\texttt{TICKS\_PER\_REV} & \texttt{.ino} & 1980  & \texttt{counts\_per\_rev} & \texttt{.xacro} & 1980  \\
-\texttt{PID\_RATE}       & \texttt{.ino} & 30    & \texttt{loop\_rate}       & \texttt{.xacro} & 30    \\
-\texttt{BAUDRATE}       & \texttt{.ino} & 57600 & \texttt{baud\_rate}       & \texttt{.xacro} & 57600 \\ 
+\texttt{ENC\_TICKS\_PER\_REV} & \texttt{.ino} & 1980  & \texttt{enc\_counts\_per\_rev} & \texttt{ros2\_control.xacro} & 1980  \\
+\texttt{PID\_RATE}       & \texttt{.ino} & 30    & \texttt{loop\_rate}       & \texttt{ros2\_control.xacro} & 30    \\
+\texttt{BAUDRATE}       & \texttt{.ino} & 57600 & \texttt{baud\_rate}       & \texttt{ros2\_control.xacro} & 57600 \\ 
 \bottomrule
 \end{tabular}
 \end{table}

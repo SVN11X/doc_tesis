@@ -3,26 +3,16 @@
 
 Este capítulo desarrolla el gemelo digital del robot móvil diferencial, cuyo papel como herramienta de validación previa al despliegue físico se introdujo en el Capítulo~\ref{ch:estado_arte}. El modelo se implementa en \gls{ROS2}~Foxy (Ubuntu 20.04) mediante URDF/\texttt{xacro} y se despliega en Gazebo, compartiendo con el hardware los mismos marcos de referencia, tópicos y parámetros, de modo que la transición simulación$\rightarrow$hardware exija cambios mínimos.
 
-El archivo \texttt{robot.urdf.xacro} actúa como compositor principal y fuente de verdad de la geometría y la cinemática, e incluye \texttt{robot\_core.xacro} (estructura del chasis y tren motriz) y \texttt{lidar.xacro} (escáner láser). La selección del \textit{backend} de control es explícita y se detalla en la Sección~\ref{sec:backend}.
-
-\utemFigurePropia{2.Texto/Imag/sim_entorno_general.jpg}{0.9\textwidth}
-{Entorno de simulación en Gazebo con elementos de prueba y el robot diferencial.}
-{fig:sim_entorno_general}
-
-\begin{utemMultiFigurePropia}{Comparación visual entre el prototipo físico (izquierda) y su gemelo digital en Gazebo (derecha).}{fig:comparacion_fisico_virtual}
-    \addutem{0.35}{2.Texto/Imag/fig_robot_real.png}{Real}
-    \hfill
-    \addutem{0.44}{2.Texto/Imag/fig_robot_sim.png}{Simulación}
-\end{utemMultiFigurePropia}
+El archivo \texttt{robot.urdf.xacro} actúa como compositor principal y fuente de verdad de la geometría y la cinemática, e incluye \texttt{robot\_core.xacro} (estructura del chasis y tren motriz) y, según el argumento \texttt{sim\_mode}, el archivo de LIDAR correspondiente: \texttt{lidar.xacro} (hardware real) o \texttt{lidar\_sim.xacro} (simulación). La selección del \textit{backend} de control es explícita y se detalla en la Sección~\ref{sec:backend}.
 
 %------------------------------------------------------------------
 \section{Arquitectura de software y aporte original}
 \label{sec:atribucion}
 
-El \textit{workspace} del proyecto (\texttt{tesis\_black\_robot}) integra paquetes de tres orígenes: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La atribución detallada de cada paquete —origen, licencia, modificaciones realizadas y naturaleza de la contribución del autor— se documenta en el \ref{anx:gemelo_digital}, lo que permite distinguir con transparencia el aporte original de la tesis respecto del trabajo previo de la comunidad de código abierto. La configuración del entorno y la organización completa del \textit{workspace} se documentan en el \ref{anx:workspace}.
+El \textit{workspace} del proyecto (\texttt{tesis\_black\_robot}) integra paquetes de tres orígenes: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La atribución detallada de cada paquete —origen, licencia, modificaciones y naturaleza de la contribución del autor— se documenta en el \ref{anx:gemelo_digital}, y la organización completa del \textit{workspace} en el \ref{anx:workspace}.
 
 \noindent
-En síntesis, el aporte original del autor comprende: (a) el diseño completo del modelo URDF/Xacro y la parametrización de todo el sistema de control, SLAM y navegación en \texttt{articubot\_one}; (b) la extensión del protocolo serial del firmware con comandos en unidades físicas y ganancias asimétricas; (c) el desarrollo íntegro de la cadena de sintonización automática del PID por PSO; y (d) la integración, configuración y validación del sistema completo. Los paquetes de terceros aportaron infraestructura reutilizable (interfaz de hardware, biblioteca serial, explorador de fronteras), que fue configurada y adaptada según los requerimientos del prototipo.
+En síntesis, el aporte original del autor comprende: (a) el diseño completo del modelo URDF/Xacro y la parametrización de todo el sistema de control, SLAM y navegación en \texttt{articubot\_one}; (b) la extensión del protocolo serial del firmware con comandos en unidades físicas y ganancias asimétricas; (c) el desarrollo íntegro de la cadena de sintonización automática del PID por PSO; y (d) la integración, configuración y validación del sistema completo. Los paquetes de terceros aportaron infraestructura reutilizable (interfaz de hardware, biblioteca serial, explorador de fronteras), configurada y adaptada según los requerimientos del prototipo.
 
 %------------------------------------------------------------------
 \section{Principio de sincronización con la plataforma física}
@@ -40,7 +30,7 @@ En \texttt{robot\_core.xacro} las constantes críticas se centralizan como propi
 %------------------------------------------------------------------
 \section{Parámetros del gemelo digital y trazabilidad}
 
-La Tabla~\ref{tab:parametros_robot} documenta cómo se declaran en los archivos de descripción los parámetros del gemelo digital, indicando su valor, origen técnico y archivo fuente. Los parámetros físicos compartidos con el hardware —radio y separación de ruedas— toman su valor de la fuente única definida en la Tabla~\ref{tab:parametros_modelo} del Capítulo~\ref{ch:componentes}, garantizando la paridad entre simulación y prototipo. La consistencia es total: el diámetro de rueda del plugin de Gazebo equivale al doble del radio del modelo geométrico, y la separación del plugin coincide con el doble del desplazamiento lateral de cada rueda.
+La Tabla~\ref{tab:parametros_robot} documenta cómo se declaran en los archivos de descripción los parámetros del gemelo digital, indicando su valor, origen técnico y archivo fuente. Los parámetros físicos compartidos con el hardware —radio y separación de ruedas— toman su valor de la fuente única definida en la Tabla~\ref{tab:parametros_modelo} del Capítulo~\ref{ch:componentes}, garantizando la paridad entre simulación y prototipo.
 
 \begin{table}[H]
 \centering
@@ -52,7 +42,7 @@ La Tabla~\ref{tab:parametros_robot} documenta cómo se declaran en los archivos 
 \textbf{Parámetro} & \textbf{Valor / Cálculo} & \textbf{Origen técnico} & \textbf{Archivo fuente} \\ 
 \midrule
 \multicolumn{4}{l}{\textit{Chasis}} \\
-\texttt{chassis\_length} & 0.245 m & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
+\texttt{chassis\_length} & 0.245 m (diseño; 0.246 m medido) & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
 \texttt{chassis\_width}  & 0.230 m & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
 \texttt{chassis\_height} & 0.105 m & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
 \texttt{chassis\_mass}   & 2.24 kg & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\ \addlinespace
@@ -63,14 +53,14 @@ Separación                & 0.188 m & \texttt{<wheel\_separation>} & \texttt{ga
 \texttt{caster\_wheel}    & $x=0.21$ m; $z$ calculado & \texttt{origin xyz} & \texttt{robot\_core.xacro} \\
 Fricción caster           & $\mu_1 = \mu_2 = 0.001$ & \texttt{<gazebo reference>} & \texttt{robot\_core.xacro} \\ \addlinespace
 \multicolumn{4}{l}{\textit{Sensor \gls{LIDAR}}} \\
-Posición (\texttt{laser\_joint}) & $x=0.17$ m; $z=0.125$ m & \texttt{origin xyz} & \texttt{lidar.xacro} \\
-Rango de detección        & 0.08 a 12 m (360 pts) & \texttt{<ray>/<scan>} & \texttt{lidar.xacro} \\
-Barrido angular           & $[-3.14, 3.14]$ rad & \texttt{<horizontal>} & \texttt{lidar.xacro} \\ 
+Posición (\texttt{laser\_joint}) & $x=0.17$ m; $z=0.115$ m & \texttt{origin xyz} & \texttt{lidar\_sim.xacro} \\
+Rango de detección        & 0.08 a 12 m (360 pts) & \texttt{<ray>/<scan>} & \texttt{lidar\_sim.xacro} \\
+Barrido angular           & $[-3.14, 3.14]$ rad & \texttt{<horizontal>} & \texttt{lidar\_sim.xacro} \\ 
 \bottomrule
 \end{tabular}
 \end{table}
 
-Esta consistencia es fundamental para la fidelidad de la simulación: si el robot virtual tuviera ruedas más pequeñas o más separadas que el real, las distancias recorridas en Gazebo no coincidirían con las del prototipo, invalidando las pruebas de navegación y mapeo.
+Esta paridad es esencial: ruedas más pequeñas o más separadas en el modelo invalidarían las distancias recorridas en Gazebo frente al prototipo, comprometiendo las pruebas de navegación y mapeo.
 
 \utemFigurePropia{2.Texto/Imag/fig_cotas_gemelo_digital.png}{0.95\textwidth}
 {Cotas principales del gemelo digital: vista lateral, frontal y planta con dimensiones en metros.}
@@ -91,7 +81,7 @@ La auditoría del modelo confirma la jerarquía declarada y el conteo de element
 \section{Composición modular y selección de \textit{backend}}
 \label{sec:backend}
 
-El modelo se construye a partir de módulos independientes ensamblados en un archivo principal. El archivo \texttt{robot.urdf.xacro} incluye siempre \texttt{robot\_core.xacro} (estructura mecánica) y \texttt{lidar.xacro} (sensor láser), y selecciona el método de control según los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode} (Tabla~\ref{tab:xacro_args_backend}).
+El modelo se construye a partir de módulos independientes ensamblados en un archivo principal. El archivo \texttt{robot.urdf.xacro} incluye siempre \texttt{robot\_core.xacro} (estructura mecánica) y, según \texttt{sim\_mode}, el sensor láser (\texttt{lidar.xacro} para hardware real o \texttt{lidar\_sim.xacro} para simulación), y selecciona el método de control según los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode} (Tabla~\ref{tab:xacro_args_backend}).
 
 \begin{table}[H]
 \centering
@@ -140,7 +130,7 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 %------------------------------------------------------------------
 \section{Modelado del sensor láser en simulación}
 
-El escáner láser se modela en el marco \texttt{laser\_frame} con los parámetros declarados en la Tabla~\ref{tab:parametros_robot}. El plugin \texttt{libgazebo\_ros\_ray\_sensor.so} genera los datos y los publica en \texttt{/scan} con formato \texttt{sensor\_msgs/LaserScan}, de modo que el láser virtual se comporta como el RPLidar A1 físico. Al conservar los nombres de marcos y tópicos entre simulación y hardware, los archivos de configuración de SLAM y navegación se reutilizan sin cambios estructurales. La comparación visual de los rayos del \gls{LIDAR} entre Gazebo y RViz se incluye en el \ref{anx:gemelo_digital}.
+En simulación (\texttt{sim\_mode=true}) el escáner láser se describe en \texttt{lidar\_sim.xacro}, en el marco \texttt{laser\_frame}, con los parámetros declarados en la Tabla~\ref{tab:parametros_robot}: 360 muestras sobre $[-\pi, \pi]$, rango 0.08--12~m y \texttt{update\_rate} de 10~Hz (frecuencia efectiva de \texttt{/scan} $\approx 8.9$~Hz). El plugin \texttt{libgazebo\_ros\_ray\_sensor.so} genera los datos y los publica en \texttt{/scan} con formato \texttt{sensor\_msgs/LaserScan}, reproduciendo el comportamiento del RPLidar A1 físico. El rango mínimo simulado (0.08~m) es inferior al mínimo real del A1 (0.15~m, Capítulo~\ref{ch:componentes}), por lo que el modelo resulta algo más permisivo a corta distancia, divergencia sim–real de bajo impacto en navegación de interiores. Al conservar los nombres de marcos y tópicos entre simulación y hardware, los archivos de configuración de SLAM y navegación se reutilizan sin cambios estructurales. La comparación visual de los rayos del \gls{LIDAR} entre Gazebo y RViz se incluye en el \ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
 \section{Control diferencial: interfaz y \textit{backend}}
@@ -201,7 +191,7 @@ Antes de proceder a SLAM y navegación, el gemelo digital debe superar las verif
         3 & 4 & Giro 360°            & Error angular      & < 0.05 rad\tnote{c} & \textit{topic echo} & Prueba manual \\
         4 & 5 & Avance 1 m           & Desv. lateral      & < 0.02 m\tnote{c} & \textit{topic echo} & Prueba manual \\
         5 & 1 & Reloj simulac.       & Freq. \texttt{/clock} & $\geq$ 400 Hz & \textit{topic hz} & gazebo\_params.yaml \\
-        6 & 6 & Freq. \texttt{/scan} & Publicación        & $\sim$10 Hz   & \textit{topic hz} & lidar.xacro \\
+        6 & 6 & Freq. \texttt{/scan} & Publicación        & $\sim$8.9 Hz (config. 10 Hz)   & \textit{topic hz} & lidar\_sim.xacro \\
         7 & 3 & Freq. \texttt{/odom} & Publicación        & $\sim$30 Hz\tnote{d}   & \textit{topic hz} & my\_controllers.yaml \\
         8 & 3 & Tasa de control      & \texttt{update\_rate} & 30 $\pm$ 1 Hz & \textit{topic hz} & my\_controllers.yaml \\
         9 & 7 & Paridad parám.       & Discrepancia\tnote{b} & 0             & Auditoría & Tabla \ref{tab:parametros_robot} \\ 
@@ -237,7 +227,7 @@ Las principales fuentes de divergencia entre simulación y realidad son la inerc
         \midrule
         Inercia y fricción subestimadas & Patinamiento & Ajustar $\mu$ del suelo, geometría esférica en ruedas & \texttt{robot\_core.xacro} \\
         Rueda loca idealizada & Deriva angular & Fijar \textit{joint} inicial, fricción $\mu=0.001$ & \texttt{robot\_core.xacro} \\
-        Desalineación de sensores & Mapa distorsionado & Verificar cadena TF con \texttt{view\_frames} & \texttt{lidar.xacro} \\
+        Desalineación de sensores & Mapa distorsionado & Verificar cadena TF con \texttt{view\_frames} & \texttt{lidar\_sim.xacro} \\
         Parámetros desincronizados & Odometría errónea & Auditoría cruzada de \texttt{radius} y \texttt{separation} & Tabla \ref{tab:parametros_robot} \\
         Latencia serial & \textit{Jitter} & Monitorear \texttt{/odom}, timeout 2000 ms & \texttt{ros2\_control.xacro} \\
         Discrepancia temporal & \textit{Scan matching} degradado & Activar \texttt{use\_sim\_time}, \texttt{/clock} $\geq$400 Hz & \texttt{gazebo\_params.yaml} \\ 
