@@ -1,246 +1,125 @@
 \chapter{Diseño conceptual y descripción del robot digital}
 \label{ch:robot_digital}
 
-Este capítulo desarrolla el gemelo digital del robot móvil diferencial, cuyo papel como herramienta de validación previa al despliegue físico se introdujo en el Capítulo~\ref{ch:estado_arte}. El modelo se implementa en \gls{ROS2}~Foxy (Ubuntu 20.04) mediante URDF/\texttt{xacro} y se despliega en Gazebo, compartiendo con el hardware los mismos marcos de referencia, tópicos y parámetros, de modo que la transición simulación$\rightarrow$hardware exija cambios mínimos.
+Este capítulo describe el gemelo digital del robot móvil diferencial, implementado en \gls{ROS2} Foxy mediante URDF/\texttt{xacro} y desplegado en Gazebo. El objetivo del modelo es validar la geometría, la cinemática, la cadena de transformaciones y la configuración de control antes de operar el prototipo físico, manteniendo paridad entre simulación y hardware real.
 
-El archivo \texttt{robot.urdf.xacro} actúa como compositor principal y fuente de verdad de la geometría y la cinemática, e incluye \texttt{robot\_core.xacro} (estructura del chasis y tren motriz) y, según el argumento \texttt{sim\_mode}, el archivo de LIDAR correspondiente: \texttt{lidar.xacro} (hardware real) o \texttt{lidar\_sim.xacro} (simulación). La selección del \textit{backend} de control es explícita y se detalla en la Sección~\ref{sec:backend}.
+El archivo \texttt{robot.urdf.xacro} actúa como modelo principal del robot e integra los módulos de chasis, ruedas, sensor láser y control. Los parámetros físicos compartidos, como el radio de rueda y la separación entre ruedas, provienen del Capítulo~\ref{ch:componentes}, de modo que el gemelo digital y el robot físico utilizan una misma referencia geométrica.
 
 %------------------------------------------------------------------
-\section{Arquitectura de software y aporte original}
+\section{Arquitectura del modelo digital}
 \label{sec:atribucion}
 
-El \textit{workspace} del proyecto (\texttt{tesis\_black\_robot}) integra paquetes de tres orígenes: desarrollo propio, \emph{forks} adaptados a los requerimientos del prototipo y dependencias externas utilizadas sin modificaciones. La atribución detallada de cada paquete —origen, licencia, modificaciones y naturaleza de la contribución del autor— se documenta en el \ref{anx:gemelo_digital}, y la organización completa del \textit{workspace} en el \ref{anx:workspace}.
+El modelo digital se organiza mediante archivos \texttt{xacro} modulares. El archivo principal \texttt{robot.urdf.xacro} incluye la estructura mecánica del robot, definida en \texttt{robot\_core.xacro}, y selecciona el modelo de sensor según el entorno de ejecución: \texttt{lidar.xacro} para hardware real y \texttt{lidar\_sim.xacro} para simulación.
 
-\noindent
-En síntesis, el aporte original del autor comprende: (a) el diseño completo del modelo URDF/Xacro y la parametrización de todo el sistema de control, SLAM y navegación en \texttt{articubot\_one}; (b) la extensión del protocolo serial del firmware con comandos en unidades físicas y ganancias asimétricas; (c) el desarrollo íntegro de la cadena de sintonización automática del PID por PSO; y (d) la integración, configuración y validación del sistema completo. Los paquetes de terceros aportaron infraestructura reutilizable (interfaz de hardware, biblioteca serial, explorador de fronteras), configurada y adaptada según los requerimientos del prototipo.
-
-%------------------------------------------------------------------
-\section{Principio de sincronización con la plataforma física}
-
-El gemelo digital se concibe como la fuente de verdad geométrica y cinemática del proyecto. Todas las dimensiones relevantes —separación entre ruedas, diámetro de ruedas, altura del sensor láser, envolvente del chasis— se declaran una sola vez en los archivos de descripción del robot y se reutilizan automáticamente en los archivos de lanzamiento, la configuración de control y la calibración.
-
-El flujo de información es bidireccional. Por un lado, el prototipo físico entrega medidas verificadas que actualizan el modelo digital: si la separación real entre ruedas difiere del valor inicial, se corrige en un único punto del archivo de descripción y el cambio se propaga automáticamente. Por otro lado, la simulación entrega parámetros iniciales —como fricción y amortiguamiento— que luego se ajustan empíricamente en pruebas con el hardware real.
-
-\utemFigurePropia{2.Texto/Imag/diagrama_flujo_sincronizacion.png}{0.92\textwidth}
-{Flujo bidireccional de sincronización entre prototipo físico y gemelo digital.}
-{fig:flujo_sincronizacion}
-
-En \texttt{robot\_core.xacro} las constantes críticas se centralizan como propiedades reutilizables, que alimentan la posición de sensores y ruedas y se reflejan aguas abajo tanto en Gazebo como en el controlador de \texttt{ros2\_control}. Las correcciones provenientes del prototipo físico se materializan modificando únicamente dichas propiedades.
+La contribución principal en esta etapa corresponde al diseño del modelo URDF/\texttt{xacro}, la parametrización geométrica del robot, la definición de marcos de referencia y la integración con los sistemas de control, SLAM y navegación. La atribución completa de paquetes propios, adaptados y externos se documenta en el \ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
-\section{Parámetros del gemelo digital y trazabilidad}
+\section{Paridad entre simulación y hardware}
+\label{sec:paridad_sim_hardware}
 
-La Tabla~\ref{tab:parametros_robot} documenta cómo se declaran en los archivos de descripción los parámetros del gemelo digital, indicando su valor, origen técnico y archivo fuente. Los parámetros físicos compartidos con el hardware —radio y separación de ruedas— toman su valor de la fuente única definida en la Tabla~\ref{tab:parametros_modelo} del Capítulo~\ref{ch:componentes}, garantizando la paridad entre simulación y prototipo.
+El gemelo digital se utiliza como fuente de verdad geométrica y cinemática. Las dimensiones críticas, como radio de rueda, separación entre ruedas, posición del sensor láser y dimensiones del chasis, se declaran de forma consistente para simulación y hardware real.
 
 \begin{table}[H]
 \centering
-\caption{Parámetros del gemelo digital y su trazabilidad a los archivos de descripción.}
+\caption{Parámetros principales compartidos entre gemelo digital y hardware.}
 \label{tab:parametros_robot}
-\footnotesize
-\begin{tabular}{lp{3.5cm}ll}
-\toprule
-\textbf{Parámetro} & \textbf{Valor / Cálculo} & \textbf{Origen técnico} & \textbf{Archivo fuente} \\ 
-\midrule
-\multicolumn{4}{l}{\textit{Chasis}} \\
-\texttt{chassis\_length} & 0.245 m (diseño; 0.246 m medido) & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
-\texttt{chassis\_width}  & 0.230 m & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
-\texttt{chassis\_height} & 0.105 m & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
-\texttt{chassis\_mass}   & 2.24 kg & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\ \addlinespace
-\multicolumn{4}{l}{\textit{Tracción y ruedas}} \\
-\texttt{wheel\_radius}    & 0.0335 m & \texttt{xacro:property} & \texttt{robot\_core.xacro} \\
-Diámetro (Gazebo)         & 0.067 m ($2 \times r$) & \texttt{<wheel\_diameter>} & \texttt{gazebo\_control.xacro} \\
-Separación                & 0.188 m & \texttt{<wheel\_separation>} & \texttt{gazebo\_control.xacro} \\
-\texttt{caster\_wheel}    & $x=0.21$ m; $z$ calculado & \texttt{origin xyz} & \texttt{robot\_core.xacro} \\
-Fricción caster           & $\mu_1 = \mu_2 = 0.001$ & \texttt{<gazebo reference>} & \texttt{robot\_core.xacro} \\ \addlinespace
-\multicolumn{4}{l}{\textit{Sensor \gls{LIDAR}}} \\
-Posición (\texttt{laser\_joint}) & $x=0.17$ m; $z=0.115$ m & \texttt{origin xyz} & \texttt{lidar\_sim.xacro} \\
-Rango de detección        & 0.08 a 12 m (360 pts) & \texttt{<ray>/<scan>} & \texttt{lidar\_sim.xacro} \\
-Barrido angular           & $[-3.14, 3.14]$ rad & \texttt{<horizontal>} & \texttt{lidar\_sim.xacro} \\ 
-\bottomrule
-\end{tabular}
-\end{table}
-
-Esta paridad es esencial: ruedas más pequeñas o más separadas en el modelo invalidarían las distancias recorridas en Gazebo frente al prototipo, comprometiendo las pruebas de navegación y mapeo.
-
-\utemFigurePropia{2.Texto/Imag/fig_cotas_gemelo_digital.png}{0.95\textwidth}
-{Cotas principales del gemelo digital: vista lateral, frontal y planta con dimensiones en metros.}
-{fig:cotas_gemelo_digital}
-
-%------------------------------------------------------------------
-\section{Estructura URDF/xacro}
-
-El modelo se organiza como un árbol jerárquico de eslabones (\textit{links}) conectados por articulaciones (\textit{joints}). El eslabón raíz es \texttt{base\_link}, punto de referencia central del que se derivan los demás componentes. El \texttt{base\_footprint}, fijo en el origen, representa la proyección del robot sobre el suelo y sirve de referencia para la navegación. Las ruedas motrices se unen mediante articulaciones continuas —izquierda con orientación $(-\pi/2, 0, 0)$ y eje de giro $(0,0,1)$; derecha con orientación $(+\pi/2, 0, 0)$ y eje $(0,0,-1)$—, definiendo la mecánica diferencial. La rueda loca (\emph{caster}) se modela como una esfera con fricción muy reducida ($\mu_1 = \mu_2 = 0.001$), con función exclusiva de apoyo y posición a ras del plano del suelo virtual.
-
-La parametrización se centraliza mediante propiedades reutilizables: modificar una dimensión —por ejemplo, el radio de rueda— actualiza automáticamente la geometría visual, la envolvente de colisión y los cálculos de inercia.
-
-\subsection{Validación estructural del URDF}
-
-La auditoría del modelo confirma la jerarquía declarada y el conteo de elementos cinemáticos —7 \textit{links} y 6 \textit{joints} (2 continuos y 4 fijos)—, verificados sobre el árbol de transformaciones generado con \texttt{ros2 run tf2\_tools view\_frames}. El árbol TF y el detalle del conteo se incluyen en el \ref{anx:gemelo_digital}.
-
-%------------------------------------------------------------------
-\section{Composición modular y selección de \textit{backend}}
-\label{sec:backend}
-
-El modelo se construye a partir de módulos independientes ensamblados en un archivo principal. El archivo \texttt{robot.urdf.xacro} incluye siempre \texttt{robot\_core.xacro} (estructura mecánica) y, según \texttt{sim\_mode}, el sensor láser (\texttt{lidar.xacro} para hardware real o \texttt{lidar\_sim.xacro} para simulación), y selecciona el método de control según los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode} (Tabla~\ref{tab:xacro_args_backend}).
-
-\begin{table}[H]
-\centering
-\caption{Combinaciones de argumentos y \textit{backend} resultante en el URDF.}
-\label{tab:xacro_args_backend}
 \small
-\begin{tabular}{cc l p{5.5cm}}
+\begin{tabular}{p{4.0cm} p{3.0cm} p{5.5cm}}
 \toprule
-\textbf{\texttt{use\_ros2\_control}} & \textbf{\texttt{sim\_mode}} & \textbf{Inclusión de Xacro} & \textbf{Backend resultante} \\ 
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Uso principal} \\
 \midrule
-\texttt{true}  & \texttt{false}    & \texttt{ros2\_control.xacro} & Hardware real (\texttt{diffdrive\_arduino}) \\ 
-\texttt{false} & (cualquiera)      & \texttt{gazebo\_control.xacro} & Simulación Gazebo (plugin nativo) \\ 
-\texttt{true}  & \texttt{true}     & \texttt{ros2\_control.xacro} & Simulación Gazebo (\texttt{gz\_ros2\_control}) \\ 
+Radio de rueda & 0.0335 m & Cálculo de odometría y control diferencial \\
+Separación entre ruedas & 0.188 m & Modelo cinemático diferencial \\
+Diámetro de rueda & 0.067 m & Modelo de ruedas en Gazebo \\
+Altura del sensor láser & 0.115 m & Posición del marco \texttt{laser\_frame} \\
+Rango simulado del láser & 0.08 a 12 m & Publicación del tópico \texttt{/scan} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Con el robot físico (\texttt{use\_ros2\_control=true}, \texttt{sim\_mode=false}) se activa el plugin \texttt{diffdrive\_arduino/DiffDriveArduino}, que se comunica con el \gls{Arduino} por puerto serie a través de la ruta persistente \texttt{/dev/motor\_controller}; su configuración detallada (conversión de unidades, ciclos de lectura/escritura) se describe en el Capítulo~\ref{sec:integracion_ros2}. En simulación, Gazebo reemplaza al hardware mediante un plugin de software. En ambos casos, el resto del sistema —SLAM, navegación, teleoperación— opera de forma idéntica porque intercambia los mismos tipos de mensajes. Los parámetros geométricos empleados por cada \textit{backend} son los de la Tabla~\ref{tab:parametros_robot}, lo que garantiza la paridad con el hardware.
-
-\utemFigurePropia{2.Texto/Imag/fig_xacro_decision_tree.png}{0.95\textwidth}
-{Lógica de inclusión de archivos xacro y selección de \textit{backend} de control.}
-{fig:xacro_decision_tree}
+La paridad de estos valores es esencial, ya que diferencias en el radio o la separación de ruedas producirían errores en la odometría simulada y dificultarían la transferencia hacia el robot físico.
 
 %------------------------------------------------------------------
-\section{Convenciones de marcos y cadena de transformaciones}
+\section{Estructura URDF/xacro y marcos de referencia}
 \label{sec:tf-convenciones}
 
-Se adopta la convención estándar de ROS definida en \gls{REP103}~\cite{rep103}: \texttt{x} hacia adelante, \texttt{y} hacia la izquierda, \texttt{z} hacia arriba, con ángulos en radianes y regla de la mano derecha. La organización de la cadena de marcos sigue \gls{REP105}~\cite{rep105}, que estandariza los marcos \texttt{map}, \texttt{odom} y \texttt{base\_link} para plataformas móviles, y se publica con \texttt{robot\_state\_publisher}; los orígenes de cada marco corresponden a los valores declarados en la Tabla~\ref{tab:parametros_robot}. El correcto funcionamiento exige \texttt{robot\_state\_publisher} activo con la descripción del robot cargada; los procedimientos de verificación y las acciones correctivas ante marcos o tópicos ausentes se documentan en el \ref{anx:workspace}. La Tabla~\ref{tab:topics_frames} resume el mapeo entre componentes, marcos y tópicos.
+El modelo se organiza como un árbol de eslabones y articulaciones. El marco principal es \texttt{base\_link}, desde el cual se conectan las ruedas, el chasis, la rueda loca y el sensor láser. Además, se utiliza \texttt{base\_footprint} como proyección del robot sobre el suelo, lo que facilita la integración con Nav2.
+
+Se adoptan las convenciones REP-103 y REP-105: eje \texttt{x} hacia adelante, eje \texttt{y} hacia la izquierda y eje \texttt{z} hacia arriba \cite{rep103,rep105}. La cadena de transformaciones principal es:
+
+\begin{center}
+\texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame}
+\end{center}
 
 \begin{table}[H]
 \centering
-\caption{Mapeo de marcos de referencia (TF) y tópicos asociados.}
+\caption{Marcos y tópicos principales del modelo digital.}
 \label{tab:topics_frames}
 \small
-\begin{tabular}{l l p{6cm}}
+\begin{tabular}{p{3.5cm} p{4.0cm} p{5.0cm}}
 \toprule
-\textbf{Componente} & \textbf{Marcos (TF)} & \textbf{Tópicos asociados} \\ 
+\textbf{Componente} & \textbf{Marco} & \textbf{Tópico asociado} \\
 \midrule
-Base diferencial & \texttt{odom} $\rightarrow$ \texttt{base\_link} & \texttt{/odom}, \texttt{/diff\_cont/cmd\_vel\_unstamped} \\
-RPLIDAR A1         & \texttt{laser\_frame} & \texttt{/scan} \\
+Base diferencial & \texttt{odom} $\rightarrow$ \texttt{base\_link} & \texttt{/odom} \\
+Sensor láser & \texttt{laser\_frame} & \texttt{/scan} \\
 Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame} & \texttt{/tf\_static} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-%------------------------------------------------------------------
-\section{Modelado del sensor láser en simulación}
-
-En simulación (\texttt{sim\_mode=true}) el escáner láser se describe en \texttt{lidar\_sim.xacro}, en el marco \texttt{laser\_frame}, con los parámetros declarados en la Tabla~\ref{tab:parametros_robot}: 360 muestras sobre $[-\pi, \pi]$, rango 0.08--12~m y \texttt{update\_rate} de 10~Hz (frecuencia efectiva de \texttt{/scan} $\approx 8.9$~Hz). El plugin \texttt{libgazebo\_ros\_ray\_sensor.so} genera los datos y los publica en \texttt{/scan} con formato \texttt{sensor\_msgs/LaserScan}, reproduciendo el comportamiento del RPLidar A1 físico. El rango mínimo simulado (0.08~m) es inferior al mínimo real del A1 (0.15~m, Capítulo~\ref{ch:componentes}), por lo que el modelo resulta algo más permisivo a corta distancia, divergencia sim–real de bajo impacto en navegación de interiores. Al conservar los nombres de marcos y tópicos entre simulación y hardware, los archivos de configuración de SLAM y navegación se reutilizan sin cambios estructurales. La comparación visual de los rayos del \gls{LIDAR} entre Gazebo y RViz se incluye en el \ref{anx:gemelo_digital}.
+La validación estructural del modelo, incluyendo el conteo de eslabones, articulaciones y árbol TF completo, se traslada al \ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
-\section{Control diferencial: interfaz y \textit{backend}}
+\section{Selección del backend de control}
+\label{sec:backend}
 
-El control diferencial, cuyo fundamento cinemático se desarrolló en el Capítulo~\ref{marco_teorico}, convierte los comandos de velocidad en instrucciones para cada motor. La Figura~\ref{fig:flujo_control_diferencial} muestra el flujo de datos correspondiente en hardware real y en simulación.
-
-\utemFigurePropia{2.Texto/Imag/fig_flujo_control_diferencial.png}{0.95\textwidth}
-{Flujo de datos del control diferencial en hardware real y simulación.}
-{fig:flujo_control_diferencial}
-
-\subsection{Interfaz de control para hardware real}
-
-Con hardware real, \texttt{ros2\_control.xacro} activa el plugin \texttt{diffdrive\_arduino/DiffDriveArduino}. Las interfaces expuestas permiten comandar velocidad angular y leer posición y velocidad de cada rueda (Tabla~\ref{tab:interfaces_ros2_control}). La configuración detallada del plugin se describe en el Capítulo~\ref{sec:integracion_ros2}.
+El modelo permite seleccionar el backend de control según el entorno de ejecución. En hardware real se utiliza \texttt{ros2\_control} con el plugin \texttt{diffdrive\_arduino/DiffDriveArduino}; en simulación, Gazebo reemplaza al hardware mediante un plugin diferencial. En ambos casos se conservan los mismos marcos, tópicos y parámetros geométricos, permitiendo ejecutar SLAM, navegación y teleoperación sin cambios estructurales.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-    \caption{Interfaces de hardware expuestas por \texttt{ros2\_control} para cada rueda motriz.}
-    \label{tab:interfaces_ros2_control}
-    \small
-    \begin{tabular}{llll}
-        \toprule
-        \textbf{Joint} & \textbf{Dirección} & \textbf{Interfaz} & \textbf{Límites} \\ 
-        \midrule
-        \texttt{left\_wheel\_joint}  & Comando & \texttt{velocity} & $[-10,10]$ rad/s \\
-                                     & Estado  & \texttt{velocity} & sin límite \\
-                                     & Estado  & \texttt{position} & sin límite \\
-        \texttt{right\_wheel\_joint} & Comando & \texttt{velocity} & $[-10,10]$ rad/s \\
-                                     & Estado  & \texttt{velocity} & sin límite \\
-                                     & Estado  & \texttt{position} & sin límite \\ 
-        \bottomrule
-    \end{tabular}
-\end{threeparttable}
+\caption{Backend de control según entorno de ejecución.}
+\label{tab:xacro_args_backend}
+\small
+\begin{tabular}{p{3.0cm} p{3.0cm} p{6.0cm}}
+\toprule
+\textbf{Entorno} & \textbf{Backend} & \textbf{Descripción} \\
+\midrule
+Hardware real & \texttt{ros2\_control} & Comunicación serial con \gls{Arduino} mediante \texttt{DiffDriveArduino}. \\
+Simulación & Gazebo & Plugin diferencial de Gazebo para publicar odometría y simular movimiento. \\
+\bottomrule
+\end{tabular}
 \end{table}
 
-\subsection{Backend de simulación y arranque}
-\label{sec:ros2ctrl_gazebo_sub}
+%------------------------------------------------------------------
+\section{Sensor láser simulado}
 
-En simulación, el plugin diferencial de Gazebo emplea los mismos parámetros geométricos de la Tabla~\ref{tab:parametros_robot} y publica la odometría en el marco \texttt{odom} respecto a \texttt{base\_link}. La secuencia de carga de controladores difiere según el entorno: en hardware real se emplea un retardo fijo de 3 segundos antes de activar los controladores, mientras que en simulación la activación se basa en eventos del \texttt{controller\_manager}.
+En simulación, el sensor se modela mediante \texttt{lidar\_sim.xacro}, publicando datos en \texttt{/scan} con el marco \texttt{laser\_frame}. El modelo reproduce el comportamiento general del RPLidar A1 físico, aunque con diferencias propias de la simulación, como ausencia de ruido real y un rango mínimo más permisivo. Estas diferencias se consideran parte de la brecha simulación--realidad.
 
 %------------------------------------------------------------------
-\section{Criterios de aceptación y métricas reproducibles}
+\section{Criterios de aceptación}
 
-Antes de proceder a SLAM y navegación, el gemelo digital debe superar las verificaciones de la Tabla~\ref{tab:criterios_aceptacion_resumen}. Estas combinan la validación intrínseca del modelo en simulación (coherencia TF, respuesta cinemática, temporización) con la auditoría de paridad de parámetros respecto al hardware; los valores medidos y la comparación cruzada simulación–hardware se reportan en el Capítulo~\ref{ch:resultados}.
+Antes de usar el gemelo digital para pruebas de SLAM y navegación, se verifican tres aspectos mínimos: coherencia de la cadena TF, publicación de tópicos principales y respuesta cinemática ante comandos de velocidad.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-    \caption{Resumen de criterios de aceptación, métricas objetivo y herramientas de verificación.}
-    \label{tab:criterios_aceptacion_resumen}
-    \footnotesize
-    \begin{tabular}{ccllll >{\ttfamily}l}
-        \toprule
-        \textbf{N°} & \textbf{Nivel} & \textbf{Criterio} & \textbf{Métrica} & \textbf{Umbral} & \textbf{Herramienta} & \textbf{Fuente/Script} \\ 
-        \midrule
-        1 & 2 & Coherencia TF        & Marcos sueltos     & 0               & \textit{view\_frames} & run\_verificacion\_tf.sh \\
-        2 & 2 & TFs clave            & Activas\tnote{a}   & 5 de 5          & \textit{tf2\_echo}    & run\_verificacion\_tf.sh \\
-        3 & 4 & Giro 360°            & Error angular      & < 0.05 rad\tnote{c} & \textit{topic echo} & Prueba manual \\
-        4 & 5 & Avance 1 m           & Desv. lateral      & < 0.02 m\tnote{c} & \textit{topic echo} & Prueba manual \\
-        5 & 1 & Reloj simulac.       & Freq. \texttt{/clock} & $\geq$ 400 Hz & \textit{topic hz} & gazebo\_params.yaml \\
-        6 & 6 & Freq. \texttt{/scan} & Publicación        & $\sim$8.9 Hz (config. 10 Hz)   & \textit{topic hz} & lidar\_sim.xacro \\
-        7 & 3 & Freq. \texttt{/odom} & Publicación        & $\sim$30 Hz\tnote{d}   & \textit{topic hz} & my\_controllers.yaml \\
-        8 & 3 & Tasa de control      & \texttt{update\_rate} & 30 $\pm$ 1 Hz & \textit{topic hz} & my\_controllers.yaml \\
-        9 & 7 & Paridad parám.       & Discrepancia\tnote{b} & 0             & Auditoría & Tabla \ref{tab:parametros_robot} \\ 
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-        \scriptsize
-        \item[a] Transformadas: \texttt{odom} $\rightarrow$ \texttt{base\_link} (dinámica) y \texttt{base\_link} hacia \texttt{footprint}, \texttt{laser}, \texttt{l\_wheel} y \texttt{r\_wheel} (estáticas).
-        \item[b] Se auditan \texttt{wheel\_separation} (0.188 m) y \texttt{wheel\_radius} (0.0335 m) en archivos \texttt{.xacro}, \texttt{.yaml} e \texttt{.ino}.
-        \item[c] Umbrales orientativos para Gazebo; en hardware real los errores admisibles aumentan (ver Capítulo~\ref{ch:resultados}).
-        \item[d] Aunque \texttt{publish\_rate} se configura en 50~Hz, la frecuencia efectiva de \texttt{/odom} está limitada por \texttt{update\_rate:~30} del \texttt{controller\_manager}.
-    \end{tablenotes}
-\end{threeparttable}
+\caption{Criterios mínimos de aceptación del gemelo digital.}
+\label{tab:criterios_aceptacion_resumen}
+\small
+\begin{tabular}{p{4.0cm} p{4.0cm} p{4.5cm}}
+\toprule
+\textbf{Criterio} & \textbf{Verificación} & \textbf{Resultado esperado} \\
+\midrule
+Cadena TF completa & Marcos \texttt{odom}, \texttt{base\_link} y \texttt{laser\_frame} & Sin marcos sueltos \\
+Publicación de sensores & Tópicos \texttt{/scan} y \texttt{/odom} & Frecuencias estables \\
+Respuesta cinemática & Avance recto y giro en Gazebo & Movimiento coherente con el modelo diferencial \\
+Paridad geométrica & Radio y separación de ruedas & Igualdad con parámetros del prototipo \\
+\bottomrule
+\end{tabular}
 \end{table}
 
-La validación del gemelo digital se ejecuta de forma incremental en siete niveles: (1) reloj y tiempo simulado; (2) geometría y cadena TF; (3) carga y activación de controladores; (4) respuesta a teleoperación; (5) contacto y fricción de ruedas; (6) publicación y \texttt{frame\_id} del sensor láser; y (7) auditoría final de paridad de parámetros, indicados en la columna Nivel de la Tabla~\ref{tab:criterios_aceptacion_resumen}. La superación de cada nivel condiciona el avance al siguiente y, finalmente, a las pruebas de SLAM y navegación.
-
-
-%------------------------------------------------------------------
-\section{Riesgos y mitigaciones simulación--realidad}
-
-Las principales fuentes de divergencia entre simulación y realidad son la inercia y fricción subestimadas, el comportamiento idealizado de la rueda loca y las desalineaciones de sensores. La Tabla~\ref{tab:riesgos_mitigaciones} resume cada riesgo, su impacto y la mitigación adoptada.
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-    \caption{Análisis de riesgos de divergencia simulación--realidad y mitigación.}
-    \label{tab:riesgos_mitigaciones}
-    \footnotesize
-    \begin{tabular}{p{3.2cm} p{2.2cm} p{5.2cm} p{2.8cm}}
-        \toprule
-        \textbf{Riesgo} & \textbf{Impacto} & \textbf{Mitigación} & \textbf{Referencia} \\ 
-        \midrule
-        Inercia y fricción subestimadas & Patinamiento & Ajustar $\mu$ del suelo, geometría esférica en ruedas & \texttt{robot\_core.xacro} \\
-        Rueda loca idealizada & Deriva angular & Fijar \textit{joint} inicial, fricción $\mu=0.001$ & \texttt{robot\_core.xacro} \\
-        Desalineación de sensores & Mapa distorsionado & Verificar cadena TF con \texttt{view\_frames} & \texttt{lidar\_sim.xacro} \\
-        Parámetros desincronizados & Odometría errónea & Auditoría cruzada de \texttt{radius} y \texttt{separation} & Tabla \ref{tab:parametros_robot} \\
-        Latencia serial & \textit{Jitter} & Monitorear \texttt{/odom}, timeout 2000 ms & \texttt{ros2\_control.xacro} \\
-        Discrepancia temporal & \textit{Scan matching} degradado & Activar \texttt{use\_sim\_time}, \texttt{/clock} $\geq$400 Hz & \texttt{gazebo\_params.yaml} \\ 
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-    \scriptsize
-    \item[] Archivos de referencia para las mitigaciones: \texttt{robot\_core.xacro}, \texttt{my\_controllers.yaml}, \texttt{gazebo\_control.xacro} y \texttt{ROSArduinoBridge.ino}.
-    \end{tablenotes}
-\end{threeparttable}
-\end{table}
+El detalle de comandos, scripts de verificación, frecuencias medidas y resultados extendidos se incluye en el \ref{anx:gemelo_digital}.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
-En este capítulo se ha establecido el gemelo digital del robot diferencial, desde la parametrización y la estructura URDF/xacro hasta la selección de \textit{backend} de control para simulación y hardware real. Se han definido las convenciones de marcos TF según REP-103/105, los tópicos asociados y los criterios de aceptación con métricas reproducibles que garantizan la fidelidad de la simulación. La estrategia de mantener un único modelo como fuente de verdad, con parámetros consistentes entre entornos, permite una transición eficiente entre Gazebo y el robot físico. Este gemelo digital constituye la base sobre la cual se desarrollan las pruebas de SLAM y navegación autónoma de los capítulos siguientes, y su validación cuantitativa frente a los criterios aquí definidos se reporta en el Capítulo~\ref{ch:resultados}.
+El gemelo digital permite validar de forma previa la geometría, la cinemática, los marcos de referencia, los tópicos y la configuración de control del robot diferencial. Al mantener parámetros compartidos entre Gazebo y el hardware real, se facilita la transferencia hacia el prototipo físico y se establece una base reproducible para las pruebas de SLAM y navegación.

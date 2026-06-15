@@ -1,97 +1,84 @@
 \chapter{Estado del Arte}
 \label{ch:estado_arte}
 
-Esta revisión del estado del arte contextualiza el desarrollo de robots móviles diferenciales capaces de mapear y navegar de forma autónoma en interiores, utilizando el middleware \gls{ROS2} y sensores de bajo costo. Se analizan los principales algoritmos de SLAM basados en \gls{LIDAR}~2D, se comparan los sensores de percepción, se fundamenta la pila de navegación Nav2, la estrategia de exploración autónoma basada en fronteras y el uso de un gemelo digital como herramienta de validación, y se revisan las plataformas y trabajos de referencia. A partir de este análisis se justifican las decisiones de diseño adoptadas en el prototipo desarrollado.
+Esta revisión del estado del arte contextualiza las decisiones técnicas adoptadas para el desarrollo de un robot móvil diferencial de bajo costo orientado al mapeo 2D, navegación autónoma y exploración de interiores con \gls{ROS2}. Se revisan las alternativas más relevantes en SLAM basado en \gls{LIDAR}~2D, percepción, navegación con Nav2, exploración por fronteras, gemelo digital y trabajos relacionados, con el propósito de fundamentar la arquitectura implementada.
 
 %------------------------------------------------------------------
 \section{SLAM basado en LiDAR 2D}
 \label{sec:slam_lidar}
 
-El problema de localización y mapeo simultáneos (\gls{slam}) consiste en que un robot construya el mapa de un entorno desconocido mientras estima su propia posición dentro de él \citep{thrun2005probabilistic}. En interiores, los sensores \gls{LIDAR}~2D se han consolidado por su precisión, bajo costo y robustez frente a cambios de iluminación \citep{cadena2016past}.
+El problema de localización y mapeo simultáneos (\gls{slam}) consiste en que un robot construya el mapa de un entorno desconocido mientras estima su propia posición dentro de él \citep{thrun2005probabilistic}. En interiores, los sensores \gls{LIDAR}~2D son adecuados por su precisión, bajo costo y robustez frente a cambios de iluminación \citep{cadena2016past}.
 
-Entre los algoritmos disponibles en el ecosistema ROS/\gls{ROS2}, GMapping \citep{grisetti2007gmapping}, Hector SLAM \citep{kohlbrecher2011hector} y Cartographer \citep{hess2016cartographer} presentan, respectivamente, deriva en recorridos largos sin cierre de lazo robusto, sensibilidad a geometrías repetitivas y un costo computacional elevado para una Raspberry~Pi. Frente a ellos, \texttt{slam\_toolbox} \citep{macenski2020slamtoolbox} fue diseñado específicamente para \gls{ROS2} e integra mapeo incremental, optimización por grafos y cierre de lazo con un consumo de recursos moderado, ofreciendo el mejor equilibrio para plataformas de baja potencia. La Tabla~\ref{tab:comparativa_slam} sintetiza esta comparación.
+En el ecosistema \gls{ROS2}, existen distintas alternativas para SLAM 2D. GMapping presenta bajo consumo, pero carece de cierre de lazo robusto; Hector SLAM puede operar sin odometría, aunque es sensible a geometrías repetitivas; Cartographer ofrece buena consistencia global, pero con mayor costo computacional. Frente a estas opciones, \texttt{slam\_toolbox} \citep{macenski2020slamtoolbox} resulta pertinente para este trabajo, ya que fue diseñado para \gls{ROS2}, integra optimización por grafos, cierre de lazo y mantiene un consumo compatible con una Raspberry Pi 4.
 
 \begin{table}[H]
 \centering
-\caption{Comparativa de métodos e implementaciones SLAM basados en \gls{LIDAR} 2D para ROS/\gls{ROS2}.}
+\caption{Comparativa de métodos SLAM basados en \gls{LIDAR} 2D para \gls{ROS2}.}
 \label{tab:comparativa_slam}
 \small
-\begin{tabular}{P{2.0cm} P{3.2cm} P{4.4cm} P{1.6cm} P{1.8cm}}
+\begin{tabular}{P{2.3cm} P{4.0cm} P{4.0cm} P{2.0cm}}
 \toprule
-\textbf{Método / implementación} & \textbf{Ventajas} & \textbf{Desventajas} & \textbf{Cierre de lazo} & \textbf{Adecuación a RPi4} \\
+\textbf{Método} & \textbf{Ventajas} & \textbf{Limitaciones} & \textbf{Adecuación a RPi4} \\
 \midrule
-GMapping     & Bajo consumo, mapas aceptables en espacios pequeños & Deriva en recorridos largos y menor robustez ante cierres de lazo & No & Media \\
-Hector SLAM  & Puede operar sin odometría & Sensible a pasillos homogéneos y geometrías repetitivas & No & Baja \\
-Cartographer & Mapas globalmente consistentes en entornos extensos & Alto uso de CPU/RAM y configuración más compleja & Sí & Baja \\
-slam\_toolbox & Cierre de lazo, edición de mapas y bajo impacto computacional & Menor consistencia global que Cartographer en entornos muy extensos & Sí & \textbf{Alta} \\
+GMapping & Bajo consumo y mapas aceptables en espacios pequeños & Deriva en recorridos largos y menor robustez ante cierre de lazo & Media \\
+Hector SLAM & Puede operar sin odometría & Sensible a pasillos homogéneos y geometrías repetitivas & Baja \\
+Cartographer & Alta consistencia global & Mayor uso de CPU/RAM y configuración más compleja & Baja \\
+\texttt{slam\_toolbox} & Cierre de lazo, grafos de poses e integración nativa con \gls{ROS2} & Menor consistencia que Cartographer en entornos extensos & \textbf{Alta} \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 
 %------------------------------------------------------------------
 \section{Sensores para percepción en interiores}
 \label{sec:sensores}
 
-Para un robot diferencial que opera en interiores planos sobre una Raspberry~Pi~4, el \gls{LIDAR}~2D ofrece la mejor relación entre precisión, campo de visión de $360^\circ$, tasa de actualización y consumo, frente al mayor costo y carga computacional de las cámaras RGB-D y los \gls{LIDAR}~3D, incompatibles con la plataforma. Se selecciona el RPLidar~A1 \citep{SlamtecA1Datasheet} por su integración nativa con \texttt{slam\_toolbox} y con los mapas de costo de Nav2 para construir mapas de ocupación 2D, asumiendo la limitación de no detectar obstáculos fuera del plano de barrido en entornos estructurados de interior.
+Para un robot diferencial de interiores basado en Raspberry Pi 4, el \gls{LIDAR}~2D ofrece una relación adecuada entre precisión, campo de visión, frecuencia de actualización y costo. En comparación con cámaras RGB-D o \gls{LIDAR}~3D, reduce la carga computacional y permite construir mapas de ocupación 2D compatibles con \texttt{slam\_toolbox} y los mapas de costo de Nav2. Por ello, se selecciona el RPLidar A1 \citep{SlamtecA1Datasheet}, asumiendo como limitación que no detecta obstáculos fuera del plano de barrido.
 
 %------------------------------------------------------------------
 \section{Navegación autónoma con Nav2}
 \label{sec:nav2}
 
-Nav2 (\textit{Navigation2}) es la pila de navegación estándar en \gls{ROS2} \citep{nav2_doc}. Su pertinencia para este trabajo radica en que integra de forma modular los componentes que la inscripción exige validar —planificación global, control local, mapas de costo con inflación, árbol de comportamiento y acciones de recuperación— y permite seleccionar el planificador global (NavFn con A\*) y el controlador local (DWB) más adecuados para una plataforma de recursos limitados, así como reconfigurar la lógica de recuperación sin reescribir el sistema. La combinación \texttt{slam\_toolbox} + Nav2 es ampliamente utilizada en robots diferenciales con \gls{LIDAR}~2D y recursos computacionales limitados \citep{macenski2020nav2}. El detalle de configuración de cada módulo se aborda en el capítulo de implementación de la navegación.
+Nav2 (\textit{Navigation2}) es la pila de navegación estándar en \gls{ROS2} \citep{nav2_doc}. Su pertinencia para este trabajo radica en que integra los componentes requeridos para navegación autónoma: planificación global, control local, mapas de costo, árbol de comportamiento y acciones de recuperación. En particular, se adopta NavFn con A* como planificador global y DWB como controlador local, debido a su compatibilidad con robots diferenciales y a su bajo costo computacional relativo. El detalle de configuración se desarrolla en el capítulo de implementación de navegación.
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion}
 
-La exploración autónoma extiende la navegación al caso en que no existe un mapa previo: el robot debe decidir hacia dónde desplazarse para maximizar la información adquirida del entorno. El paradigma más extendido es la exploración basada en fronteras, que dirige al robot hacia los límites entre el espacio conocido libre y el espacio aún no observado \citep{yamauchi1997frontier}. En \gls{ROS2} este paradigma se implementa con el paquete \texttt{m-explore-ros2} (port a \gls{ROS2} de \texttt{explore\_lite}), que detecta fronteras sobre el mapa de ocupación generado por SLAM y emite metas de navegación hacia ellas a través de Nav2. Se adopta por su compatibilidad con \gls{ROS2} y con \texttt{slam\_toolbox} y porque reutiliza la infraestructura de mapeo y navegación ya desplegada, sin requerir sensores ni cómputo adicionales, cerrando el ciclo percepción–mapeo–navegación–exploración sobre la misma arquitectura \gls{ROS2}.
+La exploración autónoma permite que el robot seleccione metas sin intervención manual mientras construye el mapa. El enfoque basado en fronteras dirige el robot hacia los límites entre el espacio libre conocido y las zonas aún no observadas \citep{yamauchi1997frontier}. En este trabajo se adopta \texttt{m-explore-ros2}, adaptación a \gls{ROS2} de \texttt{explore\_lite}, porque reutiliza el mapa generado por \texttt{slam\_toolbox} y envía metas directamente a Nav2, sin requerir sensores adicionales.
 
 %------------------------------------------------------------------
 \section{Validación mediante gemelo digital}
 \label{sec:gemelo_digital}
 
-La validación de robots móviles antes de su despliegue físico se apoya cada vez más en gemelos digitales: réplicas virtuales que reproducen la cinemática, la dinámica y la percepción del robot en un entorno simulado. En \gls{ROS2}, el simulador Gazebo cumple esta función al integrarse con \texttt{ros2\_control}, lo que permite ejecutar la misma pila de software sobre el modelo simulado y sobre el hardware real. Esta aproximación reduce el riesgo y el costo del desarrollo, pero introduce la brecha simulación–realidad (\textit{sim-to-real}): las no linealidades del hardware —fricción de Coulomb, zona muerta del controlador de motor, ruido de sensores— no se reflejan plenamente en el modelo \citep{koenig2004gazebo}. Por ello, en este trabajo el gemelo digital no sustituye la validación física, sino que la complementa mediante una estrategia de validación cruzada que contrasta sistemáticamente el comportamiento simulado con el del robot real.
-
-%------------------------------------------------------------------
-\section{Plataformas robóticas de referencia}
-\label{sec:plataformas}
-
-La serie TurtleBot (Open Robotics) \citep{turtlebotROS} es el referente más cercano a este trabajo —robots diferenciales de bajo costo para enseñanza de ROS/\gls{ROS2}—, mientras que plataformas de gama superior como Jackal (Clearpath Robotics) \citep{clearpath_jackal} ofrecen mejor rendimiento a un costo que limita su accesibilidad académica. Su arquitectura común (\gls{ROS2} e integración de sensores \gls{LIDAR}) respalda el enfoque adoptado en este prototipo.
+El uso de un gemelo digital en Gazebo permite validar la geometría, la cinemática, la cadena de transformaciones y la configuración de control antes de operar el robot físico. En este trabajo, la simulación no reemplaza la validación experimental, sino que reduce riesgos durante la puesta en marcha y permite comparar el comportamiento simulado con el hardware real, considerando la brecha simulación--realidad asociada a fricción, zona muerta del driver y ruido sensorial \citep{koenig2004gazebo}.
 
 %------------------------------------------------------------------
 \section{Trabajos relacionados}
 \label{sec:trabajos_relacionados}
 
-Diversos proyectos académicos han abordado la integración de SLAM y navegación autónoma con \gls{ROS2} en plataformas de bajo costo. La Tabla~\ref{tab:trabajos_relacionados} resume los más relevantes.
-
-Tran~Ngoc et al. \citep{ngoc2023efficient} compararon GMapping, Cartographer y \texttt{slam\_toolbox} sobre un robot diferencial simulado en Gazebo con \gls{ROS2}, midiendo la precisión de los mapas frente a la verdad de terreno y el tiempo necesario para alcanzar destinos predefinidos. \texttt{slam\_toolbox} produjo mapas con menor ruido, mejor alineación y tiempos de navegación consistentemente menores, lo que respalda la selección del algoritmo de mapeo del presente trabajo.
-
-Amadi et al. \citep{amadi2024introduction} presentaron Lidarbot, un robot diferencial de bajo costo (aprox. USD~250) basado en Raspberry~Pi~4, RPLidar~A1 y \texttt{ros2\_control} sobre ROS~2 Humble, con navegación mediante Nav2 y fusión sensorial por filtro de Kalman extendido (EKF) entre encoders e IMU. Por su cercanía en hardware y software, constituye la principal base de comparación.
-
-Gökçe et al. \citep{gokcce2021particle} aplicaron optimización por enjambre de partículas (PSO) para sintonizar los parámetros PID de un robot móvil \textit{skid-steer}, con una función de costo que pondera error en estado estacionario, tiempo de subida y sobreimpulso, demostrando en simulación robustez ante perturbaciones y la viabilidad del enfoque PSO en robótica móvil.
+La Tabla~\ref{tab:trabajos_relacionados} sintetiza trabajos académicos relacionados con SLAM, navegación autónoma, plataformas diferenciales de bajo costo y sintonización PID mediante PSO. Estos antecedentes permiten comparar el alcance del presente prototipo y justificar las decisiones de diseño adoptadas.
 
 \begin{table}[H]
 \centering
 \caption{Resumen de trabajos relacionados comparables con el prototipo desarrollado.}
 \label{tab:trabajos_relacionados}
 \scriptsize
-\begin{tabular}{P{2.1cm} c P{2.4cm} P{1.8cm} P{1.8cm} P{3.0cm}}
+\begin{tabular}{P{2.1cm} c P{2.5cm} P{1.9cm} P{1.9cm} P{3.0cm}}
 \toprule
 \textbf{Referencia} & \textbf{Año} & \textbf{Plataforma} & \textbf{SLAM} & \textbf{Sensor} & \textbf{Aporte clave} \\
 \midrule
-\citep{ngoc2023efficient} & 2023 & Robot diferencial (Gazebo, \gls{ROS2}) & GMapping, Cartographer, slam\_toolbox & \gls{LIDAR}~2D ($360^\circ$) & slam\_toolbox superior en precisión de mapa y tiempo de navegación \\
+\citep{ngoc2023efficient} & 2023 & Robot diferencial en Gazebo con \gls{ROS2} & GMapping, Cartographer, \texttt{slam\_toolbox} & \gls{LIDAR}~2D & Comparación de algoritmos SLAM y desempeño de navegación \\
 \addlinespace
-\citep{amadi2024introduction} & 2024 & Lidarbot (RPi4 + RPLidar A1) & slam\_toolbox & \gls{LIDAR}~2D e IMU & Robot de bajo costo (aprox. USD~250) con ros2\_control, Nav2 y EKF \\
+\citep{amadi2024introduction} & 2024 & Lidarbot con Raspberry Pi 4 & \texttt{slam\_toolbox} & RPLidar A1 e IMU & Robot de bajo costo con \texttt{ros2\_control}, Nav2 y EKF \\
 \addlinespace
-\citep{gokcce2021particle} & 2021 & Agrobot 4 ruedas (simulación) & --- & --- & PSO para sintonización PID; robustez ante perturbaciones \\
+\citep{gokcce2021particle} & 2021 & Robot móvil \textit{skid-steer} & --- & --- & Sintonización PID mediante PSO en robótica móvil \\
 \addlinespace
-\textbf{Este trabajo} & 2026 & Robot propio (RPi4 + \gls{Arduino}) & slam\_toolbox & RPLidar A1 & Integración de extremo a extremo: PSO, refinamiento experimental, gemelo digital y exploración de fronteras \\
+\textbf{Este trabajo} & 2026 & Robot propio con Raspberry Pi 4 y \gls{Arduino} & \texttt{slam\_toolbox} & RPLidar A1 & Integración de gemelo digital, PID por PSO, Nav2 y exploración de fronteras \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-El aporte de este trabajo es la integración documentada y validada de extremo a extremo sobre una plataforma de bajo costo: combina sintonización PSO con un ciclo de refinamiento experimental sobre hardware real —para compensar no linealidades como la fricción de Coulomb y la zona muerta del driver L298N no capturadas por el modelo FODT (\textit{First Order plus Dead Time})—, validación cruzada simulación–realidad, gemelo digital completo y exploración autónoma de fronteras, elementos no reunidos simultáneamente en los trabajos analizados.
+A diferencia de los trabajos revisados, este proyecto integra en una misma plataforma de bajo costo el diseño físico del robot, un gemelo digital en Gazebo, control PID de velocidad por rueda con sintonización PSO y refinamiento experimental, mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración basada en fronteras. La contribución principal no reside en proponer un nuevo algoritmo, sino en la integración documentada y verificable de estos subsistemas sobre hardware real.
 
 %------------------------------------------------------------------
 \section{Decisiones de diseño}
@@ -101,15 +88,15 @@ A partir de la revisión anterior, se adoptan las siguientes decisiones de dise�
 
 \begin{enumerate}
 \item \textbf{Algoritmo SLAM}: \texttt{slam\_toolbox} en modo asíncrono en línea \citep{ngoc2023efficient}.
-\item \textbf{Sensor principal}: \gls{LIDAR}~2D RPLidar~A1.
+\item \textbf{Sensor principal}: \gls{LIDAR}~2D RPLidar A1.
 \item \textbf{Pila de navegación}: Nav2 con planificador global NavFn (A\*), controlador local DWB y árbol de comportamiento para recuperación.
-\item \textbf{Framework de control}: \texttt{ros2\_control} con \texttt{diff\_drive\_controller} \citep{amadi2024introduction} y plugin \texttt{DiffDriveArduino} sobre protocolo serial con \gls{Arduino}.
-\item \textbf{Sintonización PID}: PSO + refinamiento experimental sobre hardware real \citep{gokcce2021particle}.
-\item \textbf{Exploración autónoma}: estrategia basada en fronteras (\texttt{m-explore-ros2}) sobre el mapa de \texttt{slam\_toolbox}, integrada con Nav2.
-\item \textbf{Estrategia de validación}: validación cruzada entre el gemelo digital (Gazebo) y el hardware real, con métricas de odometría, control PID, SLAM, navegación y exploración \citep{ngoc2023efficient}.
+\item \textbf{Framework de control}: \texttt{ros2\_control} con \texttt{diff\_drive\_controller} y plugin \texttt{DiffDriveArduino} sobre protocolo serial con \gls{Arduino} \citep{amadi2024introduction}.
+\item \textbf{Sintonización PID}: PSO y refinamiento experimental sobre hardware real \citep{gokcce2021particle}.
+\item \textbf{Exploración autónoma}: estrategia basada en fronteras mediante \texttt{m-explore-ros2}, integrada con \texttt{slam\_toolbox} y Nav2.
+\item \textbf{Estrategia de validación}: validación cruzada entre Gazebo y hardware real, con métricas cuantitativas para odometría, control PID y SLAM, y verificación funcional para navegación y exploración.
 \end{enumerate}
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
-La revisión confirma que la integración entre \texttt{slam\_toolbox} y Nav2 sobre \texttt{ros2\_control}, con \gls{LIDAR}~2D y exploración basada en fronteras, constituye una arquitectura madura y reproducible para la navegación autónoma de interiores en plataformas de bajo costo. Los capítulos siguientes desarrollan el diseño, la implementación y la validación experimental de esta arquitectura, contrastando el desempeño alcanzado con los referentes aquí analizados.
+La revisión respalda la elección de una arquitectura basada en \texttt{slam\_toolbox}, Nav2, \texttt{ros2\_control}, \gls{LIDAR}~2D y exploración por fronteras para un robot diferencial de bajo costo. Estas decisiones permiten desarrollar una plataforma reproducible para mapeo, navegación e integración experimental en interiores.

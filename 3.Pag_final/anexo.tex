@@ -12,321 +12,404 @@
 
 \begin{appendices}
 
-\section{Esquema eléctrico completo del robot}
-\label{anx:esquema_electrico}
+%======================================================================
+\section{Construcción, componentes y montaje}
+\label{anx:componentes}
 
-El presente anexo contiene el diagrama esquemático integral de las conexiones eléctricas y de datos del prototipo. El esquema complementa la descripción de la Sección~\ref{sec:criterios_potencia} y la Figura~\ref{fig:esquema_conexiones} del Capítulo~\ref{chap:robot_real}, proporcionando el nivel de detalle necesario para la reproducción y verificación del cableado.
+Este anexo reúne información complementaria sobre los componentes, el montaje físico, la alimentación y la reproducción del prototipo. En el cuerpo principal se mantienen solo los parámetros que alimentan el modelo, el firmware y la validación.
 
-\subsection{Dominio de potencia (\texorpdfstring{12\,V y 5\,V}{12V y 5V})}
-
-El bus de 12\,V parte del paquete de batería Li-ion 3S (tensión nominal 10.8\,V, plena carga 12.6\,V) a través de un fusible de protección tipo \textit{mini blade} de 10\,A, dimensionado según el presupuesto de potencia de la Tabla~\ref{tab:power_budget_filled}. El interruptor general (pulsante de 16\,mm con retención) actúa como \textbf{maestro sobre la línea de 12\,V}: al accionarse, de-energiza la totalidad del sistema —tanto la actuación (L298N y motores) como la lógica alimentada por el convertidor \textit{buck} (Raspberry~Pi y periféricos)—, por lo que conduce la corriente total del bus. En consecuencia, el apagado seguro exige detener primero el sistema operativo de la Raspberry~Pi y solo después accionar el interruptor (\ref{anx:guia_startup}). El regulador \textit{buck} DFRobot DFR0205, basado en el convertidor GS2678, reduce la tensión a 5\,V estables con eficiencia superior al 90\,\% para alimentar la Raspberry~Pi~4 y los periféricos USB. La topología de masas sigue un esquema en estrella, convergiendo los retornos de potencia y lógica en un punto común próximo al terminal negativo de la batería.
-
-\subsection{Dominio de control y señales}
-
-Las conexiones de señales se organizan en dos niveles. El primero conecta el Arduino~Nano con los encoders de cuadratura y el driver de motores: los canales A y B del encoder izquierdo se conectan a D3 (PD3) y D2 (PD2) mediante interrupciones por cambio de pin (PCINT2, puerto D), y los del encoder derecho a A4 (PC4) y A5 (PC5) mediante PCINT1 (puerto C). Los pines de habilitación del L298N (ENA en D13, ENB en D12) se mantienen en estado HIGH permanente, mientras que la velocidad y dirección de cada motor se regulan mediante PWM aplicado a los pines de entrada IN1--IN4 (D6, D10, D9, D5), como se describe en el Capítulo~\ref{ch:setup_arduino}. El segundo nivel conecta la Raspberry~Pi~4 con el Arduino~Nano mediante enlace serial USB a 57\,600~baud (símbolo persistente \texttt{/dev/motor\_controller}), con el RPLidar~A1 por un segundo puerto USB y con el receptor del mando inalámbrico por un tercero.
-
-\section{Lista de materiales (\textit{Bill of Materials})}
+\subsection{Componentes principales}
 \label{anx:bom}
 
-La siguiente tabla consolida todos los componentes utilizados en la construcción del prototipo. Esta lista permite estimar el costo de reproducción y verificar la completitud del inventario; el desembolso real se detalla en el \ref{anx:costos}.
-
 \begin{table}[H]
 \centering
-\caption{Lista de materiales completa del prototipo.}
-\label{tab:anx_bom}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.10}
-
-\begin{tabularx}{\textwidth}{@{}c P{0.24\textwidth} c P{0.30\textwidth} >{\raggedright\arraybackslash}X@{}}
+\caption{Componentes principales del prototipo.}
+\label{tab:anx_bom_resumido}
+\small
+\begin{tabular}{p{4.0cm} p{3.2cm} p{6.0cm}}
 \toprule
-\textbf{N°} & \textbf{Componente} & \textbf{Cant.} & \textbf{Referencia / Modelo} & \textbf{Función} \\
+\textbf{Subsistema} & \textbf{Componente} & \textbf{Función} \\
 \midrule
-\multicolumn{5}{@{}l}{\textbf{Estructura y locomoción}} \\
-\midrule
-1  & Chasis (impresión 3D, PLA+) & 1 & Diseño propio, eSUN PLA+ & Soporte estructural \\
-2  & Motorreductor DC 12\,V 130\,RPM & 2 & JGA25-370 & Actuación \\
-3  & Rueda de goma 67\,mm & 2 & Compatible JGA25 & Tracción \\
-4  & Rueda loca (\textit{ball caster}) & 1 & Rodillo esférico 2.8$\times$4.5\,cm & Apoyo \\
-\midrule
-
-\multicolumn{5}{@{}l}{\textbf{Sensores}} \\
-\midrule
-5  & Encoder de cuadratura Hall & 2 & JGA25-371 (11 PPR, integrado) & Odometría \\
-6  & Escáner láser 2D & 1 & RPLidar A1M8-R5 (Slamtec) & Mapeo y navegación \\
-\midrule
-
-\multicolumn{5}{@{}l}{\textbf{Electrónica de control}} \\
-\midrule
-7  & Computador de bordo & 1 & Raspberry Pi 4 Model B (8\,GB) & Cómputo de alto nivel, \gls{ROS2} \\
-8  & Microcontrolador & 1 & \gls{Arduino} V3 (ATmega328P) & Control de bajo nivel, PID \\
-9  & Driver de motores & 1 & Módulo L298N (puente H dual) & Potencia a motores \\
-\midrule
-
-\multicolumn{5}{@{}l}{\textbf{Alimentación y protecciones}} \\
-\midrule
-10 & Batería Li-ion 3S & 1 & Compatible Makita BL1021B (10,8\,V nom.) & Fuente de energía \\
-11 & Regulador buck DC-DC & 1 & DFRobot DFR0205 (GS2678) & Conversión 12\,V $\rightarrow$ 5\,V \\
-12 & Interruptor maestro con retención & 1 & LANBOO 16\,mm & Corte general de la línea de 12\,V \\
-13 & Fusible mini blade & 1 & OptiFuse APM 10\,A & Protección de cortocircuito \\
-14 & Portafusible & 1 & Compatible mini blade & Soporte para fusible \\
-\midrule
-
-\multicolumn{5}{@{}l}{\textbf{Conectividad y periféricos}} \\
-\midrule
-15 & Tarjeta microSD & 1 & 32--64\,GB, clase 10 & SO de la Raspberry Pi \\
-16 & Cable USB-A a mini-USB & 1 & Para \gls{Arduino} & Serial Arduino--Pi \\
-17 & Cable USB-A a micro-USB & 1 & Para RPLidar A1 & Datos + alimentación \gls{LIDAR} \\
-18 & Mando inalámbrico & 1 & Compatible \texttt{joy} de \gls{ROS2} & Teleoperación \\
-19 & Travel router & 1 & GL.iNet o equivalente & Red dedicada Pi--PC \\
-\midrule
-
-\multicolumn{5}{@{}l}{\textbf{Cableado y misceláneos}} \\
-\midrule
-20 & Cable AWG 18--20 (rojo/negro) & --- & Calibre según sección & Bus de potencia \\
-21 & Conectores Dupont M/F & --- & Pines 2.54\,mm & Señales encoder/L298N \\
-22 & Tornillería M3 & --- & M3$\times$8, M3$\times$12 & Fijación de componentes \\
-23 & Separadores hex. M3 & --- & Nylon o latón & Montaje de placas \\
-24 & Cinta termorretráctil / bridas & --- & Varios diámetros & Aislación y ordenamiento \\
+Estructura & Chasis impreso en PLA+ & Soporte físico del robot y alojamiento de componentes. \\
+Locomoción & 2 motores JGA25-370 & Actuación diferencial. \\
+Odometría & Encoders Hall en cuadratura & Medición de desplazamiento y velocidad de ruedas. \\
+Control de motores & Driver L298N & Accionamiento bidireccional mediante \gls{PWM}. \\
+Control de bajo nivel & \gls{Arduino} Nano & Lectura de encoders y control PID. \\
+Cómputo principal & Raspberry Pi 4 & Ejecución de \gls{ROS2}, SLAM y navegación. \\
+Percepción & RPLidar A1 & Barridos láser 2D para mapeo y costmaps. \\
+Alimentación & Batería 12~V y regulador 5~V & Suministro de energía para motores, lógica y sensores. \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
 
-\section{Planos mecánicos, vistas 3D y parámetros de impresión}
-\label{anx:planos_3d}
-\label{anx:renders3d}
+\subsection{Alimentación y protecciones}
+\label{anx:alimentacion}
+
+El sistema se alimenta desde una batería Li-ion de 12~V. Desde este bus se energizan los motores y, mediante un convertidor reductor, se genera el riel de 5~V para la Raspberry Pi, el \gls{Arduino} y el \gls{LIDAR}. La distribución separa el dominio de potencia del dominio lógico para reducir interferencias producidas por los motores.
+
+La cadena principal de alimentación es:
+
+\begin{center}
+Batería 12~V $\rightarrow$ fusible $\rightarrow$ interruptor maestro $\rightarrow$ reguladores y cargas
+\end{center}
+
+\subsection{Parámetros de impresión 3D}
 \label{anx:impresion3d}
-
-Este anexo reúne las vistas ortogonales acotadas del chasis, las vistas isométricas del modelo paramétrico (desarrollado en \textit{Fusion~360}) y los parámetros de impresión 3D en PLA+ (Sección~\ref{sec:fab_3d} del Capítulo~\ref{ch:componentes}). Todas las piezas se fabricaron en una impresora Creality Ender~3.
-
-\begin{utemMultiFigurePropia}{Vistas isométricas del modelo 3D del prototipo.}{fig:galeria_prototipo_3d}
-\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_izq_frontal.png}{Isométrica superior--izquierda (frontal)}
-\hfill
-\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_inf_der.png}{Isométrica inferior--derecha}
-\vspace{1cm}
-\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_der.png}{Isométrica superior--derecha (frontal)}
-\hfill
-\addutem{0.43}{2.Texto/Imag/robot_vista_isometrica_sup_izq_posterior.png}{Isométrica superior--izquierda (posterior)}
-\end{utemMultiFigurePropia}
 
 \begin{table}[H]
 \centering
-\caption{Parámetros de impresión 3D (laminado en \textit{Ultimaker Cura}).}
+\caption{Parámetros generales de impresión 3D.}
 \label{tab:anx_print_params}
+\small
 \begin{tabular}{ll}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} \\
 \midrule
-Material                    & PLA+ (eSUN) \\
-Impresora                   & Creality Ender 3 \\
-Altura de capa              & 0.2~mm \\
-Relleno (\textit{infill})  & 20--30\% (giroide o rejilla) \\
-Paredes perimetrales        & 3 \\
-Capas superior/inferior     & 4 \\
-Temperatura de boquilla     & 205--215\,°C \\
-Temperatura de cama          & 55--60\,°C \\
-Velocidad de impresión     & 50~mm/s \\
-Boquilla                    & latón 0.4~mm (0.6~mm para piezas robustas) \\
-Tolerancias de ensamblaje   & 0.2--0.4~mm \\
-Soportes                    & Según geometría (voladizos $>$45°) \\
+Material & PLA+ \\
+Altura de capa & 0.2~mm \\
+Relleno & 20--30\% \\
+Paredes perimetrales & 3 \\
+Temperatura de boquilla & 205--215~$^\circ$C \\
+Temperatura de cama & 55--60~$^\circ$C \\
+Velocidad de impresión & 50~mm/s \\
+Tolerancia de ensamblaje & 0.2--0.4~mm \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-
-\section{Datos de sintonización PID y convergencia PSO}
-\label{anx:pid_data}
-
-Este anexo complementa la Sección~\ref{sec:sintonizacion_pso} del Capítulo~\ref{ch:setup_arduino} y la Sección~\ref{sec:resultados_pid} del Capítulo~\ref{ch:resultados}, aportando los datos intermedios del proceso de sintonización.
-
-\subsection{Datos crudos de la respuesta al escalón}
-
-Los datos de la prueba en lazo abierto se almacenaron en \texttt{step\_response\_velocity\_lazo\_abierto.npy} (NumPy), generado por \texttt{ControlLazoAbierto.py} con \texttt{PWM\_STEP}~$= 143$. La matriz contiene las columnas: tiempo (s), señal PWM (adim.), velocidad rueda izquierda (m/s) y velocidad rueda derecha (m/s). El período de muestreo nominal es $T_s = 0.1$~s, y el escalón produce una velocidad de estado estacionario de $\approx 0.13$~m/s en ambas ruedas.
-
-\subsection{Parámetros FODT identificados}
-
-El PSO es estocástico, por lo que cada ejecución produce parámetros ligeramente distintos. La Tabla~\ref{tab:anx_fodt} corresponde a la corrida de \texttt{SintonizacionAutomatica.py}, empleada para obtener las ganancias PID iniciales que, tras el refinamiento experimental (Sección~\ref{subsec:refinamiento_iterativo}), constituyen las ganancias definitivas del firmware. La Tabla~\ref{tab:anx_fodt_lambda} corresponde a una corrida independiente (\texttt{SintonizacionLambda.py}) utilizada únicamente como base para el cálculo de la sintonía Lambda con fines comparativos; dicha sintonía se descartó por su sobreimpulso superior al 40\,\% y no determinó el diseño final. Ambas corridas son consistentes en $K_m$ y $\tau$; la diferencia se concentra en el retardo $L_d$, de baja magnitud relativa. La tabla consolidada del cuerpo es la Tabla~\ref{tab:fodt_params_pso} del Capítulo~\ref{ch:resultados}.
+%======================================================================
+\section{Arquitecturas y plataformas de referencia}
+\label{anx:arquitecturas}
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Modelo FODT identificado por PSO --- corrida de \texttt{SintonizacionAutomatica.py}.}
-\label{tab:anx_fodt}
+\caption{Comparación cualitativa de arquitecturas de locomoción.}
+\label{tab:anx_comparativa_arquitecturas}
+\small
 \begin{tabular}{lccc}
 \toprule
-\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L_d$ \textbf{(s)} \\
+\textbf{Arquitectura} & \textbf{Maniobrabilidad} & \textbf{Complejidad} & \textbf{Adecuación} \\
 \midrule
-Izquierda & $0.000913$ & $0.3291$ & $0.0215$ \\
-Derecha   & $0.000890$ & $0.3485$ & $0.0001$ \\
+Diferencial & Alta & Baja & Alta \\
+Ackermann & Media & Media & Media \\
+Omnidireccional & Muy alta & Alta & Media \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item Corrida utilizada para las ganancias PID iniciales. $K_m$ y $\tau$ son consistentes entre corridas; el retardo $L_d$ presenta mayor variabilidad por su baja magnitud relativa.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
+
+La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación, soporte en \gls{ROS2} y calidad de odometría para interiores. El prototipo desarrollado se ubica cerca de plataformas educativas como TurtleBot, pero incorpora firmware, integración de hardware y parametrización propios.
+
+%======================================================================
+\section{Gemelo digital y verificación estructural}
+\label{anx:gemelo_digital}
+
+El modelo se construye a partir de \texttt{robot.urdf.xacro}, que integra la estructura mecánica definida en \texttt{robot\_core.xacro}. Según el entorno de ejecución, se utiliza \texttt{lidar.xacro} para hardware real o \texttt{lidar\_sim.xacro} para simulación. La selección del backend de control se realiza mediante los argumentos \texttt{sim\_mode} y \texttt{use\_ros2\_control}.
+
+\subsection{Validación estructural del URDF}
+\label{anx:validacion_urdf}
+
+La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF. La cadena principal validada es:
+
+\begin{center}
+\texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame}
+\end{center}
 
 \begin{table}[H]
 \centering
-\caption{Modelo FODT identificado por PSO --- corrida de \texttt{SintonizacionLambda.py} (base de la comparación Lambda).}
-\label{tab:anx_fodt_lambda}
-\begin{tabular}{lccc}
+\caption{Resumen de elementos cinemáticos del modelo.}
+\label{tab:anx_urdf_evidencia}
+\small
+\begin{tabular}{lp{9cm}}
 \toprule
-\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L_d$ \textbf{(s)} \\
+\textbf{Elemento} & \textbf{Descripción} \\
 \midrule
-Izquierda & $0.000913$ & $0.3291$ & $0.0001$ \\
-Derecha   & $0.000890$ & $0.3485$ & $0.0845$ \\
+\textit{Links} & \texttt{base\_link}, \texttt{base\_footprint}, \texttt{chassis}, ruedas y sensor. \\
+\textit{Joints} & Articulaciones fijas para chasis y sensor; articulaciones continuas para ruedas. \\
+Marcos principales & \texttt{odom}, \texttt{base\_link}, \texttt{base\_footprint}, \texttt{laser\_frame}. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Convergencia del algoritmo PSO}
+Las principales fuentes de divergencia simulación--hardware son la fricción real, la zona muerta del driver, el ruido sensorial, la latencia serial y discrepancias entre parámetros declarados en archivos \texttt{xacro}, archivos \texttt{yaml} y firmware.
 
-La optimización usa 50~partículas y 150~generaciones. Se monitoreó la evolución de la función de costo (mejor global) tanto en la identificación del modelo como en la optimización de ganancias, verificándose la convergencia antes de alcanzar el límite de generaciones.
+%======================================================================
+\section{Hardware, red e integración con ROS 2}
+\label{anx:hardware_ros2}
 
-\subsection{Ganancias PID finales y parámetros del firmware}
+Este anexo documenta información complementaria sobre el entorno de ejecución, la red de comunicación, los paquetes principales y la integración entre Raspberry Pi, \gls{Arduino} y sensores.
+
+\subsection{Entorno de ejecución y workspace}
+\label{anx:workspace}
+
+El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación base como en la Raspberry Pi 4. La comunicación estación--robot se realiza mediante una red Wi-Fi dedicada, con IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}.
 
 \begin{table}[H]
 \centering
-\caption{Parámetros PID y constantes del firmware (Capítulo~\ref{ch:setup_arduino}).}
-\label{tab:anx_pid_firmware}
-\begin{tabular}{llcc}
+\caption{Paquetes principales del workspace.}
+\label{tab:anx_ws_roles}
+\small
+\begin{tabular}{p{4.0cm} p{9.0cm}}
 \toprule
-\textbf{Constante} & \textbf{Descripción} & \textbf{Rueda izq.} & \textbf{Rueda der.} \\
+\textbf{Paquete} & \textbf{Rol en el sistema} \\
 \midrule
-\texttt{Kp}                  & Ganancia proporcional          & $16.00$  & $16.42$ \\
-\texttt{Kd}                  & Ganancia derivativa            & $20.30$  & $20.05$ \\
-\texttt{Ki}                  & Ganancia integral              & $0.075$  & $0.001$ \\
-\texttt{Ko}                  & Divisor de escala              & $50$     & $50$ \\
-\texttt{PID\_INTERVAL}       & Período del PID (ms)         & \multicolumn{2}{c}{$33$ (aprox.\ 30\,Hz)} \\
-\texttt{AUTO\_STOP\_INTERVAL} & Timeout de auto-detención (ms) & \multicolumn{2}{c}{$2000$} \\
-\texttt{ENC\_TICKS\_PER\_REV} & Cuentas por vuelta del encoder & \multicolumn{2}{c}{$1980$} \\
-\texttt{WHEEL\_DIAMETER}      & Diámetro de rueda (m)        & \multicolumn{2}{c}{$0.067$} \\
-\texttt{MAX\_PWM}             & Límite de señal PWM        & \multicolumn{2}{c}{$255$} \\
-\texttt{BAUDRATE}             & Velocidad serial (baud)        & \multicolumn{2}{c}{$57600$} \\
+\texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. \\
+\texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. \\
+\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. \\
+\texttt{m-explore-ros2} & Exploración autónoma basada en fronteras. \\
+\texttt{pid\_config} & Scripts de captura, identificación FODT y sintonización PSO. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\subsection{Asignación de pines y dispositivos}
+\label{anx:pinout_dispositivos}
 
-\section{Firmware ROSArduinoBridge: datos complementarios}
+\begin{table}[H]
+\centering
+\caption{Asignación resumida de pines entre \gls{Arduino}, L298N y encoders.}
+\label{tab:anx_pinout_arduino_l298n}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Función} & \textbf{Pin Arduino} & \textbf{Destino} \\
+\midrule
+PWM avance izquierdo & D6 & IN1 L298N \\
+PWM retroceso izquierdo & D10 & IN2 L298N \\
+PWM avance derecho & D9 & IN3 L298N \\
+PWM retroceso derecho & D5 & IN4 L298N \\
+Habilitación izquierda & D13 & ENA L298N \\
+Habilitación derecha & D12 & ENB L298N \\
+Encoder izquierdo A/B & D3/D2 & Encoder izquierdo \\
+Encoder derecho A/B & A4/A5 & Encoder derecho \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Para evitar cambios de nombres en los puertos serie, se utilizan reglas \texttt{udev}. El \gls{Arduino} se expone como \texttt{/dev/motor\_controller}; el RPLidar puede exponerse como \texttt{/dev/rplidar} o \texttt{/dev/rlidar\_gpio}, según el modo de conexión.
+
+\subsection{Parámetros compartidos}
+\label{anx:parametros_compartidos}
+
+\begin{table}[H]
+\centering
+\caption{Parámetros compartidos entre firmware y plugin de hardware.}
+\label{tab:anx_trazabilidad_parametros}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Uso} \\
+\midrule
+\texttt{ENC\_TICKS\_PER\_REV} & 1980 & Conversión de encoder a posición. \\
+\texttt{PID\_RATE} & 30~Hz & Frecuencia del lazo de control. \\
+\texttt{BAUDRATE} & 57600 & Comunicación serial Arduino--Raspberry Pi. \\
+\texttt{AUTO\_STOP\_INTERVAL} & 2000~ms & Auto-detención por pérdida de comandos. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
+\section{Firmware, encoders y sintonización PID}
 \label{anx:firmware}
 
-Este anexo complementa el Capítulo~\ref{ch:setup_arduino} con los datos experimentales y los detalles de implementación del firmware (configuración de registros y rutinas de interrupción, clases \texttt{ArduinoComms} y \texttt{Wheel}, capa serial asíncrona y factores de escala del PSO).
+Este anexo complementa el capítulo de firmware con datos experimentales y parámetros usados durante la sintonización del controlador PID.
 
-\subsection{Muestras experimentales de cuentas por vuelta}
-\label{sec:anx_muestras_cuentas}
-Para determinar experimentalmente el número de cuentas por revolución de rueda, se hizo girar cada rueda una vuelta completa, repitiendo la medición diez veces y registrando la cuenta del encoder en cada repetición (Tabla~\ref{tab:muestras_cuentas}). Los promedios por rueda y el valor unificado adoptado (\texttt{ENC\_TICKS\_PER\_REV} $= N_e = 1980$ cuentas/vuelta) se reportan en la Sección~\ref{sec:cpr_promedios}.
+\subsection{Organización modular y protocolo serial}
+\label{anx:firmware_modular}
+
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Muestras del número de cuentas en los encoders por revolución.}
-\label{tab:muestras_cuentas}
-\begin{tabular}{S[table-format=2.0] S[table-format=4.0] S[table-format=4.0]}
+\caption{Módulos principales del firmware.}
+\label{tab:anx_modulos_firmware}
+\small
+\begin{tabular}{p{4.5cm} p{8.5cm}}
 \toprule
-\textbf{N$^{\circ}$} & {$N_{e,R}$ \textbf{(cuentas)}} & {$N_{e,L}$ \textbf{(cuentas)}} \\
+\textbf{Archivo} & \textbf{Función} \\
 \midrule
-1  & 1966 & 1978 \\
-2  & 1960 & 1948 \\
-3  & 2002 & 1966 \\
-4  & 1980 & 1970 \\
-5  & 1972 & 1972 \\
-6  & 1964 & 1978 \\
-7  & 1980 & 1957 \\
-8  & 1980 & 1975 \\
-9  & 1980 & 1962 \\
+\texttt{ROSArduinoBridge.ino} & Coordina el parser serial, el ciclo de control y la auto-detención. \\
+\texttt{commands.h} & Define los comandos ASCII usados por el protocolo serial. \\
+\texttt{encoder\_driver} & Lee los encoders mediante interrupciones por cambio de pin. \\
+\texttt{motor\_driver} & Controla el driver L298N mediante señales \gls{PWM}. \\
+\texttt{diff\_controller.h} & Implementa la estructura del PID y su actualización. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Comandos principales del protocolo serial.}
+\label{tab:anx_comandos_seriales}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Comando} & \textbf{Nombre} & \textbf{Uso} \\
+\midrule
+\texttt{e} & \texttt{READ\_ENCODERS} & Lectura de contadores absolutos. \\
+\texttt{m} & \texttt{MOTOR\_SPEEDS} & Referencia en \textit{ticks/frame}. \\
+\texttt{k} & \texttt{SET\_VEL\_MPS} & Referencia en m/s. \\
+\texttt{z} & \texttt{UPDATE\_PID\_LR} & Carga de ganancias PID por rueda. \\
+\texttt{o} & \texttt{MOTOR\_RAW\_PWM} & PWM directo para pruebas en lazo abierto. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cuentas por vuelta y ganancias finales}
+\label{anx:pid_data}
+
+Para determinar el número de cuentas por revolución de rueda, se hizo girar cada rueda una vuelta completa y se repitió la medición diez veces. El valor unificado adoptado fue $N_e=1980$ cuentas/vuelta.
+
+\begin{table}[H]
+\centering
+\caption{Muestras del número de cuentas por revolución.}
+\label{tab:anx_muestras_cuentas}
+\small
+\begin{tabular}{ccc}
+\toprule
+\textbf{N} & \textbf{Rueda derecha} & \textbf{Rueda izquierda} \\
+\midrule
+1 & 1966 & 1978 \\
+2 & 1960 & 1948 \\
+3 & 2002 & 1966 \\
+4 & 1980 & 1970 \\
+5 & 1972 & 1972 \\
+6 & 1964 & 1978 \\
+7 & 1980 & 1957 \\
+8 & 1980 & 1975 \\
+9 & 1980 & 1962 \\
 10 & 1978 & 1979 \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[] $N_{e,R}$ y $N_{e,L}$: cuentas por revolución de las ruedas derecha e izquierda. El firmware emplea un único valor $N_e = 1980$ para ambas ruedas.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
-
-
-\section{Puesta en marcha y configuración del \textit{workspace}}
-\label{anx:guia_startup}
-\label{anx:workspace}
-
-Este anexo documenta el entorno de ejecución, la organización del \textit{workspace} de \gls{ROS2} y el procedimiento de encendido, lanzamiento y apagado del prototipo, con el propósito de reproducir el sistema sobre el cual se obtuvieron los resultados de validación.
-
-\subsection{Entorno y compatibilidad}
-\label{sec:anx_env}
-
-El sistema se ejecuta sobre \gls{ROS2}~Foxy y Ubuntu~20.04 tanto en la estación base como en la Raspberry~Pi~4, garantizando paridad de entorno entre simulación y hardware (Tabla~\ref{tab:ws_env_final}).
 
 \begin{table}[H]
 \centering
+\caption{Parámetros PID finales y constantes principales del firmware.}
+\label{tab:anx_pid_firmware}
 \small
-\caption{Resumen de compatibilidad del entorno de ejecución.}
-\label{tab:ws_env_final}
-\begin{tabular}{l p{9.5cm}}
+\begin{tabular}{lcc}
 \toprule
-\textbf{Atributo} & \textbf{Valor y especificación} \\ 
+\textbf{Parámetro} & \textbf{Rueda izquierda} & \textbf{Rueda derecha} \\
 \midrule
-SO (estación base)   & Ubuntu 20.04.6 LTS, x86\_64 \\
-SO (Raspberry Pi 4)  & Ubuntu 20.04.6 LTS, aarch64 \\ \addlinespace
-\gls{ROS2}           & \texttt{foxy} (Foxy Fitzroy), \texttt{ROS\_VERSION=2}, \texttt{PYTHON\_VERSION=3} \\
-\texttt{ROS\_DOMAIN\_ID} & 0 (dominio único; sin segmentación de red) \\ \addlinespace
-Gazebo               & \texttt{gazebo11} (11.10.2) + \texttt{libgazebo11-dev} \\
-Puente Gazebo--ROS   & \texttt{gazebo\_ros\_pkgs} (3.5.2) y \texttt{gazebo\_ros2\_control} \\ \addlinespace
-DDS / RTPS           & FastDDS (eProsima Fast-RTPS), implementación por defecto \\
-Repositorio Git      & \url{https://github.com/SVN11X/tesis_black_robot} (acceso vía SSH) \\ 
+\texttt{Kp} & 16.00 & 16.42 \\
+\texttt{Kd} & 20.30 & 20.05 \\
+\texttt{Ki} & 0.075 & 0.001 \\
+\texttt{Ko} & 50 & 50 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Red dedicada y comunicación DDS}
-\label{sec:anx_red}
-
-La comunicación estación--robot se realiza sobre una red Wi-Fi dedicada en modo punto de acceso privado, con IP estáticas (Netplan) y un único \texttt{ROS\_DOMAIN\_ID=0}. Esta configuración aísla el tráfico \gls{ROS2}, estabiliza el descubrimiento DDS y reduce la pérdida de paquetes. En el punto de acceso se habilita la multidifusión y se desactiva el aislamiento de clientes para permitir el descubrimiento entre nodos. La calidad de servicio se ajusta por tópico según lo definido en la Sección~\ref{sec:qos_topics} del Capítulo~\ref{chap:robot_real}.
-
-\subsection{Organización del \textit{workspace}}
-\label{sec:anx_org}
-
-El \textit{workspace} \texttt{tesis\_black\_robot} se organiza bajo el principio de paridad simulación--hardware: un mismo paquete principal conserva la descripción URDF/Xacro, los parámetros y los lanzadores, de modo que simulación y robot real comparten los mismos marcos \texttt{TF}, sensores y controladores. La sincronización entre la estación y el robot se realiza mediante un repositorio Git común (\textit{single source of truth}).
-
-\utemFigurePropia{2.Texto/Imag/template_folder.png}{0.85\textwidth}
-{Esquema de sincronización del paquete \texttt{articubot\_one} entre la estación de trabajo y el robot.}{fig:template_folder}
-
-\noindent\textbf{Inventario de paquetes (\texttt{src/}):}
-\begin{itemize}
-  \item \texttt{articubot\_one}: descripción del chasis, configuración de control, SLAM, navegación y escenarios de simulación.
-  \item \texttt{diffdrive\_arduino}: interfaz \texttt{ros2\_control} entre \gls{ROS2} y el microcontrolador (encoders + L298N) y odometría.
-  \item \texttt{serial}, \texttt{serial\_motor\_demo}, \texttt{joy\_tester}: utilidades de E/S y validación.
-  \item \texttt{ros2\_control}, \texttt{ros2\_controllers}: control diferencial.
-  \item \texttt{m-explore-ros2}: exploración autónoma basada en fronteras.
-\end{itemize}
+\subsection{Identificación FODT y PSO}
+\label{anx:fodt_pso}
 
 \begin{table}[H]
 \centering
+\caption{Parámetros FODT utilizados como base para la sintonización.}
+\label{tab:anx_fodt}
 \small
-\caption{Estructura y propósito de las carpetas del paquete principal.}
-\label{tab:ws_roles}
-\begin{tabular}{>{\ttfamily}P{0.27\textwidth} P{0.65\textwidth}}
-    \toprule
-    \textbf{Carpeta} & \textbf{Rol en el sistema} \\ 
-    \midrule
-    description/ & URDF/Xacro, mallas y definiciones \textit{TF}; árbol \texttt{map}$\rightarrow$\texttt{odom}$\rightarrow$\texttt{base\_link}$\rightarrow$\texttt{laser\_frame}. \\ \addlinespace
-    config/      & YAML de controladores, SLAM, \textit{costmaps} y navegación. \\ \addlinespace
-    launch/      & Lanzadores en Python que orquestan el \textit{bringup}. \\ \addlinespace
-    worlds/      & Entornos de simulación para Gazebo. \\ 
-    \bottomrule
+\begin{tabular}{lccc}
+\toprule
+\textbf{Rueda} & $K_m$ \textbf{(m/s/PWM)} & $\tau$ \textbf{(s)} & $L_d$ \textbf{(s)} \\
+\midrule
+Izquierda & 0.000913 & 0.3291 & 0.0215 \\
+Derecha & 0.000890 & 0.3485 & 0.0001 \\
+\bottomrule
 \end{tabular}
 \end{table}
 
-\section{Carta Gantt del proyecto}
-\label{anx:gantt}
+\begin{table}[H]
+\centering
+\caption{Hiperparámetros utilizados en el PSO.}
+\label{tab:anx_pso_hiperparametros}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} \\
+\midrule
+$S$ & 50 & Tamaño del enjambre. \\
+$G$ & 150 & Generaciones máximas. \\
+$c_1$ & 2.05 & Coeficiente cognitivo. \\
+$c_2$ & 2.05 & Coeficiente social. \\
+$\chi$ & 0.7298 & Factor de constricción. \\
+$w_{\mathrm{in}}^g$ & $(G-g)/G$ & Inercia decreciente. \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-La Figura~\ref{fig:gantt} presenta la planificación temporal del proyecto, organizada según las seis etapas metodológicas descritas en la Introducción.
+\begin{equation}
+\texttt{rads\_per\_count}
+=
+\frac{2\pi}{\texttt{enc\_counts\_per\_rev}}
+=
+\frac{2\pi}{1980}
+\approx 0.003173
+\text{ rad/cuenta}
+\label{eq:anx_rads_per_count}
+\end{equation}
 
-\utemFigurePropia{2.Texto/Imag/carta_gantt.pdf}{0.95\textwidth}{Carta Gantt del proyecto.}{fig:gantt}
+%======================================================================
+\section{Configuración complementaria de SLAM, Nav2 y exploración}
+\label{anx:nav2_slam_config}
 
+Las configuraciones de simulación y hardware se mantienen en archivos separados. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}. En hardware real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
 
+\begin{table}[H]
+\centering
+\caption{Parámetros principales de \texttt{slam\_toolbox}.}
+\label{tab:anx_slam_params}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
+\midrule
+\texttt{solver\_plugin} & \texttt{CeresSolver} & Optimizador del grafo. \\
+\texttt{odom\_frame} & \texttt{odom} & Marco de odometría. \\
+\texttt{map\_frame} & \texttt{map} & Marco global. \\
+\texttt{base\_frame} & \texttt{base\_link} & Marco base. \\
+\texttt{scan\_topic} & \texttt{/scan} & Tópico del \gls{LIDAR}. \\
+\texttt{resolution} & 0.05~m & Resolución del mapa. \\
+\texttt{do\_loop\_closing} & \texttt{true} & Cierre de lazo activado. \\
+\bottomrule
+\end{tabular}
+\end{table}
 
+\begin{table}[H]
+\centering
+\caption{Parámetros principales de Nav2 y DWB.}
+\label{tab:anx_nav2_dwb_params}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Parámetro} & \textbf{Hardware} & \textbf{Simulación} \\
+\midrule
+\texttt{controller\_frequency} & 8.0~Hz & 20.0~Hz \\
+\texttt{max\_vel\_x} & 0.15~m/s & 0.26~m/s \\
+\texttt{max\_vel\_theta} & 0.5~rad/s & 1.0~rad/s \\
+\texttt{xy\_goal\_tolerance} & 0.10~m & 0.25~m \\
+\texttt{use\_astar} & \texttt{true} & \texttt{true} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Parámetros principales del explorador de fronteras.}
+\label{tab:anx_explore_params}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
+\midrule
+\texttt{robot\_base\_frame} & \texttt{base\_link} & Marco base del robot. \\
+\texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & Costmap global. \\
+\texttt{planner\_frequency} & 0.05~Hz & Frecuencia de evaluación. \\
+\texttt{progress\_timeout} & 60.0~s & Tiempo máximo sin progreso. \\
+\texttt{gain\_scale} & 1.0 & Peso de ganancia de información. \\
+\texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera. \\
+\texttt{visualize} & \texttt{true} & Visualización en RViz2. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
 \section{Transformación de ganancias en la sintonía Lambda}
 \label{anx:lambda}
  
@@ -340,558 +423,59 @@ K_p = k_c \,\frac{\tau_I + \tau_D}{\tau_I}, \quad T_i = \tau_I + \tau_D, \quad T
 \noindent
 Estos valores constituyen la línea base analítica que se contrasta con las ganancias obtenidas por PSO en el capítulo de validación.
 
-
-\section{Comparación de arquitecturas de locomoción}
-\label{anx:arquitecturas}
- 
-La arquitectura de tracción diferencial adoptada se justificó en el Capítulo~\ref{ch:estado_arte}. A modo de respaldo, se compara cualitativamente frente a las arquitecturas Ackermann y omnidireccional (Mecanum/Swedish), descartadas para este alcance. Criterios: (C1) maniobrabilidad en espacios reducidos; (C2) calidad de odometría para fusión con \gls{slam}; (C3) complejidad mecánico-cinemática y de control; (C4) eficiencia energética a baja velocidad; (C5) costo e integración con el hardware disponible; (C6) madurez de ejemplos y controladores en \gls{ROS2}.
- 
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-  \caption{Comparativa cualitativa de arquitecturas de locomoción.}
-  \label{tab:comparativa_arquitecturas}
-  \small
-  \begin{tabular}{l cccccc}
-    \toprule
-    \textbf{Arquitectura} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} \\ 
-    \midrule
-    Diferencial      & \textbf{Alta}     & \textbf{Alta}  & Baja          & Media         & \textbf{Baja} & \textbf{Alta} \\
-    Ackermann        & Media             & Media          & Media--Alta   & \textbf{Alta} & Media         & Media \\
-    Omnidireccional  & \textbf{Muy alta} & Media--Baja    & \textbf{Alta} & Baja          & Alta          & Media \\ 
-    \bottomrule
-  \end{tabular}
-\begin{tablenotes}
-  \footnotesize
-  \item \textbf{Criterios:} C1: Maniobrabilidad; C2: Calidad de odometría; C3: Complejidad; C4: Eficiencia energética; C5: Costo; C6: Soporte en \gls{ROS2}.
-  \item \textbf{Evaluación basada en:} \citep{siegwart2011introduction,campion1996structural} para C1--C3, \citep{thrun2005probabilistic} para C2, \citep{taheri2015omnidirectional} para la omnidireccional, y \citep{macenski2020nav2} para C6.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
- 
-La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación y rendimiento en interiores. Las alternativas Ackermann y omnidireccional se dejan como líneas de trabajo futuro.
-
-
-\section{Plataformas robóticas de referencia}
-\label{anx:plataformas}
-
-Las plataformas comerciales de referencia citadas en el Capítulo~\ref{ch:estado_arte} —TurtleBot y Jackal— se ilustran en la Figura~\ref{fig:robots_referencia}. Ambas comparten una arquitectura de software basada en \gls{ROS2} e integración de sensores \gls{LIDAR}.
-
-\begin{utemMultiFigure}{Plataformas robóticas de referencia basadas en \gls{ROS2}.}{fig:robots_referencia}
-    \addutem{0.42}{2.Texto/Imag/turtleBot4.jpg}{TurtleBot}{turtlebot4_clearpath}
-    \hfill
-    \addutem{0.42}{2.Texto/Imag/jackal.jpg}{Jackal}{clearpath_jackal}
-\end{utemMultiFigure}
-
-
-\section{Comparación económica}
+%======================================================================
+\section{Costos y comparación económica}
 \label{anx:costos}
 
-El costo total de los materiales adquiridos para el prototipo ascendió a \textbf{CLP~582.447} (Tabla~\ref{tab:costo_prototipo}). Como es habitual en prototipado, ciertos insumos de bajo costo (tornillería, conectores, cableado) se adquirieron en kits de múltiples unidades; el costo reportado corresponde al valor de compra de dichos kits, lo que ofrece una referencia realista del desembolso. La lista de materiales completa se desglosa en el \ref{anx:bom}.
-
-\begin{ThreePartTable}
-\begin{TableNotes}[para,flushleft]
-\footnotesize
-\item[a] Equipamiento de soporte externo: el cargador recarga las baterías entre sesiones; el transmisor HDMI permite supervisar la Raspberry Pi sin monitor cableado.
-\item[b] Adquirido en presentación de múltiples unidades; solo se empleó una fracción. El costo reportado es el del kit completo.
-\item[c] Conectores de crimpado en 18, 20, 22 y 24~AWG, rojo y negro; cada caja de 100 unidades se contabiliza por su costo total.
-\item[d] Cable revestido de 18, 24 y 26~AWG en 2 y 6 núcleos, en rollos de 2~m.
-\end{TableNotes}
-
-\small
-\setlength{\LTleft}{0pt}
-\setlength{\LTright}{0pt}
-\begin{longtable}{lrr}
-\caption{Costo del prototipo (precios reales en CLP, período 2024--2026).}
-\label{tab:costo_prototipo}\\
-\toprule
-\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\footnotesize\textit{Continuación de la tabla anterior}}\\
-\toprule
-\textbf{Componente} & \textbf{Cant.} & \textbf{Costo (CLP)} \\
-\midrule
-\endhead
-\bottomrule
-\insertTableNotes
-\endlastfoot
-\multicolumn{3}{l}{\textit{Componentes principales}} \\ \addlinespace
-RPLidar A1 & 1 & 83.324 \\
-Raspberry Pi 4 (8 GB) & 1 & 77.272 \\
-Baterías Li-ion 3S (10.8 V nom.), 3000 mAh & 3 & 62.154 \\
-Transmisor HDMI inalámbrico\tnote{a} & 1 & 32.739 \\
-Router GL.iNet MT300N-V2 & 1 & 22.140 \\
-Regulador DC--DC (GS2678) & 1 & 18.858 \\
-Motorreductores JGA25-370 c/ encoder y ruedas & 2 & 18.038 \\
-Cargador de batería Li-ion 12 V\tnote{a} & 1 & 16.169 \\
-Chasis impreso 3D (PLA+, 1 kg) & 1 & 13.353 \\
-Hub USB alimentado & 1 & 12.400 \\
-Carcasa aluminio Raspberry Pi 4 & 1 & 9.832 \\
-Arduino Nano V3 + \emph{shield} base & 1 & 8.000 \\
-Adaptador de batería 12 V (conector Makita) & 1 & 4.940 \\
-Tarjeta microSD 64 GB clase 10 & 1 & 4.655 \\
-Driver de motores L298N & 1 & 3.000 \\
-Rueda loca (\emph{ball caster}) & 1 & 1.893 \\
-\midrule
-\multicolumn{2}{r}{\textit{Subtotal componentes principales}} & \textit{388.767} \\
-\midrule
-\multicolumn{3}{l}{\textit{Fijación, cableado y accesorios}} \\ \addlinespace
-Kit tornillos avellanada M1.6--M3\tnote{b} & 1 & 15.202 \\
-Kit tornillos Allen M3--M5\tnote{b} & 1 & 15.089 \\
-Kit insertos roscados M2--M6 (90 pzas.)\tnote{b} & 1 & 7.899 \\
-Kit insertos roscados M2--M3 (500 pzas.)\tnote{b} & 1 & 7.199 \\
-Separadores hexagonales M3×50 (10 pzas.)\tnote{b} & 1 & 8.293 \\
-Kit terminales JST 1.25 mm & 1 & 5.800 \\
-Kit DuPont 2.54 mm (620 pzas.) & 2 & 9.052 \\
-Kit terminales PH 2.0 mm (230 pzas.) & 1 & 2.507 \\
-Conectores crimpado varios AWG\tnote{c} & 6 & 6.621 \\
-Cable silicona 20 AWG, rojo y negro (5 m c/u) & 2 & 4.162 \\
-Cable revestido varios AWG\tnote{d} & 6 & 12.506 \\
-Cable RJ45 Cat-6 10 m & 1 & 5.066 \\
-Cable RJ45 Cat-6 5 m & 2 & 3.310 \\
-Cable micro USB macho 90°, 25 cm & 1 & 1.099 \\
-Cable extensión micro USB & 1 & 1.298 \\
-Conectores XT60 (5 pares)\tnote{b} & 1 & 3.478 \\
-Portafusible mini + fusible 10 A & 1 & 1.464 \\
-Interruptor maestro pulsante 16 mm & 1 & 1.773 \\
-Divisor de línea 6 puertos & 1 & 2.832 \\
-Cinta FPV 10 cm & 1 & 1.817 \\
-\midrule
-\multicolumn{2}{r}{\textit{Subtotal fijación, cableado y accesorios}} & \textit{193.680} \\
-\midrule
-\textbf{Total prototipo} & & \textbf{582.447} \\
-\bottomrule
-\end{longtable}
-\end{ThreePartTable}
-
-El costo del prototipo se contrasta en la Tabla~\ref{tab:comparacion_costos} con plataformas comerciales de prestaciones equivalentes, convertido a dólares al tipo de cambio referencial de 963~CLP/USD (dólar observado promedio del cuarto trimestre de 2024, Banco Central de Chile \citep{BCCh_DolarQ42024}).
+El costo total de materiales del prototipo fue de aproximadamente CLP~582.447, considerando componentes principales, fijaciones, cableado y accesorios. Este valor es comparable con plataformas educativas de bajo costo, pero con la ventaja de que el firmware, la integración de hardware y la parametrización fueron desarrollados y documentados para el prototipo.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Comparación de costo con plataformas comerciales.}
-\label{tab:comparacion_costos}
-\begin{tabular}{P{3.8cm} r r P{4.5cm}}
+\caption{Comparación económica resumida.}
+\label{tab:anx_comparacion_costos}
+\small
+\begin{tabular}{lrl}
 \toprule
-\textbf{Plataforma} & \textbf{Costo (USD)} & \textbf{Costo (CLP)} & \textbf{Observación} \\
+\textbf{Plataforma} & \textbf{Costo aprox.} & \textbf{Observación} \\
 \midrule
-Este prototipo
-  & $\sim$605
-  & 582.447
-  & Firmware e interfaz de hardware desarrollados desde cero \\
-TurtleBot 3 Burger\tnote{a} \citep{ROBOTIS_TB3Burger}
-  & $\sim$550
-  & $\sim$522.500
-  & Kit educativo, RPi4 \\
-TurtleBot 3 Waffle Pi\tnote{a} \citep{ROBOTIS_TB3Waffle}
-  & $\sim$1.800
-  & $\sim$1.710.000
-  & Incluye LiDAR 360° y cámara \\
-Clearpath Jackal \citep{clearpath_jackal}
-  & $\sim$18.000
-  & $\sim$17.100.000
-  & Plataforma industrial \\
+Este prototipo & CLP~582.447 & Desarrollo propio de firmware e integración. \\
+TurtleBot 3 Burger & US\$~550 & Plataforma educativa de referencia. \\
+TurtleBot 3 Waffle Pi & US\$~1.800 & Incluye LiDAR y cámara. \\
+Clearpath Jackal & US\$~18.000 & Plataforma industrial. \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] Precios de catálogo de ROBOTIS consultados en el segundo semestre de 2024, previo al incremento arancelario de 2025 (que elevó el Burger a US\$\,784 y el Waffle~Pi a US\$\,1.934).
-\item Conversión referencial a 963 CLP/USD, sin impuestos de internación ni envío. El Jackal corresponde a la configuración base sin sensores adicionales.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-El costo del prototipo ($\approx$ US\$ 605) es comparable al del TurtleBot~3 Burger en su precio de catálogo de 2024 ($\approx$ US\$ 550) y sustancialmente inferior al del Waffle~Pi y al de plataformas de investigación como el Jackal. Más que un menor costo absoluto frente al modelo base, el aporte de este trabajo reside en que el firmware de bajo nivel y la interfaz de hardware se desarrollaron desde cero sobre componentes genéricos, sin depender de hardware ni firmware propietarios, lo que habilita personalización completa a un costo equivalente.
-
-
-
-%======================================================================
-\section{Especificaciones técnicas de los componentes}
-\label{anx:componentes}
-
-Este anexo reúne las especificaciones de hoja de datos de los componentes del prototipo y el detalle del subsistema de alimentación, trasladados desde el Capítulo~\ref{ch:componentes} para no interrumpir su lectura. En el cuerpo del capítulo se conservan únicamente los parámetros que alimentan el modelo, el control o la validación.
-
-\subsection{Motorreductor JGA25-370}
-
-\begin{itemize}
-  \item \textbf{Tensión nominal}: 12~V DC.
-  \item \textbf{Velocidad sin carga}: 130~RPM.
-  \item \textbf{Corriente sin carga}: 0.05--0.15~A.
-  \item \textbf{Ratio de reducción}: aproximadamente 1:45.
-  \item \textbf{Torque nominal}: $\sim$1~kg$\cdot$cm; torque de bloqueo $\sim$3.6~kg$\cdot$cm a 2~A.
-  \item \textbf{Peso}: $\sim$110~g.
-\end{itemize}
-
-\subsection{Driver de motores L298N}
-
-\begin{itemize}
-  \item Topología: puente H dual para motores DC bidireccionales.
-  \item Alimentación de motores: el módulo \emph{breakout} típico opera entre 7--35~V debido al regulador 78M05 integrado.
-  \item Alimentación lógica: 4.5--7~V (típico 5~V, compatible TTL).
-  \item Corriente por canal: 2.0~A continua; 3.0~A pico no repetitivo ($t \leq 100$~ms).
-  \item Control de velocidad mediante \gls{PWM} aplicado a los pines de dirección IN1--IN4; los pines ENA y ENB se mantienen en estado HIGH.
-\end{itemize}
-
-\subsection{Arduino Nano V3 (ATmega328P)}
-\citep{ArduinoNanoStore,ArduinoDocsNano,Atmega328PDatasheet}
-\begin{itemize}
-  \item Microcontrolador: ATmega328P a 16~MHz, lógica de 5~V.
-  \item Memoria: 32~KB Flash, 2~KB SRAM.
-  \item E/S: 14 digitales (6 PWM), 8 analógicas (10 bits).
-  \item Interrupciones externas en D2 y D3, y por cambio de pin (PCINT).
-\end{itemize}
-
-\subsection{Sensor LiDAR RPLidar A1M8}
-Según \citep{SlamtecA1Datasheet}:
-\begin{itemize}
-  \item Alcance: 0.15--12~m.
-  \item Frecuencia de barrido: 1--10~Hz (típico 5.5~Hz).
-  \item Tasa de muestreo: hasta 8000 muestras/s (revisión R5).
-  \item Resolución angular: $\le 1^\circ$.
-  \item Alimentación: sistema de escaneo a 5~V, consumo total $\sim$450~mA.
-  \item Peso: $\sim$170~g.
-\end{itemize}
-
-\subsection{Computador de a bordo: alternativas evaluadas}
-
-Frente a la Raspberry Pi~4 seleccionada, se evaluaron las siguientes alternativas:
-\begin{itemize}
-  \item \textbf{NVIDIA Jetson Orin Nano}: mayor potencia para IA, pero mayor costo y complejidad.
-  \item \textbf{ODROID-N2+}: buen rendimiento, pero ecosistema menos maduro para \gls{ROS2}.
-  \item \textbf{BeagleBone Black}: PRUs para tiempo real, pero CPU limitada para SLAM.
-\end{itemize}
-Dado el alcance del proyecto, la Raspberry Pi~4 resultó la opción más equilibrada.
-
-\subsection{Subsistema de alimentación}
-
-\subsubsection*{Batería}
-
-Se utiliza una batería Li-ion $\approx$12~V (3S, 10.8~V nominal) en formato deslizante (compatible con herramientas Makita), elegida frente a alternativas como packs DIY de celdas 18650, LiFePO$_4$ o plomo-ácido por su facilidad de recambio, seguridad y buena relación energía/peso.
-
-\utemFigure{2.Texto/Imag/battery.png}{0.4\linewidth}{Batería Li\mbox{-}ion de 12~V.}{AIMJINBL1021B}{fig:battery}
-
-\subsubsection*{Regulador DC-DC (buck)}
-
-Se usa el módulo DFRobot DFR0205, basado en el chip GS2678, un convertidor reductor conmutado a 350~kHz \parencite{DFRobotPowerModule}. Acepta tensiones de entrada entre 3.6 y 25~V y ofrece una salida fija de 5~V, una ajustable entre 3.3 y 25~V y un paso directo de la entrada, entregando hasta 5~A (25~W) con protecciones por cortocircuito y limitación de corriente. Este regulador deriva el riel de 5~V (Raspberry Pi, \gls{LIDAR}, \gls{Arduino}) desde la batería de 12~V con bajas pérdidas.
-
-\utemFigure{2.Texto/Imag/modulo_dc.jpg}{0.4\linewidth}{Power Module SKU DFR0205.}{DFRobotPowerModule}{fig:modulo_dc}
-
-\subsubsection*{Protecciones e interruptores}
-
-El ramal de potencia sigue la cadena: batería $\rightarrow$ fusible $\rightarrow$ interruptor maestro $\rightarrow$ reguladores/cargas. Se utiliza un fusible rápido tipo \emph{mini blade} de 10~A, que protege el cableado aguas abajo, y un interruptor maestro que secciona el bus de 12~V para cortar la potencia del sistema de forma segura.
-
-\utemFigure{2.Texto/Imag/switch.jpg}{0.4\linewidth}{Interruptor maestro de 16~mm.}{lanboo_16mm_economical_switch}{fig:switch}
-
-\utemFigure{2.Texto/Imag/fuse.jpg}{0.4\linewidth}{Fusible automotriz tipo \emph{blade} Mini APM.}{optifuse_apm}{fig:fuse}
-
-\subsubsection*{Dimensionamiento de cableado y conectores}
-
-La Tabla~\ref{tab:cableado_conectores} resume el dimensionamiento estimado de los ramales de potencia. Los valores de corriente y longitud se ajustan durante el comisionamiento final.
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-  \caption{Dimensionamiento de cableado y conectores.}
-  \label{tab:cableado_conectores}
-  \small
-  \begin{tabular}{P{4.2cm} c c c P{3.2cm}}
-    \toprule
-    \textbf{Ramal de potencia / señal} & \textbf{$I_{max}$ (A)} & \textbf{Long. (m)} & \textbf{$\Delta V$ adm.}\tnote{b} & \textbf{AWG / Conector}\tnote{a} \\
-    \midrule
-Batería $\rightarrow$ switch principal        & 5.2\tnote{c} & 0.15 & $<0.24$\,V & 14 AWG / XT60    \\
-Switch $\rightarrow$ regulador DC-DC (5V)     & 5.0 & 0.15 & $<0.36$\,V & 18 AWG / Bornera \\
-Línea 12V $\rightarrow$ driver motores (L298N)& 3.6 & 0.20 & $<0.60$\,V & 18 AWG / Bornera \\
-Línea 5V $\rightarrow$ SBC (Raspberry Pi 4)  & 3.0 & 0.25 & $<0.25$\,V & 22 AWG / USB-C   \\
-    \bottomrule
-  \end{tabular}
-  \begin{tablenotes}
-    \footnotesize
-    \item[a] Los calibres son orientativos; se recomienda cable de silicona multifilar para facilitar el ruteo.
-    \item[b] Caída de tensión admisible, calculada como porcentaje del voltaje nominal del ramal.
-    \item[c] Pico instantáneo del sistema; protegido por el fusible de 10~A aguas arriba.
-  \end{tablenotes}
-\end{threeparttable}
 \end{table}
 
 %======================================================================
-\section{Formulación probabilística del SLAM}
-\label{anx:slam_formulacion}
-
-El SLAM se formula como la estimación de la distribución de probabilidad conjunta de la trayectoria del robot y el mapa del entorno condicionada a las observaciones y los comandos de control \citep{thrun2005probabilistic, bailey2006slam}:
-
-\begin{equation}
-p(X_{1:t}, M \mid Z_{1:t}, U_{1:t})
-\label{eq:slam_prob}
-\end{equation}
-
-donde $X_{1:t}$ es la trayectoria, $M$ el mapa, $Z_{1:t}$ las observaciones y $U_{1:t}$ los comandos de control. En este trabajo, \texttt{slam\_toolbox} resuelve el problema mediante optimización en grafo de poses (Sección~\ref{sec:slam}), por lo que esta formulación se incluye solo como fundamento teórico.
-
-\section{Atribución de paquetes y verificación estructural del gemelo digital}
-\label{anx:gemelo_digital}
-
-\subsection{Atribución de paquetes del \textit{workspace}}
-
-La Tabla~\ref{tab:atribucion} identifica cada paquete del \textit{workspace} \texttt{tesis\_black\_robot/src}, su origen, su licencia, las modificaciones realizadas y la naturaleza de la contribución del autor.
-
-\begin{table}[H]
-\centering
-\caption{Atribución de paquetes del \textit{workspace} \texttt{tesis\_black\_robot/src}.}
-\label{tab:atribucion}
-\footnotesize
-\begin{tabular}{P{2.5cm} P{2.2cm} P{1.2cm} P{7.0cm}}
-    \toprule
-    \textbf{Paquete} & \textbf{Origen} & \textbf{Lic.} & \textbf{Modificaciones realizadas} \\ 
-    \midrule
-    \texttt{articubot\_one} & Basado en \texttt{my\_bot} \cite{NewansMyBot} & BSD & \textbf{Desarrollo principal.} Rediseño total de la descripción (\texttt{.xacro}) con las dimensiones reales del prototipo (Tabla~\ref{tab:parametros_modelo}). Creación de los archivos de configuración (\texttt{.yaml}), árboles de comportamiento (\texttt{.xml}), escenarios de lanzamiento y el mundo de simulación. Se conservó únicamente la estructura base. \\
-    \midrule
-    \texttt{ROSArduinoBridge} & \textit{Fork} de \cite{ROSArduinoBridge} & BSD & Adición de comandos seriales específicos (\texttt{SET\_VEL\_MPS}, \texttt{READ\_VEL\_MPS}, \texttt{READ\_PIDS}, \texttt{UPDATE\_PID\_LR}), conversión \textit{ticks/frame}, ganancias PID asimétricas optimizadas vía PSO y reconfiguración de pines para el L298N. \\
-    \midrule
-    \texttt{pid\_config/} & Desarrollo propio & --- & \textbf{Original.} Suite en Python y C++ para captura de respuesta al escalón, identificación FODT, algoritmo PSO y comunicación serial asíncrona. \\
-    \midrule
-    \texttt{diffdrive\_arduino} & \textit{Fork} de \cite{NewansDiffDrive} & BSD & Modificación del método \texttt{start()} para delegar la sintonización al firmware (ganancias PSO). Ajuste de parámetros en \texttt{xacro}: \textit{counts per rev} (1980) y frecuencia de lazo (30~Hz), según la Tabla~\ref{tab:parametros_modelo}. \\
-    \midrule
-    \texttt{m-explore-ros2} & Dependencia \cite{MExploreROS2} & BSD & Sin cambios en el código. Configuración centralizada en el paquete principal para exploración autónoma de fronteras compatible con Foxy. \\
-    \midrule
-    \texttt{gazebo\_ros2\_control} & Dependencia (ros-controls) & Apache & Compilación desde fuente para asegurar compatibilidad con el controlador diferencial en Foxy. \\
-    \bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Validación estructural del URDF}
-
-La auditoría del modelo confirma la jerarquía declarada y el conteo de elementos cinemáticos (Tabla~\ref{tab:urdf_evidencia}), verificados sobre el árbol de transformaciones generado con \texttt{ros2 run tf2\_tools view\_frames} (Figura~\ref{fig:tf_tree}).
-
-\utemFigurePropia{2.Texto/Imag/tf_tree.pdf}{0.90\textwidth}
-{Árbol de transformaciones \texttt{tf} generado con \texttt{ros2 run tf2\_tools view\_frames}.}
-{fig:tf_tree}
-
-\begin{table}[H]
-\centering
-\caption{Estructura jerárquica y conteo de elementos del URDF, confirmados por auditoría.}
-\label{tab:urdf_evidencia}
-\small
-\begin{tabular}{l p{9cm}}
-\toprule
-\textbf{Elemento} & \textbf{Composición} \\
-\midrule
-Hijos de \texttt{base\_link} & \texttt{base\_footprint}, \texttt{chassis}, \texttt{left\_wheel}, \texttt{right\_wheel} \\
-Hijos de \texttt{chassis}    & \texttt{laser\_frame}, \texttt{caster\_wheel} \\ \addlinespace
-Total de \textit{links}      & 7 \\
-Total de \textit{joints}     & 6 — 2 continuos (\texttt{left\_wheel\_joint}, \texttt{right\_wheel\_joint}) y 4 fijos (\texttt{caster\_wheel\_joint}, \texttt{laser\_joint}, \texttt{base\_footprint\_joint}, \texttt{chassis\_joint}) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Capturas de verificación}
-
-\utemFigurePropia{2.Texto/Imag/lidar_rviz_obstaculos.png}{0.95\textwidth}
-{Captura de RViz mostrando el modelo del robot con marcos TF activos y barrido láser.}
-{fig:rviz_tf_scan_validacion}
-
-\begin{utemMultiFigurePropia}{Comparación visual de los rayos de \gls{LIDAR} entre Gazebo y RViz.}{fig:comparacion_rayos_lidar}
-    \addutem{0.4}{2.Texto/Imag/gazebo_laser_robot.png}{Visualización en Gazebo}
-    \hfill
-    \addutem{0.4}{2.Texto/Imag/rviz_laser_robot.png}{Visualización en RViz}
-\end{utemMultiFigurePropia}
-
-
-\section{Configuración de hardware e integración ROS 2}
-\label{anx:hardware_ros2}
-
-\subsection{Presupuesto de potencia y protecciones}
-
-El bus de 12 V se dimensiona por el peor caso eléctrico (condición de \emph{stall}). La Tabla~\ref{tab:power_budget_filled} presenta el presupuesto de potencia por subsistema; los reguladores se seleccionan con un margen de 1.5 a 2.0 veces la corriente continua prevista. Los valores numéricos deben confirmarse en banco durante el comisionamiento.
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-    \caption{Presupuesto de potencia por subsistema.}
-    \label{tab:power_budget_filled}
-    \small
-    \begin{tabular}{l c S[table-format=1.2] S[table-format=1.2] S[table-format=2.2] S[table-format=2.1] c}
-        \toprule
-        \textbf{Subsistema} & \textbf{V} & {\textbf{I cont. (A)}} & {\textbf{I pico (A)}} & {\textbf{P cont. (W)}} & {\textbf{P pico (W)}} & \textbf{$I_{\text{pico}}/I_{\text{cont.}}$} \\
-        \midrule
-        \multicolumn{7}{l}{\textit{Riel de 5 V (salidas del buck DFR0205)}} \\ \addlinespace
-        Raspberry Pi 4            & 5  & 1.52 & 2.50 & 7.60  & 12.5 & $1.6\times$ \\
-        RPLIDAR A1                & 5  & 0.45 & 0.60 & 2.25  & 3.0  & $1.3\times$ \\
-        Periféricos USB\tnote{a}  & 5  & 0.05 & 0.10 & 0.25  & 0.5  & $2.0\times$ \\
-        \midrule
-        \textbf{Total 5 V (salida)} & 5  & 2.02 & 3.20 & 10.10 & 16.0 & $1.6\times$ \\
-        \midrule
-        \multicolumn{7}{l}{\textit{Riel de 12 V (batería Li-ion 3S)}} \\ \addlinespace
-        L298N + motores                  & 12 & 0.60 & 3.60 & 7.20  & 43.2 & $6.0\times$ \\
-        Buck DFR0205 (entrada)\tnote{b}  & 12 & 0.99 & 1.57 & 11.88 & 18.8 & $1.6\times$ \\
-        \midrule
-        \textbf{Total 12 V (batería)}\tnote{c} & 12 & 1.59 & 5.17 & 19.08 & 62.0 & $3.3\times$ \\
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-        \footnotesize
-        \item[a] Incluye el receptor USB del mando inalámbrico ($\sim$50 mA).
-        \item[b] Corriente reflejada desde el subtotal de 5 V asumiendo $\eta = 0{,}85$ del buck: $I_{12\text{V}} = P_{5\text{V}} / (\eta \cdot 12\,\text{V})$.
-        \item[c] El pico instantáneo de 5.17 A corresponde al escenario combinado (\emph{stall} de motores $+$ pico de la RPi 4), transitorio y de baja probabilidad concurrente; queda cubierto con amplio margen por el fusible de 10 A del riel de 12 V.
-    \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\utemFigurePropia{2.Texto/Imag/fig_power_budget.png}{0.91\textwidth}
-{Presupuesto de potencia por subsistema. Los motores dominan el consumo de pico en el riel de 12 V; la Raspberry Pi domina el consumo continuo en el riel de 5 V.}
-{fig:power_budget_chart}
-
-\paragraph{Protecciones.}
-Las protecciones se definen por dominio. En el riel de 12 V se incorpora, en serie y aguas arriba del distribuidor, un fusible rápido tipo \textit{mini blade} de 10 A. El peor caso del presupuesto (Tabla~\ref{tab:power_budget_filled}) arroja un pico instantáneo de 5.17 A en la batería bajo concurrencia de \emph{stall} de motores y demanda pico simultánea del riel de 5 V; el fusible de 10 A cubre dicho pico con un margen cercano al 90\,\%, evitando aperturas espurias ante los transitorios de arranque, y protege el cableado ante cortocircuitos, conservando selectividad respecto a la protección interna del L298N. Se complementa con diodos de rueda libre según la hoja de datos del L298N. Un interruptor maestro con retención (16 mm) se ubica en serie con la línea de 12 V, aguas abajo del fusible, y de-energiza la totalidad del sistema —actuación y lógica— al accionarse; por su posición, conduce la corriente total del bus (1.59 A continuos y hasta 5.17 A de pico), por lo que su capacidad nominal se selecciona por encima de dicho pico.
-
-\subsection{Asignación de pines}
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-    \caption{Asignación de pines entre \gls{Arduino}, driver L298N y encoders.}
-    \label{tab:pinout_arduino_l298n}
-    \small
-    \begin{tabular}{cllll >{\ttfamily}l}
-        \toprule
-        \textbf{N°} & \textbf{Pin Arduino} & \textbf{Constante firmware} & \textbf{Función} & \textbf{Tipo} & \textbf{Destino} \\ 
-        \midrule
-        \multicolumn{6}{l}{\textit{Control de motores (\texttt{motor\_driver.h})}} \\ \addlinespace
-        1 & D6       & L\_MOTOR\_FWD & PWM avance izq.   & \texttt{analogWrite} & IN1 \\
-        2 & D10      & L\_MOTOR\_BCK & PWM retroceso izq. & \texttt{analogWrite} & IN2 \\
-        3 & D13      & L\_MOTOR\_EN  & Habilitación izq. & \texttt{HIGH}\tnote{a} & ENA \\ \addlinespace
-        4 & D9       & R\_MOTOR\_FWD & PWM avance der.   & \texttt{analogWrite} & IN3 \\
-        5 & D5       & R\_MOTOR\_BCK & PWM retroceso der. & \texttt{analogWrite} & IN4 \\
-        6 & D12      & R\_MOTOR\_EN  & Habilitación der. & \texttt{HIGH}\tnote{a} & ENB \\ \midrule
-        \multicolumn{6}{l}{\textit{Lectura de encoders (\texttt{encoder\_driver.h})}} \\ \addlinespace
-        7 & D3 (PD3) & L\_ENC\_PIN\_A & Canal A enc. izq. & PCINT2\tnote{b} & Enc. Izq. \\
-        8 & D2 (PD2) & L\_ENC\_PIN\_B & Canal B enc. izq. & PCINT2\tnote{b} & Enc. Izq. \\ \addlinespace
-        9 & A4 (PC4) & R\_ENC\_PIN\_A & Canal A enc. der. & PCINT1\tnote{b} & Enc. Der. \\
-        10& A5 (PC5) & R\_ENC\_PIN\_B & Canal B enc. der. & PCINT1\tnote{b} & Enc. Der. \\ 
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-        \footnotesize
-        \item[a] Configurado como salida digital constante. La velocidad se regula mediante PWM en los pines \textit{Forward/Backward}.
-        \item[b] \textit{Pin Change Interrupts}: \texttt{PCINT2\_vect} (Puerto D) y \texttt{PCINT1\_vect} (Puerto C). La decodificación en cuadratura usa una tabla de estados para alcanzar 1980 CPR.
-    \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\subsection{Configuración de twist\_mux}
-
-\begin{table}[H]
-\centering
-\caption{Configuración de entradas de \texttt{twist\_mux}.}
-\label{tab:twist_mux_config}
-\begin{tabular}{llcc}
-\toprule
-\textbf{Nombre} & \textbf{Tópico} & \textbf{Prioridad} & \textbf{Timeout (s)} \\
-\midrule
-Navegación autónoma & \texttt{cmd\_vel}       & 10  & 0.5 \\
-Teleoperación (joy) & \texttt{cmd\_vel\_joy}   & 100 & 0.5 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Configuración del driver LiDAR}
-
-\begin{table}[H]
-\centering
-\caption{Parámetros del driver \gls{LIDAR} en \texttt{rplidar.launch.py}.}
-\label{tab:lidar_params}
-\begin{tabular}{ll}
-\toprule
-\textbf{Parámetro} & \textbf{Valor} \\
-\midrule
-\texttt{serial\_port} & \texttt{/dev/rplidar} (enlace simbólico \texttt{udev}) \\
-\texttt{frame\_id}    & \texttt{laser\_frame} \\
-\texttt{angle\_compensate} & \texttt{true} \\
-\texttt{scan\_mode}    & \texttt{Standard} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Perfiles de calidad de servicio (QoS)}
-
-\begin{table}[H]
-\centering
-\caption{Perfiles de QoS configurados u observados por tópico.}
-\label{tab:qos_wifi}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{llccl p{2.0cm}}
-\toprule
-\textbf{Tópico} & \textbf{Fiabilidad} & \textbf{Durabilidad} & \textbf{Profundidad} & \textbf{Origen} \\
-\midrule
-\texttt{/scan\_raw}  & \texttt{best\_effort}    & \texttt{volatile}        & 10  & Explícito (\texttt{scan\_filter\_node}) \\
-\texttt{/scan}       & \texttt{reliable}        & \texttt{volatile}        & 10  & Explícito (\texttt{scan\_filter\_node}) \\
-\texttt{/cmd\_vel}   & \texttt{reliable}        & \texttt{volatile}        & 10  & Default \texttt{rclcpp} \\
-\texttt{/odom}       & \texttt{reliable}        & \texttt{volatile}        & 10  & Default \texttt{diff\_drive\_controller} \\
-\texttt{/tf}         & \texttt{reliable}        & \texttt{volatile}        & 100 & Default \texttt{tf2\_ros} \\
-\texttt{/tf\_static} & \texttt{reliable}        & \texttt{transient\_local} & 1   & Default \texttt{tf2\_ros} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Nombres persistentes de dispositivo (udev)}
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-    \caption{Mapeo de dispositivos a nombres persistentes mediante reglas \texttt{udev} en la Raspberry~Pi.}
-    \label{tab:udev_mapping}
-    \footnotesize
-    \setlength{\tabcolsep}{3pt}
-    \begin{tabular}{lllllc}
-        \toprule
-        \textbf{Dispositivo} & \textbf{Bus} & \textbf{Coincidencia} & \textbf{Symlink} & \textbf{Archivo} & \textbf{Estado} \\
-        \midrule
-        \gls{Arduino} & USB       & \texttt{1a86:7523} & \texttt{motor\_controller} & \texttt{99-motor-controller} & Activo            \\
-        RPLIDAR A1    & USB       & \texttt{10c4:ea60} & \texttt{rplidar}           & \texttt{99-rplidar}          & Heredado\tnote{a} \\
-        RPLIDAR A1    & UART/GPIO & \texttt{ttyAMA0}   & \texttt{rlidar\_gpio}      & \texttt{99-rlidar-gpio}      & Activo            \\
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-        \footnotesize
-        \item[a] Conservada únicamente para pruebas de bancada con el sensor conectado por USB durante la etapa inicial de desarrollo; en operación normal el RPLIDAR se comunica por UART/GPIO a través de \texttt{ttyAMA0}.
-    \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-Las reglas se distribuyen en tres archivos dentro de \texttt{/etc/udev/rules.d/} (uno por dispositivo y modo de conexión) y se activan recargando el \textit{daemon} de udev (\texttt{udevadm control --reload-rules} y \texttt{udevadm trigger}), tras lo cual se verifica la creación de los enlaces simbólicos.
-
-
-\section{Formato de reporte de pruebas pendientes}
+\section{Protocolo y tablas complementarias de resultados}
 \label{anx:protocolo_resultados}
- 
-Este anexo recoge el formato de reporte de las pruebas cuya ejecución requiere un entorno de mayor superficie que el recinto disponible (navegación autónoma, exploración de fronteras e indicadores de mapeo en hardware real). Las tablas se completarán al ejecutar el protocolo descrito en el Capítulo~\ref{ch:resultados}.
- 
-\subsection{Mapeo en hardware real}
- 
+
+Este anexo conserva el formato de reporte para pruebas cuya ejecución requiere un entorno de mayor superficie: navegación autónoma, exploración de fronteras e indicadores de mapeo en hardware real.
+
 \begin{table}[H]
 \centering
-\caption{Indicadores del mapeo en hardware real (pendiente de medición).}
-\label{tab:slam_real_indicadores}
+\caption{Indicadores de mapeo en hardware real.}
+\label{tab:anx_slam_real_indicadores}
+\small
 \begin{tabular}{ll}
 \toprule
 \textbf{Indicador} & \textbf{Valor} \\
 \midrule
-Tiempo total de mapeo & --- \\
-Distancia recorrida (odometría) & --- \\
-Número de nodos del grafo & --- \\
+Tiempo total de mapeo & Pendiente \\
+Distancia recorrida & Pendiente \\
+Número de nodos del grafo & Pendiente \\
 Resolución del mapa & 0.05 m/celda \\
-Cierre de lazo detectado & --- \\
-Alineación de paredes & --- \\
+Cierre de lazo detectado & Pendiente \\
+Alineación de paredes & Pendiente \\
 \bottomrule
 \end{tabular}
 \end{table}
- 
-\subsection{Navegación autónoma con Nav2}
- 
+
 \begin{table}[H]
 \centering
-\caption{Resultados de navegación autónoma en simulación (pendiente de ejecución).}
-\label{tab:nav_sim}
+\caption{Formato de resultados de navegación autónoma.}
+\label{tab:anx_nav_reporte}
+\small
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Escenario} & \textbf{Éxitos} & \textbf{Fallos} & \textbf{Tasa (\%)} & $\bar{t}$ (s) & $\sigma_t$ (s) \\
@@ -899,35 +483,15 @@ Alineación de paredes & --- \\
 Meta directa & --- & --- & --- & --- & --- \\
 Con obstáculo & --- & --- & --- & --- & --- \\
 Pasillo/puerta & --- & --- & --- & --- & --- \\
-\midrule
-\textbf{Total} & --- & --- & --- & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
- 
+
 \begin{table}[H]
 \centering
-\caption{Resultados de navegación autónoma en hardware real (pendiente de ejecución).}
-\label{tab:nav_real}
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Escenario} & \textbf{Éxitos} & \textbf{Fallos} & \textbf{Tasa (\%)} & $\bar{t}$ (s) & $\sigma_t$ (s) \\
-\midrule
-Meta directa & --- & --- & --- & --- & --- \\
-Con obstáculo & --- & --- & --- & --- & --- \\
-Pasillo/puerta & --- & --- & --- & --- & --- \\
-\midrule
-\textbf{Total} & --- & --- & --- & --- & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
- 
-\subsection{Exploración autónoma de fronteras}
- 
-\begin{table}[H]
-\centering
-\caption{Indicadores de exploración autónoma (pendiente de ejecución).}
-\label{tab:explore_sim}
+\caption{Formato de resultados de exploración autónoma.}
+\label{tab:anx_explore_reporte}
+\small
 \begin{tabular}{lll}
 \toprule
 \textbf{Indicador} & \textbf{Simulación} & \textbf{Hardware real} \\
@@ -935,12 +499,39 @@ Pasillo/puerta & --- & --- & --- & --- & --- \\
 Tiempo hasta finalización & --- & --- \\
 Metas generadas & --- & --- \\
 Metas alcanzadas & --- & --- \\
-Metas fallidas/abortadas & --- & --- \\
+Metas fallidas & --- & --- \\
 Cobertura estimada (\%) & --- & --- \\
-Distancia total recorrida & --- & --- \\
 Intervenciones manuales & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\section{Detalle complementario de conclusiones}
+\label{anx:detalle_conclusiones}
+
+Este anexo conserva observaciones técnicas complementarias derivadas del desarrollo del prototipo, las cuales respaldan las conclusiones sin sobrecargar el capítulo final.
+
+\subsection{Brecha simulación--hardware}
+
+La brecha de transferencia se observó principalmente en tres aspectos: ruido sensorial del RPLidar A1, deslizamiento de ruedas en giros y latencias variables de la cadena serial \gls{Arduino}--Raspberry Pi. En simulación, Gazebo idealiza parte de estas condiciones, por lo que los resultados tienden a ser más estables que en hardware real.
+
+A pesar de ello, la estrategia de paridad entre simulación y hardware permitió mantener la misma lógica de operación, usando nombres de tópicos, marcos TF y archivos de configuración equivalentes. Esto facilitó transferir la arquitectura desde Gazebo al robot físico sin rediseñar la pila de control.
+
+\subsection{Observaciones sobre Nav2}
+
+La pila Nav2 se integró mediante NavFn con A\*, controlador DWB, mapas de costo y árbol de comportamiento con acciones de recuperación. En simulación, el seguimiento de ruta fue estable; en hardware, la configuración requiere mantener márgenes conservadores debido a la deriva odométrica y a la incertidumbre del entorno real.
+
+Los escenarios más exigentes previstos son pasillos y puertas, donde el ancho disponible se aproxima al radio de inflación del costmap. En estos casos, el ajuste de inflación, tolerancia de meta y pesos de DWB puede influir significativamente en la tasa de éxito.
+
+\subsection{Observaciones sobre exploración por fronteras}
+
+El enfoque de exploración por fronteras permite generar metas hacia zonas no observadas del mapa. Sin embargo, puede seleccionar fronteras pequeñas o de difícil acceso, generando ciclos de replaneación. El parámetro \texttt{min\_frontier\_size} permite reducir parcialmente este problema, aunque su valor óptimo depende del entorno.
+
+Una mejora futura consiste en ponderar no solo el tamaño de la frontera, sino también su accesibilidad, distancia real de navegación y probabilidad de éxito.
+
+\subsection{Consideraciones sobre escalabilidad}
+
+La Raspberry Pi 4 resultó suficiente para ejecutar \texttt{slam\_toolbox}, Nav2 y la comunicación con el microcontrolador. No obstante, algoritmos más demandantes, como SLAM visual o percepción semántica en tiempo real, podrían requerir hardware de mayor capacidad o procesamiento externo.
+
+La migración a una distribución mantenida de \gls{ROS2}, como Humble o Jazzy, permitiría acceder a versiones más recientes de Nav2, \texttt{ros2\_control} y \texttt{slam\_toolbox}, además de mejorar la mantenibilidad del sistema.
 \end{appendices}

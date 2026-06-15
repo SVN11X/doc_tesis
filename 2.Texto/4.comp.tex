@@ -1,189 +1,101 @@
 \chapter{Componentes}
 \label{ch:componentes}
 
-En este capítulo se enumeran y describen los componentes utilizados en el prototipo, junto con la justificación técnica de su selección, los parámetros relevantes para el modelo y las consideraciones de integración con \gls{ROS2}, montaje y seguridad. El robot corresponde a una plataforma diferencial con dos ruedas motrices y una rueda loca (\emph{caster}), un escáner láser \gls{LIDAR} RPLidar~A1, una \gls{RaspberryPi}~4 como computador de a bordo y un \gls{Arduino}~Nano para el control de bajo nivel.
+Este capítulo presenta los componentes principales del prototipo y los parámetros físicos que se utilizan en el modelo cinemático, el firmware y la integración con \gls{ROS2}. El robot corresponde a una plataforma diferencial de bajo costo compuesta por dos ruedas motrices, una rueda loca, motores DC con encoders, driver L298N, un \gls{Arduino} Nano para control de bajo nivel, una Raspberry Pi 4 como computador principal y un sensor RPLidar A1 para percepción del entorno.
 
 %------------------------------------------------------------------
-\section{Arquitectura física del robot}
+\section{Arquitectura general del prototipo}
 
-\subsection{Plataforma diferencial y chasis}
+El prototipo adopta una configuración de tracción diferencial, con dos ruedas motrices independientes y una rueda loca de apoyo. Esta arquitectura permite controlar el desplazamiento mediante la diferencia de velocidad entre las ruedas izquierda y derecha, lo que facilita la implementación del modelo cinemático desarrollado en el Capítulo~\ref{marco_teorico}.
 
-El prototipo adopta una arquitectura de tracción diferencial con dos ruedas motrices independientes y una rueda loca de apoyo. La pertinencia de esta configuración para la navegación de interiores de bajo costo —maniobrabilidad, calidad de odometría y madurez del soporte en \gls{ROS2}— se argumentó en el Capítulo~\ref{ch:estado_arte}, y su modelo cinemático se desarrolló en el Capítulo~\ref{marco_teorico}. Esta sección documenta la realización física de dicha arquitectura y los parámetros geométricos que alimentan el modelo de odometría: el radio de rueda $r$ y la distancia entre ruedas $L$.
-
-\utemFigure{2.Texto/Imag/diff_bec.png}{0.40\textwidth}
-{Arquitectura móvil de tracción diferencial: dos ruedas motrices y una rueda loca (caster).}
+\utemFigure{2.Texto/Imag/diff_bec.png}{0.38\textwidth}
+{Arquitectura móvil de tracción diferencial.}
 {BECChassisLong}{fig:chasis-2wd-caster}
 
-La rueda loca aporta estabilidad sin influir en la dirección, de modo que el control se ejerce íntegramente mediante la diferencia de velocidad entre las dos ruedas motrices. Las alternativas Ackermann y omnidireccional, junto con la comparación cualitativa que respalda la elección de la arquitectura diferencial, se documentan en el \ref{anx:arquitecturas}.
-
-\subsection{Ruedas motrices}
-
-Se seleccionaron ruedas estándar de goma para la tracción, por su robustez, economía y desempeño consistente en interiores. Su dibujo antideslizante incrementa la adherencia en superficies comunes como baldosa, vinilo o madera.
-
-\utemFigure{2.Texto/Imag/wheel_set.png}{0.50\textwidth}
-{Conjunto de ruedas.}
-{ThinkRobotics65mmWheel}{fig:wheel_set}
+La Tabla~\ref{tab:componentes_principales} resume los componentes empleados y su función dentro del sistema.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-  \caption{Especificaciones geométricas de las ruedas motrices.}
-  \label{tab:ruedas-especificaciones}
-  \small
-  \begin{tabular}{l S[table-format=3.2] l l}
-    \toprule
-    \textbf{Parámetro} & {\textbf{Valor (mm)}} & \textbf{Valor (m)} & \textbf{Observación} \\ 
-    \midrule
-    Diámetro ($d_w$)      & 67.00  & 0.06700 & Dato del fabricante \\
-    Ancho               & 26.00  & 0.02600 & Dato del fabricante \\ \addlinespace
-    Radio ($r$)         & 33.50  & 0.03350 & Derivado ($r = d_w/2$) \\
-    Circunferencia ($C$) & 210.49 & 0.21049 & Derivado ($C = \pi d_w$) \\ 
-    \bottomrule
-  \end{tabular}
-  \begin{tablenotes}
-    \footnotesize
-    \item[] El radio $r$ y la circunferencia $C$ alimentan el cálculo de odometría del Capítulo~\ref{marco_teorico}.
-  \end{tablenotes}
-\end{threeparttable}
+\caption{Componentes principales del prototipo.}
+\label{tab:componentes_principales}
+\small
+\begin{tabular}{p{3.2cm} p{4.5cm} p{5.2cm}}
+\toprule
+\textbf{Subsistema} & \textbf{Componente} & \textbf{Función principal} \\
+\midrule
+Locomoción & Motores DC JGA25-370 con ruedas de goma & Generar el movimiento diferencial del robot. \\
+Odometría & Encoders de cuadratura Hall & Medir el desplazamiento de cada rueda. \\
+Potencia de motores & Driver L298N & Accionar los motores mediante señales \gls{PWM}. \\
+Control de bajo nivel & \gls{Arduino} Nano & Ejecutar lectura de encoders y control PID de velocidad. \\
+Cómputo principal & Raspberry Pi 4 & Ejecutar \gls{ROS2}, SLAM, navegación y comunicación con periféricos. \\
+Percepción & RPLidar A1 & Obtener barridos láser 2D para mapeo y evasión de obstáculos. \\
+Energía & Batería Li-ion 12 V y regulador buck 5 V & Alimentar motores, lógica y sensores. \\
+Estructura & Chasis impreso en 3D & Integrar mecánicamente los componentes del robot. \\
+\bottomrule
+\end{tabular}
 \end{table}
 
-\subsection{Rueda loca (\emph{caster})}
-
-Se emplea un rodillo esférico tipo \emph{ball caster} como rueda de apoyo. Su esfera metálica gira libremente en todas direcciones, aportando estabilidad sin influir en la dirección. Sus dimensiones reducidas (2.8~×~4.5~cm) mantienen el punto de apoyo trasero cercano al suelo, favoreciendo un centro de gravedad bajo, y soporta cargas muy por encima del peso estimado del robot.
-
-\utemFigure{2.Texto/Imag/ball_caster.png}{0.35\textwidth}{Rueda loca.}
-{FIXOhu_OnmagarasztoGorgo}{fig:ball_caster}
-
 %------------------------------------------------------------------
-\section{Actuación: motores DC con caja reductora}
+\section{Actuación, odometría y control de bajo nivel}
 
-Se utiliza el motorreductor JGA25-370 (12~V, 130~RPM en vacío), seleccionado por su tensión nominal compatible con el sistema (12~V), su corriente dentro del margen del driver L298N (0.45~A nominal y 1.3~A de bloqueo a 12~V, frente a los 2~A/canal del L298N) y su caja reductora integrada de relación de reducción nominal $N_g = 46{:}1$, que entrega el par necesario para la tracción y cuya relación interviene en el cálculo de la resolución del encoder (Sección~\ref{sec:encoder}). Las especificaciones técnicas completas se detallan en el \ref{anx:componentes}.
+La actuación se realiza mediante dos motorreductores JGA25-370 de 12 V, seleccionados por su disponibilidad, bajo costo y torque suficiente para una plataforma diferencial de interiores. Cada motor incorpora un encoder incremental de cuadratura, utilizado para estimar velocidad y desplazamiento de rueda.
 
-\utemFigure{2.Texto/Imag/motor.jpg}{0.5\linewidth}{Motor modelo JGA25-370, 12~V, 130~RPM.}{nfp_gm25_370_en}{fig:motor}
-
-%------------------------------------------------------------------
-\section{Encoder de cuadratura}
-\label{sec:encoder}
-
-Se selecciona un encoder incremental en cuadratura de efecto Hall integrado a la familia JGA25. Sus ventajas son la compatibilidad mecánica directa con el motor (montaje en la tapa trasera, sin soportes externos), la robustez frente a polvo y vibraciones (superior a los encoders ópticos de bajo costo), la señal digital A/B en cuadratura a 90° —que permite determinar dirección y velocidad— y la compatibilidad eléctrica a 5~V, con conexión directa al \gls{Arduino}.
-
-\utemFigure{2.Texto/Imag/encoder.jpg}{0.7\linewidth}{Conexiones del encoder incremental en cuadratura de efecto Hall.}{gm25_370_encoder}{fig:encoder}
-
-\subsection{Resolución efectiva}
-
-La resolución en el eje de salida (rueda) se compone de la resolución del sensor Hall, la decodificación en cuadratura y la relación de reducción:
+La resolución efectiva del encoder en el eje de salida se obtiene a partir de la resolución del sensor Hall, la decodificación en cuadratura y la relación de reducción:
 
 \begin{equation}
 N_e = N_{\mathrm{Hall}} \cdot c_q \cdot N_g
 \label{eq:resolucion_encoder}
 \end{equation}
 
-donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $c_q=4$ (decodificación en cuadratura completa) y $N_g$ la relación de reducción, nominalmente $46{:}1$ según el fabricante, lo que arrojaría un valor teórico de $11 \times 4 \times 46 = 2024$ cuentas/vuelta. En lugar de ese valor nominal, la resolución se determinó \textbf{experimentalmente} girando cada rueda una vuelta completa y repitiendo la medición diez veces por rueda (\ref{sec:anx_muestras_cuentas}); el valor unificado adoptado es $N_e = 1980$ cuentas/vuelta (véase Sección~\ref{sec:cpr_promedios}), cargado en la constante \texttt{ENC\_TICKS\_PER\_REV} del firmware y empleado en las ecuaciones de odometría del Capítulo~\ref{marco_teorico}. La diferencia respecto del valor nominal ($\approx 2\%$) corresponde a la desviación entre la relación de reducción real y la nominal del fabricante.
+donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $c_q=4$ es el factor de decodificación en cuadratura y $N_g=46{:}1$ la relación de reducción nominal. Aunque el valor teórico es 2024 cuentas/vuelta, la medición experimental entregó un valor promedio cercano a 1980 cuentas/vuelta, que se adopta como constante unificada para el firmware y la odometría.
+
+El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer los encoders, calcular el PID de velocidad de cada rueda y enviar señales \gls{PWM} al driver L298N. Este último permite accionar ambos motores, aunque introduce una zona muerta y caída de tensión que deben compensarse mediante la sintonización experimental del controlador.
 
 %------------------------------------------------------------------
-\section{Driver de motores L298N}
+\section{Cómputo, percepción e integración con ROS 2}
 
-Se adopta el módulo L298N como puente H dual por su disponibilidad, bajo costo y compatibilidad lógica a 5~V con el \gls{Arduino} \citep{STMicro_L298N_Datasheet}. Entrega hasta 2~A continuos por canal. En la implementación final, los pines de habilitación ENA y ENB se mantienen en estado HIGH, mientras que la velocidad y el sentido de giro se controlan aplicando \gls{PWM} sobre los pines de dirección IN1--IN4; sus especificaciones completas se incluyen en el \ref{anx:componentes}. Su zona muerta constituye una de las no linealidades que el refinamiento experimental del controlador PID compensa, tal como se anticipó en el Capítulo~\ref{marco_teorico}.
+La Raspberry Pi 4 ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, actuando como computador principal del robot. Su función es coordinar la comunicación con el \gls{Arduino}, recibir los datos del sensor láser, ejecutar \texttt{slam\_toolbox}, Nav2 y los nodos asociados a la navegación.
 
-%------------------------------------------------------------------
-\section{Microcontrolador de bajo nivel: Arduino Nano V3}
-
-Se emplea un \gls{Arduino}~Nano~V3 (ATmega328P, 16~MHz, lógica de 5~V) para ejecutar las tareas sensibles al tiempo: generación de PWM, lectura de encoders por interrupciones y control PID de velocidad a 30~Hz, aislando el lazo de control del \emph{jitter} del sistema operativo de la Raspberry Pi, que se dedica a \gls{ROS2}, SLAM y navegación. Se eligió por su compatibilidad eléctrica a 5~V con el L298N, su tamaño compacto y su ecosistema maduro. Al ser un microcontrolador de 8 bits no compatible con \gls{microRos}~\cite{microros}, su integración con el grafo de \gls{ROS2} se resuelve mediante un puente serial alojado en la Raspberry Pi (Sección~\ref{sec:integracion_ros2}). Las especificaciones técnicas completas se incluyen en el \ref{anx:componentes}.
+El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 360 grados que publica barridos utilizados por SLAM y por los mapas de costo de Nav2. Se selecciona por su bajo costo, integración con \gls{ROS2} y adecuación a entornos interiores planos. Como limitación, no detecta obstáculos fuera del plano de barrido.
 
 %------------------------------------------------------------------
-\section{Raspberry Pi 4 (8 GB)}
+\section{Alimentación y fabricación}
 
-La Raspberry Pi~4 (8~GB) \parencite{RaspberryPi4Specs} ejecuta Ubuntu~20.04 y \gls{ROS2}~Foxy, orquestando la teleoperación, la percepción (\gls{LIDAR}) y los nodos de SLAM y navegación. Se seleccionó por su compatibilidad oficial con Ubuntu~20.04 y \gls{ROS2}~Foxy, su rendimiento suficiente para SLAM 2D y Nav2 (4 núcleos Cortex-A72 a 1.8~GHz, 8~GB de RAM) y su conectividad integrada (USB para el \gls{LIDAR}, Wi-Fi y Ethernet para teleoperación, GPIO) \citep{RaspberryPi4Specs, RaspberryPi4Datasheet}. Las alternativas evaluadas (Jetson Orin Nano, ODROID-N2+ y BeagleBone Black) se documentan en el \ref{anx:componentes}; dado el alcance del proyecto, la Raspberry Pi~4 es la opción más equilibrada.
+El sistema se alimenta desde una batería Li-ion de 12 V. Desde este bus principal se alimentan los motores y, mediante un convertidor reductor, se obtiene el riel de 5 V para la Raspberry Pi, el \gls{Arduino} y el \gls{LIDAR}. La distribución separa potencia y lógica para reducir interferencias producidas por los motores.
 
-%------------------------------------------------------------------
-\section{Sensor LiDAR para mapeo y navegación}
+El chasis y las cubiertas fueron fabricados mediante impresión 3D FDM en PLA+. El diseño considera espacio para la Raspberry Pi, el \gls{Arduino}, el driver de motores, el regulador de tensión, la batería y el sensor RPLidar A1. Las vistas adicionales, parámetros de impresión y detalles de montaje se incluyen en los anexos.
 
-El sensor principal de percepción es el RPLidar~A1M8, un escáner láser 2D de 360° por triangulación. La justificación de un \gls{LIDAR}~2D frente a alternativas como cámaras RGB-D, ultrasonido o \gls{LIDAR}~3D para interiores planos de bajo costo se presentó en el Capítulo~\ref{ch:estado_arte}; aquí se resumen las características relevantes para el mapeo: alcance de 0.15--12~m, resolución angular $\le 1^\circ$ y frecuencia de barrido típica de 5.5~Hz, con integración en \gls{ROS2} mediante un nodo serial propio, \texttt{rplidar\_serial\_publisher.py}, que implementa la lectura del protocolo del RPLidar A1, publica mensajes \texttt{sensor\_msgs/LaserScan} en el tópico \texttt{/scan} y utiliza el marco \texttt{laser\_frame}. Las especificaciones completas se incluyen en el \ref{anx:componentes}.
-
-\utemFigure{2.Texto/Imag/a1m8.jpg}{0.4\linewidth}{Láser 2D RPLIDAR A1M8.}{NaylampA1M8R5}{fig:lidar}
-
-Las superficies transparentes o especulares producen lecturas erráticas, mitigadas con capas de inflación conservadoras en el costmap (capítulo de navegación); el montaje del sensor se amortigua y se limitan las aceleraciones bruscas para reducir el efecto de las vibraciones.
-
-%------------------------------------------------------------------
-\section{Alimentación y distribución de energía}
-
-El sistema se alimenta con una batería Li-ion de 12~V en formato deslizante (compatible con herramientas Makita), de la cual un convertidor reductor (buck) DFRobot DFR0205 deriva el riel de 5~V para la Raspberry Pi, el \gls{LIDAR} y el \gls{Arduino}. El ramal de potencia sigue la cadena batería~$\rightarrow$~fusible (10~A)~$\rightarrow$~interruptor maestro~$\rightarrow$~reguladores/cargas, lo que permite seccionar el bus de 12~V de forma segura. Las especificaciones de la batería y el regulador, las protecciones y el dimensionamiento de cableado y conectores se detallan en el \ref{anx:componentes}.
-
-%------------------------------------------------------------------
-\section{Fabricación y diseño 3D}
-\label{sec:fab_3d}
-
-El chasis y las cubiertas se fabrican mediante impresión 3D FDM en PLA+, a partir de un modelado paramétrico en \textit{Fusion~360} organizado por componentes (carcasa, tapas de acceso, soporte de \gls{LIDAR}, subchasis y alojamientos electrónicos). El material, el equipo de impresión y los parámetros de laminado completos se detallan en el \ref{anx:impresion3d}. Las cotas generales se presentan en la Figura~\ref{fig:medidas_robot_2d} y las dimensiones relevantes en la Tabla~\ref{tab:dimensiones_robot}.
-
-\utemFigurePropia{2.Texto/Imag/medidas_robot_2d.pdf}{0.9\linewidth}{Medidas del chasis (vista 2D).}{fig:medidas_robot_2d}
-
-\begin{table}[H]
-\centering
-\caption{Dimensiones relevantes del robot (según plano de medidas).}
-\label{tab:dimensiones_robot}
-\small
-\begin{threeparttable}
-\begin{tabular}{l l p{7cm}}
-\toprule
-\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\ 
-\midrule
-Largo total                  & 246 mm\tnote{a} & Extremo posterior a extremo frontal de la carcasa. \\
-Ancho total                  & 230 mm & Lado a lado en el eje de las ruedas. \\
-Alto chasis (sin \gls{LIDAR})      & 105 mm & Base a cubierta superior. \\
-Alto total (con \gls{LIDAR})       & 153 mm & Base a punto más alto del sensor. \\ \addlinespace
-Distancia entre ruedas ($L$) & 188 mm & Centro a centro de ruedas motrices (\textit{track width}). \\
-Distancia libre al suelo     & 14 mm  & Base a superficie de apoyo (\textit{ground clearance}). \\
-Espesor de pared nominal     & 10 mm  & Paredes de la carcasa impresa en 3D. \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-  \footnotesize
-  \item[a] Leve discrepancia con el diseño 3D producto de tolerancias de impresión.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-% ===========================================================================
-\section{Prototipo construido}
-\label{sec:galeria}
-
-\utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.6\linewidth}{Vista lateral del prototipo construido.}{fig:prototipo}
-
-Vistas adicionales del prototipo y las vistas isométricas del modelo 3D se incluyen en el \ref{anx:renders3d}.
+\utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.55\linewidth}
+{Vista lateral del prototipo construido.}
+{fig:prototipo}
 
 %------------------------------------------------------------------
 \section{Parámetros físicos del modelo}
 \label{sec:parametros_modelo}
 
-La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos del prototipo que alimentan el modelo cinemático y de odometría del Capítulo~\ref{marco_teorico} y la calibración del firmware. Estos valores constituyen la referencia única citada por los capítulos de gemelo digital, firmware y validación.
+La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos usados por el modelo cinemático, la odometría, el gemelo digital y el firmware. Estos valores constituyen la referencia común para los capítulos posteriores.
 
 \begin{table}[H]
 \centering
-\caption{Parámetros físicos del prototipo empleados en el modelo y el firmware.}
+\caption{Parámetros físicos empleados en el modelo y el firmware.}
 \label{tab:parametros_modelo}
 \small
-\begin{threeparttable}
-\begin{tabular}{c l l l}
+\begin{tabular}{c p{4.2cm} p{3.0cm} p{4.2cm}}
 \toprule
-\textbf{Símbolo} & \textbf{Parámetro} & \textbf{Valor} & \textbf{Origen} \\
+\textbf{Símbolo} & \textbf{Parámetro} & \textbf{Valor} & \textbf{Uso principal} \\
 \midrule
-$r$   & Radio de rueda                   & 0.0335 m           & Tabla~\ref{tab:ruedas-especificaciones} \\
-$C$   & Circunferencia de rueda          & 0.2105 m           & $\pi d_w$ \\
-$L$   & Distancia entre ruedas           & 0.188 m            & Tabla~\ref{tab:dimensiones_robot} \\
-$N_g$ & Relación de reducción            & 46:1 (nominal)     & Datasheet JGA25-370 \\
-$N_e$ & Resolución del encoder (salida)  & 1980 cuentas/vuelta\tnote{a} & Experimental (\ref{sec:anx_muestras_cuentas}) \\
-$c_q$ & Factor de cuadratura             & 4                  & Decodificación A/B \\
-$T_s$ & Período de control (PID y odometría) & $1/30$ s       & Firmware \gls{Arduino} / \texttt{ros2\_control} \\
+$r$ & Radio de rueda & 0.0335 m & Modelo cinemático y odometría \\
+$C$ & Circunferencia de rueda & 0.2105 m & Conversión de cuentas a distancia \\
+$L$ & Distancia entre ruedas & 0.188 m & Modelo diferencial \\
+$N_g$ & Relación de reducción & 46:1 nominal & Cálculo teórico del encoder \\
+$N_e$ & Resolución efectiva del encoder & 1980 cuentas/vuelta & Firmware y odometría \\
+$c_q$ & Factor de cuadratura & 4 & Decodificación A/B \\
+$T_s$ & Período de control & $1/30$ s & PID y odometría \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-  \footnotesize
-  \item[a] Valor determinado experimentalmente (media de diez mediciones por rueda, \ref{sec:anx_muestras_cuentas}) y cargado en \texttt{ENC\_TICKS\_PER\_REV}. El valor nominal teórico $11 \times c_q \times 46 = 2024$ difiere $\approx 2\%$ por la desviación entre la relación de reducción real y la nominal.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
-En este capítulo se han descrito y justificado los componentes del prototipo: la plataforma diferencial, ruedas, motorreductores, encoders, driver L298N, microcontrolador \gls{Arduino}~Nano, computador Raspberry Pi~4, sensor \gls{LIDAR} RPLidar~A1 y el sistema de alimentación, así como la fabricación del chasis mediante impresión 3D. Cada selección se fundamentó en criterios de costo, disponibilidad, compatibilidad con \gls{ROS2} y adecuación a los requisitos del proyecto. Los parámetros físicos resultantes, consolidados en la Tabla~\ref{tab:parametros_modelo}, alimentan los capítulos siguientes, donde se construyen el gemelo digital, el firmware de bajo nivel y la arquitectura de control y navegación.
+El prototipo se construye a partir de componentes accesibles y compatibles con una arquitectura de navegación basada en \gls{ROS2}. La plataforma diferencial, los encoders, el \gls{Arduino}, la Raspberry Pi 4 y el RPLidar A1 permiten implementar odometría, control de bajo nivel, mapeo 2D y navegación autónoma. Los parámetros físicos consolidados en este capítulo se utilizan como base para el gemelo digital, el firmware y la validación experimental.

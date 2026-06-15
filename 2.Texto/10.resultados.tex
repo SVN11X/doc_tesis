@@ -1,385 +1,149 @@
 \chapter{Resultados experimentales}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial, tanto en simulación (Gazebo) como en hardware real. Las pruebas se organizan según la progresión incremental: odometría y control diferencial, mapeo con \texttt{slam\_toolbox}, navegación autónoma con Nav2 y exploración de fronteras. Para cada etapa se describen el procedimiento, las métricas, los datos obtenidos y las observaciones derivadas, con el objetivo de cuantificar el desempeño y documentar las desviaciones entre simulación y hardware. Las pruebas de navegación y exploración, cuyos escenarios requieren un entorno de mayor extensión que el disponible, quedan planificadas según el protocolo descrito; el formato de reporte se recoge en el \ref{anx:protocolo_resultados} y se completará una vez ejecutadas en el entorno definitivo.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. El detalle de protocolos, tablas completas y formatos de reporte pendientes se presenta en el Anexo~\ref{anx:protocolo_resultados}.
 
 % ===========================================================================
-\section{Descripción del entorno experimental}
+\section{Entorno experimental}
 \label{sec:entorno_experimental}
 
-\subsection{Entorno de simulación}
-\label{subsec:entorno_sim}
+Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04, manteniendo la misma estructura de tópicos y parámetros utilizada en el robot real. Para ello se emplearon archivos YAML equivalentes, diferenciando únicamente parámetros propios del entorno simulado, como \texttt{use\_sim\_time:=true}, límites cinemáticos y frecuencias de actualización.
 
-Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04. La configuración mantiene los mismos nombres de tópicos y estructura de parámetros que el robot real, con archivos YAML paralelos (\texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}) que adaptan límites cinemáticos, frecuencias de costmap y tolerancias al entorno simulado, además de \texttt{use\_sim\_time:=true}.
-
-\utemFigurePropia{2.Texto/Imag/gazebo_world_overview.jpg}{0.95\textwidth}
-{Vista general del mundo de simulación \texttt{obstacles.world} en Gazebo.}
+\utemFigurePropia{2.Texto/Imag/gazebo_world_overview.jpg}{0.90\textwidth}
+{Vista general del mundo de simulación en Gazebo.}
 {fig:gazebo_world_overview}
 
-\begin{utemMultiFigurePropia}{Secuencia de navegación en simulación (evidencia cualitativa; las métricas cuantitativas se reportan en §\ref{sec:resultados_nav2}).}{fig:sample_nav_sim_v1}
-    \addutem{0.46}{2.Texto/Imag/sample_nav_sim_part1.png}{Comienzo}
-    \hfill
-    \addutem{0.46}{2.Texto/Imag/sample_nav_sim_part2.png}{Transición}
-    \hfill
-    \addutem{0.46}{2.Texto/Imag/sample_nav_sim_part3.png}{Final}
-\end{utemMultiFigurePropia}
+En hardware real, las pruebas se realizaron en un espacio interior con suelo de cerámica lisa. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Raspberry Pi 4 ejecutó la pila de control, mapeo y navegación, mientras que RViz2 se utilizó desde una estación de trabajo para supervisión.
 
-\subsection{Entorno físico de pruebas}
-\label{subsec:entorno_fisico}
-
-Las pruebas en hardware real se llevaron a cabo en un espacio interior con suelo de cerámica lisa de buena tracción. La red de comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La estación de trabajo (Ubuntu 20.04) ejecutó RViz2 para supervisión, mientras que toda la pila de control, mapeo y navegación se ejecutó en la Raspberry Pi 4 del robot. La extensión reducida del recinto disponible permitió validar la odometría, el control y el mapeo, pero limitó los escenarios de navegación y exploración, que requieren trayectorias y áreas mayores.
-
-\subsection{Instrumentación y métricas}
-\label{subsec:metricas}
-
-Para la evaluación cuantitativa se definieron las métricas de la Tabla~\ref{tab:metricas_experimentales}.
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-\caption{Métricas de evaluación utilizadas.}
-\label{tab:metricas_experimentales}
-\small
-\begin{tabular}{p{3.8cm} p{1.5cm} p{5cm} p{2.2cm}}
-\toprule
-\textbf{Métrica} & \textbf{Unidad} & \textbf{Herramienta} & \textbf{Aplicación} \\
-\midrule
-Error de posición en línea recta & m & Medición física + odometría & Odometría \\
-Deriva angular en giro de 360° & grados & Medición visual + \texttt{/odom} & Odometría \\
-Tiempo de respuesta al escalón\tnote{a} & s & Modelo FODT identificado & Control PID \\
-Sobreimpulso & \% & Modelo FODT identificado & Control PID \\
-Error en estado estacionario & m/s & Modelo FODT identificado & Control PID \\
-Tiempo de construcción del mapa & s & Cronometraje + \texttt{ros2 bag} & SLAM \\
-Consistencia del mapa & --- & Inspección visual en RViz & SLAM \\
-Cierre de lazo & --- & Alineación de paredes en RViz & SLAM \\
-Tasa de éxito de navegación & \% & Metas alcanzadas / enviadas & Nav2 \\
-Tiempo de navegación por meta & s & Cronometraje envío--arribo & Nav2 \\
-Cobertura de exploración & \% & Área mapeada / área total & Exploración \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] Las métricas del controlador PID se calculan mediante simulación sobre el modelo FODT identificado con las ganancias que operan en el robot, no por medición directa sobre el hardware.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\paragraph{Definición formal de las métricas del controlador PID.}
-Los indicadores se calculan sobre la respuesta $y[k]$ a un escalón $r$:
-
-\begin{align}
-M_p &= \max\left(0,\;\frac{\max_k y[k] - r}{r} \times 100\right) \quad [\%]
-\label{eq:overshoot} \\[2pt]
-t_r &= t_{90} - t_{10},\quad t_{\alpha} = \min\{t[k] : y[k] \geq \alpha r\},\; \alpha\in\{0.1,0.9\}
-\label{eq:rise_time} \\[2pt]
-t_s &= t[k^{*}+1],\quad k^{*} = \max\{k : |y[k] - r| > 0.02\,r\}
-\label{eq:settling_time} \\[2pt]
-e_{ss} &= \left|r - \frac{1}{N - N_{ss}}\sum_{k=N_{ss}}^{N-1} y[k]\right|,\quad N_{ss} = \lfloor 0.9N\rfloor
-\label{eq:ess}
-\end{align}
-
-\noindent
-correspondientes a sobreimpulso máximo ($M_p$), tiempo de subida ($t_r$, 10\%--90\%), tiempo de asentamiento ($t_s$, banda 2\%) y error en estado estacionario ($e_{ss}$). Las métricas comparativas PSO vs. Lambda se obtienen con \texttt{deadband}$\,=0$ por consistencia metodológica. Los datos de odometría, velocidad y transformaciones se registraron con \texttt{ros2 bag record}.
+El espacio físico disponible permitió validar odometría, control y mapeo. Sin embargo, la navegación autónoma y la exploración requieren trayectorias más largas y zonas de mayor superficie, por lo que quedaron definidas como pruebas planificadas.
 
 % ===========================================================================
 \section{Validación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
-\subsection{Prueba de trayectoria rectilínea}
-\label{subsec:prueba_recta}
-
-\textbf{Procedimiento:} se envió una velocidad lineal constante de $0.13$ m/s durante el tiempo correspondiente a $2.00$ m teóricos, con cinco repeticiones; se midió la distancia real con cinta métrica y se comparó con \texttt{/odom}. El error porcentual se define según el entorno. En simulación, donde la odometría del plugin de Gazebo coincide con la verdad de terreno (\textit{ground truth}), el indicador cuantifica el error de seguimiento de consigna (diferencia entre la distancia comandada y la ejecutada por el controlador):
-
-\begin{equation}
-e_{\text{seg}} = \frac{|d_{\text{teórica}} - d_{\text{odom}}|}{d_{\text{teórica}}} \times 100 \quad [\%],
-\qquad d_{\text{odom}} = d_{\text{GT}}
-\label{eq:error_seg}
-\end{equation}
-
-\noindent
-En hardware real, donde $d_{\text{real}}$ es la distancia física medida con cinta, el indicador cuantifica el error de odometría propiamente tal (discrepancia entre la odometría de encoders y la realidad):
-
-\begin{equation}
-e_{\text{odom}} = \frac{|d_{\text{odom}} - d_{\text{real}}|}{d_{\text{real}}} \times 100 \quad [\%]
-\label{eq:error_odom}
-\end{equation}
+La odometría se evaluó mediante pruebas de trayectoria rectilínea de 2 m y giros completos de $360^\circ$. En simulación, la odometría coincide con la verdad de terreno de Gazebo, por lo que el error representa principalmente seguimiento de consigna. En hardware real, el error corresponde a la discrepancia entre la odometría de encoders y la medición física.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Error de seguimiento de consigna en trayectoria rectilínea -- simulación (Gazebo).}
-\label{tab:odom_recta_sim}
-\begin{tabular}{ccccc}
+\caption{Resumen de resultados de odometría.}
+\label{tab:resumen_odometria}
+\small
+\begin{tabular}{p{3.2cm} p{3.4cm} p{3.2cm} p{3.2cm}}
 \toprule
-\textbf{Prueba} & \textbf{Teórica (m)} & \textbf{Odom. (m)} & \textbf{Real GT (m)}\tnote{a} & \textbf{Error (\%)} \\
+\textbf{Prueba} & \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
-1 & 2.00 & 1.866 & 1.866 & 6.69 \\
-2 & 2.00 & 1.954 & 1.954 & 2.28 \\
-3 & 2.00 & 1.946 & 1.946 & 2.72 \\
-4 & 2.00 & 1.923 & 1.923 & 3.83 \\
-5 & 2.00 & 1.972 & 1.972 & 1.40 \\
-\midrule
-\multicolumn{4}{r}{\textbf{Error medio}} & \textbf{3.39} \\
+Trayectoria recta de 2 m & Error medio & 3.39\% & 3.63\% \\
+Giro completo de $360^\circ$ & Desviación media & $17.1^\circ$ & $11.7^\circ$ \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] En Gazebo la odometría coincide con el \textit{ground truth}; se reporta una sola columna. Error según la Ec.~\ref{eq:error_seg}.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
 
-El error en simulación no refleja imprecisión de la odometría —ideal en Gazebo— sino la diferencia entre la distancia comandada y la efectivamente recorrida, atribuible a la dinámica del controlador (aceleración, frenado y discretización). La primera prueba presenta mayor error (6.69\%), atribuible a transitorios iniciales antes de alcanzar la referencia; el error medio sin ella es 2.56\%.
+En trayectoria rectilínea, el error medio de hardware fue 3.63\%, valor adecuado para recorridos cortos. La distancia reportada por \texttt{/odom} fue sistemáticamente inferior a la distancia teórica, lo que indica que el robot no alcanza completamente la velocidad de referencia debido a limitaciones de saturación y dinámica del sistema.
 
-\utemFigurePropia{2.Texto/Imag/prueba_recta.png}{0.90\textwidth}
-{Trayectoria rectilínea en Gazebo.}
+En la prueba de giro, la deriva angular fue más variable. Este comportamiento se asocia a deslizamiento, zona muerta del driver L298N y diferencias mecánicas entre ruedas. La magnitud del error confirma la conveniencia de incorporar una IMU en trabajos futuros para corregir la orientación.
+
+\utemFigurePropia{2.Texto/Imag/prueba_recta.png}{0.82\textwidth}
+{Trayectoria rectilínea en simulación.}
 {fig:prueba_recta}
 
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-\caption{Error de odometría en trayectoria rectilínea -- hardware real.}
-\label{tab:odom_recta_real}
-\begin{tabular}{ccccc}
-\toprule
-\textbf{Prueba} & \textbf{Teórica (m)} & \textbf{Odom. (m)} & \textbf{Real (m)} & \textbf{Error (\%)} \\
-\midrule
-1 & 2.00 & 1.920 & 1.846 & 4.01 \\
-2 & 2.00 & 1.922 & 1.868 & 2.88 \\
-3 & 2.00 & 1.923 & 1.851 & 3.87 \\
-4 & 2.00 & 1.926 & 1.856 & 3.78 \\
-5 & 2.00 & 1.928 & 1.861 & 3.61 \\
-\midrule
-\multicolumn{4}{r}{\textbf{Error medio}} & \textbf{3.63} \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item El error cuantifica la discrepancia entre la odometría de encoders ($d_{\text{odom}}$) y la distancia física medida con cinta ($d_{\text{real}}$), según la Ec.~\ref{eq:error_odom}.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-La distancia reportada por \texttt{/odom} es sistemáticamente inferior a la teórica, lo que sugiere que el controlador no alcanza plenamente la velocidad de referencia por el límite de saturación ($0.13$ m/s).
-
-\subsection{Prueba de giro completo (360°)}
-\label{subsec:prueba_giro}
-
-\textbf{Procedimiento:} se aplicó una velocidad angular pura de $0.4$ rad/s (tiempo teórico $2\pi/0.4 \approx 15.71$ s), marcando la orientación inicial y midiendo el ángulo residual; cinco repeticiones.
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-\caption{Error de seguimiento en giro completo -- simulación.}
-\label{tab:odom_giro_sim}
-\begin{tabular}{ccccc}
-\toprule
-\textbf{Prueba} & \textbf{Teórico (\textdegree)} & \textbf{Odom. (\textdegree)} & \textbf{Real GT (\textdegree)} & \textbf{Desv. (\textdegree)}\tnote{a} \\
-\midrule
-1 & 360.0 & 335.86 & 335.86 & 24.14 \\
-2 & 360.0 & 347.40 & 347.40 & 12.60 \\
-3 & 360.0 & 346.62 & 346.62 & 13.38 \\
-4 & 360.0 & 347.40 & 347.40 & 12.60 \\
-5 & 360.0 & 337.41 & 337.41 & 22.59 \\
-\midrule
-\multicolumn{4}{r}{\textbf{Desviación media}} & \textbf{17.1} \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] Desviación $= 360^\circ$ (comandado) $-$ GT; cuantifica el seguimiento de consigna (sub-rotación), no la deriva de la odometría. El ángulo teórico corresponde al tiempo de comando.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\utemFigurePropia{2.Texto/Imag/prueba_giro.png}{0.90\textwidth}
-{Simulación del giro de 360°.}
-{fig:prueba_giro}
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-\caption{Deriva angular tras giro completo de 360° -- hardware real.}
-\label{tab:odom_giro}
-\begin{tabular}{cccc}
-\toprule
-\textbf{Prueba} & \textbf{Reportado (°)} & \textbf{Real (°)} & \textbf{Deriva (°)} \\
-\midrule
-1 & 360.0 & 355.7 & $-4.3$ \\
-2 & 360.0 & 340.0 & $-20.0$ \\
-3 & 360.0 & 380.0 & $+20.0$ \\
-4 & 360.0 & 370.0 & $+10.0$ \\
-5 & 360.0 & 356.0 & $-4.0$ \\
-\midrule
-\multicolumn{3}{r}{\textbf{Deriva media ($|\text{Deriva}|$)}} & \textbf{11.7} \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item Deriva $=$ ángulo real medido $-$ ángulo reportado por \texttt{/odom} ($360^\circ$).
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-La alta variabilidad apunta a factores no controlados (superficie, zona muerta del L298N). Excluyendo las dos repeticiones de mayor deriva (pruebas 2 y 3, $\pm 20^\circ$), la deriva media de las restantes es $6.1^\circ$. En ambos casos, la magnitud refuerza la necesidad de una IMU para corregir la orientación, consistente con la decisión de no activar AMCL (Capítulo~\ref{chap:app_control_nav}).
-
-\subsection{Cadena de transformaciones \texttt{tf}}
-\label{subsec:verificacion_tf}
-
-Se verificó que el árbol de transformaciones se publica de forma continua (\texttt{map}$\rightarrow$\texttt{odom} por \texttt{slam\_toolbox}; \texttt{odom}$\rightarrow$\texttt{base\_link} por \texttt{diff\_drive\_controller}; \texttt{base\_link}$\rightarrow$\texttt{laser\_frame} estática), y que \texttt{/odom} se publica a $\approx 30$ Hz, limitado por el \texttt{update\_rate} del \emph{controller manager} (Figura~\ref{fig:tf_tree_real}).
-
-\utemFigurePropia{2.Texto/Imag/tf_tree_real.pdf}{0.88\textwidth}
+\utemFigurePropia{2.Texto/Imag/tf_tree_real.pdf}{0.82\textwidth}
 {Árbol de transformaciones del robot real.}
 {fig:tf_tree_real}
 
+También se verificó la publicación continua del árbol de transformaciones: \texttt{map}$\rightarrow$\texttt{odom} por \texttt{slam\_toolbox}, \texttt{odom}$\rightarrow$\texttt{base\_link} por \texttt{diff\_drive\_controller}, y \texttt{base\_link}$\rightarrow$\texttt{laser\_frame} mediante una transformación estática.
+
 % ===========================================================================
-\section{Evaluación del controlador PID sintonizado}
+\section{Evaluación del controlador PID}
 \label{sec:resultados_pid}
 
-\subsection{Respuesta al escalón con ganancias finales}
-\label{subsec:respuesta_escalon_pso}
+El controlador PID fue evaluado usando las ganancias finales implementadas en el firmware. Los indicadores se calcularon sobre el modelo FODT identificado a partir de la respuesta experimental, usando una referencia de velocidad de 0.13 m/s.
 
-Se aplicó un escalón de velocidad de $0.13$ m/s con las ganancias definitivas del firmware y se registró la respuesta experimental (Figura~\ref{fig:respuesta_escalon_final}). Los indicadores de desempeño se calculan sobre el modelo FODT identificado a partir de esa captura, utilizando dichas ganancias; la Tabla~\ref{tab:fodt_params_pso} presenta el modelo identificado y la Tabla~\ref{tab:pid_performance} los indicadores resultantes.
-
-\utemFigurePropia{2.Texto/Imag/respuesta_escalon_final.png}{0.88\textwidth}
+\utemFigurePropia{2.Texto/Imag/respuesta_escalon_final.png}{0.82\textwidth}
 {Respuesta experimental al escalón con ganancias finales.}
 {fig:respuesta_escalon_final}
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Parámetros FODT identificados mediante PSO sobre la respuesta en lazo abierto.}
-\label{tab:fodt_params_pso}
-\begin{tabular}{lccc}
-\toprule
-\textbf{Rueda} & $K_m$ (m/s/PWM) & $\tau$ (s) & $L_d$ (s)\tnote{a} \\
-\midrule
-Izquierda & 0.000913 & 0.3291 & 0.0215 / 0.0001 \\
-Derecha   & 0.000890 & 0.3485 & 0.0001 / 0.0845 \\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] El PSO es estocástico: $K_m$ y $\tau$ son consistentes entre corridas, mientras que el retardo $L_d$ varía. Se reportan los valores de las dos corridas empleadas, respectivamente, para la sintonía PSO y para la comparación con Lambda.
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\begin{table}[H]
-\centering
-\begin{threeparttable}
-\caption{Indicadores de desempeño PID con las ganancias finales (modelo FODT, \texttt{deadband}$\,=0$).}
+\caption{Indicadores de desempeño PID con ganancias finales.}
 \label{tab:pid_performance}
-\begin{tabular}{lcc}
+\small
+\begin{tabular}{p{4.2cm} cc}
 \toprule
 \textbf{Indicador} & \textbf{Rueda izquierda} & \textbf{Rueda derecha} \\
 \midrule
-Tiempo de subida (10\%--90\%) & 0.600~s & 0.600~s \\
-Tiempo de establecimiento (2\%) & N/A\tnote{a} & 3.100~s \\
+Tiempo de subida 10\%--90\% & 0.600 s & 0.600 s \\
+Tiempo de establecimiento 2\% & N/A & 3.100 s \\
 Sobreimpulso máximo & 15.63\% & 10.66\% \\
-Error estacionario & 0.00488~m/s & 0.00192~m/s \\
+Error estacionario & 0.00488 m/s & 0.00192 m/s \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] La rueda izquierda no alcanza la banda del 2\% dentro de 10~s por oscilación residual.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
 
-\subsection{Comparación con sintonía Lambda}
-\label{subsec:comparacion_lambda}
+La rueda izquierda no alcanza la banda de establecimiento del 2\% dentro de 10 s debido a una oscilación residual. Aun así, el controlador mantiene un bajo sobreimpulso y una respuesta estable para operación móvil.
 
-Se calcularon ganancias Lambda ($\lambda = 3\tau$) sobre el mismo modelo FODT. La Tabla~\ref{tab:comparacion_metodos} compara ambos enfoques.
+La comparación con sintonía Lambda muestra que Lambda reduce el tiempo de subida, pero genera sobreimpulsos superiores al 40\%. Por ello, la sintonización PSO con refinamiento experimental resulta más adecuada para navegación en interiores, donde se prioriza evitar respuestas bruscas cerca de obstáculos.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Comparativa de ganancias PID\tnote{a}: firmware (PSO + refinamiento) vs. Lambda.}
+\caption{Comparación resumida entre sintonización final y Lambda.}
 \label{tab:comparacion_metodos}
-\footnotesize
-\begin{tabular}{l ccc ccc}
+\small
+\begin{tabular}{p{3.5cm} c c c}
 \toprule
-\textbf{Método} & $k_p$ & $k_i$ & $k_d$ & \textbf{Sobreimp. (\%)} & $t_r$ (s) & $e_{ss}$ (m/s) \\
+\textbf{Método} & \textbf{Rueda} & \textbf{Sobreimpulso} & \textbf{Tiempo de subida} \\
 \midrule
-Firmware (Izq.) & 0.7017 & 0.09867 & 0.8902 & 15.63 & 0.600 & 0.00488 \\
-Lambda (Izq.)   & 2.7193 & 7.50238 & 0.0823 & 46.42 & 0.200 & 0.00015 \\
-Firmware (Der.) & 0.7201 & 0.00132 & 0.8793 & 10.66 & 0.600 & 0.00192 \\
-Lambda (Der.)   & 2.8241 & 7.22823 & 0.1064 & 44.15 & 0.200 & 0.00005 \\
+PSO + refinamiento & Izquierda & 15.63\% & 0.600 s \\
+Lambda & Izquierda & 46.42\% & 0.200 s \\
+PSO + refinamiento & Derecha & 10.66\% & 0.600 s \\
+Lambda & Derecha & 44.15\% & 0.200 s \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\scriptsize
-\item[a] Ganancias en forma estándar continua, para comparar con Lambda. Las del firmware se obtienen como $k_p = K_p^{\text{fw}}/f_u$ y $k_d = K_d^{\text{fw}}/f_u$, con el factor de conversión de unidades $f_u = \texttt{PWM\_NOMINAL}\cdot K_o/\texttt{MPS\_TO\_TICKS} = 143\cdot 50/313.56 \approx 22.80$; el término integral incorpora además el período de muestreo del lazo: $k_i = (K_i^{\text{fw}}/f_u)\cdot f_{\text{PID}}$.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
 
-Lambda es más rápido (menor $t_r$ y $e_{ss}$), pero con un sobreimpulso inaceptable ($>40\%$). El criterio PSO+experimental prioriza el bajo sobreimpulso (10.66\%--15.63\%) a costa de un mayor tiempo de subida, comportamiento preferible para un robot que opera cerca de obstáculos.
-
-\utemFigurePropia{2.Texto/Imag/comparacion_pso_vs_lambda.png}{0.92\textwidth}
+\utemFigurePropia{2.Texto/Imag/comparacion_pso_vs_lambda.png}{0.88\textwidth}
 {Comparación simulada PSO vs. Lambda sobre el modelo FODT.}
 {fig:comparacion_pso_vs_lambda}
-
-\subsection{Trayectoria recta a velocidad constante}
-\label{subsec:pid_trayectoria}
-
-Durante un recorrido recto de 3 m a $0.13$ m/s, ambas ruedas siguieron la referencia con oscilaciones de baja amplitud y mantuvieron una trayectoria aproximadamente rectilínea, lo que confirma que las ganancias asimétricas compensan las diferencias mecánicas entre motores.
 
 % ===========================================================================
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-\subsection{Mapeo en simulación}
-\label{subsec:mapa_sim}
-
-Se teleoperó el robot en \texttt{obstacles.world} mientras \texttt{slam\_toolbox} construía el mapa (Tabla~\ref{tab:slam_sim_indicadores}). El mapa resultante presenta paredes nítidas y obstáculos bien representados.
+El mapeo se evaluó primero en simulación, teleoperando el robot dentro del mundo \texttt{obstacles.world}. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
 \caption{Indicadores del mapeo en simulación.}
 \label{tab:slam_sim_indicadores}
-\begin{tabular}{ll}
+\small
+\begin{tabular}{p{5.5cm} p{5.5cm}}
 \toprule
 \textbf{Indicador} & \textbf{Valor} \\
 \midrule
 Tiempo total de mapeo & 10.1 min \\
-Distancia recorrida (odometría) & 23.32 m \\
+Distancia recorrida por odometría & 23.32 m \\
 Número de nodos del grafo & 45 \\
 Resolución del mapa & 0.05 m/celda \\
 Cobertura estimada & 95.6\% \\
-Área libre mapeada & 42.53 m² \\
-Cierre de lazo & Consistencia global correcta\tnote{a} \\
-Alineación de paredes & Bordes definidos \\
+Área libre mapeada & 42.53 m$^2$ \\
+Cierre de lazo & Consistencia global correcta \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] El cierre de lazo no generó un evento explícito, pero la consistencia global fue buena.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
 
-\subsection{Mapeo en hardware real}
-\label{subsec:mapa_real}
-
-El procedimiento se repitió en el entorno físico, obteniéndose mapas utilizables. La calidad depende críticamente de la velocidad de desplazamiento: las mejores capturas se lograron entre 0.06 y 0.09 m/s, rango que permite al \gls{LIDAR} completar un barrido entre actualizaciones del grafo. Los indicadores cuantitativos (tiempo, distancia, nodos del grafo y cierre de lazo) quedan pendientes de medición sistemática; el formato de reporte, idéntico al de la Tabla~\ref{tab:slam_sim_indicadores}, se recoge en el \ref{anx:protocolo_resultados}.
-
-\subsection{Comparación cualitativa de mapas}
-\label{subsec:comparacion_mapas}
+En hardware real también se obtuvieron mapas utilizables. La calidad del mapa dependió fuertemente de la velocidad de desplazamiento: los mejores resultados se lograron entre 0.06 y 0.09 m/s, rango que permite al \gls{LIDAR} completar barridos suficientemente estables para el ajuste de \textit{scan matching}.
 
 \begin{table}[H]
 \centering
-\caption{Diferencias cualitativas observadas entre mapas de simulación y hardware real.}
+\caption{Comparación cualitativa entre mapas de simulación y hardware real.}
 \label{tab:diferencias_mapas}
-\begin{tabular}{lll}
+\small
+\begin{tabular}{p{3.8cm} p{3.6cm} p{3.6cm}}
 \toprule
 \textbf{Aspecto} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
-Nitidez de paredes & Alta (bordes definidos) & Media \\
+Nitidez de paredes & Alta & Media--alta \\
 Ruido en espacio libre & Nulo & Bajo--moderado \\
-Consistencia en cierre & Alta & Alta/media \\
+Consistencia global & Alta & Media--alta \\
 Obstáculos pequeños & Detectados & Parcialmente detectados \\
 Zonas de sombra láser & Mínimas & Presentes \\
 \bottomrule
@@ -387,99 +151,64 @@ Zonas de sombra láser & Mínimas & Presentes \\
 \end{table}
 
 % ===========================================================================
-\section{Resultados de navegación autónoma con Nav2}
+\section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
-\subsection{Protocolo de pruebas}
-\label{subsec:protocolo_nav}
+La navegación autónoma con Nav2 y la exploración basada en fronteras quedaron integradas funcionalmente, pero su validación cuantitativa requiere un entorno físico de mayor superficie. Se definieron escenarios de meta directa, obstáculo intermedio y paso estrecho, con cinco repeticiones por caso.
 
-Se definieron tres escenarios (cinco repeticiones cada uno): meta directa sin obstáculos ($\approx 3$ m), meta con obstáculo intermedio (caja) y meta en pasillo/puerta (espacio estrecho). La meta se envía desde RViz y se considera éxito si el robot la alcanza dentro de la tolerancia \texttt{xy\_goal\_tolerance} del \texttt{goal\_checker} (0.25 m en simulación, 0.10 m en hardware). Estos escenarios exceden la extensión del recinto físico disponible, por lo que su ejecución queda planificada para un entorno de mayor superficie; el formato de reporte (tasa de éxito, tiempo medio y desviación por escenario, en simulación y hardware) se recoge en el \ref{anx:protocolo_resultados}.
-
-\subsection{Tipos de fallo y estrategias de recuperación}
-\label{subsec:analisis_fallos}
-
-La Tabla~\ref{tab:fallos_nav} clasifica los modos de fallo previstos y la acción de recuperación del árbol de comportamiento que los atiende; la tasa de recuperación observada se reportará junto con los resultados de navegación.
+Para navegación, se registrarán tasa de éxito, tiempo medio a meta, desviación final y recuperaciones ejecutadas. Para exploración, se registrarán número de fronteras detectadas, metas enviadas, metas alcanzadas, cobertura estimada e intervenciones manuales. El formato de reporte se incluye en el Anexo~\ref{anx:protocolo_resultados}.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Tipos de fallo y estrategias de recuperación.}
-\label{tab:fallos_nav}
+\caption{Estado de validación por subsistema.}
+\label{tab:estado_validacion}
 \small
-\begin{tabular}{p{3.5cm} p{4cm} p{4.5cm}}
+\begin{tabular}{p{4cm} p{4cm} p{4cm}}
 \toprule
-\textbf{Tipo de fallo} & \textbf{Causa probable} & \textbf{Recuperación} \\
+\textbf{Subsistema} & \textbf{Estado} & \textbf{Observación} \\
 \midrule
-Costmap bloqueado & Obstáculo no mapeado & \texttt{ClearCostmap}\tnote{a} \\
-Ruta inválida & Espacio muy estrecho & Replaneación (4~Hz) \\
-Robot atascado & Deslizamiento en giro & \texttt{Spin} + \texttt{BackUp} \\
-Timeout de navegación & Oscilación local & Abortar y reintentar \\
+Odometría & Validada cuantitativamente & Simulación y hardware real \\
+Control PID & Validado cuantitativamente & Modelo FODT y pruebas experimentales \\
+SLAM & Validado cuantitativa y cualitativamente & Simulación; hardware cualitativo \\
+Nav2 & Integrado y verificado funcionalmente & Validación cuantitativa pendiente \\
+Exploración & Integrada y verificada funcionalmente & Validación cuantitativa pendiente \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] Limpieza en radio 1.0~m (local) y 1.5~m (global).
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
 
 % ===========================================================================
-\section{Resultados de exploración autónoma de fronteras}
-\label{sec:resultados_exploracion}
-
-La exploración se evalúa colocando el robot en una esquina y lanzando \texttt{explore\_server}, registrando el número de metas generadas y alcanzadas, la cobertura y las intervenciones manuales. Al igual que la navegación, requiere un área mayor que la disponible, por lo que su ejecución queda planificada; el formato de reporte se recoge en el \ref{anx:protocolo_resultados}.
-
-% ===========================================================================
-\section{Coherencia simulación -- hardware real}
+\section{Coherencia entre simulación y hardware}
 \label{sec:comparacion_sim_real}
+
+La comparación entre simulación y hardware muestra coherencia cinemática general. La diferencia entre el error medio de trayectoria recta en simulación (3.39\%) y hardware real (3.63\%) es baja, lo que valida la correspondencia geométrica entre el gemelo digital y el prototipo físico.
+
+Las principales diferencias aparecen en el giro y en el mapeo. En hardware real influyen la zona muerta del driver, el deslizamiento, la fricción del suelo y el ruido del sensor. En simulación, estas fuentes de error están idealizadas o simplificadas, por lo que los resultados tienden a ser más estables.
 
 \begin{table}[H]
 \centering
-\begin{threeparttable}
-\caption{Comparación integral de desempeño: simulación vs. hardware real.}
+\caption{Comparación integral de desempeño.}
 \label{tab:comparacion_integral}
 \small
-\begin{tabular}{p{3.2cm} p{3.8cm} p{3cm} p{3cm}}
+\begin{tabular}{p{3.4cm} p{3.6cm} p{2.8cm} p{2.8cm}}
 \toprule
 \textbf{Subsistema} & \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
-Odometría (recta 2 m)\tnote{b} & Error medio (\%) & 3.39 & 3.63 \\
-Odometría (giro 360°)\tnote{c} & Desviación angular & $\approx 17.1^\circ$ (seguim.) & $11.7^\circ$ (deriva) \\
-Control PID\tnote{a} & Sobreimpulso (\%) & N/A & 15.63 / 10.66 \\
-Control PID\tnote{a} & Error estacionario (m/s) & N/A & 0.00488 / 0.00192 \\
-Mapeo SLAM & Nitidez de paredes & Alta & Media--alta \\
-Mapeo SLAM & Cierre de lazo & Consistente & Consistente \\
-Navegación Nav2 & Tasa de éxito (\%) & Pendiente & Pendiente \\
-Navegación Nav2 & Tiempo medio a meta (s) & Pendiente & Pendiente \\
-Exploración & Cobertura (\%) & Pendiente & Pendiente \\
+Odometría recta & Error medio & 3.39\% & 3.63\% \\
+Odometría giro & Desviación angular & $17.1^\circ$ & $11.7^\circ$ \\
+Control PID & Sobreimpulso & N/A & 15.63\% / 10.66\% \\
+SLAM & Consistencia del mapa & Alta & Media--alta \\
+Nav2 & Tasa de éxito & Pendiente & Pendiente \\
+Exploración & Cobertura & Pendiente & Pendiente \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-\footnotesize
-\item[a] En simulación, Gazebo gestiona la dinámica de los motores mediante su motor de física, por lo que el PID del firmware no interviene y no es evaluable. Los indicadores de la columna ``hardware real'' provienen del modelo FODT identificado experimentalmente con las ganancias que operan en el robot (Sección~\ref{sec:resultados_pid}).
-\item[b] No estrictamente comparable: en Gazebo el error refleja el seguimiento de consigna (odometría $=$ \textit{ground truth}, Ec.~\ref{eq:error_seg}); en hardware refleja la discrepancia entre encoders y la medición física (Ec.~\ref{eq:error_odom}).
-\item[c] Tampoco comparable directamente: en simulación cuantifica el seguimiento de consigna (el robot recorre $\approx 343^\circ$ de los $360^\circ$ comandados por dinámica y discretización); en hardware cuantifica la deriva de la odometría respecto de la orientación física. Se reportan en sus unidades nativas (grados) y no deben restarse.
-\end{tablenotes}
-\end{threeparttable}
 \end{table}
 
-Respecto de los criterios de paridad definidos al construir el gemelo digital (Capítulo~\ref{ch:robot_digital}), la coherencia cinemática se verifica: la separación de ruedas, el radio y la base de conversión de odometría son idénticos en ambos entornos, y el error de odometría se mantiene en una banda equivalente (3.39\% en simulación, 3.63\% en hardware). El cierre cuantitativo de los criterios asociados a navegación se completará con los resultados pendientes.
-
-\subsection{Adaptaciones en la transferencia simulación -- hardware}
-\label{subsec:adaptaciones_transfer}
-
-La transferencia al hardware requirió fijar \texttt{use\_sim\_time:=false}, activar las reglas \texttt{udev} de nombres persistentes, ajustar los límites cinemáticos y las frecuencias del controlador, y habilitar el retroceso. El detalle completo de las diferencias de configuración entre entornos se documenta en los Capítulos~\ref{chap:robot_real} y~\ref{chap:app_control_nav}.
-
-% ===========================================================================
-\section{Viabilidad en la Raspberry Pi 4}
-\label{sec:recursos_computacionales}
-
-Durante las sesiones de SLAM y navegación superiores a 10~min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5~V, comportamiento consistente con el margen del convertidor frente al presupuesto de potencia (\ref{anx:hardware_ros2}); la etapa de potencia opera con reserva suficiente para la carga del prototipo y la incorporación futura de sensores. La caracterización cuantitativa del uso de cómputo y de la autonomía energética queda pendiente de medición sistemática.
+Durante sesiones superiores a 10 min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5 V. La caracterización cuantitativa de uso de CPU, memoria y autonomía energética queda como medición pendiente.
 
 % ===========================================================================
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_resultados}
 
-La odometría basada en encoders de 1980 CPR ofrece precisión adecuada para trayectorias cortas (error medio 3.63\% en 2 m en hardware real), pero la deriva angular media de $11.7^\circ$ por giro completo se propaga al mapa, confirmando la necesidad de una IMU. La sintonización PSO+experimental produce bajo sobreimpulso (10.66\%--15.63\%) a costa de un mayor tiempo de subida; el \emph{ripple} residual ($\approx 0.005$ m/s) proviene de la cuantización del encoder y no afecta la navegación, y la zona muerta asimétrica suprime los ciclos límite. El mapeo SLAM produce mapas utilizables en ambos entornos; en hardware la calidad depende de mantener velocidades bajas (0.06--0.09 m/s) para que el \gls{LIDAR} complete un barrido entre actualizaciones del grafo. La etapa de potencia se mostró estable durante toda la experimentación, sin síntomas de sobrecarga ni estrangulamiento térmico.
+Los resultados muestran que el prototipo alcanza una precisión adecuada de odometría en trayectorias cortas, con error medio de 3.63\% en hardware real. La deriva angular de $11.7^\circ$ por giro completo confirma la necesidad de incorporar una IMU para mejorar la estimación de orientación. El controlador PID sintonizado mediante PSO y refinamiento experimental reduce el sobreimpulso respecto de Lambda, logrando una respuesta más apropiada para navegación en interiores.
 
-La validación de la navegación autónoma y la exploración de fronteras quedó limitada por la extensión del recinto físico disponible, que no admite los escenarios definidos (meta a $\approx 3$ m, pasillo). El protocolo, las métricas y la infraestructura de pruebas están definidos (\ref{anx:protocolo_resultados}), de modo que estas evaluaciones pueden completarse en un entorno de mayor superficie para cerrar cuantitativamente la validación del sistema integrado.
+El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La navegación autónoma y la exploración por fronteras quedaron integradas y verificadas funcionalmente, pero su validación cuantitativa debe completarse en un entorno de mayor superficie siguiendo el protocolo definido en el anexo.
