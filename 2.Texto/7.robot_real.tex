@@ -82,13 +82,13 @@ La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDrive
 En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} esperado por el \gls{Arduino}:
 
 \begin{equation}
-m_j^{cmd}[k] = \frac{\omega_j^{cmd}[k]}{2\pi/N_e}\cdot\frac{1}{f_{loop}}
-= \frac{\omega_j^{cmd}[k]\,N_e}{2\pi\,f_{loop}},
+m_j^{cmd}[k] = \frac{\omega_j^{cmd}[k]}{2\pi/N_e}\cdot\frac{1}{f_{ctrl}}
+= \frac{\omega_j^{cmd}[k]\,N_e}{2\pi\,f_{ctrl}},
 \qquad j\in\{R,L\}
 \label{eq:cmd_to_ticks}
 \end{equation}
 
-donde $m_j^{cmd}[k]$ es la referencia enviada al firmware [ticks/frame], $\omega_j^{cmd}[k]$ la velocidad angular de rueda comandada [rad/s], $N_e=1980$ la resolución del encoder [cuentas/vuelta] y $f_{loop}=30$ Hz la frecuencia del lazo del controlador (\texttt{loop\_rate}). El término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count} de cada rueda. Esta conversión es equivalente a la del Capítulo~\ref{marco_teorico} expresada en velocidad lineal, ya que $v_j=r\,\omega_j$.
+donde $m_j^{cmd}[k]$ es la referencia enviada al firmware [ticks/frame], $\omega_j^{cmd}[k]$ la velocidad angular de rueda comandada [rad/s], $N_e=1980$ la resolución del encoder [cuentas/vuelta] y $f_{ctrl}=30$~Hz la frecuencia común del lazo (\texttt{loop\_rate} configurada igual a \texttt{PID\_RATE}). El término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count}. Esta conversión es equivalente a la Ec.~\ref{eq:mps_to_ticks}, ya que $v_j^{cmd}=r\,\omega_j^{cmd}$.
 
 En \texttt{read()}, los conteos acumulados del encoder se transforman en ángulo y velocidad de rueda, que alimentan la odometría:
 
@@ -126,16 +126,14 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
 \caption{Ciclo de control de hardware en \texttt{ros2\_control} (plugin \texttt{DiffDriveArduino})}
 \label{alg:ros2control_cycle}
 \begin{algorithmic}[1]
-\Require Comandos de velocidad angular de rueda $\omega_R^{cmd},\omega_L^{cmd}$ [rad/s] (de \texttt{diff\_drive\_controller}); enlace serial al \gls{Arduino}; $N_e$; $f_{loop}$; ganancias PID residentes en el firmware.
+\Require Comandos de velocidad angular de rueda $\omega_R^{cmd},\omega_L^{cmd}$ [rad/s] (de \texttt{diff\_drive\_controller}); enlace serial al \gls{Arduino}; $N_e$; $f_{ctrl}$; ganancias PID residentes en el firmware.
 \Ensure Estados de rueda $(\phi_j,\dot{\phi}_j)$ para odometría y referencias \textit{ticks/frame} enviadas al firmware.
-
 \State \textbf{Inicialización} (\texttt{configure}/\texttt{start}):
 \State Abrir puerto serial (\texttt{device}, \texttt{baud\_rate}, \texttt{timeout}); esperar el \textit{bootloader} y vaciar el buffer.
 \State $\textit{rads\_per\_count}\gets 2\pi/N_e$ por rueda; $t_{prev}\gets t_{now}$.
 \State Enviar mensaje vacío de \textit{handshake}; mantener las ganancias PID por defecto del firmware (sintonía PSO).
-
 \Statex
-\State \textbf{Ejecución principal} (cada período del \texttt{controller\_manager}, a $f_{loop}$):
+\State \textbf{Ejecución principal} (cada período del \texttt{controller\_manager}, a $f_{ctrl}$):
 \While{el controlador está activo}
     \State \textbf{read():}
     \State $\Delta t_k\gets t_{now}-t_{prev}$; \; $t_{prev}\gets t_{now}$
@@ -151,13 +149,12 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
     \State \textbf{write():}
     \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
     \For{$j\in\{R,L\}$}
-        \State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{loop})$ \Comment{Ec.~\ref{eq:cmd_to_ticks}}
+        \State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{ctrl})$ \Comment{Ec.~\ref{eq:cmd_to_ticks}}
     \EndFor
     \State Enviar $m_R^{cmd}[k],m_L^{cmd}[k]$ al \gls{Arduino}
 \EndWhile
-
 \Statex
-\State \textbf{Salida:} El firmware ejecuta el PID por rueda a $f_{PID}$ y aplica el \textit{watchdog} de auto-detención; el controlador publica \texttt{/odom} y la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
+\State \textbf{Salida:} El firmware ejecuta el PID por rueda a $f_{ctrl}$ y aplica el \textit{watchdog} de auto-detención; el controlador publica \texttt{/odom} y la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
 \end{algorithmic}
 \end{algorithm}
 

@@ -9,24 +9,33 @@ Este capítulo presenta los fundamentos teóricos necesarios para el diseño e i
 
 La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{thrun2005probabilistic, borenstein1996}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{siciliano2010robotics, corke2017}. En este trabajo, la odometría es publicada por \texttt{diff\_drive\_controller} y utilizada por \texttt{slam\_toolbox} como estimación inicial para el mapeo.
 
-Considérese un robot diferencial con ruedas de radio $r$, distancia entre ruedas $L$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad angular se calcula a partir de las cuentas de encoder acumuladas en el intervalo de muestreo:
+
+Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas
+$b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad
+angular se calcula a partir de las cuentas de encoder acumuladas en el intervalo
+de muestreo:
 
 \begin{equation}
-\omega_{j} = \frac{2\pi\, n_{j}}{N_e\, T_s},
+\omega_{j} = \frac{2\pi\, \Delta c_{j}[k]}{N_e\, T_s},
 \qquad j\in\{R,L\}
 \label{eq:w_ruedas}
 \end{equation}
 
-donde $\omega_{j}$ es la velocidad angular de la rueda $j$ [rad/s], $n_{j}$ las cuentas acumuladas en el intervalo [cuentas], $N_e$ la resolución del encoder [cuentas/vuelta] y $T_s$ el período de muestreo [s]. La velocidad lineal de cada rueda es $v_{j}=r\,\omega_{j}$ [m/s], y las velocidades lineal y angular del robot se obtienen mediante:
+donde $\omega_{j}$ es la velocidad angular de la rueda $j$ [rad/s],
+$\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de cuentas del encoder en el intervalo de control $T_s$ [cuentas], $N_e$ la resolución del encoder [cuentas/vuelta] y $T_s$ el período de muestreo [s].
 
 \begin{align}
 v &= \frac{r}{2}\left(\omega_R+\omega_L\right)
 \label{eq:v_lineal} \\
-\omega &= \frac{r}{L}\left(\omega_R-\omega_L\right)
+\omega &= \frac{r}{b}\left(\omega_R-\omega_L\right)
 \label{eq:v_angular}
 \end{align}
 
-donde $v$ es la velocidad lineal del robot [m/s] y $\omega$ su velocidad angular [rad/s]. La pose se actualiza en tiempo discreto como:
+donde $v$ es la velocidad lineal del robot [m/s], $\omega$ su velocidad angular
+[rad/s] y $b$ la separación entre ruedas [m] (parámetro \texttt{wheel\_separation}).
+El subíndice $L$ en $\omega_L$ denota la rueda izquierda y no debe confundirse con
+la separación $b$. La pose se actualiza en tiempo discreto como:
+
 
 \begin{align}
 x_{k+1} &= x_k + T_s\, v_k \cos\theta_k
@@ -39,41 +48,58 @@ y_{k+1} &= y_k + T_s\, v_k \sin\theta_k
 
 donde $v_k$ y $\omega_k$ son la velocidad lineal y angular del robot en el instante $k$, y $q_k=(x_k,y_k,\theta_k)$ la pose [m, m, rad].
 
-En esta tesis, $r=0.0335$ m, $L=0.188$ m, $N_e=1980$ cuentas/vuelta y la frecuencia del lazo de control es $f_{PID}=30$ Hz, de donde $T_s=1/f_{PID}\approx 0.0333$ s. El firmware regula la velocidad de rueda en \textit{ticks/frame} (cuentas por período $T_s$), mientras que \gls{ROS2} trabaja con velocidades en unidades del SI. La referencia interna del controlador se obtiene a partir de la velocidad lineal comandada $v_j^{ref}$ mediante el factor de conversión:
+En esta tesis, $r=0.0335$~m, $b=0.188$~m, $N_e=1980$ cuentas/vuelta y la frecuencia del lazo de control es $f_{ctrl}=30$~Hz, de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware \texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión:
 
 \begin{equation}
-m_j^{ref}[k] = v_j^{ref}\,\frac{N_e}{2\pi r\, f_{PID}},
+m_j^{cmd}[k] = v_j^{cmd}\,\frac{N_e}{2\pi r\, f_{ctrl}},
 \qquad j\in\{R,L\}
 \label{eq:mps_to_ticks}
 \end{equation}
 
-donde $m_j^{ref}[k]$ es la referencia de velocidad de rueda en \textit{ticks/frame} y $v_j^{ref}$ la velocidad lineal de rueda comandada [m/s]; el resto de variables fueron definidas previamente. El factor $N_e/(2\pi r\, f_{PID})$ tiene unidades de (ticks/frame)/(m/s).
+donde $m_j^{cmd}[k]$ es la referencia de velocidad de rueda enviada al firmware en \textit{ticks/frame} y $v_j^{cmd}$ la velocidad lineal de rueda comandada [m/s]; el resto de variables fueron definidas previamente. El factor $N_e/(2\pi r\, f_{PID})$ tiene unidades de (ticks/frame)/(m/s).
 
 %------------------------------------------------------------------
 \section{Identificación FODT}
 \label{sec:fodt}
 
-Para sintonizar el controlador PID se identifica un modelo de primer orden con retardo, FODT (\textit{First Order Plus Dead Time}), a partir de la respuesta de cada rueda ante un escalón de PWM \citep{ogata2003ingenieria}. Su función de transferencia es:
+Para sintonizar el controlador PID se identifica un modelo de primer orden con
+retardo, FODT (\textit{First Order Plus Dead Time}), a partir de la respuesta de
+cada rueda ante un escalón de PWM \citep{ogata2003ingenieria}. Su función de
+transferencia es:
 
 \begin{equation}
 G_m(s)=\frac{K_m}{1+\tau s}\,\mathrm{e}^{-L_d s}
 \label{eq:fodt}
 \end{equation}
 
-donde $K_m$ es la ganancia estática, $\tau$ la constante de tiempo [s], $L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler. En este trabajo, $K_m$ se expresa en m/s/PWM, porque la planta identificada corresponde a la velocidad lineal de rueda frente a una entrada PWM. La conversión entre la salida de la planta (m/s) y la variable interna del PID (ticks/frame) se realiza con el factor de la Ec.~\ref{eq:mps_to_ticks}.
+donde $K_m$ es la ganancia estática [m/s/PWM], $\tau$ la constante de tiempo [s],
+$L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler. La ganancia $K_m$ se
+expresa en m/s/PWM porque la planta identificada corresponde a la velocidad
+lineal de rueda frente a una entrada PWM. La conversión entre la salida de la
+planta (m/s) y la variable interna del PID (ticks/frame) se realiza con el factor
+de la Ec.~\ref{eq:mps_to_ticks}.
 
-En tiempo discreto, la respuesta ante un escalón de amplitud $\Delta u$ y período de muestreo $T_s$ se aproxima mediante:
+El modelo se evalúa en tiempo discreto mediante integración de Euler hacia
+adelante, forma utilizada tanto en la identificación de par\'ametros como en la
+simulaci\'on del controlador en lazo cerrado:
 
 \begin{equation}
-y[k]=
-\begin{cases}
-0, & kT_s \leq L_d \\[4pt]
-K_m\left(1-\mathrm{e}^{-(kT_s-L_d)/\tau}\right)\Delta u, & kT_s > L_d
-\end{cases}
+y[k]=y[k-1]+\frac{\Delta t}{\tau}\Bigl(K_m\,u[k-n_d]-y[k-1]\Bigr),
+\qquad
+n_d=\left\lfloor \frac{L_d}{\Delta t}\right\rfloor,
+\qquad
+y[0]=0
 \label{eq:fodt_discreto}
 \end{equation}
 
-donde $y[k]$ es la velocidad estimada de rueda [m/s], $\Delta u$ la amplitud del escalón de PWM [PWM] y $T_s$ el período de muestreo [s]; el resto de variables fueron definidas previamente. Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático medio entre la respuesta experimental y la simulada.
+donde $y[k]$ es la velocidad estimada de rueda [m/s], $u[k]$ la entrada PWM [PWM],
+$\Delta t$ el paso de integraci\'on [s], $n_d$ el retardo expresado en n\'umero de
+muestras y $y[0]=0$ la condici\'on inicial; el resto de variables fueron definidas
+previamente. El paso toma el valor $\Delta t=T_{cap}$ durante la identificaci\'on
+en lazo abierto y $\Delta t=T_s=1/f_{PID}$ durante la simulaci\'on del lazo
+cerrado. Para $k<n_d$ se mantiene $u[k-n_d]=u[0]$. Los par\'ametros
+$(K_m,\tau,L_d)$ se estiman minimizando el error cuadr\'atico medio entre la
+respuesta experimental y la simulada.
 
 %------------------------------------------------------------------
 \section{Control PID}
@@ -88,7 +114,7 @@ u(t)=K_p\, e(t)+K_i\int_0^t e(\sigma)\,d\sigma+K_d\frac{de(t)}{dt}
 
 donde $u(t)$ es la acción de control, $e(t)$ el error y $K_p$, $K_i$, $K_d$ las ganancias proporcional, integral y derivativa.
 
-En el firmware del \gls{Arduino}, el control se implementa en forma incremental, con derivada sobre la medición para evitar el \textit{derivative kick}. Para cada rueda $j\in\{R,L\}$, se define $m_j[k]$ como la velocidad medida en \textit{ticks/frame}, $m_j^{ref}[k]$ como la referencia (Ec.~\ref{eq:mps_to_ticks}) y $e_j[k]=m_j^{ref}[k]-m_j[k]$ como el error. La ley implementada es:
+En el firmware del \gls{Arduino}, el control se implementa en forma incremental, con derivada sobre la medición para evitar el \textit{derivative kick}. Para cada rueda $j\in\{R,L\}$, se define $m_j[k]$ como la velocidad medida en \textit{ticks/frame}, $m_j^{cmd}[k]$ como la referencia enviada al firmware (Ec.~\ref{eq:mps_to_ticks}) y $e_j[k]=m_j^{cmd}[k]-m_j[k]$ como el error.. La ley implementada es:
 
 \begin{equation}
 u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}},
@@ -107,7 +133,15 @@ Las ganancias PID se obtienen mediante un procedimiento híbrido. Primero se ide
 \subsection{Optimización por enjambre de partículas}
 \label{sec:pso_marco}
 
-El PSO (\textit{Particle Swarm Optimization}) es una metaheurística en la que cada partícula representa una solución candidata \citep{KE1995_marco}. En este trabajo, cada partícula corresponde a un conjunto de ganancias PID. La actualización de velocidad y posición de la partícula $i$, en la dimensión $j$ y generación $g$, se define como:
+El PSO (\textit{Particle Swarm Optimization}) es una metaheurística en la que cada
+partícula representa una solución candidata \citep{KE1995_marco}. En este trabajo,
+cada partícula corresponde a un conjunto de ganancias PID. Se emplea una variante
+con factor de constricción e inercia decreciente: el factor de constricción
+$\chi$ acota la magnitud de la actualización y favorece la convergencia, mientras
+que el peso de inercia $w_{\mathrm{in}}^{g}$, que decrece con las generaciones,
+aporta mayor exploración al inicio y privilegia la explotación al final. La
+actualización de velocidad y posición de la partícula $i$, en la dimensión $j$ y
+generación $g$, es:
 
 \begin{align}
 v_{i,j}^{g+1} &=
@@ -121,7 +155,14 @@ x_{i,j}^{g+1} &= x_{i,j}^{g}+v_{i,j}^{g+1}
 \label{eq:pso_pos_marco_teorico}
 \end{align}
 
-donde $x_{i,j}^{g}$ es la posición de búsqueda, $v_{i,j}^{g}$ la velocidad de búsqueda, $p_{i,j}$ la mejor posición individual y $p_j^{*}$ la mejor posición global. El término $w_{\mathrm{in}}^{g}$ es el peso de inercia en la generación $g$, que decrece linealmente con las generaciones según $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, siendo $g_{\max}$ el número máximo de generaciones. Los coeficientes $c_1$ y $c_2$ ponderan las componentes cognitiva y social (adimensionales), mientras que $\rho_1,\rho_2$ son números aleatorios uniformes en $[0,1]$, regenerados por partícula y dimensión en cada iteración. El factor de constricción de Clerc--Kennedy $\chi$ se calcula como:
+donde $x_{i,j}^{g}$ es la posición de búsqueda, $v_{i,j}^{g}$ la velocidad de
+búsqueda, $p_{i,j}$ la mejor posición individual y $p_j^{*}$ la mejor posición
+global. El peso de inercia decrece linealmente según
+$w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, con $g_{\max}$ el número máximo de
+generaciones. Los coeficientes $c_1$ y $c_2$ ponderan las componentes cognitiva y
+social (adimensionales) y $\rho_1,\rho_2$ son números aleatorios uniformes en
+$[0,1]$, regenerados por partícula y dimensión en cada iteración. El factor de
+constricción $\chi$ se obtiene de la regla de Clerc--Kennedy:
 
 \begin{equation}
 \chi=\frac{2}{\left|2-\varphi-\sqrt{\varphi^2-4\varphi}\right|},
@@ -129,7 +170,7 @@ donde $x_{i,j}^{g}$ es la posición de búsqueda, $v_{i,j}^{g}$ la velocidad de 
 \label{eq:constriccion}
 \end{equation}
 
-donde $\varphi$ es la suma de los coeficientes cognitivo y social. La calidad de cada conjunto de ganancias $\mathbf{x}$ se evalúa mediante:
+donde $\varphi$ es la suma de los coeficientes cognitivo y social. Con $c_1=c_2=2.05$ se tiene $\varphi=4.1$ y $\chi\approx0.7298$, valor empleado en la implementación. Cabe señalar que la formulación canónica de constricción de Clerc--Kennedy prescinde del peso de inercia; aquí se conserva $w_{\mathrm{in}}^{g}$ como término adicional de exploración, tal como fue implementado y ejecutado. La calidad de cada conjunto de ganancias $\mathbf{x}$ se evalúa mediante:
 
 \begin{equation}
 J(\mathbf{x})=
@@ -138,23 +179,43 @@ w_{\mathrm{mse}}\cdot \mathrm{MSE}(e)
 \label{eq:costo_pso}
 \end{equation}
 
-donde $\mathbf{x}$ es el vector de ganancias de la partícula, $\mathrm{MSE}(e)$ es el error cuadrático medio respecto de la referencia, $\text{sobrepaso}$ el sobreimpulso de la respuesta y $w_{\mathrm{mse}}$, $w_{\mathrm{OS}}$ sus pesos relativos. Los valores específicos de los pesos y parámetros del enjambre se presentan en el capítulo de firmware y sintonización.
+donde $\mathbf{x}$ es el vector de ganancias de la partícula, $\mathrm{MSE}(e)$ el error cuadrático medio respecto de la referencia, $\text{sobrepaso}$ el sobreimpulso de la respuesta y $w_{\mathrm{mse}}$, $w_{\mathrm{OS}}$ sus pesos relativos. Los valores específicos de los pesos y parámetros del enjambre se presentan en el capítulo de firmware y sintonización.
 
 \subsection{Sintonía Lambda}
 \label{sec:lambda}
 
-La sintonía Lambda se utiliza como línea base analítica para comparar el desempeño de las ganancias obtenidas por PSO. Para el modelo FODT de la Ec.~\ref{eq:fodt}, las reglas de sintonía son:
+La sintonía Lambda se utiliza como línea base analítica para contrastar el
+desempeño de las ganancias obtenidas por PSO. A partir del modelo FODT de la
+Ec.~\ref{eq:fodt}, se aplica un procedimiento en tres etapas: forma serie
+(interactuante), forma paralela estándar y escala interna del firmware. Se
+adopta $\lambda = 3\tau$, criterio robusto que prioriza un bajo sobreimpulso
+frente a la rapidez de respuesta.
+
+La ganancia estática empleada en el diseño no es $K_m$ directamente, sino la
+ganancia referida al punto de operación, $K_{\mathrm{norm}}=K_m\,\mathrm{PWM_{nom}}$,
+de modo que el controlador en forma estándar entrega una señal normalizada en
+$[0,1]$; esa normalización se revierte a PWM en la etapa de firmware mediante el
+mismo $\mathrm{PWM_{nom}}$. Además, para evitar retardos degenerados, se usa un
+retardo efectivo $L_{ef}=\max\!\left(L_d,\,2/f_{PID}\right)$. Las reglas de la
+forma serie son:
 
 \begin{equation}
-k_c=\frac{\tau}{K_m\left(L_d/2+\lambda\right)},
+k_c=\frac{\tau}{K_{\mathrm{norm}}\left(L_{ef}/2+\lambda\right)},
 \qquad
 \tau_I=\tau,
 \qquad
-\tau_D=\frac{L_d}{2}
+\tau_D=\frac{L_{ef}}{2}
 \label{eq:lambda_serie}
 \end{equation}
 
-donde $k_c$ es la ganancia del controlador, $\tau_I$ el tiempo integral [s], $\tau_D$ el tiempo derivativo [s] y $\lambda$ el parámetro que ajusta la rapidez de la respuesta [s]. La equivalencia con las ganancias en forma paralela usadas por el firmware (Ec.~\ref{eq:pid_firmware}) es $K_p=k_c$, $K_i=k_c/\tau_I$ y $K_d=k_c\,\tau_D$; la conversión completa a la escala del firmware se detalla en el \ref{anx:lambda}.
+donde $k_c$ es la ganancia del controlador en forma serie, $\tau_I$ y $\tau_D$
+los tiempos integral y derivativo de dicha forma [s],
+$K_{\mathrm{norm}}=K_m\,\mathrm{PWM_{nom}}$ la ganancia estática referida al PWM
+nominal [m/s], $L_{ef}=\max(L_d,\,2/f_{PID})$ el retardo efectivo [s] y
+$\lambda=3\tau$ el parámetro que ajusta la rapidez de la respuesta [s]. Las
+variables $K_m$, $\tau$, $L_d$, $f_{PID}$ y $\mathrm{PWM_{nom}}=143$ fueron
+definidas previamente. La conversión completa a la escala del firmware se
+detalla en el~\ref{anx:lambda}.
 
 %------------------------------------------------------------------
 \section{SLAM basado en grafos}
