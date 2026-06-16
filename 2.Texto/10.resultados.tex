@@ -40,7 +40,49 @@ Giro completo de $360^\circ$ & Desviación media & $17.1^\circ$ & $11.7^\circ$ \
 
 En trayectoria rectilínea, el error medio de hardware fue 3.63\%, valor adecuado para recorridos cortos. La distancia reportada por \texttt{/odom} fue sistemáticamente inferior a la distancia teórica, lo que indica que el robot no alcanza completamente la velocidad de referencia debido a limitaciones de saturación y dinámica del sistema.
 
-En la prueba de giro, la deriva angular fue más variable. Este comportamiento se asocia a deslizamiento, zona muerta del driver L298N y diferencias mecánicas entre ruedas. La magnitud del error confirma la conveniencia de incorporar una IMU en trabajos futuros para corregir la orientación.
+En la prueba de giro, los patrones de error difieren entre ambos entornos porque miden fuentes distintas. En simulación, donde la odometría coincide con la verdad de terreno, el error refleja el seguimiento de consigna: en las cinco repeticiones el giro estimado fue inferior a $360^\circ$ (entre $335.9^\circ$ y $347.4^\circ$), es decir, una subestimación sistemática con baja dispersión y desviación media de $17.1^\circ$ ($4.74\%$). En hardware real, el error corresponde a la discrepancia entre la odometría y el giro físico, con desviaciones bidireccionales —subgiros y sobregiros— y deriva media de $11.7^\circ$; la mayor variabilidad se asocia a deslizamiento, zona muerta del driver L298N y diferencias mecánicas entre ruedas, mientras que la cancelación parcial entre sobre- y subgiros reduce la magnitud media. Los detalles por repetición se presentan en las Tablas~\ref{tab:odom_giro_sim} y~\ref{tab:odom_giro}.
+
+\begin{table}[H]
+\centering
+\caption{Error de odometría en giro completo de $360^\circ$ --- simulación (Gazebo). La odometría coincide con la verdad de terreno, por lo que el error refleja seguimiento de consigna.}
+\label{tab:odom_giro_sim}
+\small
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Prueba} & \textbf{Giro teórico (\textdegree{})} & \textbf{Giro estimado (\textdegree{})} & \textbf{Desviación (\textdegree{})} & \textbf{Error (\%)} \\
+\midrule
+1 & 360.0 & 335.86 & $-24.14$ & 6.71\% \\
+2 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
+3 & 360.0 & 346.62 & $-13.38$ & 3.72\% \\
+4 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
+5 & 360.0 & 337.41 & $-22.59$ & 6.28\% \\
+\midrule
+\multicolumn{3}{r}{\textbf{Desviación media}} & $\mathbf{17.1^\circ}$ & \textbf{4.74\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Error de odometría en giro completo de $360^\circ$ --- hardware real. Las desviaciones son bidireccionales (sobre- y subgiros).}
+\label{tab:odom_giro}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{Prueba} & \textbf{Giro teórico (\textdegree{})} & \textbf{Giro medido (\textdegree{})} & \textbf{Desviación (\textdegree{})} \\
+\midrule
+1 & 360.0 & 355.7 & $-4.3$ \\
+2 & 360.0 & 340.0 & $-20.0$ \\
+3 & 360.0 & 380.0 & $+20.0$ \\
+4 & 360.0 & 370.0 & $+10.0$ \\
+5 & 360.0 & 356.0 & $-4.0$ \\
+\midrule
+\multicolumn{3}{r}{\textbf{Deriva media} $\lvert\cdot\rvert$} & $\mathbf{11.7^\circ}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La magnitud del error en ambos casos confirma la conveniencia de incorporar una IMU en trabajos futuros para corregir la orientación.
 
 \utemFigurePropia{2.Texto/Imag/prueba_recta.png}{0.82\textwidth}
 {Trayectoria rectilínea en simulación.}
@@ -64,7 +106,7 @@ El controlador PID fue evaluado usando las ganancias finales implementadas en el
 
 \begin{table}[H]
 \centering
-\caption{Indicadores de desempeño PID con ganancias finales.}
+\caption{Indicadores de desempeño PID con ganancias finales (modelo FODT, ganancias del firmware).}
 \label{tab:pid_performance}
 \small
 \begin{tabular}{p{4.2cm} cc}
@@ -182,7 +224,7 @@ Exploración & Integrada y verificada funcionalmente & Validación cuantitativa 
 
 La comparación entre simulación y hardware muestra coherencia cinemática general. La diferencia entre el error medio de trayectoria recta en simulación (3.39\%) y hardware real (3.63\%) es baja, lo que valida la correspondencia geométrica entre el gemelo digital y el prototipo físico.
 
-Las principales diferencias aparecen en el giro y en el mapeo. En hardware real influyen la zona muerta del driver, el deslizamiento, la fricción del suelo y el ruido del sensor. En simulación, estas fuentes de error están idealizadas o simplificadas, por lo que los resultados tienden a ser más estables.
+Las principales diferencias aparecen en el giro y en el mapeo, y deben interpretarse considerando que cada entorno mide una fuente de error distinta. En simulación, donde la odometría coincide con la verdad de terreno, el error de giro proviene del seguimiento de consigna y es sistemático (subestimación consistente) y de baja dispersión, pero de mayor magnitud media ($17.1^\circ$). En hardware real, el error refleja la discrepancia odometría--física; las fuentes no modeladas —zona muerta del driver, deslizamiento, fricción y ruido sensorial— producen una deriva bidireccional, más variable, pero de menor magnitud media ($11.7^\circ$) por la cancelación parcial entre sobre- y subgiros. Por tanto, el mayor valor en simulación no implica una peor odometría, sino que cuantifica un efecto distinto (consigna vs. estimación).
 
 \begin{table}[H]
 \centering
@@ -194,8 +236,8 @@ Las principales diferencias aparecen en el giro y en el mapeo. En hardware real 
 \textbf{Subsistema} & \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
 Odometría recta & Error medio & 3.39\% & 3.63\% \\
-Odometría giro & Desviación angular & $17.1^\circ$ & $11.7^\circ$ \\
-Control PID & Sobreimpulso & N/A & 15.63\% / 10.66\% \\
+Odometría giro & Desviación angular & $17.1^\circ$\,(consigna) & $11.7^\circ$\,(estim.) \\
+Control PID & Sobreimpulso (modelo FODT) & N/A & 15.63\% / 10.66\% \\
 SLAM & Consistencia del mapa & Alta & Media--alta \\
 Nav2 & Tasa de éxito & Pendiente & Pendiente \\
 Exploración & Cobertura & Pendiente & Pendiente \\
@@ -203,7 +245,7 @@ Exploración & Cobertura & Pendiente & Pendiente \\
 \end{tabular}
 \end{table}
 
-Durante sesiones superiores a 10 min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5 V. La caracterización cuantitativa de uso de CPU, memoria y autonomía energética queda como medición pendiente.
+El sobreimpulso del control PID corresponde a la simulación sobre el modelo FODT con las ganancias del firmware, no a una medición directa de hardware; se incluye en la columna de hardware solo por corresponder a las ganancias desplegadas. Durante sesiones superiores a 10 min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5 V. La caracterización cuantitativa de uso de CPU, memoria y autonomía energética queda como medición pendiente.
 
 % ===========================================================================
 \section*{Conclusión del capítulo}

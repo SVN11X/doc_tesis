@@ -3,6 +3,8 @@
 
 Este capítulo describe el firmware \texttt{ROSArduinoBridge} implementado en el \gls{Arduino} Nano para el control de bajo nivel del robot. El firmware cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos.
 
+\noindent\textit{Nota: el pseudocódigo de este capítulo asume el uso de los paquetes \texttt{algorithm}, \texttt{algpseudocode} y \texttt{float}.}
+
 %------------------------------------------------------------------
 \section{Arquitectura modular del firmware}
 
@@ -15,21 +17,22 @@ El firmware se organiza en módulos con responsabilidades separadas: \texttt{ROS
 %------------------------------------------------------------------
 \section{Constantes físicas y conversión de unidades}
 
-El firmware utiliza las mismas constantes físicas definidas para el modelo cinemático y el gemelo digital: \texttt{WHEEL\_DIAMETER} = 0.067~m y \texttt{ENC\_TICKS\_PER\_REV} = 1980. A partir de ellas, se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame}:
+El firmware utiliza las mismas constantes físicas definidas para el modelo cinemático y el gemelo digital: el diámetro de rueda $D=\texttt{WHEEL\_DIAMETER}=0.067$~m (equivalente a $D=2r$) y $N_e=\texttt{ENC\_TICKS\_PER\_REV}=1980$ cuentas/vuelta. El lazo de control opera a $f_{PID}=\texttt{PID\_RATE}=30$~Hz, por lo que el período de control es $T_s=1/f_{PID}\approx0.0333$~s.
+
+A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame}:
 
 \begin{align}
 \texttt{MPS\_TO\_TICKS\_FACTOR} &=
-\frac{\texttt{ENC\_TICKS\_PER\_REV}}
-{\pi \cdot \texttt{WHEEL\_DIAMETER} \cdot \texttt{PID\_RATE}}
+\frac{N_e}{\pi\, D \, f_{PID}}
 \notag \\
 &=
 \frac{1980}{\pi \times 0.067 \times 30}
 \approx 313.56
-\frac{\text{ticks/frame}}{\text{m/s}}
-\label{eq:mps_to_ticks}
+\;\frac{\text{ticks/frame}}{\text{m/s}}
+\label{eq:mps_to_ticks_factor}
 \end{align}
 
-El lazo de control opera a 30~Hz, por lo que el período de muestreo es aproximadamente $T_s=1/30$~s.
+donde $N_e$ es la resolución del encoder [cuentas/vuelta], $D$ el diámetro de rueda [m] y $f_{PID}$ la frecuencia del lazo de control [Hz]. Este factor corresponde a la vía de comando en m/s (\texttt{SET\_VEL\_MPS}); en la operación con \texttt{ros2\_control}, el plugin \texttt{DiffDriveArduino} envía directamente la referencia en \textit{ticks/frame} (Capítulo~\ref{chap:robot_real}).
 
 %------------------------------------------------------------------
 \section{Comunicación serial y lectura de encoders}
@@ -50,7 +53,7 @@ Para obtener una odometría consistente, se midió experimentalmente el número 
 \label{eq:promedio_cuentas_L}
 \end{align}
 
-Dado que la diferencia entre ruedas es inferior al 0.4\%, se adopta un valor unificado de \texttt{ENC\_TICKS\_PER\_REV} = 1980 cuentas/vuelta. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
+donde $n_{R(i)}$ y $n_{L(i)}$ son las cuentas medidas en la $i$-ésima vuelta de las ruedas derecha e izquierda [cuentas]. Dado que la diferencia entre ruedas es inferior al 0.4\%, se adopta un único valor nominal unificado $N_e=1980$ cuentas/vuelta para ambas ruedas, ligeramente por encima de los promedios medidos. Esta unificación simplifica el firmware y la odometría, introduciendo un error sistemático inferior al 0.6\% por rueda, considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
 
 %------------------------------------------------------------------
 \section{Control PID en el firmware}
@@ -64,6 +67,8 @@ e_j[k] = m_j^{ref}[k] - m_j[k],
 m_j[k] = \texttt{Encoder}_j[k] - \texttt{PrevEnc}_j[k]
 \label{eq:error_pid}
 \end{equation}
+
+donde $e_j[k]$ es el error [ticks/frame], $m_j^{ref}[k]$ la referencia [ticks/frame] y $m_j[k]$ la medición de velocidad de rueda, obtenida como la diferencia de cuentas del encoder entre dos ciclos consecutivos del lazo de control [ticks/frame].
 
 La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Marco Teórico. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
 
@@ -95,18 +100,18 @@ Las ganancias PID se determinaron mediante un procedimiento híbrido. Primero se
 \subsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
 
-La captura se realizó aplicando un escalón de PWM sin controlador PID activo. La velocidad lineal de cada rueda se calculó como:
+La captura se realizó aplicando un escalón de PWM sin controlador PID activo, registrando los datos con un período de muestreo $T_{cap}=0.1$~s, distinto del período de control $T_s=1/f_{PID}\approx0.0333$~s. La velocidad lineal de cada rueda se calculó como:
 
 \begin{equation}
 v_j[k] =
 \frac{\Delta\texttt{enc}_j[k]}{N_e}
 \cdot
-\frac{\pi d_w}{T_{\mathrm{cap}}},
+\frac{\pi D}{T_{cap}},
 \qquad j \in \{R,L\}
 \label{eq:vel_lazo_abierto}
 \end{equation}
 
-donde $T_{\mathrm{cap}}=0.1$~s, $d_w=0.067$~m y $N_e=1980$ cuentas/vuelta. La variable $v_j[k]$ representa velocidad lineal de rueda, no velocidad lineal del robot.
+donde $\Delta\texttt{enc}_j[k]$ son las cuentas registradas en el intervalo $T_{cap}$ [cuentas], $T_{cap}=0.1$~s el período de captura, $D=0.067$~m el diámetro de rueda y $N_e=1980$ cuentas/vuelta la resolución del encoder. El término $\pi D$ corresponde a la circunferencia de la rueda [m]. La variable $v_j[k]$ representa velocidad lineal de rueda, no velocidad lineal del robot.
 
 \subsection{Identificación y optimización}
 
@@ -115,27 +120,51 @@ La identificación FODT se realizó mediante integración discreta del modelo:
 \begin{equation}
 y[k] =
 y[k-1] +
-\frac{T_{\mathrm{cap}}}{\tau}
-\left(K_m u[k-n_d] - y[k-1]\right)
+\frac{T_{cap}}{\tau}
+\left(K_m \, u[k-n_d] - y[k-1]\right)
 \label{eq:euler_fodt}
 \end{equation}
 
-donde $n_d=\lfloor L_d/T_{\mathrm{cap}}\rfloor$ representa el retardo en muestras. Luego, un segundo PSO buscó las ganancias $(K_p,K_d,K_i)$ que minimizan una función de costo basada en error cuadrático medio y sobreimpulso.
+donde $y[k]$ es la salida estimada del modelo (velocidad de rueda) [m/s], $u[k]$ la entrada PWM aplicada en lazo abierto [PWM], $K_m$ la ganancia estática [m/s/PWM], $\tau$ la constante de tiempo [s] y $n_d=\lfloor L_d/T_{cap}\rfloor$ el retardo expresado en número de muestras (con $L_d$ el retardo puro [s]). Luego, un segundo PSO buscó las ganancias $(K_p,K_d,K_i)$ que minimizan una función de costo basada en error cuadrático medio y sobreimpulso. El procedimiento completo de sintonización se resume en el Algoritmo~\ref{alg:sintonizacion}.
 
 \begin{algorithm}[H]
-\caption{Sintonización PID asistida por PSO}
+\caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
-\Require Datos de lazo abierto $(u_{\mathrm{pwm}}[k],v_j^{med}[k])$
-\Ensure Ganancias $(K_p,K_d,K_i)$ por rueda
-\State Identificar parámetros FODT $(K_m,\tau,L_d)$ mediante PSO
-\State Simular el PID del firmware sobre el modelo FODT
-\State Evaluar la función de costo con MSE y sobreimpulso
-\State Seleccionar las mejores ganancias del enjambre
-\State Refinar experimentalmente las ganancias en hardware real
-\State \Return $(K_p,K_d,K_i)$
+\Require Respuesta al escalón en lazo abierto $(u_{\mathrm{pwm}}[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}$; período de control $T_s=1/f_{PID}$; tamaño de enjambre $S$; generaciones $g_{max}$; pesos $w_{\mathrm{mse}},w_{\mathrm{OS}}$.
+\Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
+
+\State \textbf{Inicialización:} cargar datos de lazo abierto y suavizar $v_j^{med}$.
+
+\For{$j \in \{R,L\}$}
+    \State \textbf{Etapa 1 — Identificación FODT por PSO:}
+    \State Inicializar enjambre de $S$ partículas en $\mathbb{R}^3$ (candidatos $(K_m,\tau,L_d)$)
+    \While{$g < g_{max}$}
+        \State Simular FODT por Euler con $T_{cap}$ (Ec.~\ref{eq:euler_fodt}) para cada partícula
+        \State Evaluar $J_{\mathrm{ID}} = \mathrm{MSE}\!\left(v_j^{med}-\hat{v}\right)$
+        \State Actualizar velocidades y posiciones (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
+    \EndWhile
+    \State $(K_m,\tau,L_d)_j \gets$ mejor posición global
+
+    \Statex
+    \State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
+    \State Inicializar enjambre de $S$ partículas en $\mathbb{R}^3$ (candidatos $(K_p,K_d,K_i)$)
+    \While{$g < g_{max}$}
+        \State Simular el PID del firmware sobre el modelo FODT a $T_s$ para cada partícula
+        \State Evaluar $J_{\mathrm{PID}} = w_{\mathrm{mse}}\,\mathrm{MSE}(r-\hat{y}) + w_{\mathrm{OS}}\,(\text{sobrepaso})^2$
+        \State Actualizar velocidades y posiciones (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
+    \EndWhile
+    \State $(K_{p},K_{d},K_{i})_j \gets$ mejor posición global
+\EndFor
+
+\Statex
+\State \textbf{Etapa 3 — Refinamiento experimental:}
+\State Ajustar las ganancias sobre el hardware real para compensar fricción estática, zona muerta del L298N y asimetrías mecánicas.
+\State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$
 \end{algorithmic}
 \end{algorithm}
+
+En el algoritmo, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s], $\hat{v}$ la salida del modelo FODT [m/s], $r$ la referencia de la simulación del PID [m/s], $\hat{y}$ la respuesta simulada del PID [m/s], $J_{\mathrm{ID}}$ y $J_{\mathrm{PID}}$ las funciones de costo de cada etapa, y $w_{\mathrm{mse}}$, $w_{\mathrm{OS}}$ los pesos del error cuadrático medio y del sobreimpulso; el resto de variables fueron definidas previamente.
 
 \subsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}

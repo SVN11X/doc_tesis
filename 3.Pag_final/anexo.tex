@@ -325,11 +325,11 @@ Derecha & 0.000890 & 0.3485 & 0.0001 \\
 \textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} \\
 \midrule
 $S$ & 50 & Tamaño del enjambre. \\
-$G$ & 150 & Generaciones máximas. \\
+$g_{max}$ & 150 & Generaciones máximas. \\
 $c_1$ & 2.05 & Coeficiente cognitivo. \\
 $c_2$ & 2.05 & Coeficiente social. \\
 $\chi$ & 0.7298 & Factor de constricción. \\
-$w_{\mathrm{in}}^g$ & $(G-g)/G$ & Inercia decreciente. \\
+$w_{\mathrm{in}}^g$ & $(g_{max}-g)/g_{max}$ & Inercia decreciente. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -412,16 +412,36 @@ Las configuraciones de simulación y hardware se mantienen en archivos separados
 %======================================================================
 \section{Transformación de ganancias en la sintonía Lambda}
 \label{anx:lambda}
- 
-La sintonía Lambda (Sección~\ref{sec:lambda}) entrega las ganancias en la forma serie interactuante $k_c$, $\tau_I$, $\tau_D$ de la Ec.~(\ref{eq:lambda_serie}). Dado que el firmware implementa el controlador en forma paralela estándar, dichas ganancias se convierten a $K_p$, $T_i$, $T_d$ mediante:
- 
-\begin{equation}
-K_p = k_c \,\frac{\tau_I + \tau_D}{\tau_I}, \quad T_i = \tau_I + \tau_D, \quad T_d = \frac{\tau_I \, \tau_D}{\tau_I + \tau_D}
+
+La sintonía Lambda (Sección~\ref{sec:lambda}) entrega las ganancias en la forma serie interactuante $k_c$, $\tau_I$, $\tau_D$ de la Ec.~(\ref{eq:lambda_serie}). Dado que el firmware implementa el controlador en forma paralela estándar con ganancias $K_p$, $K_i$, $K_d$, la conversión se realiza en dos etapas: primero de la forma serie a la forma paralela estándar, y luego a la escala interna del firmware.
+
+En la primera etapa, las ganancias serie se transforman a la forma paralela estándar:
+
+\begin{align}
+K_p &= k_c \,\frac{\tau_I + \tau_D}{\tau_I}, &
+T_i &= \tau_I + \tau_D, &
+T_d &= \frac{\tau_I \, \tau_D}{\tau_I + \tau_D} \notag \\[2pt]
+K_i &= \frac{K_p}{T_i}, &
+K_d &= K_p \, T_d &&
 \label{eq:lambda_paralelo}
+\end{align}
+
+donde $K_p$, $K_i$, $K_d$ son las ganancias proporcional, integral y derivativa en forma paralela estándar, y $T_i$, $T_d$ los tiempos integral y derivativo intermedios [s].
+
+En la segunda etapa, estas ganancias se llevan a la escala interna del firmware mediante un factor $f_\lambda$:
+
+\begin{equation}
+f_\lambda = \frac{\mathrm{PWM_{nom}}\,K_o}{\texttt{MPS\_TO\_TICKS}} \approx 22.80,
+\qquad
+K_p^{fw} = K_p\,f_\lambda,
+\quad
+K_d^{fw} = K_d\,f_\lambda,
+\quad
+K_i^{fw} = K_i\,f_\lambda\,T_s
+\label{eq:lambda_firmware}
 \end{equation}
- 
-\noindent
-Estos valores constituyen la línea base analítica que se contrasta con las ganancias obtenidas por PSO en el capítulo de validación.
+
+donde $f_\lambda$ es el factor de escala a la representación interna del firmware (adimensional), $\mathrm{PWM_{nom}}=143$ el PWM nominal de referencia, $K_o=50$ el divisor de normalización de la salida, $\texttt{MPS\_TO\_TICKS}\approx313.56$ el factor de conversión de la Ec.~(\ref{eq:mps_to_ticks_factor}) y $T_s=1/f_{PID}$ el período de control [s]. Las ganancias $K_p^{fw}$, $K_i^{fw}$, $K_d^{fw}$ constituyen la línea base analítica que se contrasta con las ganancias obtenidas por PSO en el capítulo de validación.
 
 %======================================================================
 \section{Costos y comparación económica}
@@ -534,4 +554,5 @@ Una mejora futura consiste en ponderar no solo el tamaño de la frontera, sino t
 La Raspberry Pi 4 resultó suficiente para ejecutar \texttt{slam\_toolbox}, Nav2 y la comunicación con el microcontrolador. No obstante, algoritmos más demandantes, como SLAM visual o percepción semántica en tiempo real, podrían requerir hardware de mayor capacidad o procesamiento externo.
 
 La migración a una distribución mantenida de \gls{ROS2}, como Humble o Jazzy, permitiría acceder a versiones más recientes de Nav2, \texttt{ros2\_control} y \texttt{slam\_toolbox}, además de mejorar la mantenibilidad del sistema.
+
 \end{appendices}

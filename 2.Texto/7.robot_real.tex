@@ -8,7 +8,7 @@ Este capítulo describe la arquitectura físico-electrónica del robot diferenci
 
 La plataforma se organiza en dos dominios principales. El dominio de potencia utiliza un bus de 12~V para alimentar los motores DC mediante el driver L298N, y un riel regulado de 5~V para alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
 
-El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} mediante enlace serial USB, utilizado para enviar referencias de velocidad y recibir datos de encoders. El sensor RPLidar A1 entrega barridos láser publicados en \texttt{/scan}, empleados por \texttt{slam\_toolbox} y por los mapas de costo de Nav2. La Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de datos del prototipo.
+El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} mediante enlace serial USB (puerto fijado por regla \texttt{udev} en \texttt{/dev/motor\_controller}, a 57600~baudios), utilizado para enviar referencias de velocidad y recibir datos de encoders. El sensor RPLidar A1 entrega barridos láser publicados en \texttt{/scan}, empleados por \texttt{slam\_toolbox} y por los mapas de costo de Nav2. La Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de datos del prototipo.
 
 \utemFigurePropia{2.Texto/Imag/circuit_diagram_bb.png}{0.90\textwidth}
 {Esquema de conexiones eléctricas y de datos del robot diferencial.}
@@ -71,13 +71,38 @@ El controlador diferencial recibe comandos de velocidad lineal y angular, y los 
 \midrule
 \texttt{linear.x.max\_velocity} & $\pm$0.13~m/s & Velocidad lineal máxima \\
 \texttt{angular.z.max\_velocity} & $\pm$0.4~rad/s & Velocidad angular máxima \\
-\texttt{update\_rate} & 30~Hz & Frecuencia del controlador \\
+\texttt{update\_rate} & 30~Hz & Frecuencia del controlador ($f_{loop}$) \\
 \texttt{enable\_odom\_tf} & true & Publica \texttt{odom}$\rightarrow$\texttt{base\_link} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, que traduce las velocidades angulares de rueda hacia el formato de \textit{ticks/frame} utilizado por el \gls{Arduino}. A su vez, recibe los conteos de encoder y los convierte en posición y velocidad de cada rueda para alimentar la odometría.
+La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} que opera en un ciclo periódico \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} a la frecuencia $f_{loop}$ del \texttt{controller\_manager}.
+
+En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} esperado por el \gls{Arduino}:
+
+\begin{equation}
+m_j^{cmd}[k] = \frac{\omega_j^{cmd}[k]}{2\pi/N_e}\cdot\frac{1}{f_{loop}}
+= \frac{\omega_j^{cmd}[k]\,N_e}{2\pi\,f_{loop}},
+\qquad j\in\{R,L\}
+\label{eq:cmd_to_ticks}
+\end{equation}
+
+donde $m_j^{cmd}[k]$ es la referencia enviada al firmware [ticks/frame], $\omega_j^{cmd}[k]$ la velocidad angular de rueda comandada [rad/s], $N_e=1980$ la resolución del encoder [cuentas/vuelta] y $f_{loop}=30$ Hz la frecuencia del lazo del controlador (\texttt{loop\_rate}). El término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count} de cada rueda. Esta conversión es equivalente a la del Capítulo~\ref{marco_teorico} expresada en velocidad lineal, ya que $v_j=r\,\omega_j$.
+
+En \texttt{read()}, los conteos acumulados del encoder se transforman en ángulo y velocidad de rueda, que alimentan la odometría:
+
+\begin{equation}
+\phi_j[k] = c_j[k]\,\frac{2\pi}{N_e},
+\qquad
+\dot{\phi}_j[k] = \frac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k},
+\qquad j\in\{R,L\}
+\label{eq:enc_to_state}
+\end{equation}
+
+donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ las cuentas acumuladas del encoder [cuentas], $\dot{\phi}_j[k]$ la velocidad angular estimada de la rueda [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{loop}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
+
+Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmware con los valores obtenidos por sintonización PSO y refinamiento experimental (Capítulo~\ref{marco_teorico}), de modo que el plugin solo intercambia referencias de velocidad y lecturas de encoder.
 
 %------------------------------------------------------------------
 \section{Flujo de datos del sistema}
@@ -86,18 +111,59 @@ La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDrive
 El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se resume en las siguientes etapas:
 
 \begin{enumerate}
-\item Un nodo de navegación o teleoperación publica un comando de velocidad.
+\item Un nodo de navegación o teleoperación publica un comando de velocidad $(v,\omega)$.
 \item \texttt{twist\_mux} selecciona la fuente de mayor prioridad.
-\item \texttt{diff\_drive\_controller} convierte el comando $(v,\omega)$ en velocidades de rueda.
-\item \texttt{DiffDriveArduino} traduce esas velocidades a \textit{ticks/frame}.
-\item El \gls{Arduino} actualiza las referencias PID y aplica \gls{PWM} a los motores.
-\item El plugin solicita periódicamente los encoders y actualiza la odometría.
-\item \texttt{diff\_drive\_controller} publica \texttt{/odom} y la transformación correspondiente.
+\item \texttt{diff\_drive\_controller} convierte el comando $(v,\omega)$ en velocidades angulares de rueda $\omega_j^{cmd}$.
+\item \texttt{DiffDriveArduino} traduce $\omega_j^{cmd}$ a \textit{ticks/frame} (Ec.~\ref{eq:cmd_to_ticks}) y los envía al \gls{Arduino}.
+\item El \gls{Arduino} fija las referencias PID por rueda y aplica \gls{PWM} a los motores.
+\item El plugin solicita periódicamente los encoders y reconstruye $\phi_j$ y $\dot{\phi}_j$ (Ec.~\ref{eq:enc_to_state}).
+\item \texttt{diff\_drive\_controller} integra la odometría y publica \texttt{/odom} junto con la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
 \end{enumerate}
+
+El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se formaliza en el Algoritmo~\ref{alg:ros2control_cycle}.
+
+\begin{algorithm}[H]
+\caption{Ciclo de control de hardware en \texttt{ros2\_control} (plugin \texttt{DiffDriveArduino})}
+\label{alg:ros2control_cycle}
+\begin{algorithmic}[1]
+\Require Comandos de velocidad angular de rueda $\omega_R^{cmd},\omega_L^{cmd}$ [rad/s] (de \texttt{diff\_drive\_controller}); enlace serial al \gls{Arduino}; $N_e$; $f_{loop}$; ganancias PID residentes en el firmware.
+\Ensure Estados de rueda $(\phi_j,\dot{\phi}_j)$ para odometría y referencias \textit{ticks/frame} enviadas al firmware.
+
+\State \textbf{Inicialización} (\texttt{configure}/\texttt{start}):
+\State Abrir puerto serial (\texttt{device}, \texttt{baud\_rate}, \texttt{timeout}); esperar el \textit{bootloader} y vaciar el buffer.
+\State $\textit{rads\_per\_count}\gets 2\pi/N_e$ por rueda; $t_{prev}\gets t_{now}$.
+\State Enviar mensaje vacío de \textit{handshake}; mantener las ganancias PID por defecto del firmware (sintonía PSO).
+
+\Statex
+\State \textbf{Ejecución principal} (cada período del \texttt{controller\_manager}, a $f_{loop}$):
+\While{el controlador está activo}
+    \State \textbf{read():}
+    \State $\Delta t_k\gets t_{now}-t_{prev}$; \; $t_{prev}\gets t_{now}$
+    \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
+    \State $(c_R[k],c_L[k])\gets$ leer encoders
+    \For{$j\in\{R,L\}$}
+        \State $\phi_j[k]\gets c_j[k]\cdot(2\pi/N_e)$; \quad $\dot{\phi}_j[k]\gets(\phi_j[k]-\phi_j[k-1])/\Delta t_k$ \Comment{Ec.~\ref{eq:enc_to_state}}
+    \EndFor
+    \State Exportar $\phi_j[k],\dot{\phi}_j[k]$ como \textit{state interfaces}
+    \Statex
+    \State \textbf{update():} \texttt{diff\_drive\_controller} integra la odometría y, desde \texttt{cmd\_vel} $(v,\omega)$, calcula $\omega_R^{cmd},\omega_L^{cmd}$
+    \Statex
+    \State \textbf{write():}
+    \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
+    \For{$j\in\{R,L\}$}
+        \State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{loop})$ \Comment{Ec.~\ref{eq:cmd_to_ticks}}
+    \EndFor
+    \State Enviar $m_R^{cmd}[k],m_L^{cmd}[k]$ al \gls{Arduino}
+\EndWhile
+
+\Statex
+\State \textbf{Salida:} El firmware ejecuta el PID por rueda a $f_{PID}$ y aplica el \textit{watchdog} de auto-detención; el controlador publica \texttt{/odom} y la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
+\end{algorithmic}
+\end{algorithm}
 
 El firmware incorpora una auto-detención de seguridad: si no recibe comandos durante más de 2~s, detiene los motores. Esta protección reduce el riesgo ante fallas de comunicación, reinicio de nodos o pérdida de conexión.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
-La arquitectura de hardware integra una capa de control embebido en \gls{Arduino} con una capa de alto nivel en \gls{ROS2}, ejecutada sobre Raspberry Pi 4. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} permite cerrar el ciclo entre comandos de navegación, control PID de ruedas y publicación de odometría. Esta base permite implementar los módulos de SLAM, navegación autónoma y exploración descritos en los capítulos siguientes.
+La arquitectura de hardware integra una capa de control embebido en \gls{Arduino} con una capa de alto nivel en \gls{ROS2}, ejecutada sobre Raspberry Pi 4. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} permite cerrar el ciclo entre comandos de navegación, control PID de ruedas y publicación de odometría, según el ciclo formalizado en el Algoritmo~\ref{alg:ros2control_cycle}. Esta base permite implementar los módulos de SLAM, navegación autónoma y exploración descritos en los capítulos siguientes.

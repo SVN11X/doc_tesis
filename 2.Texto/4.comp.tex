@@ -40,14 +40,14 @@ Estructura & Chasis impreso en 3D & Integrar mecánicamente los componentes del 
 
 La actuación se realiza mediante dos motorreductores JGA25-370 de 12 V, seleccionados por su disponibilidad, bajo costo y torque suficiente para una plataforma diferencial de interiores. Cada motor incorpora un encoder incremental de cuadratura, utilizado para estimar velocidad y desplazamiento de rueda.
 
-La resolución efectiva del encoder en el eje de salida se obtiene a partir de la resolución del sensor Hall, la decodificación en cuadratura y la relación de reducción:
+La resolución teórica del encoder en el eje de salida se obtiene a partir de la resolución del sensor Hall en el eje del motor, la decodificación en cuadratura y la relación de reducción:
 
 \begin{equation}
-N_e = N_{\mathrm{Hall}} \cdot c_q \cdot N_g
+N_e^{\mathrm{teo}} = N_{\mathrm{Hall}} \cdot c_q \cdot N_g
 \label{eq:resolucion_encoder}
 \end{equation}
 
-donde $N_{\mathrm{Hall}}=11$ pulsos por vuelta del motor, $c_q=4$ es el factor de decodificación en cuadratura y $N_g=46{:}1$ la relación de reducción nominal. Aunque el valor teórico es 2024 cuentas/vuelta, la medición experimental entregó un valor promedio cercano a 1980 cuentas/vuelta, que se adopta como constante unificada para el firmware y la odometría.
+donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder [cuentas/vuelta del eje de salida], $N_{\mathrm{Hall}}=11$ pulsos por vuelta del eje del motor, $c_q=4$ el factor de decodificación en cuadratura (adimensional) y $N_g=46$ la relación de reducción nominal (adimensional, correspondiente a $46{:}1$). Evaluando, $N_e^{\mathrm{teo}}=11\cdot 4\cdot 46 = 2024$ cuentas/vuelta. La medición experimental entregó un valor promedio cercano a 1980 cuentas/vuelta, que se adopta como resolución efectiva $N_e=1980$ cuentas/vuelta, constante unificada para el firmware y la odometría.
 
 El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer los encoders, calcular el PID de velocidad de cada rueda y enviar señales \gls{PWM} al driver L298N. Este último permite accionar ambos motores, aunque introduce una zona muerta y caída de tensión que deben compensarse mediante la sintonización experimental del controlador.
 
@@ -87,7 +87,8 @@ La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos usados por 
 $r$ & Radio de rueda & 0.0335 m & Modelo cinemático y odometría \\
 $C$ & Circunferencia de rueda & 0.2105 m & Conversión de cuentas a distancia \\
 $L$ & Distancia entre ruedas & 0.188 m & Modelo diferencial \\
-$N_g$ & Relación de reducción & 46:1 nominal & Cálculo teórico del encoder \\
+$N_g$ & Relación de reducción & 46 (nominal $46{:}1$) & Cálculo teórico del encoder \\
+$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & 2024 cuentas/vuelta & Cálculo teórico \\
 $N_e$ & Resolución efectiva del encoder & 1980 cuentas/vuelta & Firmware y odometría \\
 $c_q$ & Factor de cuadratura & 4 & Decodificación A/B \\
 $T_s$ & Período de control & $1/30$ s & PID y odometría \\

@@ -9,34 +9,45 @@ Este capítulo presenta los fundamentos teóricos necesarios para el diseño e i
 
 La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{thrun2005probabilistic, borenstein1996}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{siciliano2010robotics, corke2017}. En este trabajo, la odometría es publicada por \texttt{diff\_drive\_controller} y utilizada por \texttt{slam\_toolbox} como estimación inicial para el mapeo.
 
-Considérese un robot diferencial con ruedas de radio $r$, distancia entre ruedas $L$ y pose $q_k=(x_k,y_k,\theta_k)$. Las velocidades angulares de las ruedas se calculan a partir de las cuentas de encoder:
+Considérese un robot diferencial con ruedas de radio $r$, distancia entre ruedas $L$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad angular se calcula a partir de las cuentas de encoder acumuladas en el intervalo de muestreo:
 
 \begin{equation}
-\omega_{R,L} = \frac{2\pi n_{R,L}}{N_e T_s}
+\omega_{j} = \frac{2\pi\, n_{j}}{N_e\, T_s},
+\qquad j\in\{R,L\}
 \label{eq:w_ruedas}
 \end{equation}
 
-donde $n_{R,L}$ son las cuentas acumuladas en el intervalo, $N_e$ es la resolución del encoder y $T_s$ el período de muestreo. La velocidad lineal de cada rueda es $v_{R,L}=r\omega_{R,L}$, y las velocidades lineal y angular del robot se obtienen mediante:
+donde $\omega_{j}$ es la velocidad angular de la rueda $j$ [rad/s], $n_{j}$ las cuentas acumuladas en el intervalo [cuentas], $N_e$ la resolución del encoder [cuentas/vuelta] y $T_s$ el período de muestreo [s]. La velocidad lineal de cada rueda es $v_{j}=r\,\omega_{j}$ [m/s], y las velocidades lineal y angular del robot se obtienen mediante:
 
 \begin{align}
-v &= \frac{r}{2}(\omega_R+\omega_L)
+v &= \frac{r}{2}\left(\omega_R+\omega_L\right)
 \label{eq:v_lineal} \\
-\omega &= \frac{r}{L}(\omega_R-\omega_L)
+\omega &= \frac{r}{L}\left(\omega_R-\omega_L\right)
 \label{eq:v_angular}
 \end{align}
 
-La pose se actualiza en tiempo discreto como:
+donde $v$ es la velocidad lineal del robot [m/s] y $\omega$ su velocidad angular [rad/s]. La pose se actualiza en tiempo discreto como:
 
 \begin{align}
-x_{k+1} &= x_k + T_s v_k \cos\theta_k
+x_{k+1} &= x_k + T_s\, v_k \cos\theta_k
 \label{eq:pose_x} \\
-y_{k+1} &= y_k + T_s v_k \sin\theta_k
+y_{k+1} &= y_k + T_s\, v_k \sin\theta_k
 \label{eq:pose_y} \\
-\theta_{k+1} &= \theta_k + T_s \omega_k
+\theta_{k+1} &= \theta_k + T_s\, \omega_k
 \label{eq:pose_theta}
 \end{align}
 
-En esta tesis, $r=0.0335$ m, $L=0.188$ m y $N_e=1980$ cuentas/vuelta. El firmware regula la velocidad de rueda en \textit{ticks/frame}, mientras que \gls{ROS2} trabaja con velocidades en unidades del SI.
+donde $v_k$ y $\omega_k$ son la velocidad lineal y angular del robot en el instante $k$, y $q_k=(x_k,y_k,\theta_k)$ la pose [m, m, rad].
+
+En esta tesis, $r=0.0335$ m, $L=0.188$ m, $N_e=1980$ cuentas/vuelta y la frecuencia del lazo de control es $f_{PID}=30$ Hz, de donde $T_s=1/f_{PID}\approx 0.0333$ s. El firmware regula la velocidad de rueda en \textit{ticks/frame} (cuentas por período $T_s$), mientras que \gls{ROS2} trabaja con velocidades en unidades del SI. La referencia interna del controlador se obtiene a partir de la velocidad lineal comandada $v_j^{ref}$ mediante el factor de conversión:
+
+\begin{equation}
+m_j^{ref}[k] = v_j^{ref}\,\frac{N_e}{2\pi r\, f_{PID}},
+\qquad j\in\{R,L\}
+\label{eq:mps_to_ticks}
+\end{equation}
+
+donde $m_j^{ref}[k]$ es la referencia de velocidad de rueda en \textit{ticks/frame} y $v_j^{ref}$ la velocidad lineal de rueda comandada [m/s]; el resto de variables fueron definidas previamente. El factor $N_e/(2\pi r\, f_{PID})$ tiene unidades de (ticks/frame)/(m/s).
 
 %------------------------------------------------------------------
 \section{Identificación FODT}
@@ -49,20 +60,20 @@ G_m(s)=\frac{K_m}{1+\tau s}\,\mathrm{e}^{-L_d s}
 \label{eq:fodt}
 \end{equation}
 
-donde $K_m$ es la ganancia estática, $\tau$ la constante de tiempo y $L_d$ el retardo puro. En este trabajo, $K_m$ se expresa en m/s/PWM, porque la planta identificada corresponde a la velocidad lineal de rueda frente a una entrada PWM.
+donde $K_m$ es la ganancia estática, $\tau$ la constante de tiempo [s], $L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler. En este trabajo, $K_m$ se expresa en m/s/PWM, porque la planta identificada corresponde a la velocidad lineal de rueda frente a una entrada PWM. La conversión entre la salida de la planta (m/s) y la variable interna del PID (ticks/frame) se realiza con el factor de la Ec.~\ref{eq:mps_to_ticks}.
 
-En tiempo discreto, la respuesta ante un escalón de amplitud $\Delta u$ y período de captura $T_{\mathrm{cap}}$ se aproxima mediante:
+En tiempo discreto, la respuesta ante un escalón de amplitud $\Delta u$ y período de muestreo $T_s$ se aproxima mediante:
 
 \begin{equation}
 y[k]=
 \begin{cases}
-0, & kT_{\mathrm{cap}} \leq L_d \\
-K_m\left(1-\mathrm{e}^{-(kT_{\mathrm{cap}}-L_d)/\tau}\right)\Delta u, & kT_{\mathrm{cap}} > L_d
+0, & kT_s \leq L_d \\[4pt]
+K_m\left(1-\mathrm{e}^{-(kT_s-L_d)/\tau}\right)\Delta u, & kT_s > L_d
 \end{cases}
 \label{eq:fodt_discreto}
 \end{equation}
 
-Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error entre la respuesta experimental y la simulada.
+donde $y[k]$ es la velocidad estimada de rueda [m/s], $\Delta u$ la amplitud del escalón de PWM [PWM] y $T_s$ el período de muestreo [s]; el resto de variables fueron definidas previamente. Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático medio entre la respuesta experimental y la simulada.
 
 %------------------------------------------------------------------
 \section{Control PID}
@@ -71,19 +82,21 @@ Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error entre la respue
 El controlador PID se aplica de forma independiente a cada rueda. En su forma continua, se expresa como:
 
 \begin{equation}
-u(t)=K_p e(t)+K_i\int_0^t e(\sigma)\,d\sigma+K_d\frac{de(t)}{dt}
+u(t)=K_p\, e(t)+K_i\int_0^t e(\sigma)\,d\sigma+K_d\frac{de(t)}{dt}
 \label{eq:pid_continuo}
 \end{equation}
 
-En el firmware del \gls{Arduino}, el control se implementa en forma incremental, con derivada sobre la medición para evitar el \textit{derivative kick}. Para cada rueda $j\in\{R,L\}$, se define $m_j[k]$ como la velocidad medida en \textit{ticks/frame}, $m_j^{ref}[k]$ como la referencia y $e_j[k]=m_j^{ref}[k]-m_j[k]$ como el error. La ley implementada es:
+donde $u(t)$ es la acción de control, $e(t)$ el error y $K_p$, $K_i$, $K_d$ las ganancias proporcional, integral y derivativa.
+
+En el firmware del \gls{Arduino}, el control se implementa en forma incremental, con derivada sobre la medición para evitar el \textit{derivative kick}. Para cada rueda $j\in\{R,L\}$, se define $m_j[k]$ como la velocidad medida en \textit{ticks/frame}, $m_j^{ref}[k]$ como la referencia (Ec.~\ref{eq:mps_to_ticks}) y $e_j[k]=m_j^{ref}[k]-m_j[k]$ como el error. La ley implementada es:
 
 \begin{equation}
-u_j[k]=u_j[k-1]+\frac{K_{p,j}e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}},
+u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}},
 \qquad j\in\{R,L\}
 \label{eq:pid_firmware}
 \end{equation}
 
-El término integral se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}e_j[k]$ solo cuando la salida no está saturada, lo que implementa una estrategia de \textit{anti-windup}. Además, se usa una banda muerta para evitar que el controlador reaccione al ruido de cuantización del encoder.
+donde $u_j[k]$ es la salida de control (PWM) de la rueda $j$, $K_{p,j}$, $K_{d,j}$ las ganancias proporcional y derivativa, $I_j[k]$ el término integral acumulado y $K_{o,j}$ un factor de escala (normalización) de la salida, adimensional, que permite expresar las ganancias en aritmética de punto fijo. El término integral se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}\,e_j[k]$ solo cuando la salida no está saturada, lo que implementa una estrategia de \textit{anti-windup}, siendo $K_{i,j}$ la ganancia integral. Además, se usa una banda muerta sobre $e_j[k]$ para evitar que el controlador reaccione al ruido de cuantización del encoder.
 
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID}
@@ -99,16 +112,16 @@ El PSO (\textit{Particle Swarm Optimization}) es una metaheurística en la que c
 \begin{align}
 v_{i,j}^{g+1} &=
 \chi\left[
-w_{\mathrm{in}}^{g}v_{i,j}^{g}
-+c_1\rho_1(p_{i,j}-x_{i,j}^{g})
-+c_2\rho_2(p_j^{*}-x_{i,j}^{g})
+w_{\mathrm{in}}^{g}\,v_{i,j}^{g}
++c_1\rho_1\bigl(p_{i,j}-x_{i,j}^{g}\bigr)
++c_2\rho_2\bigl(p_j^{*}-x_{i,j}^{g}\bigr)
 \right]
 \label{eq:pso_vel_marco_teorico} \\
 x_{i,j}^{g+1} &= x_{i,j}^{g}+v_{i,j}^{g+1}
 \label{eq:pso_pos_marco_teorico}
 \end{align}
 
-donde $x_{i,j}^{g}$ es la posición de búsqueda, $v_{i,j}^{g}$ la velocidad de búsqueda, $p_{i,j}$ la mejor posición individual y $p_j^{*}$ la mejor posición global. El factor de constricción de Clerc-Kennedy se calcula como:
+donde $x_{i,j}^{g}$ es la posición de búsqueda, $v_{i,j}^{g}$ la velocidad de búsqueda, $p_{i,j}$ la mejor posición individual y $p_j^{*}$ la mejor posición global. El término $w_{\mathrm{in}}^{g}$ es el peso de inercia en la generación $g$, que decrece linealmente con las generaciones según $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, siendo $g_{\max}$ el número máximo de generaciones. Los coeficientes $c_1$ y $c_2$ ponderan las componentes cognitiva y social (adimensionales), mientras que $\rho_1,\rho_2$ son números aleatorios uniformes en $[0,1]$, regenerados por partícula y dimensión en cada iteración. El factor de constricción de Clerc--Kennedy $\chi$ se calcula como:
 
 \begin{equation}
 \chi=\frac{2}{\left|2-\varphi-\sqrt{\varphi^2-4\varphi}\right|},
@@ -116,7 +129,7 @@ donde $x_{i,j}^{g}$ es la posición de búsqueda, $v_{i,j}^{g}$ la velocidad de 
 \label{eq:constriccion}
 \end{equation}
 
-La calidad de cada conjunto de ganancias se evalúa mediante:
+donde $\varphi$ es la suma de los coeficientes cognitivo y social. La calidad de cada conjunto de ganancias $\mathbf{x}$ se evalúa mediante:
 
 \begin{equation}
 J(\mathbf{x})=
@@ -125,7 +138,7 @@ w_{\mathrm{mse}}\cdot \mathrm{MSE}(e)
 \label{eq:costo_pso}
 \end{equation}
 
-donde $\mathrm{MSE}(e)$ mide el error respecto de la referencia y el segundo término penaliza el sobreimpulso. Los valores específicos de los pesos y parámetros del enjambre se presentan en el capítulo de firmware y sintonización.
+donde $\mathbf{x}$ es el vector de ganancias de la partícula, $\mathrm{MSE}(e)$ es el error cuadrático medio respecto de la referencia, $\text{sobrepaso}$ el sobreimpulso de la respuesta y $w_{\mathrm{mse}}$, $w_{\mathrm{OS}}$ sus pesos relativos. Los valores específicos de los pesos y parámetros del enjambre se presentan en el capítulo de firmware y sintonización.
 
 \subsection{Sintonía Lambda}
 \label{sec:lambda}
@@ -133,7 +146,7 @@ donde $\mathrm{MSE}(e)$ mide el error respecto de la referencia y el segundo té
 La sintonía Lambda se utiliza como línea base analítica para comparar el desempeño de las ganancias obtenidas por PSO. Para el modelo FODT de la Ec.~\ref{eq:fodt}, las reglas de sintonía son:
 
 \begin{equation}
-k_c=\frac{\tau}{K_m(L_d/2+\lambda)},
+k_c=\frac{\tau}{K_m\left(L_d/2+\lambda\right)},
 \qquad
 \tau_I=\tau,
 \qquad
@@ -141,7 +154,7 @@ k_c=\frac{\tau}{K_m(L_d/2+\lambda)},
 \label{eq:lambda_serie}
 \end{equation}
 
-donde $k_c$ es la ganancia del controlador, $\tau_I$ el tiempo integral, $\tau_D$ el tiempo derivativo y $\lambda$ el parámetro que ajusta la rapidez de la respuesta. La conversión hacia las ganancias usadas por el firmware se detalla en el \ref{anx:lambda}.
+donde $k_c$ es la ganancia del controlador, $\tau_I$ el tiempo integral [s], $\tau_D$ el tiempo derivativo [s] y $\lambda$ el parámetro que ajusta la rapidez de la respuesta [s]. La equivalencia con las ganancias en forma paralela usadas por el firmware (Ec.~\ref{eq:pid_firmware}) es $K_p=k_c$, $K_i=k_c/\tau_I$ y $K_d=k_c\,\tau_D$; la conversión completa a la escala del firmware se detalla en el \ref{anx:lambda}.
 
 %------------------------------------------------------------------
 \section{SLAM basado en grafos}
@@ -162,30 +175,30 @@ f(n)=g(n)+h(n)
 \label{eq:astar}
 \end{equation}
 
-donde $g(n)$ es el costo acumulado desde el origen hasta el nodo $n$ y $h(n)$ estima el costo restante hasta la meta \citep{lavalle2006planning}.
+donde $g(n)$ es el costo acumulado desde el origen hasta el nodo $n$ y $h(n)$ estima el costo restante hasta la meta \citep{lavalle2006planning}. La función $g(n)$ de A\* no debe confundirse con el superíndice $g$ empleado en la Sección~\ref{sec:pso_marco} para denotar la generación del PSO.
 
 El controlador local DWB genera comandos de velocidad evaluando trayectorias candidatas dentro de una ventana dinámica. Para cada par admisible $(v,\omega)$, calcula una función objetivo:
 
 \begin{equation}
-J_{\mathrm{DWB}}(v,\omega)=\sum_c w_c C_c(v,\omega)
+J_{\mathrm{DWB}}(v,\omega)=\sum_c w_c\, C_c(v,\omega)
 \label{eq:dwb_cost}
 \end{equation}
 
-donde $C_c$ representa cada crítico evaluado y $w_c$ su peso correspondiente \citep{macenski2020nav2}. La trayectoria con menor costo se transforma en comandos de velocidad para el robot.
+donde $(v,\omega)$ son la velocidad lineal y angular candidatas del robot, $C_c$ representa cada crítico evaluado y $w_c$ su peso correspondiente \citep{macenski2020nav2}. La trayectoria con menor costo se transforma en comandos de velocidad para el robot.
 
 Los mapas de costo incorporan una capa de inflación que aumenta el costo alrededor de los obstáculos para mantener una distancia de seguridad. Su comportamiento se aproxima por:
 
 \begin{equation}
 \text{costo}(d)=
 \begin{cases}
-254, & d\leq r_{\mathrm{inscrito}} \\
-\lfloor 253\cdot \mathrm{e}^{-\beta(d-r_{\mathrm{inscrito}})} \rfloor, & r_{\mathrm{inscrito}}<d\leq r_{\mathrm{inflacion}} \\
+254, & d\leq r_{\mathrm{inscrito}} \\[4pt]
+\left\lfloor 253\cdot \mathrm{e}^{-\beta(d-r_{\mathrm{inscrito}})} \right\rfloor, & r_{\mathrm{inscrito}}<d\leq r_{\mathrm{inflacion}} \\[4pt]
 0, & d>r_{\mathrm{inflacion}}
 \end{cases}
 \label{eq:inflation}
 \end{equation}
 
-donde $d$ es la distancia al obstáculo, $r_{\mathrm{inscrito}}$ el radio inscrito del robot, $r_{\mathrm{inflacion}}$ el radio de inflación y $\beta$ el factor de decaimiento.
+donde $d$ es la distancia al obstáculo [m], $r_{\mathrm{inscrito}}$ el radio inscrito del robot [m], $r_{\mathrm{inflacion}}$ el radio de inflación [m], $\beta$ el factor de decaimiento y $\mathrm{e}$ el número de Euler.
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
