@@ -91,6 +91,43 @@ $K_o$ & 50 & 50 \\
 
 El divisor $K_o$ normaliza la acción de control, por lo que las ganancias efectivas corresponden a $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. La convención de orden usada por el firmware es $K_p$, $K_d$, $K_i$, $K_o$, heredada de \texttt{ROSArduinoBridge}.
 
+\begin{algorithm}[H]
+\caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
+\label{alg:pid_firmware}
+\begin{algorithmic}[1]
+\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y cuentas de encoder $c_j[k]$ [cuentas] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_{o,j}=50$; banda muerta $e_{db}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
+\Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
+ 
+\State \textbf{Inicialización:}
+\State $u_j[-1]\gets 0$,\; $I_j[0]\gets 0$,\; $m_j[-1]\gets 0$,\; $c_j[-1]\gets 0$ \quad para $j\in\{R,L\}$
+ 
+\Statex
+\State \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
+\While{el controlador está activo}
+    \For{$j\in\{R,L\}$}
+        \State $m_j[k]\gets c_j[k]-c_j[k-1]$ \Comment{velocidad medida [ticks/frame]}
+        \State $e_j[k]\gets m_j^{cmd}[k]-m_j[k]$
+        \If{$|e_j[k]| \leq e_{db}$}
+            \State $e_j[k]\gets 0$ \Comment{banda muerta anti-cuantización}
+        \EndIf
+        \State $u_j[k]\gets u_j[k-1]+\dfrac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}}$
+        \If{$u_j[k]\geq u_{\max}$}
+            \State $u_j[k]\gets u_{\max}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
+        \ElsIf{$u_j[k]\leq u_{\min}$}
+            \State $u_j[k]\gets u_{\min}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
+        \Else
+            \State $I_j[k+1]\gets I_j[k]+K_{i,j}\,e_j[k]$
+        \EndIf
+        \State Aplicar PWM $u_j[k]$ al motor $j$
+        \State $m_j[k-1]\gets m_j[k]$;\quad $u_j[k-1]\gets u_j[k]$
+    \EndFor
+\EndWhile
+ 
+\Statex
+\State \textbf{Salida:} $u_R[k],u_L[k]$ aplicados al L298N; estado $(I_j,\,u_j[k-1],\,m_j[k-1])$ actualizado.
+\end{algorithmic}
+\end{algorithm}
+
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
@@ -103,15 +140,12 @@ Las ganancias PID se determinaron mediante un procedimiento híbrido. Primero se
 La captura se realizó aplicando un escalón de PWM sin controlador PID activo, registrando los datos con un período de muestreo $T_{cap}=0.1$~s, distinto del período de control $T_s=1/f_{PID}\approx0.0333$~s. La velocidad lineal de cada rueda se calculó como:
 
 \begin{equation}
-v_j[k] =
-\frac{\Delta c_j[k]}{N_e}
-\cdot
-\frac{2\pi r}{T_{cap}},
+v_j[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 \qquad j \in \{R,L\}
 \label{eq:vel_lazo_abierto}
 \end{equation}
-
-donde $\Delta c_j[k]$ son las cuentas registradas en el intervalo de captura $T_{cap}$ [cuentas], $T_{cap}=0.1$~s el período de captura, $r=0.0335$~m el radio de rueda y $N_e=1980$ cuentas/vuelta la resolución del encoder. El término $2\pi r$ corresponde a la circunferencia de la rueda [m]. La variable $v_j[k]$ representa velocidad lineal de rueda, no velocidad lineal del robot.
+ 
+\noindent donde $\Delta c_j[k]$ son las cuentas registradas en el intervalo de captura $T_{cap}=0.1$~s [cuentas] y $2\pi r$ la circunferencia de la rueda [m]; $v_j[k]$ es la velocidad lineal de rueda [m/s], no la del robot.
 
 \subsection{Identificación y optimización}
 
@@ -127,40 +161,40 @@ discreto. El procedimiento completo de sintonización se resume en el Algoritmo~
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
-\Require Respuesta al escalón en lazo abierto $(u_{\mathrm{pwm}}[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}$; período de control $T_s=1/f_{PID}$; tamaño de enjambre $S$; generaciones $g_{max}$; pesos $w_{\mathrm{mse}},w_{\mathrm{OS}}$.
+\Require Respuesta al escalón en lazo abierto $(u_j[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}=0.1$~s; período de control $T_s=1/f_{ctrl}$; enjambre $S=50$; generaciones $g_{\max}=150$; pesos $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$; banda muerta $e_{db}=2$.
 \Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
-
+ 
 \State \textbf{Inicialización:} cargar datos de lazo abierto y suavizar $v_j^{med}$.
-
+ 
 \For{$j \in \{R,L\}$}
     \State \textbf{Etapa 1 — Identificación FODT por PSO:}
     \State Inicializar enjambre de $S$ partículas en $\mathbb{R}^3$ (candidatos $(K_m,\tau,L_d)$)
-    \While{$g < g_{max}$}
+    \While{$g < g_{\max}$}
         \State Simular FODT por Euler con $T_{cap}$ (Ec.~\ref{eq:fodt_discreto}) para cada partícula
-        \State Evaluar $J_{\mathrm{ID}} = \mathrm{MSE}\!\left(v_j^{med}-\hat{v}\right)$
-        \State Actualizar velocidades y posiciones (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
+        \State Evaluar $J_{\mathrm{ID}} = \mathrm{MSE}\!\left(v_j^{med}-\hat{v}_j\right)$
+        \State Actualizar $V_{i,d},X_{i,d}$ (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
     \EndWhile
     \State $(K_m,\tau,L_d)_j \gets$ mejor posición global
-
+ 
     \Statex
     \State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
     \State Inicializar enjambre de $S$ partículas en $\mathbb{R}^3$ (candidatos $(K_p,K_d,K_i)$)
-    \While{$g < g_{max}$}
-        \State Simular el PID del firmware sobre el modelo FODT a $T_s$ para cada partícula
-        \State Evaluar $J_{\mathrm{PID}} = w_{\mathrm{mse}}\,\mathrm{MSE}(r-\hat{y}) + w_{\mathrm{OS}}\,(\text{sobrepaso})^2$
-        \State Actualizar velocidades y posiciones (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
+    \While{$g < g_{\max}$}
+        \State Simular el PID del firmware (Ec.~\ref{eq:pid_firmware}) sobre el modelo FODT a $T_s$, con $e_{db}$
+        \State Evaluar $J = w_{\mathrm{mse}}\,\mathrm{MSE}(y^{ref}-\hat{y}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$ (Ec.~\ref{eq:costo_pso})
+        \State Actualizar $V_{i,d},X_{i,d}$ (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
     \EndWhile
     \State $(K_{p},K_{d},K_{i})_j \gets$ mejor posición global
 \EndFor
-
+ 
 \Statex
 \State \textbf{Etapa 3 — Refinamiento experimental:}
 \State Ajustar las ganancias sobre el hardware real para compensar fricción estática, zona muerta del L298N y asimetrías mecánicas.
 \State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$
 \end{algorithmic}
 \end{algorithm}
-
-En el algoritmo, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s], $\hat{v}$ la salida del modelo FODT [m/s], $r$ la referencia de la simulación del PID [m/s], $\hat{y}$ la respuesta simulada del PID [m/s], $J_{\mathrm{ID}}$ y $J_{\mathrm{PID}}$ las funciones de costo de cada etapa, y $w_{\mathrm{mse}}$, $w_{\mathrm{OS}}$ los pesos del error cuadrático medio y del sobreimpulso; el resto de variables fueron definidas previamente.
+ 
+\noindent En el Algoritmo~\ref{alg:sintonizacion}, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s], $\hat{v}_j$ la salida del modelo FODT [m/s], $y^{ref}$ la referencia de la simulación del PID [m/s] y $\hat{y}_j$ la respuesta simulada del PID [m/s]; el resto de variables fueron definidas previamente.
 
 \subsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}

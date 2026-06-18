@@ -86,12 +86,13 @@ La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos usados por 
 \midrule
 $r$ & Radio de rueda & 0.0335 m & Modelo cinemático y odometría \\
 $C$ & Circunferencia de rueda & 0.2105 m & Conversión de cuentas a distancia \\
-$L$ & Distancia entre ruedas & 0.188 m & Modelo diferencial \\
+$b$ & Separación entre ruedas & 0.188 m & Modelo cinemático diferencial \\
 $N_g$ & Relación de reducción & 46 (nominal $46{:}1$) & Cálculo teórico del encoder \\
 $N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & 2024 cuentas/vuelta & Cálculo teórico \\
 $N_e$ & Resolución efectiva del encoder & 1980 cuentas/vuelta & Firmware y odometría \\
 $c_q$ & Factor de cuadratura & 4 & Decodificación A/B \\
-$T_s$ & Período de control & $1/30$ s & PID y odometría \\
+$f_{ctrl}$ & Frecuencia del lazo de control & 30 Hz & PID, ros2\_control y odometría \\
+$T_s=1/f_{ctrl}$ & Período de control & 0.0333 s & PID y odometría \\
 \bottomrule
 \end{tabular}
 \end{table}
