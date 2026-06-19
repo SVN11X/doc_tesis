@@ -93,12 +93,12 @@ n_d=\left\lfloor \frac{L_d}{\Delta t}\right\rfloor,
 El controlador PID se aplica de forma independiente a cada rueda. En su forma continua, se expresa como:
 
 \begin{equation}
-u_j(t)=K_{p,j}\, e_j(t)+K_{i,j}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}\frac{de_j(t)}{dt},
+u_j(t)=K_{p,j}^{c}\, e_j(t)+K_{i,j}^{c}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}^{c}\frac{de_j(t)}{dt},
 \qquad j\in\{R,L\}
 \label{eq:pid_continuo}
 \end{equation}
 
-\noindent donde $u_j(t)$ es la acción de control de la rueda $j$, $e_j(t)$ el error y $K_{p,j},K_{i,j},K_{d,j}$ las ganancias proporcional, integral y derivativa de la rueda $j$ (definidas por rueda, dado que las ganancias finales son asimétricas). En la implementación discreta (Ec.~\ref{eq:pid_firmware}) la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden.
+\noindent donde $u_j(t)$ es la acción de control de la rueda $j$ [PWM], $e_j(t)$ el error y $K_{p,j}^{c},K_{i,j}^{c},K_{d,j}^{c}$ las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$. Estas ganancias continuas no coinciden numéricamente con las del firmware $K_{p,j},K_{i,j},K_{d,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), que están escaladas por $K_{o,j}$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
  
 \begin{equation}
 e_j[k] = m_j^{cmd}[k] - m_j[k],
@@ -158,15 +158,15 @@ X_{i,d}^{g+1} &= \max\!\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\; 10^{-4}\bigr)
 \noindent donde $\varphi=4.1$ y $\chi\approx0.7298$.
  
 \begin{equation}
-J(\mathbf{x})=
-w_{\mathrm{mse}}\cdot \mathrm{MSE}\bigl(y^{ref}-\hat{y}_j\bigr)
+J(\boldsymbol{\theta}_i)=
+w_{\mathrm{mse}}\cdot \mathrm{MSE}\bigl(v_j^{ref}-\hat{v}_j\bigr)
 +w_{\mathrm{OS}}\cdot\Delta_{\mathrm{OS}}^{2},
 \qquad
-\Delta_{\mathrm{OS}}=\max\!\Bigl(0,\;\max_k \hat{y}_j[k]-y^{ref}\Bigr)
+\Delta_{\mathrm{OS}}=\max\!\Bigl(0,\;\max_k \hat{v}_j[k]-v_j^{ref}\Bigr)
 \label{eq:costo_pso}
 \end{equation}
- 
-\noindent donde $\mathbf{x}$ es el vector de ganancias de la partícula, $y^{ref}$ la referencia de velocidad de la simulación del PID [m/s], $\hat{y}_j$ la respuesta simulada del PID [m/s], $\Delta_{\mathrm{OS}}$ el sobreimpulso absoluto [m/s] y $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$ sus pesos relativos (adimensionales).
+
+\noindent donde $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$ es el vector de ganancias candidatas de la partícula $i$ (sus componentes son las posiciones de búsqueda $X_{i,d}$, $d\in\{1,2,3\}$), $v_j^{ref}$ la velocidad de consigna estacionaria de la rueda $j$ en la simulación del PID [m/s], $\hat{v}_j$ la respuesta simulada de la rueda $j$ [m/s], $\Delta_{\mathrm{OS}}$ el sobreimpulso absoluto [m/s] y $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$ sus pesos relativos (adimensionales).
 
 \subsection{Sintonía Lambda}
 \label{sec:lambda}
@@ -183,7 +183,7 @@ ganancia referida al punto de operación, $K_{\mathrm{norm}}=K_m\,\mathrm{PWM_{n
 de modo que el controlador en forma estándar entrega una señal normalizada en
 $[0,1]$; esa normalización se revierte a PWM en la etapa de firmware mediante el
 mismo $\mathrm{PWM_{nom}}$. Además, para evitar retardos degenerados, se usa un
-retardo efectivo $L_{ef}=\max\!\left(L_d,\,2/f_{PID}\right)$. Las reglas de la
+retardo efectivo $L_{ef}=\max\!\left(L_d,\,2/f_{ctrl}\right)$. Las reglas de la
 forma serie son:
 
 \begin{equation}
@@ -221,6 +221,31 @@ K_i^{fw} = K_i^{\lambda}\,f_\lambda\,T_s
  
 \noindent donde $f_\lambda$ es el factor de escala a la representación interna del firmware (adimensional), $K_o=50$ el divisor de normalización, \texttt{MPS\_TO\_TICKS\_FACTOR}$\approx313.56$ (Ec.~\ref{eq:mps_to_ticks_factor}) y $T_s=1/f_{ctrl}$ [s]. Las ganancias $K_p^{fw},K_i^{fw},K_d^{fw}$ constituyen la línea base analítica contrastada con PSO.
 
+\begin{algorithm}[H]
+\caption{Sintonía Lambda de referencia: del modelo FODT a las ganancias de firmware}
+\label{alg:lambda_tuning}
+\begin{algorithmic}[1]
+\Require Modelo FODT por rueda $(K_m,\tau,L_d)$; factor $\lambda_{\mathrm{fac}}=3$; $\mathrm{PWM_{nom}}=143$; $K_o=50$; $f_{ctrl}=30$~Hz; \texttt{MPS\_TO\_TICKS\_FACTOR}$\approx313.56$
+\Ensure Ganancias de firmware $(K_p^{fw},K_i^{fw},K_d^{fw})$ por rueda
+\State \textbf{Inicialización:}
+\State $T_s \gets 1/f_{ctrl}$;\quad $f_\lambda \gets \mathrm{PWM_{nom}}\,K_o / \texttt{MPS\_TO\_TICKS\_FACTOR}$
+\Statex
+\State \textbf{Ejecución principal:}
+\For{$j \in \{R,L\}$}
+    \State $K_{\mathrm{norm}} \gets K_m\,\mathrm{PWM_{nom}}$
+    \State $L_{ef} \gets \max\!\left(L_d,\; 2/f_{ctrl}\right)$;\quad $\lambda \gets \lambda_{\mathrm{fac}}\,\tau$
+    \Statex \quad\textit{// Forma serie (interactuante)}
+    \State $k_c \gets \dfrac{\tau}{K_{\mathrm{norm}}\,(L_{ef}/2+\lambda)}$;\quad $\tau_I \gets \tau$;\quad $\tau_D \gets L_{ef}/2$
+    \Statex \quad\textit{// Forma paralela estándar}
+    \State $K_p^{\lambda} \gets k_c\,(\tau_I+\tau_D)/\tau_I$;\quad $T_i \gets \tau_I+\tau_D$;\quad $T_d \gets \tau_I\tau_D/(\tau_I+\tau_D)$
+    \State $K_i^{\lambda} \gets K_p^{\lambda}/T_i$;\quad $K_d^{\lambda} \gets K_p^{\lambda}\,T_d$
+    \Statex \quad\textit{// Escala a representación interna del firmware}
+    \State $K_p^{fw} \gets K_p^{\lambda}\,f_\lambda$;\quad $K_d^{fw} \gets K_d^{\lambda}\,f_\lambda$;\quad $K_i^{fw} \gets K_i^{\lambda}\,f_\lambda\,T_s$
+\EndFor
+\Statex
+\State \textbf{Salida:} $(K_p^{fw},K_i^{fw},K_d^{fw})$ por rueda, como línea base analítica contrastada con PSO.
+\end{algorithmic}
+\end{algorithm}
 %------------------------------------------------------------------
 \section{SLAM basado en grafos}
 \label{sec:slam}

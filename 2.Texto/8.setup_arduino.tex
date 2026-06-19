@@ -115,7 +115,7 @@ Las ganancias PID se determinaron mediante un procedimiento híbrido. Primero se
 \subsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
 
-La captura se realizó aplicando un escalón de PWM sin controlador PID activo, registrando los datos con un período de muestreo $T_{cap}=0.1$~s, distinto del período de control $T_s=1/f_{PID}\approx0.0333$~s. La velocidad lineal de cada rueda se calculó como:
+La captura se realizó aplicando un escalón de PWM sin controlador PID activo, registrando los datos con un período de muestreo $T_{cap}=0.1$~s, distinto del período de control $T_s=1/f_{ctrl}\approx0.0333$~s. La velocidad lineal de cada rueda se calculó como:
 
 \begin{equation}
 v_j[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
@@ -159,7 +159,7 @@ discreto. El procedimiento completo de sintonización se resume en el Algoritmo~
     \State Inicializar enjambre de $S$ partículas en $\mathbb{R}^3$ (candidatos $(K_p,K_d,K_i)$)
     \While{$g < g_{\max}$}
         \State Simular el PID del firmware (Ec.~\ref{eq:pid_firmware}) sobre el modelo FODT a $T_s$, con $e_{db}$
-        \State Evaluar $J = w_{\mathrm{mse}}\,\mathrm{MSE}(y^{ref}-\hat{y}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$ (Ec.~\ref{eq:costo_pso})
+        \State Evaluar $J = w_{\mathrm{mse}}\,\mathrm{MSE}(v_j^{ref}-\hat{v}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$ (Ec.~\ref{eq:costo_pso})
         \State Actualizar $V_{i,d},X_{i,d}$ (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
     \EndWhile
     \State $(K_{p},K_{d},K_{i})_j \gets$ mejor posición global
@@ -172,7 +172,7 @@ discreto. El procedimiento completo de sintonización se resume en el Algoritmo~
 \end{algorithmic}
 \end{algorithm}
  
-\noindent En el Algoritmo~\ref{alg:sintonizacion}, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s], $\hat{v}_j$ la salida del modelo FODT [m/s], $y^{ref}$ la referencia de la simulación del PID [m/s] y $\hat{y}_j$ la respuesta simulada del PID [m/s]; el resto de variables fueron definidas previamente.
+\noindent En el Algoritmo~\ref{alg:sintonizacion}, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s]; $\hat{v}_j$ es la velocidad de rueda estimada por simulación (modelo FODT en la Etapa 1; lazo cerrado simulado en la Etapa 2) [m/s]; y $v_j^{ref}$ la velocidad de consigna de la simulación del PID [m/s]; el resto de variables fueron definidas previamente.
 
 \subsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
