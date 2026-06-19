@@ -125,6 +125,38 @@ v_j[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
  
 \noindent donde $\Delta c_j[k]$ son las cuentas registradas en el intervalo de captura $T_{cap}=0.1$~s [cuentas] y $2\pi r$ la circunferencia de la rueda [m]; $v_j[k]$ es la velocidad lineal de rueda [m/s], no la del robot.
 
+\begin{algorithm}[H]
+\caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
+\label{alg:captura_lazo_abierto}
+\begin{algorithmic}[1]
+\Require Enlace serial al \gls{Arduino}; PWM nominal $\mathrm{PWM_{nom}}=143$; período de captura $T_{cap}=0.1$~s; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución $N_e$; radio de rueda $r$
+\Ensure Series por rueda $\bigl(u_j[k],\,v_j[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT (Etapa~1 del Alg.~\ref{alg:sintonizacion})
+
+\State \textbf{Inicialización:}
+\State Abrir puerto serial; fijar PWM $=0$; esperar estabilización
+\State Leer encoders iniciales $c_j[-1]$ para $j\in\{R,L\}$;\quad $k\gets 0$
+
+\Statex
+\State \textbf{Ejecución principal:}
+\While{$t_k \leq t_f$}
+    \If{$t_k \geq t_{step}$}
+        \State $u_j[k] \gets \mathrm{PWM_{nom}}$ \Comment{escalón sin PID}
+    \Else
+        \State $u_j[k] \gets 0$
+    \EndIf
+    \State Aplicar PWM $u_j[k]$ a ambos motores (lazo abierto)
+    \State Leer encoders $c_j[k]$;\quad $\Delta c_j[k] \gets c_j[k]-c_j[k-1]$
+    \State $v_j[k] \gets \dfrac{\Delta c_j[k]}{N_e}\cdot\dfrac{2\pi r}{T_{cap}}$ \Comment{Ec.~\ref{eq:vel_lazo_abierto}}
+    \State Registrar $\bigl(u_j[k],\,v_j[k]\bigr)$;\quad $c_j[k-1]\gets c_j[k]$;\quad $k\gets k+1$
+\EndWhile
+
+\Statex
+\State \textbf{Salida:} Detener motores; entregar $\bigl(u_j[k],\,v_j[k]\bigr)$ como respuesta al escalón para identificar el modelo FODT.
+\end{algorithmic}
+\end{algorithm}
+
+\noindent donde $u_j[k]$ es el PWM aplicado a la rueda $j$ [PWM]; $v_j[k]$ la velocidad lineal de rueda (no del robot) [m/s]; $\Delta c_j[k]$ las cuentas en el intervalo $T_{cap}$ [cuentas]; $c_j[k]$ las cuentas acumuladas [cuentas]; $T_{cap}$ el período de captura [s]; $N_e$ y $r$ definidas previamente.
+
 \subsection{Identificación y optimización}
 
 La identificación FODT se realiza evaluando la Ec.~\ref{eq:fodt_discreto} con
@@ -139,7 +171,7 @@ discreto. El procedimiento completo de sintonización se resume en el Algoritmo~
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
-\Require Respuesta al escalón en lazo abierto $(u_j[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}=0.1$~s; período de control $T_s=1/f_{ctrl}$; enjambre $S=50$; generaciones $g_{\max}=150$; pesos $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$; banda muerta $e_{db}=2$.
+\Require Respuesta al escalón en lazo abierto $(u_j[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}=0.1$~s; período de control $T_s=1/f_{ctrl}$; enjambre $S=50$; generaciones $g_{\max}=150$; pesos $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$; banda muerta de simulación $e_{db}=2$ (el firmware desplegado usa $e_{db,R}=1,\,e_{db,L}=2$).
 \Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
  
 \State \textbf{Inicialización:} cargar datos de lazo abierto y suavizar $v_j^{med}$.

@@ -16,19 +16,19 @@ angular se calcula a partir de las cuentas de encoder acumuladas en el intervalo
 de muestreo:
 
 \begin{equation}
-\omega_{j} = \frac{2\pi\, \Delta c_{j}[k]}{N_e\, T_s},
+\omega_{j}[k] = \frac{2\pi\, \Delta c_{j}[k]}{N_e\, T_s},
 \qquad j\in\{R,L\}
 \label{eq:w_ruedas}
 \end{equation}
- 
-\noindent donde $\omega_{j}$ es la velocidad angular de la rueda $j$ [rad/s], $\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de cuentas del encoder en el intervalo $T_s$ [cuentas], $N_e=1980$ la resolución del encoder [cuentas/vuelta] y $T_s=1/f_{ctrl}$ el período de muestreo [s].
- 
+
+\noindent donde $\omega_{j}[k]$ es la velocidad angular de la rueda $j$ [rad/s], $\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de cuentas del encoder en el intervalo $T_s$ [cuentas], $N_e=1980$ la resolución del encoder [cuentas/vuelta] y $T_s=1/f_{ctrl}$ el período de muestreo [s].
+
 \begin{align}
-v &= \frac{r}{2}\left(\omega_R+\omega_L\right) \label{eq:v_lineal} \\
-\omega &= \frac{r}{b}\left(\omega_R-\omega_L\right) \label{eq:v_angular}
+v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right) \label{eq:v_lineal} \\
+\omega[k] &= \frac{r}{b}\left(\omega_R[k]-\omega_L[k]\right) \label{eq:v_angular}
 \end{align}
- 
-\noindent donde $v$ es la velocidad lineal del robot [m/s], $\omega$ su velocidad angular [rad/s], $r$ el radio de rueda [m] y $b$ la separación entre ruedas [m] (parámetro \texttt{wheel\_separation}). El subíndice $L$ en $\omega_L$ denota la rueda izquierda.
+
+\noindent donde $v[k]$ es la velocidad lineal del robot [m/s], $\omega[k]$ su velocidad angular [rad/s], $r$ el radio de rueda [m] y $b$ la separación entre ruedas [m] (parámetro \texttt{wheel\_separation}). El subíndice $L$ en $\omega_L[k]$ denota la rueda izquierda.
  
 \begin{align}
 x_{k+1} &= x_k + T_s\, v_k \cos\theta_k \label{eq:pose_x} \\
@@ -41,12 +41,12 @@ y_{k+1} &= y_k + T_s\, v_k \sin\theta_k \label{eq:pose_y} \\
 En esta tesis, $r=0.0335$~m, $b=0.188$~m, $N_e=1980$ cuentas/vuelta y la frecuencia del lazo de control es $f_{ctrl}=30$~Hz, de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware \texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión:
 
 \begin{equation}
-m_j^{cmd}[k] = v_j^{cmd}\,\frac{N_e}{2\pi r\, f_{ctrl}},
+m_j^{cmd}[k] = v_j^{cmd}[k]\,\frac{N_e}{2\pi r\, f_{ctrl}},
 \qquad j\in\{R,L\}
 \label{eq:mps_to_ticks}
 \end{equation}
- 
-\noindent donde $m_j^{cmd}[k]$ es la referencia de velocidad de rueda enviada al firmware [ticks/frame], $v_j^{cmd}$ la velocidad lineal de rueda comandada [m/s] y $f_{ctrl}=30$~Hz la frecuencia del lazo (\texttt{PID\_RATE}$=$\texttt{loop\_rate}); el resto de variables fueron definidas previamente. El factor $N_e/(2\pi r\, f_{ctrl})$ (constante \texttt{MPS\_TO\_TICKS\_FACTOR}) tiene unidades de (ticks/frame)/(m/s).
+
+\noindent donde $m_j^{cmd}[k]$ es la referencia de velocidad de rueda enviada al firmware [ticks/frame], $v_j^{cmd}[k]$ la velocidad lineal de rueda comandada [m/s] y $f_{ctrl}=30$~Hz la frecuencia del lazo (\texttt{PID\_RATE}$=$\texttt{loop\_rate}); el resto de variables fueron definidas previamente. El factor $N_e/(2\pi r\, f_{ctrl})$ (constante \texttt{MPS\_TO\_TICKS\_FACTOR}) tiene unidades de (ticks/frame)/(m/s).
  
 \begin{align}
 \texttt{MPS\_TO\_TICKS\_FACTOR}
@@ -72,8 +72,8 @@ transferencia es:
 G_m(s)=\frac{K_m}{1+\tau s}\,\mathrm{e}^{-L_d s}
 \label{eq:fodt}
 \end{equation}
- 
-\noindent donde $K_m$ es la ganancia estática [m/s/PWM], $\tau$ la constante de tiempo [s], $L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler.
+
+\noindent donde $K_m$ es la ganancia estática [(m/s)/PWM], $\tau$ la constante de tiempo [s], $L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler.
  
 \begin{equation}
 \hat{v}_j[k]=\hat{v}_j[k-1]+\frac{h}{\tau}\Bigl(K_m\,u_j[k-n_d]-\hat{v}_j[k-1]\Bigr),
@@ -98,7 +98,7 @@ u_j(t)=K_{p,j}^{c}\, e_j(t)+K_{i,j}^{c}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}^{c}
 \label{eq:pid_continuo}
 \end{equation}
 
-\noindent donde $u_j(t)$ es la acción de control de la rueda $j$ [PWM], $e_j(t)$ el error y $K_{p,j}^{c},K_{i,j}^{c},K_{d,j}^{c}$ las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$. Estas ganancias continuas no coinciden numéricamente con las del firmware $K_{p,j},K_{i,j},K_{d,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), que están escaladas por $K_{o,j}$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
+\noindent donde $u_j(t)$ es la acción de control de la rueda $j$ [PWM], $e_j(t)$ el error y $K_{p,j}^{c},K_{i,j}^{c},K_{d,j}^{c}$ las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$. Esta forma continua es ilustrativa y no se cuantifica: la implementación emplea las ganancias discretas del firmware $K_{p,j},K_{d,j},K_{i,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), escaladas por $K_{o,j}$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
  
 \begin{equation}
 e_j[k] = m_j^{cmd}[k] - m_j[k],
@@ -143,11 +143,22 @@ w_{\mathrm{in}}^{g}\,V_{i,d}^{g}
 +c_2\rho_2\bigl(P_d^{*}-X_{i,d}^{g}\bigr)
 \right]
 \label{eq:pso_vel_marco_teorico} \\
-X_{i,d}^{g+1} &= \max\!\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\; 10^{-4}\bigr)
+X_{i,d}^{g+1} &= \min\!\Bigl(\max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr),\;1\Bigr)
 \label{eq:pso_pos_marco_teorico}
 \end{align}
- 
-\noindent donde $X_{i,d}^{g}$ es la posición de búsqueda de la partícula $i$ en la dimensión $d\in\{1,2,3\}$ y generación $g$, $V_{i,d}^{g}$ su velocidad de búsqueda, $P_{i,d}$ la mejor posición individual y $P_d^{*}$ la mejor posición global. El peso de inercia decrece como $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, con $g_{\max}=150$ y tamaño de enjambre $S=50$. Los coeficientes $c_1=c_2=2.05$ ponderan las componentes cognitiva y social (adimensionales) y $\rho_1,\rho_2\sim\mathcal{U}[0,1]$, regenerados por partícula y dimensión en cada iteración. La cota $X_{i,d}^{g}\geq10^{-4}$ garantiza ganancias positivas.
+
+\noindent donde $X_{i,d}^{g}$ es la posición de búsqueda normalizada de la partícula $i$ en la dimensión $d\in\{1,2,3\}$ y generación $g$ (adimensional, $X_{i,d}^{g}\in[10^{-4},1]$), $V_{i,d}^{g}$ su velocidad de búsqueda, $P_{i,d}$ la mejor posición individual y $P_d^{*}$ la mejor posición global. El peso de inercia decrece como $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, con $g_{\max}=150$ y tamaño de enjambre $S=50$. Los coeficientes $c_1=c_2=2.05$ ponderan las componentes cognitiva y social (adimensionales) y $\rho_1,\rho_2\sim\mathcal{U}[0,1]$, regenerados por partícula y dimensión en cada iteración. La variante combina factor de constricción e inercia decreciente; el valor $\chi\approx0.7298$ depende únicamente de $\varphi=c_1+c_2=4.1$ (Ec.~\ref{eq:constriccion}) y es independiente de $w_{\mathrm{in}}^{g}$, que modula adicionalmente el balance exploración--explotación a lo largo de las generaciones.
+
+\begin{equation}
+\theta_{i,d}=s_d\,X_{i,d}^{g},
+\qquad
+s^{\mathrm{ID}}=(0.01,\;2.0,\;0.5),
+\qquad
+s^{\mathrm{PID}}=(40,\;25,\;0.05)
+\label{eq:pso_escala}
+\end{equation}
+
+\noindent donde $\theta_{i,d}$ es el parámetro físico $d$ del candidato de la partícula $i$ y $s_d$ el factor de escala de esa dimensión (porta las unidades físicas, pues $X_{i,d}$ es adimensional). El vector $s^{\mathrm{ID}}$ aplica en la identificación FODT, con $\boldsymbol{\theta}_i=(K_m,\tau,L_d)_i$, y $s^{\mathrm{PID}}$ en la sintonización del controlador, con $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$.
  
 \begin{equation}
 \chi=\frac{2}{\left|2-\varphi-\sqrt{\varphi^2-4\varphi}\right|},
@@ -166,7 +177,7 @@ w_{\mathrm{mse}}\cdot \mathrm{MSE}\bigl(v_j^{ref}-\hat{v}_j\bigr)
 \label{eq:costo_pso}
 \end{equation}
 
-\noindent donde $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$ es el vector de ganancias candidatas de la partícula $i$ (sus componentes son las posiciones de búsqueda $X_{i,d}$, $d\in\{1,2,3\}$), $v_j^{ref}$ la velocidad de consigna estacionaria de la rueda $j$ en la simulación del PID [m/s], $\hat{v}_j$ la respuesta simulada de la rueda $j$ [m/s], $\Delta_{\mathrm{OS}}$ el sobreimpulso absoluto [m/s] y $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$ sus pesos relativos (adimensionales).
+\noindent donde $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$ es el vector de ganancias candidatas de la partícula $i$, obtenido al escalar las posiciones de búsqueda normalizadas según la Ec.~\ref{eq:pso_escala} ($\theta_{i,d}=s_d\,X_{i,d}$, con $X_{i,d}\in[10^{-4},1]$); $v_j^{ref}$ la velocidad de consigna estacionaria de la rueda $j$ en la simulación del PID [m/s], $\hat{v}_j$ la respuesta simulada de la rueda $j$ [m/s], $\Delta_{\mathrm{OS}}$ el sobreimpulso absoluto [m/s] y $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$ sus pesos relativos (adimensionales).
 
 \subsection{Sintonía Lambda}
 \label{sec:lambda}
@@ -261,11 +272,11 @@ Este trabajo utiliza \texttt{slam\_toolbox} en modo asíncrono en línea. El sis
 El planificador global calcula una ruta desde la posición actual hasta la meta sobre un mapa de costos. En Nav2 se usa NavFn en modo A\*, cuya función de evaluación es:
 
 \begin{equation}
-f(n)=g_n(n)+h(n)
+f(n)=g_n(n)+h_{\mathrm{heur}}(n)
 \label{eq:astar}
 \end{equation}
- 
-\noindent donde $g_n(n)$ es el costo acumulado desde el origen hasta el nodo $n$ y $h(n)$ el costo estimado restante hasta la meta. El subíndice $n$ distingue $g_n$ del superíndice $g$ de generación del PSO.
+
+\noindent donde $g_n(n)$ es el costo acumulado desde el origen hasta el nodo $n$ y $h_{\mathrm{heur}}(n)$ el costo estimado restante hasta la meta. El subíndice $n$ distingue $g_n$ del superíndice $g$ de generación del PSO, y $h_{\mathrm{heur}}$ se distingue del paso de integración $h$ de la Ec.~\ref{eq:fodt_discreto}.
  
 \begin{equation}
 J_{\mathrm{DWB}}(v,\omega)=\sum_c w_c\, C_c(v,\omega)
@@ -291,7 +302,7 @@ U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_
 \label{eq:frontier_cost}
 \end{equation}
 
-\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $s(F)$ el tamaño de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m la resolución del costmap, $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva (\texttt{orientation\_scale}$=0$). El robot selecciona la frontera de menor $U(F)$ que cumple $\rho_{\mathrm{map}}\,s(F)\geq 0.033$~m (\texttt{min\_frontier\_size}).
+\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $s(F)$ el tamaño de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m/celda la resolución del costmap (símbolo unificado con \texttt{resolution}), $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva (\texttt{orientation\_scale}$=0$). El robot selecciona la frontera de menor $U(F)$ que cumple $\rho_{\mathrm{map}}\,s(F)\geq 0.033$~m (\texttt{min\_frontier\_size}).
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
