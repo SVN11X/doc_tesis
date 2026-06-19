@@ -19,21 +19,8 @@ El firmware se organiza en módulos con responsabilidades separadas: \texttt{ROS
 
 El firmware utiliza las mismas constantes físicas del modelo cinemático y del gemelo digital: el radio de rueda $r=0.0335$~m —parametrizado por el diámetro $D=2r=\texttt{WHEEL\_DIAMETER}=0.067$~m— y $N_e=\texttt{ENC\_TICKS\_PER\_REV}=1980$ cuentas/vuelta. El lazo opera a $f_{ctrl}=\texttt{PID\_RATE}=30$~Hz, por lo que $T_s=1/f_{ctrl}\approx0.0333$~s.
 
-A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame}:
-
-\begin{align}
-\texttt{MPS\_TO\_TICKS\_FACTOR} &=
-\frac{N_e}{2\pi r \, f_{ctrl}}
-\notag \\
-&=
-\frac{1980}{2\pi \times 0.0335 \times 30}
-\approx 313.56
-\;\frac{\text{ticks/frame}}{\text{m/s}}
-\label{eq:mps_to_ticks_factor}
-\end{align}
-
-donde $N_e$ es la resolución del encoder [cuentas/vuelta], $r$ el radio de rueda [m] y $f_{ctrl}$ la frecuencia del lazo de control [Hz]. En el firmware se evalúa de forma equivalente como $N_e/(\pi D\, f_{ctrl})$ con $D=2r$ (constante \texttt{WHEEL\_DIAMETER}).
-
+A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame}. El factor de conversión entre m/s y ticks/frame se calcula según la Ec.~\ref{eq:mps_to_ticks_factor}
+($\approx 313.56$); en el firmware se evalúa de forma equivalente como $N_e/(\pi D\, f_{ctrl})$ con $D=2r$.
 %------------------------------------------------------------------
 \section{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
@@ -59,16 +46,8 @@ donde $N_{R(i)}$ y $N_{L(i)}$ son las cuentas por vuelta completa medidas en la 
 \section{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. Para cada rueda $j \in \{R,L\}$, el error se define como:
-
-\begin{equation}
-e_j[k] = m_j^{cmd}[k] - m_j[k],
-\qquad
-m_j[k] = \Delta c_j[k] = c_j[k] - c_j[k-1]
-\label{eq:error_pid}
-\end{equation}
-
-donde $e_j[k]$ es el error [ticks/frame], $m_j^{cmd}[k]$ la referencia enviada al firmware [ticks/frame] y $m_j[k]$ la velocidad de rueda medida, igual al incremento de cuentas del encoder en un ciclo de control [ticks/frame $\equiv$ cuentas/ciclo]; $c_j[k]$ fue definida previamente.
+El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con $m_j[k]=\Delta c_j[k]=c_j[k]-c_j[k-1]$
+la velocidad medida [ticks/frame $\equiv$ cuentas/ciclo].
 
 La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Marco Teórico. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
 
@@ -95,39 +74,38 @@ El divisor $K_o$ normaliza la acción de control, por lo que las ganancias efect
 \caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
-\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y cuentas de encoder $c_j[k]$ [cuentas] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_{o,j}=50$; banda muerta $e_{db}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
+\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y cuentas de encoder $c_j[k]$ [cuentas] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_{o,j}=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
 \Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
- 
+
 \State \textbf{Inicialización:}
 \State $u_j[-1]\gets 0$,\; $I_j[0]\gets 0$,\; $m_j[-1]\gets 0$,\; $c_j[-1]\gets 0$ \quad para $j\in\{R,L\}$
- 
+
 \Statex
 \State \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
 \While{el controlador está activo}
-    \For{$j\in\{R,L\}$}
-        \State $m_j[k]\gets c_j[k]-c_j[k-1]$ \Comment{velocidad medida [ticks/frame]}
-        \State $e_j[k]\gets m_j^{cmd}[k]-m_j[k]$
-        \If{$|e_j[k]| \leq e_{db}$}
-            \State $e_j[k]\gets 0$ \Comment{banda muerta anti-cuantización}
-        \EndIf
-        \State $u_j[k]\gets u_j[k-1]+\dfrac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}}$
-        \If{$u_j[k]\geq u_{\max}$}
-            \State $u_j[k]\gets u_{\max}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
-        \ElsIf{$u_j[k]\leq u_{\min}$}
-            \State $u_j[k]\gets u_{\min}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
-        \Else
-            \State $I_j[k+1]\gets I_j[k]+K_{i,j}\,e_j[k]$
-        \EndIf
-        \State Aplicar PWM $u_j[k]$ al motor $j$
-        \State $m_j[k-1]\gets m_j[k]$;\quad $u_j[k-1]\gets u_j[k]$
-    \EndFor
+\For{$j\in\{R,L\}$}
+\State $m_j[k]\gets c_j[k]-c_j[k-1]$ \Comment{velocidad medida [ticks/frame]}
+\State $e_j[k]\gets m_j^{cmd}[k]-m_j[k]$
+\If{$|e_j[k]| \leq e_{db,j}$}
+\State $e_j[k]\gets 0$ \Comment{banda muerta anti-cuantización}
+\EndIf
+\State $u_j[k]\gets u_j[k-1]+\dfrac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}}$
+\If{$u_j[k]\geq u_{\max}$}
+\State $u_j[k]\gets u_{\max}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
+\ElsIf{$u_j[k]\leq u_{\min}$}
+\State $u_j[k]\gets u_{\min}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
+\Else
+\State $I_j[k+1]\gets I_j[k]+K_{i,j}\,e_j[k]$
+\EndIf
+\State Aplicar PWM $u_j[k]$ al motor $j$
+\State $m_j[k-1]\gets m_j[k]$;\quad $u_j[k-1]\gets u_j[k]$
+\EndFor
 \EndWhile
- 
+
 \Statex
 \State \textbf{Salida:} $u_R[k],u_L[k]$ aplicados al L298N; estado $(I_j,\,u_j[k-1],\,m_j[k-1])$ actualizado.
 \end{algorithmic}
 \end{algorithm}
-
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}

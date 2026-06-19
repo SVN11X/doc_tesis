@@ -71,13 +71,13 @@ El controlador diferencial recibe comandos de velocidad lineal y angular, y los 
 \midrule
 \texttt{linear.x.max\_velocity} & $\pm$0.13~m/s & Velocidad lineal máxima \\
 \texttt{angular.z.max\_velocity} & $\pm$0.4~rad/s & Velocidad angular máxima \\
-\texttt{update\_rate} & 30~Hz & Frecuencia del controlador ($f_{loop}$) \\
+\texttt{update\_rate} & 30~Hz & Frecuencia del controlador ($f_{ctrl}$) \\
 \texttt{enable\_odom\_tf} & true & Publica \texttt{odom}$\rightarrow$\texttt{base\_link} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} que opera en un ciclo periódico \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} a la frecuencia $f_{loop}$ del \texttt{controller\_manager}.
+La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} que opera en un ciclo periódico \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} a la frecuencia $f_{ctrl}$ del \texttt{controller\_manager}.
 
 En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} esperado por el \gls{Arduino}:
 
@@ -100,7 +100,9 @@ En \texttt{read()}, los conteos acumulados del encoder se transforman en ángulo
 \label{eq:enc_to_state}
 \end{equation}
 
-donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ las cuentas acumuladas del encoder [cuentas], $\dot{\phi}_j[k]$ la velocidad angular estimada de la rueda [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{loop}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
+donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ las cuentas acumuladas del encoder [cuentas], $\dot{\phi}_j[k]$ la velocidad angular estimada de la rueda [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{ctrl}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
+
+La velocidad $\dot{\phi}_j[k]$ es la misma magnitud que $\omega_j$ (Ec.~\ref{eq:w_ruedas}); difieren solo en la base temporal: $\omega_j$ usa el período nominal $T_s$ y $\dot{\phi}_j$ el período medido $\Delta t_k$.
 
 Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmware con los valores obtenidos por sintonización PSO y refinamiento experimental (Capítulo~\ref{marco_teorico}), de modo que el plugin solo intercambia referencias de velocidad y lecturas de encoder.
 

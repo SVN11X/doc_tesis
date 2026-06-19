@@ -93,12 +93,12 @@ n_d=\left\lfloor \frac{L_d}{\Delta t}\right\rfloor,
 El controlador PID se aplica de forma independiente a cada rueda. En su forma continua, se expresa como:
 
 \begin{equation}
-u_j(t)=K_p\, e_j(t)+K_i\int_0^t e_j(\sigma)\,d\sigma+K_d\frac{de_j(t)}{dt},
+u_j(t)=K_{p,j}\, e_j(t)+K_{i,j}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}\frac{de_j(t)}{dt},
 \qquad j\in\{R,L\}
 \label{eq:pid_continuo}
 \end{equation}
- 
-\noindent donde $u_j(t)$ es la acción de control de la rueda $j$, $e_j(t)$ el error y $K_p,K_i,K_d$ las ganancias proporcional, integral y derivativa.
+
+\noindent donde $u_j(t)$ es la acción de control de la rueda $j$, $e_j(t)$ el error y $K_{p,j},K_{i,j},K_{d,j}$ las ganancias proporcional, integral y derivativa de la rueda $j$ (definidas por rueda, dado que las ganancias finales son asimétricas). En la implementación discreta (Ec.~\ref{eq:pid_firmware}) la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden.
  
 \begin{equation}
 e_j[k] = m_j^{cmd}[k] - m_j[k],
@@ -115,7 +115,7 @@ u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}
 \label{eq:pid_firmware}
 \end{equation}
  
-\noindent donde $u_j[k]$ es la salida de control (PWM) de la rueda $j$, $K_{p,j},K_{d,j}$ las ganancias proporcional y derivativa, $I_j[k]$ el término integral acumulado y $K_{o,j}=50$ un factor de escala adimensional. El integrador se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}\,e_j[k]$ solo cuando la salida no está saturada (\textit{anti-windup}), con $K_{i,j}$ la ganancia integral. Se aplica una banda muerta $e_{db}=2$ ticks/frame sobre $e_j[k]$ y saturación de la salida a $[u_{\min},u_{\max}]=[-255,255]$ PWM. El procedimiento se formaliza en el Algoritmo~\ref{alg:pid_firmware}.
+\noindent donde $u_j[k]$ es la salida de control (PWM) de la rueda $j$, $K_{p,j},K_{d,j}$ las ganancias proporcional y derivativa, $I_j[k]$ el término integral acumulado y $K_{o,j}=50$ un factor de escala adimensional. El integrador se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}\,e_j[k]$ solo cuando la salida no está saturada (\textit{anti-windup}), con $K_{i,j}$ la ganancia integral. Se aplica una banda muerta por rueda $e_{db,j}$ sobre $e_j[k]$ ($e_{db,R}=1$, $e_{db,L}=2$ ticks/frame)
 
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID}
@@ -133,8 +133,7 @@ con factor de constricción e inercia decreciente: el factor de constricción
 $\chi$ acota la magnitud de la actualización y favorece la convergencia, mientras
 que el peso de inercia $w_{\mathrm{in}}^{g}$, que decrece con las generaciones,
 aporta mayor exploración al inicio y privilegia la explotación al final. La
-actualización de velocidad y posición de la partícula $i$, en la dimensión $j$ y
-generación $g$, es:
+actualización de velocidad y posición de la partícula $i$, en la dimensión $d\in\{1,2,3\}$ y generación $g$, es:
 
 \begin{align}
 V_{i,d}^{g+1} &=
@@ -263,11 +262,11 @@ J_{\mathrm{DWB}}(v,\omega)=\sum_c w_c\, C_c(v,\omega)
 \noindent donde $d_o$ es la distancia al obstáculo [m], $r_{\mathrm{inscrito}}$ el radio inscrito del robot [m], $r_{\mathrm{inflacion}}=0.15$~m el radio de inflación [m], $\beta=8.0$ el factor de decaimiento (\texttt{cost\_scaling\_factor}) [1/m] y $\mathrm{e}$ el número de Euler.
  
 \begin{equation}
-U(F)=w_{\mathrm{pot}}\,\rho\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho\,s(F)
+U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,s(F)
 \label{eq:frontier_cost}
 \end{equation}
- 
-\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2}, $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $s(F)$ el tamaño de la frontera [celdas], $\rho=0.05$~m la resolución del costmap, $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva (\texttt{orientation\_scale}$=0$). El robot selecciona la frontera de menor $U(F)$ con $s(F)\geq0.033$~m (\texttt{min\_frontier\_size}).
+
+\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $s(F)$ el tamaño de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m la resolución del costmap, $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva (\texttt{orientation\_scale}$=0$). El robot selecciona la frontera de menor $U(F)$ que cumple $\rho_{\mathrm{map}}\,s(F)\geq 0.033$~m (\texttt{min\_frontier\_size}).
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
