@@ -40,7 +40,7 @@ Para obtener una odometría consistente, se midió experimentalmente el número 
 \label{eq:promedio_cuentas_L}
 \end{align}
 
-donde $N_{R(i)}$ y $N_{L(i)}$ son las cuentas por vuelta completa medidas en la $i$-ésima repetición de las ruedas derecha e izquierda [cuentas/vuelta]. Dado que la diferencia entre ruedas es inferior al 0.4\%, se adopta un único valor nominal unificado $N_e=1980$ cuentas/vuelta para ambas ruedas. Esta unificación simplifica el firmware y la odometría, introduciendo un error sistemático inferior al 0.6\% por rueda, considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
+donde $N_{R(i)}$ y $N_{L(i)}$ son las cuentas por vuelta completa medidas en la $i$-ésima repetición de las ruedas derecha e izquierda [cuentas/vuelta]. Ambos promedios difieren en menos del 0.4\%, por lo que se adopta un único valor nominal unificado $N_e=1980$ cuentas/vuelta, redondeo de referencia consistente con la resolución nominal del conjunto motor-reductor-encoder. Respecto de los promedios medidos, esta unificación introduce un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
 
 %------------------------------------------------------------------
 \section{Control PID en el firmware}
@@ -127,12 +127,12 @@ v_j[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 
 \subsection{Identificación y optimización}
 
-La identificaci\'on FODT se realiza evaluando la Ec.~\ref{eq:fodt_discreto} con
-paso $\Delta t=T_{cap}=0.1$~s y retardo $n_d=\lfloor L_d/T_{cap}\rfloor$,
-ajustando $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escal\'on en lazo
-abierto. La misma recurrencia, evaluada con $\Delta t=T_s=1/f_{PID}$, se emplea
-como planta en la simulaci\'on del controlador al optimizar las ganancias del
-PID, garantizando que identificaci\'on y sintonizaci\'on usen un \'unico modelo
+La identificación FODT se realiza evaluando la Ec.~\ref{eq:fodt_discreto} con
+paso $h=T_{cap}=0.1$~s y retardo $n_d=\lfloor L_d/T_{cap}\rfloor$,
+ajustando $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo
+abierto. La misma recurrencia, evaluada con $h=T_s=1/f_{ctrl}$, se emplea
+como planta en la simulación del controlador al optimizar las ganancias del
+PID, garantizando que identificación y sintonización usen un único modelo
 discreto. El procedimiento completo de sintonización se resume en el Algoritmo~\ref{alg:sintonizacion}.
 
 \begin{algorithm}[H]

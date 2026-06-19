@@ -76,15 +76,15 @@ G_m(s)=\frac{K_m}{1+\tau s}\,\mathrm{e}^{-L_d s}
 \noindent donde $K_m$ es la ganancia estática [m/s/PWM], $\tau$ la constante de tiempo [s], $L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler.
  
 \begin{equation}
-\hat{v}_j[k]=\hat{v}_j[k-1]+\frac{\Delta t}{\tau}\Bigl(K_m\,u_j[k-n_d]-\hat{v}_j[k-1]\Bigr),
+\hat{v}_j[k]=\hat{v}_j[k-1]+\frac{h}{\tau}\Bigl(K_m\,u_j[k-n_d]-\hat{v}_j[k-1]\Bigr),
 \qquad
-n_d=\left\lfloor \frac{L_d}{\Delta t}\right\rfloor,
+n_d=\left\lfloor \frac{L_d}{h}\right\rfloor,
 \qquad
 \hat{v}_j[0]=0
 \label{eq:fodt_discreto}
 \end{equation}
- 
-\noindent donde $\hat{v}_j[k]$ es la velocidad de rueda estimada por el modelo FODT [m/s], $u_j[k]$ la entrada PWM [PWM], $\Delta t$ el paso de integración [s] y $n_d$ el retardo en número de muestras. El paso toma el valor $\Delta t=T_{cap}=0.1$~s durante la identificación en lazo abierto y $\Delta t=T_s=1/f_{ctrl}\approx0.0333$~s durante la simulación del lazo cerrado. Para $k<n_d$ se mantiene $u_j[k-n_d]=u_j[0]$. Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático medio entre $\hat{v}_j$ y la respuesta experimental.
+
+\noindent donde $\hat{v}_j[k]$ es la velocidad de rueda estimada por el modelo FODT [m/s], $u_j[k]$ la entrada PWM [PWM], $h$ el paso de integración [s] y $n_d$ el retardo en número de muestras. El paso toma el valor $h=T_{cap}=0.1$~s durante la identificación en lazo abierto y $h=T_s=1/f_{ctrl}\approx0.0333$~s durante la simulación del lazo cerrado. Para $k<n_d$ se mantiene $u_j[k-n_d]=u_j[0]$. Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático medio entre $\hat{v}_j$ y la respuesta experimental.
 
 %------------------------------------------------------------------
 \section{Control PID}

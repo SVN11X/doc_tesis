@@ -95,14 +95,14 @@ En \texttt{read()}, los conteos acumulados del encoder se transforman en ángulo
 \begin{equation}
 \phi_j[k] = c_j[k]\,\frac{2\pi}{N_e},
 \qquad
-\dot{\phi}_j[k] = \frac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k},
+\hat{\omega}_j[k] = \frac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k},
 \qquad j\in\{R,L\}
 \label{eq:enc_to_state}
 \end{equation}
 
-donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ las cuentas acumuladas del encoder [cuentas], $\dot{\phi}_j[k]$ la velocidad angular estimada de la rueda [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{ctrl}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
+donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ las cuentas acumuladas del encoder [cuentas], $\hat{\omega}_j[k]$ la velocidad angular de rueda estimada [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{ctrl}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
 
-La velocidad $\dot{\phi}_j[k]$ es la misma magnitud que $\omega_j$ (Ec.~\ref{eq:w_ruedas}); difieren solo en la base temporal: $\omega_j$ usa el período nominal $T_s$ y $\dot{\phi}_j$ el período medido $\Delta t_k$.
+La velocidad $\hat{\omega}_j[k]$ es la misma magnitud que $\omega_j$ (Ec.~\ref{eq:w_ruedas}); difieren solo en la base temporal: $\omega_j$ usa el período nominal $T_s$ y $\hat{\omega}_j$ el período medido $\Delta t_k$.
 
 Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmware con los valores obtenidos por sintonización PSO y refinamiento experimental (Capítulo~\ref{marco_teorico}), de modo que el plugin solo intercambia referencias de velocidad y lecturas de encoder.
 
@@ -118,7 +118,7 @@ El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se res
 \item \texttt{diff\_drive\_controller} convierte el comando $(v,\omega)$ en velocidades angulares de rueda $\omega_j^{cmd}$.
 \item \texttt{DiffDriveArduino} traduce $\omega_j^{cmd}$ a \textit{ticks/frame} (Ec.~\ref{eq:cmd_to_ticks}) y los envía al \gls{Arduino}.
 \item El \gls{Arduino} fija las referencias PID por rueda y aplica \gls{PWM} a los motores.
-\item El plugin solicita periódicamente los encoders y reconstruye $\phi_j$ y $\dot{\phi}_j$ (Ec.~\ref{eq:enc_to_state}).
+\item El plugin solicita periódicamente los encoders y reconstruye $\phi_j$ y $\hat{\omega}_j$ (Ec.~\ref{eq:enc_to_state}).
 \item \texttt{diff\_drive\_controller} integra la odometría y publica \texttt{/odom} junto con la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
 \end{enumerate}
 
@@ -129,7 +129,7 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
 \label{alg:ros2control_cycle}
 \begin{algorithmic}[1]
 \Require Comandos de velocidad angular de rueda $\omega_R^{cmd},\omega_L^{cmd}$ [rad/s] (de \texttt{diff\_drive\_controller}); enlace serial al \gls{Arduino}; $N_e$; $f_{ctrl}$; ganancias PID residentes en el firmware.
-\Ensure Estados de rueda $(\phi_j,\dot{\phi}_j)$ para odometría y referencias \textit{ticks/frame} enviadas al firmware.
+\Ensure Estados de rueda $(\phi_j,\hat{\omega}_j)$ para odometría y referencias \textit{ticks/frame} enviadas al firmware.
 \State \textbf{Inicialización} (\texttt{configure}/\texttt{start}):
 \State Abrir puerto serial (\texttt{device}, \texttt{baud\_rate}, \texttt{timeout}); esperar el \textit{bootloader} y vaciar el buffer.
 \State $\textit{rads\_per\_count}\gets 2\pi/N_e$ por rueda; $t_{prev}\gets t_{now}$.
@@ -137,23 +137,23 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
 \Statex
 \State \textbf{Ejecución principal} (cada período del \texttt{controller\_manager}, a $f_{ctrl}$):
 \While{el controlador está activo}
-    \State \textbf{read():}
-    \State $\Delta t_k\gets t_{now}-t_{prev}$; \; $t_{prev}\gets t_{now}$
-    \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
-    \State $(c_R[k],c_L[k])\gets$ leer encoders
-    \For{$j\in\{R,L\}$}
-        \State $\phi_j[k]\gets c_j[k]\cdot(2\pi/N_e)$; \quad $\dot{\phi}_j[k]\gets(\phi_j[k]-\phi_j[k-1])/\Delta t_k$ \Comment{Ec.~\ref{eq:enc_to_state}}
-    \EndFor
-    \State Exportar $\phi_j[k],\dot{\phi}_j[k]$ como \textit{state interfaces}
-    \Statex
-    \State \textbf{update():} \texttt{diff\_drive\_controller} integra la odometría y, desde \texttt{cmd\_vel} $(v,\omega)$, calcula $\omega_R^{cmd},\omega_L^{cmd}$
-    \Statex
-    \State \textbf{write():}
-    \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
-    \For{$j\in\{R,L\}$}
-        \State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{ctrl})$ \Comment{Ec.~\ref{eq:cmd_to_ticks}}
-    \EndFor
-    \State Enviar $m_R^{cmd}[k],m_L^{cmd}[k]$ al \gls{Arduino}
+\State \textbf{read():}
+\State $\Delta t_k\gets t_{now}-t_{prev}$; \; $t_{prev}\gets t_{now}$
+\If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
+\State $(c_R[k],c_L[k])\gets$ leer encoders
+\For{$j\in\{R,L\}$}
+\State $\phi_j[k]\gets c_j[k]\cdot(2\pi/N_e)$; \quad $\hat{\omega}_j[k]\gets(\phi_j[k]-\phi_j[k-1])/\Delta t_k$ \Comment{Ec.~\ref{eq:enc_to_state}}
+\EndFor
+\State Exportar $\phi_j[k],\hat{\omega}_j[k]$ como \textit{state interfaces}
+\Statex
+\State \textbf{update():} \texttt{diff\_drive\_controller} integra la odometría y, desde \texttt{cmd\_vel} $(v,\omega)$, calcula $\omega_R^{cmd},\omega_L^{cmd}$
+\Statex
+\State \textbf{write():}
+\If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
+\For{$j\in\{R,L\}$}
+\State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{ctrl})$ \Comment{Ec.~\ref{eq:cmd_to_ticks}}
+\EndFor
+\State Enviar $m_R^{cmd}[k],m_L^{cmd}[k]$ al \gls{Arduino}
 \EndWhile
 \Statex
 \State \textbf{Salida:} El firmware ejecuta el PID por rueda a $f_{ctrl}$ y aplica el \textit{watchdog} de auto-detención; el controlador publica \texttt{/odom} y la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
