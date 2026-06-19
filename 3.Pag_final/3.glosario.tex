@@ -1,3 +1,109 @@
+\newcommand{\printnomenclatura}{%
+\chapter*{NOMENCLATURA}%
+\phantomsection%
+\addcontentsline{toc}{chapter}{NOMENCLATURA}%
+{\small
+\begin{longtable}{p{2.7cm} p{8.5cm} p{2.2cm}}
+\toprule
+\textbf{Símbolo} & \textbf{Descripción} & \textbf{Unidad}\\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\small\itshape (continuación de la Nomenclatura)}\\
+\toprule
+\textbf{Símbolo} & \textbf{Descripción} & \textbf{Unidad}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\small\itshape continúa en la página siguiente}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{3}{l}{\textit{Cinemática y odometría}}\\
+$r$ & Radio de rueda & m \\
+$D=2r$ & Diámetro de rueda (\texttt{WHEEL\_DIAMETER}) & m \\
+$b$ & Separación entre ruedas (\texttt{wheel\_separation}) & m \\
+$q_k=(x_k,y_k,\theta_k)$ & Pose del robot en el instante $k$ & m, m, rad \\
+$v[k]$ & Velocidad lineal del robot & m/s \\
+$\omega[k]$ & Velocidad angular del robot & rad/s \\
+$\omega_j[k]$ & Velocidad angular de rueda $j\in\{R,L\}$ (período nominal $T_s$) & rad/s \\
+$\hat{\omega}_j[k]$ & Velocidad angular de rueda con período real medido $\Delta t_k$ & rad/s \\
+$v_j$ & Velocidad lineal de rueda $j$ & m/s \\
+$\phi_j[k]$ & Ángulo acumulado de rueda $j$ & rad \\
+$c_j[k]$ & Cuentas acumuladas del encoder de rueda $j$ & cuentas \\
+$\Delta c_j[k]$ & Incremento de cuentas del encoder en el intervalo & cuentas \\
+$N_e$ & Resolución efectiva del encoder (\texttt{ENC\_TICKS\_PER\_REV}) & cuentas/vuelta \\
+$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & cuentas/vuelta \\
+$f_{ctrl}$ & Frecuencia del lazo de control (\texttt{PID\_RATE}$=$\texttt{loop\_rate}) & Hz \\
+$T_s=1/f_{ctrl}$ & Período de control (\textit{frame}) & s \\
+$T_{cap}$ & Período de captura en lazo abierto & s \\
+$\Delta t_k$ & Período real medido entre lecturas de encoder & s \\
+$\varepsilon$ & Umbral de $|\Delta\theta_k|$ (arco exacto / RK2 en \texttt{diff\_drive\_controller}) & rad \\
+\midrule
+\multicolumn{3}{l}{\textit{Conversión y control de firmware}}\\
+$m_j[k]$ & Velocidad de rueda medida ($\equiv\Delta c_j[k]$) & ticks/frame \\
+$m_j^{cmd}[k]$ & Referencia de velocidad de rueda enviada al firmware & ticks/frame \\
+$v_j^{cmd}[k]$ & Velocidad lineal de rueda comandada & m/s \\
+$\omega_j^{cmd}[k]$ & Velocidad angular de rueda comandada & rad/s \\
+$u_j[k]$ & Acción de control (salida PWM) de rueda $j$ & PWM \\
+$e_j[k]$ & Error de control de rueda $j$ & ticks/frame \\
+$e_{db,j}$ & Banda muerta por rueda ($e_{db,R}=1$, $e_{db,L}=2$) & ticks/frame \\
+$I_j[k]$ & Término integral acumulado de rueda $j$ & --- \\
+$K_{p,j}^{fw},K_{d,j}^{fw},K_{i,j}^{fw}$ & Ganancias PID en escala interna de firmware & adim. \\
+$K_{o,j}$ & Divisor de normalización de la salida PID & adim. \\
+\texttt{MPS\_TO\_TICKS\_FACTOR} & Factor de conversión m/s $\to$ ticks/frame ($\approx313.56$) & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Identificación FODT}}\\
+$G_m(s)$ & Función de transferencia FODT de la planta de rueda & --- \\
+$K_m$ & Ganancia estática del modelo & (m/s)/PWM \\
+$\tau$ & Constante de tiempo del modelo & s \\
+$L_d$ & Retardo puro del modelo & s \\
+$\hat{v}_j[k]$ & Velocidad de rueda estimada por el modelo/simulación & m/s \\
+$h$ & Paso de integración ($T_{cap}$ en identificación, $T_s$ en lazo cerrado) & s \\
+$n_d$ & Retardo en número de muestras (solo en identificación) & --- \\
+$\mathrm{e}$ & Número de Euler & --- \\
+\midrule
+\multicolumn{3}{l}{\textit{Optimización por enjambre (PSO)}}\\
+$X_{i,d},V_{i,d}$ & Posición y velocidad de búsqueda de la partícula $i$, dimensión $d$ & adim. \\
+$P_{i,d},P_d^{*}$ & Mejor posición individual y mejor posición global & adim. \\
+$\chi$ & Factor de constricción ($\approx0.7298$) & adim. \\
+$w_{\mathrm{in}}^{g}$ & Peso de inercia (decreciente con la generación $g$) & adim. \\
+$c_1,c_2$ & Coeficientes cognitivo y social & adim. \\
+$\rho_1,\rho_2$ & Coeficientes aleatorios $\sim\mathcal{U}[0,1]$ & adim. \\
+$g,g_{\max}$ & Generación actual y generación máxima & --- \\
+$S$ & Tamaño del enjambre & --- \\
+$s_d$ & Factor de escala de la dimensión $d$ & varias \\
+$\theta_{i,d}$ & Parámetro físico $d$ del candidato de la partícula $i$ & varias \\
+$J$ & Función de costo & varias \\
+$w_{\mathrm{mse}},w_{\mathrm{OS}}$ & Pesos de error cuadrático y de sobreimpulso & adim. \\
+$\Delta_{\mathrm{OS}}$ & Sobreimpulso absoluto & m/s \\
+$v_j^{ref}$ & Velocidad de consigna estacionaria en la simulación del PID & m/s \\
+\midrule
+\multicolumn{3}{l}{\textit{Sintonía Lambda}}\\
+$\lambda$ & Parámetro de rapidez ($\lambda=3\tau$) & s \\
+$k_c$ & Ganancia del controlador en forma serie & s/m \\
+$\tau_I,\tau_D$ & Tiempos integral y derivativo (forma serie interactuante) & s \\
+$T_i,T_d$ & Tiempos integral y derivativo equivalentes (forma paralela) & s \\
+$L_{ef}$ & Retardo efectivo $\max(L_d,\,2/f_{ctrl})$ & s \\
+$K_{\mathrm{norm}}$ & Ganancia estática referida al PWM nominal & m/s \\
+$\mathrm{PWM_{nom}}$ & PWM nominal de diseño ($=143$) & PWM \\
+$f_\lambda$ & Factor de escala a firmware ($\approx22.80$) & adim. \\
+\midrule
+\multicolumn{3}{l}{\textit{Navegación y exploración}}\\
+$f(n),g_n(n),h_{\mathrm{heur}}(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & --- \\
+$J_{\mathrm{DWB}}$ & Costo total del controlador local DWB & --- \\
+$C_c,w_c$ & Crítico $c$ del DWB y su peso & --- \\
+$d_o$ & Distancia al obstáculo & m \\
+$r_{\mathrm{inscrito}},r_{\mathrm{inflacion}}$ & Radio inscrito del robot y radio de inflación & m \\
+$\beta$ & Factor de decaimiento del costo (\texttt{cost\_scaling\_factor}) & 1/m \\
+$U(F)$ & Costo de la frontera $F$ & m \\
+$d_{\min}(F)$ & Distancia del robot a la frontera $F$ & celdas \\
+$|F|$ & Tamaño (número de celdas) de la frontera $F$ & celdas \\
+$\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}) & m/celda \\
+$w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
+\end{longtable}
+}%
+}
+
 \newglossaryentry{slam}
 {
     name=SLAM,
