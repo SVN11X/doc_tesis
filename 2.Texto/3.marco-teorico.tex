@@ -31,9 +31,9 @@ v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right) \label{eq:v_lineal} \\
 \noindent donde $v[k]$ es la velocidad lineal del robot [m/s], $\omega[k]$ su velocidad angular [rad/s], $r$ el radio de rueda [m] y $b$ la separación entre ruedas [m] (parámetro \texttt{wheel\_separation}). El subíndice $L$ en $\omega_L[k]$ denota la rueda izquierda.
  
 \begin{align}
-x_{k+1} &= x_k + T_s\, v_k \cos\theta_k \label{eq:pose_x} \\
-y_{k+1} &= y_k + T_s\, v_k \sin\theta_k \label{eq:pose_y} \\
-\theta_{k+1} &= \theta_k + T_s\, \omega_k \label{eq:pose_theta}
+x_{k+1} &= x_k + T_s\, v[k]\,\cos\theta_k \label{eq:pose_x} \\
+y_{k+1} &= y_k + T_s\, v[k]\,\sin\theta_k \label{eq:pose_y} \\
+\theta_{k+1} &= \theta_k + T_s\, \omega[k] \label{eq:pose_theta}
 \end{align}
  
 \noindent donde $q_k=(x_k,y_k,\theta_k)$ es la pose [m, m, rad] y $v_k,\omega_k$ las velocidades lineal y angular del robot en el instante $k$ (definidas previamente).
@@ -92,11 +92,11 @@ n_d=\left\lfloor \frac{L_d}{h}\right\rfloor,
 
 El controlador PID se aplica de forma independiente a cada rueda. En su forma continua, se expresa como:
 
-\begin{equation}
+\begin{equation*}
 u_j(t)=K_{p,j}^{c}\, e_j(t)+K_{i,j}^{c}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}^{c}\frac{de_j(t)}{dt},
 \qquad j\in\{R,L\}
 \label{eq:pid_continuo}
-\end{equation}
+\end{equation*}
 
 \noindent donde $u_j(t)$ es la acción de control de la rueda $j$ [PWM], $e_j(t)$ el error y $K_{p,j}^{c},K_{i,j}^{c},K_{d,j}^{c}$ las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$. Esta forma continua es ilustrativa y no se cuantifica: la implementación emplea las ganancias discretas del firmware $K_{p,j},K_{d,j},K_{i,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), escaladas por $K_{o,j}$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
  
@@ -295,10 +295,10 @@ J_{\mathrm{DWB}}(v,\omega)=\sum_c w_c\, C_c(v,\omega)
 \label{eq:inflation}
 \end{equation}
  
-\noindent donde $d_o$ es la distancia al obstáculo [m], $r_{\mathrm{inscrito}}$ el radio inscrito del robot [m], $r_{\mathrm{inflacion}}=0.15$~m el radio de inflación [m], $\beta=8.0$ el factor de decaimiento (\texttt{cost\_scaling\_factor}) [1/m] y $\mathrm{e}$ el número de Euler.
+\noindent donde $d_o$ es la distancia al obstáculo [m], $r_{\mathrm{inscrito}}$ el radio inscrito del robot [m] (calculado por Nav2 a partir del \textit{footprint} declarado en \texttt{nav2\_params.yaml}, igual a la distancia del origen \texttt{base\_link} al borde más cercano del \textit{footprint}; para el prototipo $r_{\mathrm{inscrito}}\approx0.08$~m), $r_{\mathrm{inflacion}}=0.15$~m el radio de inflación [m], $\beta=8.0$ el factor de decaimiento (\texttt{cost\_scaling\_factor}) [1/m] y $\mathrm{e}$ el número de Euler.
  
 \begin{equation}
-U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,s(F)
+U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,|F|
 \label{eq:frontier_cost}
 \end{equation}
 

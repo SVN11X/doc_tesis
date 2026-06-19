@@ -118,7 +118,7 @@ Las ganancias PID se determinaron mediante un procedimiento híbrido. Primero se
 La captura se realizó aplicando un escalón de PWM sin controlador PID activo, registrando los datos con un período de muestreo $T_{cap}=0.1$~s, distinto del período de control $T_s=1/f_{ctrl}\approx0.0333$~s. La velocidad lineal de cada rueda se calculó como:
 
 \begin{equation}
-v_j[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
+v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 \qquad j \in \{R,L\}
 \label{eq:vel_lazo_abierto}
 \end{equation}
