@@ -40,7 +40,7 @@ Para obtener una odometría consistente, se midió experimentalmente el número 
 \label{eq:promedio_cuentas_L}
 \end{align}
 
-donde $N_{R(i)}$ y $N_{L(i)}$ son las cuentas por vuelta completa medidas en la $i$-ésima repetición de las ruedas derecha e izquierda [cuentas/vuelta]. Ambos promedios difieren en menos del 0.4\%, por lo que se adopta un único valor nominal unificado $N_e=1980$ cuentas/vuelta, redondeo de referencia consistente con la resolución nominal del conjunto motor-reductor-encoder. Respecto de los promedios medidos, esta unificación introduce un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
+donde $N_{R(i)}$ y $N_{L(i)}$ son las cuentas por vuelta completa medidas en la $i$-ésima repetición de las ruedas derecha e izquierda [cuentas/vuelta]. Ambos promedios difieren en menos del 0.4\%. Se adopta un único valor nominal unificado $N_e=1980$ cuentas/vuelta, ligeramente superior a ambas medias medidas, por coincidir con la constante empleada en el firmware y en la odometría (\texttt{ENC\_TICKS\_PER\_REV}$=$\texttt{enc\_counts\_per\_rev}$=1980$). Respecto de los promedios medidos, esta unificación introduce un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
 
 %------------------------------------------------------------------
 \section{Control PID en el firmware}
@@ -123,14 +123,14 @@ v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 \label{eq:vel_lazo_abierto}
 \end{equation}
  
-\noindent donde $\Delta c_j[k]$ son las cuentas registradas en el intervalo de captura $T_{cap}=0.1$~s [cuentas] y $2\pi r$ la circunferencia de la rueda [m]; $v_j[k]$ es la velocidad lineal de rueda [m/s], no la del robot.
+\noindent donde $\Delta c_j[k]$ son las cuentas registradas en el intervalo de captura $T_{cap}=0.1$~s [cuentas] y $2\pi r$ la circunferencia de la rueda [m]; $v_j^{med}[k]$ es la velocidad lineal medida de rueda [m/s], no la del robot.
 
 \begin{algorithm}[H]
 \caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
 \label{alg:captura_lazo_abierto}
 \begin{algorithmic}[1]
 \Require Enlace serial al \gls{Arduino}; PWM nominal $\mathrm{PWM_{nom}}=143$; período de captura $T_{cap}=0.1$~s; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución $N_e$; radio de rueda $r$
-\Ensure Series por rueda $\bigl(u_j[k],\,v_j[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT (Etapa~1 del Alg.~\ref{alg:sintonizacion})
+\Ensure Series por rueda $\bigl(u_j[k],\,v_j^{med}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT (Etapa~1 del Alg.~\ref{alg:sintonizacion})
 
 \State \textbf{Inicialización:}
 \State Abrir puerto serial; fijar PWM $=0$; esperar estabilización
@@ -139,19 +139,19 @@ v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 \Statex
 \State \textbf{Ejecución principal:}
 \While{$t_k \leq t_f$}
-    \If{$t_k \geq t_{step}$}
-        \State $u_j[k] \gets \mathrm{PWM_{nom}}$ \Comment{escalón sin PID}
-    \Else
-        \State $u_j[k] \gets 0$
-    \EndIf
-    \State Aplicar PWM $u_j[k]$ a ambos motores (lazo abierto)
-    \State Leer encoders $c_j[k]$;\quad $\Delta c_j[k] \gets c_j[k]-c_j[k-1]$
-    \State $v_j[k] \gets \dfrac{\Delta c_j[k]}{N_e}\cdot\dfrac{2\pi r}{T_{cap}}$ \Comment{Ec.~\ref{eq:vel_lazo_abierto}}
-    \State Registrar $\bigl(u_j[k],\,v_j[k]\bigr)$;\quad $c_j[k-1]\gets c_j[k]$;\quad $k\gets k+1$
+\If{$t_k \geq t_{step}$}
+\State $u_j[k] \gets \mathrm{PWM_{nom}}$ \Comment{escalón sin PID}
+\Else
+\State $u_j[k] \gets 0$
+\EndIf
+\State Aplicar PWM $u_j[k]$ a ambos motores (lazo abierto)
+\State Leer encoders $c_j[k]$;\quad $\Delta c_j[k] \gets c_j[k]-c_j[k-1]$
+\State $v_j^{med}[k] \gets \dfrac{\Delta c_j[k]}{N_e}\cdot\dfrac{2\pi r}{T_{cap}}$ \Comment{Ec.~\ref{eq:vel_lazo_abierto}}
+\State Registrar $\bigl(u_j[k],\,v_j^{med}[k]\bigr)$;\quad $c_j[k-1]\gets c_j[k]$;\quad $k\gets k+1$
 \EndWhile
 
 \Statex
-\State \textbf{Salida:} Detener motores; entregar $\bigl(u_j[k],\,v_j[k]\bigr)$ como respuesta al escalón para identificar el modelo FODT.
+\State \textbf{Salida:} Detener motores; entregar $\bigl(u_j[k],\,v_j^{med}[k]\bigr)$ como respuesta al escalón para identificar el modelo FODT.
 \end{algorithmic}
 \end{algorithm}
 
@@ -171,39 +171,29 @@ discreto. El procedimiento completo de sintonización se resume en el Algoritmo~
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
-\Require Respuesta al escalón en lazo abierto $(u_j[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}=0.1$~s; período de control $T_s=1/f_{ctrl}$; enjambre $S=50$; generaciones $g_{\max}=150$; pesos $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$; banda muerta de simulación $e_{db}=2$ (el firmware desplegado usa $e_{db,R}=1,\,e_{db,L}=2$).
+\Require Respuesta al escalón en lazo abierto $(u_j[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}=0.1$~s; período de control $T_s=1/f_{ctrl}$; vectores de escala $s^{\mathrm{ID}}=(0.01,2.0,0.5)$ y $s^{\mathrm{PID}}=(40,25,0.05)$; pesos $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$; banda muerta de simulación $e_{db}=2$ (el firmware desplegado usa $e_{db,R}=1,\,e_{db,L}=2$).
 \Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
- 
+
 \State \textbf{Inicialización:} cargar datos de lazo abierto y suavizar $v_j^{med}$.
- 
+
 \For{$j \in \{R,L\}$}
-    \State \textbf{Etapa 1 — Identificación FODT por PSO:}
-    \State Inicializar enjambre de $S$ partículas en $\mathbb{R}^3$ (candidatos $(K_m,\tau,L_d)$)
-    \While{$g < g_{\max}$}
-        \State Simular FODT por Euler con $T_{cap}$ (Ec.~\ref{eq:fodt_discreto}) para cada partícula
-        \State Evaluar $J_{\mathrm{ID}} = \mathrm{MSE}\!\left(v_j^{med}-\hat{v}_j\right)$
-        \State Actualizar $V_{i,d},X_{i,d}$ (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
-    \EndWhile
-    \State $(K_m,\tau,L_d)_j \gets$ mejor posición global
- 
-    \Statex
-    \State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
-    \State Inicializar enjambre de $S$ partículas en $\mathbb{R}^3$ (candidatos $(K_p,K_d,K_i)$)
-    \While{$g < g_{\max}$}
-        \State Simular el PID del firmware (Ec.~\ref{eq:pid_firmware}) sobre el modelo FODT a $T_s$, con $e_{db}$
-        \State Evaluar $J = w_{\mathrm{mse}}\,\mathrm{MSE}(v_j^{ref}-\hat{v}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$ (Ec.~\ref{eq:costo_pso})
-        \State Actualizar $V_{i,d},X_{i,d}$ (Ec.~\ref{eq:pso_vel_marco_teorico}, \ref{eq:pso_pos_marco_teorico})
-    \EndWhile
-    \State $(K_{p},K_{d},K_{i})_j \gets$ mejor posición global
+\State \textbf{Etapa 1 — Identificación FODT por PSO:}
+\State $J_{\mathrm{ID}}(\boldsymbol{\theta})\gets \mathrm{MSE}\!\left(v_j^{med}-\hat{v}_j(\boldsymbol{\theta})\right)$, con $\hat{v}_j$ por Euler a $T_{cap}$ (Ec.~\ref{eq:fodt_discreto})
+\State $(K_m,\tau,L_d)_j \gets \Call{PSO}{J_{\mathrm{ID}},\,s^{\mathrm{ID}}}$ \Comment{Alg.~\ref{alg:pso_nucleo}}
+
+\Statex
+\State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
+\State $J(\boldsymbol{\theta})\gets w_{\mathrm{mse}}\,\mathrm{MSE}(v_j^{ref}-\hat{v}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$, simulando el PID del firmware (Ec.~\ref{eq:pid_firmware}) sobre el modelo FODT a $T_s$ con $e_{db}$ (Ec.~\ref{eq:costo_pso})
+\State $(K_{p},K_{d},K_{i})_j \gets \Call{PSO}{J,\,s^{\mathrm{PID}}}$ \Comment{Alg.~\ref{alg:pso_nucleo}}
 \EndFor
- 
+
 \Statex
 \State \textbf{Etapa 3 — Refinamiento experimental:}
 \State Ajustar las ganancias sobre el hardware real para compensar fricción estática, zona muerta del L298N y asimetrías mecánicas.
 \State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$
 \end{algorithmic}
 \end{algorithm}
- 
+
 \noindent En el Algoritmo~\ref{alg:sintonizacion}, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s]; $\hat{v}_j$ es la velocidad de rueda estimada por simulación (modelo FODT en la Etapa 1; lazo cerrado simulado en la Etapa 2) [m/s]; y $v_j^{ref}$ la velocidad de consigna de la simulación del PID [m/s]; el resto de variables fueron definidas previamente.
 
 \subsection{Refinamiento experimental}

@@ -142,31 +142,31 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 \Ensure Mapa del entorno explorado; metas enviadas y alcanzadas.
 
 \State \textbf{Inicialización:}
-\State Lista negra $B\gets\varnothing$;\quad meta actual $g_{\mathrm{act}}\gets\textsc{nula}$;\quad $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
+\State Lista negra $B\gets\varnothing$;\quad meta actual $F_{\mathrm{act}}\gets\textsc{nula}$;\quad $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
 
 \Statex
 \State \textbf{Ejecución principal} (cada $1/f_{\mathrm{exp}}$):
 \While{el nodo de exploración está activo}
-    \State Buscar fronteras en $C$ por difusión sobre el espacio libre; agrupar celdas frontera contiguas
-    \For{cada frontera $F$}
-        \State Calcular tamaño $|F|$ [celdas], centroide y distancia mínima $d_{\min}(F)$ [celdas]
-    \EndFor
-    \State Descartar fronteras con $\rho_{\mathrm{map}}|F|<0.033$~m
-    \State Calcular $U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,|F|$ \Comment{Ec.~\ref{eq:frontier_cost}}
-    \State Ordenar las fronteras por $U(F)$ ascendente
-    \State $F^{*}\gets$ primera frontera cuyo punto representativo $\notin B$
-    \If{no existe $F^{*}$}
-        \State \textbf{Detener:} exploración completa (sin fronteras alcanzables)
-        \State \textbf{break}
-    \EndIf
-    \If{$F^{*}=g_{\mathrm{act}}$ \textbf{y} $t_{\mathrm{now}}-t_{\mathrm{ref}}>t_{\mathrm{prog}}$}
-        \State $B\gets B\cup\{\text{punto de }g_{\mathrm{act}}\}$ \Comment{sin progreso: vetar y reseleccionar}
-    \ElsIf{$F^{*}\neq g_{\mathrm{act}}$}
-        \State Enviar \texttt{NavigateToPose}(centroide de $F^{*}$);\quad $g_{\mathrm{act}}\gets F^{*}$;\quad $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
-    \EndIf
-    \If{Nav2 devuelve \texttt{ABORTED} o meta rechazada}
-        \State $B\gets B\cup\{\text{punto de }g_{\mathrm{act}}\}$ \Comment{frontera inalcanzable}
-    \EndIf
+\State Buscar fronteras en $C$ por difusión sobre el espacio libre; agrupar celdas frontera contiguas
+\For{cada frontera $F$}
+\State Calcular tamaño $|F|$ [celdas], centroide y distancia mínima $d_{\min}(F)$ [celdas]
+\EndFor
+\State Descartar fronteras con $\rho_{\mathrm{map}}|F|<0.033$~m
+\State Calcular $U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,|F|$ \Comment{Ec.~\ref{eq:frontier_cost}}
+\State Ordenar las fronteras por $U(F)$ ascendente
+\State $F^{*}\gets$ primera frontera cuyo punto representativo $\notin B$
+\If{no existe $F^{*}$}
+\State \textbf{Detener:} exploración completa (sin fronteras alcanzables)
+\State \textbf{break}
+\EndIf
+\If{$F^{*}=F_{\mathrm{act}}$ \textbf{y} $t_{\mathrm{now}}-t_{\mathrm{ref}}>t_{\mathrm{prog}}$}
+\State $B\gets B\cup\{\text{punto de }F_{\mathrm{act}}\}$ \Comment{sin progreso: vetar y reseleccionar}
+\ElsIf{$F^{*}\neq F_{\mathrm{act}}$}
+\State Enviar \texttt{NavigateToPose}(centroide de $F^{*}$);\quad $F_{\mathrm{act}}\gets F^{*}$;\quad $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
+\EndIf
+\If{Nav2 devuelve \texttt{ABORTED} o meta rechazada}
+\State $B\gets B\cup\{\text{punto de }F_{\mathrm{act}}\}$ \Comment{frontera inalcanzable}
+\EndIf
 \EndWhile
 
 \Statex

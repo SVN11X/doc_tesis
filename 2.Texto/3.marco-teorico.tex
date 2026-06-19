@@ -143,14 +143,16 @@ w_{\mathrm{in}}^{g}\,V_{i,d}^{g}
 +c_2\rho_2\bigl(P_d^{*}-X_{i,d}^{g}\bigr)
 \right]
 \label{eq:pso_vel_marco_teorico} \\
-X_{i,d}^{g+1} &= \min\!\Bigl(\max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr),\;1\Bigr)
+X_{i,d}^{g+1} &= \max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr)
 \label{eq:pso_pos_marco_teorico}
 \end{align}
 
-\noindent donde $X_{i,d}^{g}$ es la posición de búsqueda normalizada de la partícula $i$ en la dimensión $d\in\{1,2,3\}$ y generación $g$ (adimensional, $X_{i,d}^{g}\in[10^{-4},1]$), $V_{i,d}^{g}$ su velocidad de búsqueda, $P_{i,d}$ la mejor posición individual y $P_d^{*}$ la mejor posición global. El peso de inercia decrece como $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, con $g_{\max}=150$ y tamaño de enjambre $S=50$. Los coeficientes $c_1=c_2=2.05$ ponderan las componentes cognitiva y social (adimensionales) y $\rho_1,\rho_2\sim\mathcal{U}[0,1]$, regenerados por partícula y dimensión en cada iteración. La variante combina factor de constricción e inercia decreciente; el valor $\chi\approx0.7298$ depende únicamente de $\varphi=c_1+c_2=4.1$ (Ec.~\ref{eq:constriccion}) y es independiente de $w_{\mathrm{in}}^{g}$, que modula adicionalmente el balance exploración--explotación a lo largo de las generaciones.
+\noindent donde $X_{i,d}^{g}$ es la posición de búsqueda normalizada de la partícula $i$ en la dimensión $d\in\{1,2,3\}$ y generación $g$ (adimensional, acotada solo inferiormente por $X_{i,d}^{g}\geq 10^{-4}$; la cota superior $1$ se aplica únicamente al escalar para evaluar el costo, Ec.~\ref{eq:pso_escala}), $V_{i,d}^{g}$ su velocidad de búsqueda, $P_{i,d}$ la mejor posición individual y $P_d^{*}$ la mejor posición global. El peso de inercia decrece como $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, con $g_{\max}=150$ y tamaño de enjambre $S=50$. Los coeficientes $c_1=c_2=2.05$ ponderan las componentes cognitiva y social (adimensionales) y $\rho_1,\rho_2\sim\mathcal{U}[0,1]$, regenerados por partícula y dimensión en cada iteración. La variante combina factor de constricción e inercia decreciente; el valor $\chi\approx0.7298$ depende únicamente de $\varphi=c_1+c_2=4.1$ (Ec.~\ref{eq:constriccion}) y es independiente de $w_{\mathrm{in}}^{g}$, que modula adicionalmente el balance exploración--explotación a lo largo de las generaciones.
 
 \begin{equation}
-\theta_{i,d}=s_d\,X_{i,d}^{g},
+\tilde{X}_{i,d}=\min\!\bigl(\max(X_{i,d}^{g},\,10^{-4}),\;1\bigr),
+\qquad
+\theta_{i,d}=s_d\,\tilde{X}_{i,d},
 \qquad
 s^{\mathrm{ID}}=(0.01,\;2.0,\;0.5),
 \qquad
@@ -158,7 +160,7 @@ s^{\mathrm{PID}}=(40,\;25,\;0.05)
 \label{eq:pso_escala}
 \end{equation}
 
-\noindent donde $\theta_{i,d}$ es el parámetro físico $d$ del candidato de la partícula $i$ y $s_d$ el factor de escala de esa dimensión (porta las unidades físicas, pues $X_{i,d}$ es adimensional). El vector $s^{\mathrm{ID}}$ aplica en la identificación FODT, con $\boldsymbol{\theta}_i=(K_m,\tau,L_d)_i$, y $s^{\mathrm{PID}}$ en la sintonización del controlador, con $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$.
+\noindent donde $\tilde{X}_{i,d}$ es la posición recortada a $[10^{-4},1]$ usada solo para escalar al evaluar el costo, $\theta_{i,d}$ el parámetro físico $d$ del candidato de la partícula $i$ y $s_d$ el factor de escala de esa dimensión (porta las unidades físicas, pues $X_{i,d}$ es adimensional). La posición de búsqueda $X_{i,d}^{g}$ puede exceder $1$, por lo que el parámetro óptimo final $\theta_{i,d}^{*}=s_d\,X_{i,d}^{*}$ se obtiene sin recorte superior. El vector $s^{\mathrm{ID}}$ aplica en la identificación FODT, con $\boldsymbol{\theta}_i=(K_m,\tau,L_d)_i$, y $s^{\mathrm{PID}}$ en la sintonización del controlador, con $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$.
  
 \begin{equation}
 \chi=\frac{2}{\left|2-\varphi-\sqrt{\varphi^2-4\varphi}\right|},
@@ -177,7 +179,47 @@ w_{\mathrm{mse}}\cdot \mathrm{MSE}\bigl(v_j^{ref}-\hat{v}_j\bigr)
 \label{eq:costo_pso}
 \end{equation}
 
-\noindent donde $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$ es el vector de ganancias candidatas de la partícula $i$, obtenido al escalar las posiciones de búsqueda normalizadas según la Ec.~\ref{eq:pso_escala} ($\theta_{i,d}=s_d\,X_{i,d}$, con $X_{i,d}\in[10^{-4},1]$); $v_j^{ref}$ la velocidad de consigna estacionaria de la rueda $j$ en la simulación del PID [m/s], $\hat{v}_j$ la respuesta simulada de la rueda $j$ [m/s], $\Delta_{\mathrm{OS}}$ el sobreimpulso absoluto [m/s] y $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$ sus pesos relativos (adimensionales).
+\noindent donde $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$ es el vector de ganancias candidatas de la partícula $i$, obtenido al escalar las posiciones de búsqueda normalizadas según la Ec.~\ref{eq:pso_escala} ($\theta_{i,d}=s_d\,\tilde{X}_{i,d}$, con $\tilde{X}_{i,d}\in[10^{-4},1]$); $v_j^{ref}$ la velocidad de consigna estacionaria de la rueda $j$ en la simulación del PID [m/s], $\hat{v}_j$ la respuesta simulada de la rueda $j$ [m/s], $\Delta_{\mathrm{OS}}$ el sobreimpulso absoluto [m/s] y $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$ sus pesos relativos (adimensionales).
+
+\begin{algorithm}[H]
+\caption{Optimización por enjambre de partículas con factor de constricción e inercia decreciente (núcleo reutilizable)}
+\label{alg:pso_nucleo}
+\begin{algorithmic}[1]
+\Require Función de costo $J(\cdot)$; vector de escala $s$; enjambre $S=50$; generaciones $g_{\max}=150$; coeficientes $c_1=c_2=2.05$; factor de constricción $\chi=0.7298$; cota inferior $X_{\min}=10^{-4}$
+\Ensure Mejor posición global $P^{*}$ y parámetros físicos $\boldsymbol{\theta}^{*}=s\odot P^{*}$
+\Statex
+\Function{Evaluar}{$X$}
+    \State $\tilde{X}\gets\min(\max(X,X_{\min}),\,1)$ \Comment{recorte solo para evaluar}
+    \State \Return $J(s\odot\tilde{X})$
+\EndFunction
+\Statex
+\State \textbf{Inicialización:}
+\State Para cada partícula $i$ y dimensión $d$: $X_{i,d}\sim\mathcal{U}[0,1]$,\; $V_{i,d}\sim\mathcal{U}[0,1]$
+\State $J_i^{best}\gets\Call{Evaluar}{X_i}$;\quad $P_i\gets X_i$
+\State $P^{*}\gets P_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$;\quad $g\gets 0$
+\Statex
+\State \textbf{Ejecución principal:}
+\While{$g < g_{\max}$}
+    \State $g\gets g+1$;\quad $w_{\mathrm{in}}^{g}\gets (g_{\max}-g)/g_{\max}$
+    \For{cada partícula $i$, dimensión $d$}
+        \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]$
+        \State $V_{i,d}\gets \chi\bigl[w_{\mathrm{in}}^{g}V_{i,d}+c_1\rho_1(P_{i,d}-X_{i,d})+c_2\rho_2(P_d^{*}-X_{i,d})\bigr]$ \Comment{Ec.~\ref{eq:pso_vel_marco_teorico}}
+        \State $X_{i,d}\gets \max(X_{i,d}+V_{i,d},\,X_{\min})$ \Comment{Ec.~\ref{eq:pso_pos_marco_teorico}}
+    \EndFor
+    \For{cada partícula $i$}
+        \State $J_i\gets\Call{Evaluar}{X_i}$
+        \If{$J_i < J_i^{best}$}
+            \State $P_i\gets X_i$;\quad $J_i^{best}\gets J_i$
+        \EndIf
+    \EndFor
+    \If{$\min_i J_i^{best} < J^{*}$}
+        \State $P^{*}\gets P_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$
+    \EndIf
+\EndWhile
+\Statex
+\State \textbf{Salida:} $\boldsymbol{\theta}^{*}=s\odot P^{*}$ (sin recorte superior).
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Sintonía Lambda}
 \label{sec:lambda}
@@ -302,7 +344,7 @@ U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_
 \label{eq:frontier_cost}
 \end{equation}
 
-\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $s(F)$ el tamaño de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m/celda la resolución del costmap (símbolo unificado con \texttt{resolution}), $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva (\texttt{orientation\_scale}$=0$). El robot selecciona la frontera de menor $U(F)$ que cumple $\rho_{\mathrm{map}}\,s(F)\geq 0.033$~m (\texttt{min\_frontier\_size}).
+\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $|F|$ el tamaño (número de celdas) de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m/celda la resolución del costmap (símbolo unificado con \texttt{resolution}), $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva (\texttt{orientation\_scale}$=0$). El robot selecciona la frontera de menor $U(F)$ que cumple $\rho_{\mathrm{map}}\,|F|\geq 0.033$~m (\texttt{min\_frontier\_size}).
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
