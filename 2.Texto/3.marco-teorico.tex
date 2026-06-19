@@ -9,6 +9,7 @@ Este capítulo presenta los fundamentos teóricos necesarios para el diseño e i
 
 La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{thrun2005probabilistic, borenstein1996}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{siciliano2010robotics, corke2017}. En este trabajo, la odometría es publicada por \texttt{diff\_drive\_controller} y utilizada por \texttt{slam\_toolbox} como estimación inicial para el mapeo.
 
+\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$.
 
 Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas
 $b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad
@@ -36,7 +37,7 @@ y_{k+1} &= y_k + T_s\, v[k]\,\sin\theta_k \label{eq:pose_y} \\
 \theta_{k+1} &= \theta_k + T_s\, \omega[k] \label{eq:pose_theta}
 \end{align}
  
-\noindent donde $q_k=(x_k,y_k,\theta_k)$ es la pose [m, m, rad] y $v[k],\omega[k]$ las velocidades lineal y angular del robot en el instante $k$ (definidas previamente). Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} constituyen la discretización de primer orden (Euler) del modelo cinemático de referencia. En la implementación, la integración de la odometría la realiza \texttt{diff\_drive\_controller} en lazo cerrado (\texttt{open\_loop=false}, \texttt{position\_feedback=true}), que por defecto emplea integración exacta de arco para $|\omega[k]|\ge\varepsilon$ y Runge--Kutta de 2.º orden para $|\omega[k]|<\varepsilon$; ambas formas coinciden con Euler a primer orden en $T_s$.
+\noindent donde $q_k=(x_k,y_k,\theta_k)$ es la pose [m, m, rad] y $v[k],\omega[k]$ las velocidades lineal y angular del robot en el instante $k$ (definidas previamente). Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} constituyen la discretización de primer orden (Euler) del modelo cinemático de referencia. En la implementación, la integración de la odometría la realiza \texttt{diff\_drive\_controller} en lazo cerrado (\texttt{open\_loop=false}, \texttt{position\_feedback=true}), que por defecto emplea integración exacta de arco para $|\Delta\theta_k|\ge\varepsilon$ y Runge--Kutta de 2.º orden para $|\Delta\theta_k|<\varepsilon$; ambas formas coinciden con Euler a primer orden en $T_s$.
 
 \begin{align}
 \theta_{k+1} &= \theta_k + T_s\,\omega[k] \notag\\
@@ -45,9 +46,9 @@ y_{k+1} &= y_k - \frac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr)
 \label{eq:pose_exacta}
 \end{align}
 
-\noindent válida para $|\omega[k]|\ge\varepsilon$; para $|\omega[k]|<\varepsilon$ se usa Runge--Kutta de 2.º orden con rumbo en el punto medio $\theta_k+\tfrac{1}{2}T_s\,\omega[k]$. Variables definidas previamente.
+\noindent válida cuando el desplazamiento angular del paso supera un umbral, $|\Delta\theta_k|=|\omega[k]|\,T_s\ge\varepsilon$; para $|\Delta\theta_k|<\varepsilon$ se usa Runge--Kutta de 2.º orden con rumbo en el punto medio $\theta_k+\tfrac{1}{2}T_s\,\omega[k]$. Aquí $\varepsilon\approx10^{-6}$~rad es el umbral interno de \texttt{diff\_drive\_controller} (no expuesto por configuración); el resto de variables fueron definidas previamente.
 
-En esta tesis, $r=0.0335$~m, $b=0.188$~m, $N_e=1980$ cuentas/vuelta y la frecuencia del lazo de control es $f_{ctrl}=30$~Hz, de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware \texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión:
+En esta tesis, $r=0.0335$~m, $b=0.188$~m, $N_e=1980$ cuentas/vuelta y la frecuencia del lazo de control es $f_{ctrl}=30$~Hz, de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware (\texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión:
 
 \begin{equation}
 m_j^{cmd}[k] = v_j^{cmd}[k]\,\frac{N_e}{2\pi r\, f_{ctrl}},
@@ -93,7 +94,15 @@ n_d=\left\lfloor \frac{L_d}{h}\right\rfloor,
 \label{eq:fodt_discreto}
 \end{equation}
 
-\noindent donde $\hat{v}_j[k]$ es la velocidad de rueda estimada por el modelo FODT [m/s], $u_j[k]$ la entrada PWM [PWM], $h$ el paso de integración [s] y $n_d$ el retardo en número de muestras. El paso toma el valor $h=T_{cap}=0.1$~s durante la identificación en lazo abierto y $h=T_s=1/f_{ctrl}\approx0.0333$~s durante la simulación del lazo cerrado. Para $k<n_d$ se mantiene $u_j[k-n_d]=u_j[0]$. Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático medio entre $\hat{v}_j$ y la respuesta experimental.
+\noindent donde $\hat{v}_j[k]$ es la velocidad de rueda estimada por el modelo FODT [m/s], $u_j[k]$ la entrada PWM [PWM], $h$ el paso de integración [s] y $n_d$ el retardo en número de muestras. En lazo abierto (identificación), el paso es $h=T_{cap}=0.1$~s con retardo $n_d=\lfloor L_d/T_{cap}\rfloor$. En la simulación del lazo cerrado (sintonización del PID) se emplea la misma estructura de primer orden evaluada a $h=T_s=1/f_{ctrl}$, pero \emph{sin reinyectar el retardo puro} $L_d$ (Ec.~\ref{eq:fodt_lazo_cerrado}); su efecto queda absorbido en los parámetros $(K_m,\tau)$ identificados:
+
+\begin{equation}
+\hat{v}_j[k]=\hat{v}_j[k-1]+\frac{T_s}{\tau}\bigl(K_m\,u_j[k-1]-\hat{v}_j[k-1]\bigr),
+\qquad \hat{v}_j[k]\ge 0,\qquad \hat{v}_j[0]=0,\qquad j\in\{R,L\}
+\label{eq:fodt_lazo_cerrado}
+\end{equation}
+
+\noindent donde $u_j[k-1]$ es la acción de control mantenida durante el intervalo anterior (Euler explícito de paso $T_s$); $\hat{v}_j[k]$, $K_m$ y $\tau$ fueron definidos previamente, y la restricción $\hat{v}_j[k]\ge 0$ refleja el recorte de no-negatividad de la velocidad simulada. Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático medio entre $\hat{v}_j$ y la respuesta experimental sobre la Ec.~\ref{eq:fodt_discreto}; para $k<n_d$ se mantiene $u_j[k-n_d]=u_j[0]$.
 
 %------------------------------------------------------------------
 \section{Control PID}
@@ -104,7 +113,6 @@ El controlador PID se aplica de forma independiente a cada rueda. En su forma co
 \begin{equation*}
 u_j(t)=K_{p,j}^{c}\, e_j(t)+K_{i,j}^{c}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}^{c}\frac{de_j(t)}{dt},
 \qquad j\in\{R,L\}
-\label{eq:pid_continuo}
 \end{equation*}
 
 \noindent donde $u_j(t)$ es la acción de control de la rueda $j$ [PWM], $e_j(t)$ el error y $K_{p,j}^{c},K_{i,j}^{c},K_{d,j}^{c}$ las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$. Esta forma continua es ilustrativa y no se cuantifica: la implementación emplea las ganancias discretas del firmware $K_{p,j},K_{d,j},K_{i,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), escaladas por $K_{o,j}$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
@@ -125,6 +133,12 @@ u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}
 \end{equation}
  
 \noindent donde $u_j[k]$ es la salida de control (PWM) de la rueda $j$, $K_{p,j},K_{d,j}$ las ganancias proporcional y derivativa, $I_j[k]$ el término integral acumulado y $K_{o,j}=50$ un factor de escala adimensional. El integrador se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}\,e_j[k]$ solo cuando la salida no está saturada (\textit{anti-windup}), con $K_{i,j}$ la ganancia integral. Se aplica una banda muerta por rueda $e_{db,j}$ sobre $e_j[k]$ ($e_{db,R}=1$, $e_{db,L}=2$ ticks/frame)
+
+Estas ganancias $K_{p,j},K_{d,j},K_{i,j}$ están en la misma escala interna de
+firmware que las obtenidas por Lambda (Ec.~\ref{eq:lambda_firmware}), es decir,
+$K_{p,j}\equiv K_{p,j}^{fw}$, $K_{d,j}\equiv K_{d,j}^{fw}$ y
+$K_{i,j}\equiv K_{i,j}^{fw}$; el superíndice $^{fw}$ se omite cuando provienen de PSO
+y refinamiento experimental.
 
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID}
@@ -257,7 +271,7 @@ k_c=\frac{\tau}{K_{\mathrm{norm}}\left(L_{ef}/2+\lambda\right)},
 \label{eq:lambda_serie}
 \end{equation}
  
-\noindent donde $k_c$ es la ganancia del controlador en forma serie, $\tau_I,\tau_D$ los tiempos integral y derivativo [s], $K_{\mathrm{norm}}=K_m\,\mathrm{PWM_{nom}}$ la ganancia estática referida al PWM nominal [m/s], $L_{ef}=\max(L_d,\,2/f_{ctrl})$ el retardo efectivo [s] y $\lambda=3\tau$ el parámetro de rapidez [s]. Se emplea $\mathrm{PWM_{nom}}=143$.
+\noindent donde $k_c$ es la ganancia del controlador en forma serie, $\tau_I,\tau_D$ los tiempos integral y derivativo de la forma serie (interactuante) [s], $K_{\mathrm{norm}}=K_m\,\mathrm{PWM_{nom}}$ la ganancia estática referida al PWM nominal [m/s], $L_{ef}=\max(L_d,\,2/f_{ctrl})$ el retardo efectivo [s] y $\lambda=3\tau$ el parámetro de rapidez [s]. Se emplea $\mathrm{PWM_{nom}}=143$.
  
 \begin{align}
 K_p^{\lambda} &= k_c \,\frac{\tau_I + \tau_D}{\tau_I}, &
@@ -268,7 +282,7 @@ K_d^{\lambda} &= K_p^{\lambda} \, T_d &&
 \label{eq:lambda_paralelo}
 \end{align}
  
-\noindent donde $K_p^{\lambda},K_i^{\lambda},K_d^{\lambda}$ son las ganancias Lambda en forma paralela estándar y $T_i,T_d$ los tiempos integral y derivativo intermedios [s].
+\noindent donde $K_p^{\lambda},K_i^{\lambda},K_d^{\lambda}$ son las ganancias Lambda en forma paralela estándar y $T_i,T_d$ los tiempos integral y derivativo equivalentes de la forma paralela [s].
  
 \begin{equation}
 f_\lambda = \frac{\mathrm{PWM_{nom}}\,K_o}{\texttt{MPS\_TO\_TICKS\_FACTOR}} \approx 22.80,

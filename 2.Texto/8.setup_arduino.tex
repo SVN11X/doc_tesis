@@ -125,7 +125,7 @@ v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 \label{eq:vel_lazo_abierto}
 \end{equation}
  
-\noindent donde $\Delta c_j[k]$ son las cuentas registradas en el intervalo de captura $T_{cap}=0.1$~s [cuentas] y $2\pi r$ la circunferencia de la rueda [m]; $v_j^{med}[k]$ es la velocidad lineal medida de rueda [m/s], no la del robot.
+\noindent donde $v_j^{med}[k]$ es la velocidad lineal medida de rueda [m/s] (no la del robot) y $2\pi r$ la circunferencia de la rueda [m]; las restantes variables se detallan tras el Alg.~\ref{alg:captura_lazo_abierto}.
 
 \begin{algorithm}[H]
 \caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
@@ -161,13 +161,7 @@ v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 
 \subsection{Identificación y optimización}
 
-La identificación FODT se realiza evaluando la Ec.~\ref{eq:fodt_discreto} con
-paso $h=T_{cap}=0.1$~s y retardo $n_d=\lfloor L_d/T_{cap}\rfloor$,
-ajustando $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo
-abierto. La misma recurrencia, evaluada con $h=T_s=1/f_{ctrl}$, se emplea
-como planta en la simulación del controlador al optimizar las ganancias del
-PID, garantizando que identificación y sintonización usen un único modelo
-discreto. El procedimiento completo de sintonización se resume en el Algoritmo~\ref{alg:sintonizacion}.
+La identificación FODT se realiza evaluando la Ec.~\ref{eq:fodt_discreto} con paso $h=T_{cap}=0.1$~s y retardo $n_d=\lfloor L_d/T_{cap}\rfloor$, ajustando $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto. En la simulación del controlador, la planta es el mismo modelo de primer orden identificado, evaluado a $h=T_s=1/f_{ctrl}$ y \emph{sin} el retardo puro (Ec.~\ref{eq:fodt_lazo_cerrado}); identificación y sintonización comparten así la estructura FODT, diferenciándose solo en el paso de integración y en el tratamiento del retardo. El procedimiento completo de sintonización se resume en el Algoritmo~\ref{alg:sintonizacion}.
 
 \begin{algorithm}[H]
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
@@ -185,7 +179,7 @@ discreto. El procedimiento completo de sintonización se resume en el Algoritmo~
 
 \Statex
 \State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
-\State $J(\boldsymbol{\theta})\gets w_{\mathrm{mse}}\,\mathrm{MSE}(v_j^{ref}-\hat{v}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$, simulando el PID del firmware (Ec.~\ref{eq:pid_firmware}) sobre el modelo FODT a $T_s$ con $e_{db}$ (Ec.~\ref{eq:costo_pso})
+\State $J(\boldsymbol{\theta})\gets w_{\mathrm{mse}}\,\mathrm{MSE}(v_j^{ref}-\hat{v}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$, simulando el PID del firmware (Ec.~\ref{eq:pid_firmware}) sobre el modelo FODT a $T_s$ sin retardo (Ec.~\ref{eq:fodt_lazo_cerrado}) con $e_{db}$ (Ec.~\ref{eq:costo_pso})
 \State $(K_{p},K_{d},K_{i})_j \gets \Call{PSO}{J,\,s^{\mathrm{PID}}}$ \Comment{Alg.~\ref{alg:pso_nucleo}}
 \EndFor
 
