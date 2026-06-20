@@ -9,7 +9,7 @@ Este capítulo presenta los fundamentos teóricos necesarios para el diseño e i
 
 La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{thrun2005probabilistic, borenstein1996}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{siciliano2010robotics, corke2017}. En este trabajo, la odometría es publicada por \texttt{diff\_drive\_controller} y utilizada por \texttt{slam\_toolbox} como estimación inicial para el mapeo.
 
-\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice.
+\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice.
 
 Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas
 $b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad
@@ -160,11 +160,11 @@ n_d=\left\lfloor \frac{L_d}{h}\right\rfloor,
 El controlador PID se aplica de forma independiente a cada rueda. En su forma continua, se expresa como:
 
 \begin{equation*}
-u_j(t)=K_{p,j}^{c}\, e_j(t)+K_{i,j}^{c}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}^{c}\frac{de_j(t)}{dt},
+u_j(t)=K_{p,j}^{\mathrm{cont}}\, e_j(t)+K_{i,j}^{\mathrm{cont}}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt},
 \qquad j\in\{R,L\}
 \end{equation*}
 
-\noindent donde $u_j(t)$ es la acción de control de la rueda $j$ [PWM], $e_j(t)$ el error y $K_{p,j}^{c},K_{i,j}^{c},K_{d,j}^{c}$ las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$. Esta forma continua es ilustrativa y no se cuantifica: la implementación emplea las ganancias discretas del firmware $K_{p,j},K_{d,j},K_{i,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), escaladas por $K_{o,j}$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
+\noindent\emph{Forma continua ilustrativa, no cuantificada.} Aquí $u_j(t)$ es la acción de control de la rueda $j$ [PWM] (definida previamente); $e_j(t)$ es el error de velocidad de rueda en tiempo continuo (consigna menos medición) [m/s], versión continua del error discreto $e_j[k]$ [ticks/frame] de la Ec.~\ref{eq:error_pid} —el cambio de unidad entre ambas formas es esperado—; y $K_{p,j}^{\mathrm{cont}}$ [$\mathrm{PWM\cdot s/m}$], $K_{i,j}^{\mathrm{cont}}$ [$\mathrm{PWM/m}$], $K_{d,j}^{\mathrm{cont}}$ [$\mathrm{PWM\cdot s^{2}/m}$] son las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$, que \textbf{no se cuantifican}. La implementación emplea las ganancias discretas del firmware $K_{p,j},K_{d,j},K_{i,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), escaladas por $K_{o,j}$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
  
 \begin{equation}
 e_j[k] = m_j^{cmd}[k] - m_j[k],

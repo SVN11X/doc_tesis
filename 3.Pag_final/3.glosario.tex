@@ -28,7 +28,6 @@ $v[k]$ & Velocidad lineal del robot & m/s \\
 $\omega[k]$ & Velocidad angular del robot & rad/s \\
 $\omega_j[k]$ & Velocidad angular de rueda $j\in\{R,L\}$ (período nominal $T_s$) & rad/s \\
 $\hat{\omega}_j[k]$ & Velocidad angular de rueda con período real medido $\Delta t_k$ & rad/s \\
-$v_j$ & Velocidad lineal de rueda $j$ & m/s \\
 $\phi_j[k]$ & Ángulo acumulado de rueda $j$ & rad \\
 $c_j[k]$ & Cuentas acumuladas del encoder de rueda $j$ & cuentas \\
 $\Delta c_j[k]$ & Incremento de cuentas del encoder en el intervalo & cuentas \\
@@ -45,11 +44,12 @@ $m_j[k]$ & Velocidad de rueda medida ($\equiv\Delta c_j[k]$) & ticks/frame \\
 $m_j^{cmd}[k]$ & Referencia de velocidad de rueda enviada al firmware & ticks/frame \\
 $v_j^{cmd}[k]$ & Velocidad lineal de rueda comandada & m/s \\
 $\omega_j^{cmd}[k]$ & Velocidad angular de rueda comandada & rad/s \\
-$u_j[k]$ & Acción de control (salida PWM) de rueda $j$ & PWM \\
+$u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FODT & PWM \\
 $e_j[k]$ & Error de control de rueda $j$ & ticks/frame \\
 $e_{db,j}$ & Banda muerta por rueda ($e_{db,R}=1$, $e_{db,L}=2$) & ticks/frame \\
 $I_j[k]$ & Término integral acumulado de rueda $j$ & --- \\
 $K_{p,j}^{fw},K_{d,j}^{fw},K_{i,j}^{fw}$ & Ganancias PID en la escala entera interna del firmware (convención de cómputo, no adimensionalidad física) & esc.\ fw \\
+$K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_{o,j}$ & Divisor de normalización de la salida PID & adim. \\
 \texttt{MPS\_TO\_TICKS\_FACTOR} & Factor de conversión m/s $\to$ ticks/frame ($\approx313.56$) & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
 \midrule
