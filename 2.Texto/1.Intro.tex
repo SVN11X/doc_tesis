@@ -33,10 +33,9 @@ Diseñar e implementar un prototipo de robot móvil diferencial capaz de generar
 
 \item[\ObEsp.\label{oe2}] Implementar el sistema de control de bajo nivel, incluyendo modelo cinemático diferencial, odometría por encoders y controlador PID en lazo cerrado sobre las velocidades de las ruedas.
 
-\item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo y la navegación autónoma del robot mediante SLAM basado en grafos de poses con \texttt{slam\_toolbox}, y navegación con Nav2, considerando planificación global basada en A*, control local DWB, mapas de costo con inflación y árboles de comportamiento para recuperación ante bloqueos.
+\item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo y la navegación autónoma del robot: SLAM basado en grafos de poses con SLAM Toolbox (optimización del grafo mediante el solver Ceres) para generar mapas 2D del entorno, y navegación con el framework Nav2 de ROS 2, con planificación global basada en A*, control local mediante el controlador de ventana dinámica (DWB), mapas de costos con inflación y árboles de comportamiento para la recuperación ante bloqueos.
 
-\item[\ObEsp.\label{oe4}] Integrar exploración autónoma basada en fronteras mediante \texttt{explore\_lite} y \texttt{m-explore-ros2}, para generar metas de navegación hacia zonas no mapeadas sin intervención manual continua.
-\end{description}
+\item[\ObEsp.\label{oe4}] Integrar la exploración autónoma basada en fronteras (\texttt{explore\_lite} y \texttt{m-explore-ros2}) para generar metas de navegación hacia zonas no mapeadas sin intervención manual continua.
 
 \section*{Alcances y limitaciones}
 \phantomsection
@@ -57,5 +56,5 @@ La metodología es experimental e iterativa, organizada en seis etapas: diseño 
 \phantomsection
 \addcontentsline{toc}{section}{Organización del documento}
 
-El documento se organiza en capítulos que desarrollan progresivamente el estado del arte, el marco teórico, la selección de componentes, el entorno de trabajo, el gemelo digital, la construcción del robot real, el firmware de bajo nivel, la aplicación de SLAM, navegación y exploración, y finalmente los resultados experimentales. La bibliografía, el glosario y los anexos complementan la información técnica utilizada durante el desarrollo del proyecto.
+El documento se organiza en capítulos que desarrollan progresivamente el estado del arte, el marco teórico, la selección de componentes, el gemelo digital, la construcción del robot real, el firmware de bajo nivel, la aplicación de SLAM, navegación y exploración, y finalmente los resultados experimentales. La bibliografía, el glosario y los anexos complementan la información técnica utilizada durante el desarrollo del proyecto.
 
