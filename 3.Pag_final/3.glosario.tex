@@ -48,7 +48,7 @@ $u_j[k]$ & Acción de control (salida PWM) de rueda $j$ & PWM \\
 $e_j[k]$ & Error de control de rueda $j$ & ticks/frame \\
 $e_{db,j}$ & Banda muerta por rueda ($e_{db,R}=1$, $e_{db,L}=2$) & ticks/frame \\
 $I_j[k]$ & Término integral acumulado de rueda $j$ & --- \\
-$K_{p,j}^{fw},K_{d,j}^{fw},K_{i,j}^{fw}$ & Ganancias PID en escala interna de firmware & adim. \\
+$K_{p,j}^{fw},K_{d,j}^{fw},K_{i,j}^{fw}$ & Ganancias PID en la escala entera interna del firmware (convención de cómputo, no adimensionalidad física) & esc.\ fw \\
 $K_{o,j}$ & Divisor de normalización de la salida PID & adim. \\
 \texttt{MPS\_TO\_TICKS\_FACTOR} & Factor de conversión m/s $\to$ ticks/frame ($\approx313.56$) & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
 \midrule
@@ -58,6 +58,7 @@ $K_m$ & Ganancia estática del modelo & (m/s)/PWM \\
 $\tau$ & Constante de tiempo del modelo & s \\
 $L_d$ & Retardo puro del modelo & s \\
 $\hat{v}_j[k]$ & Velocidad de rueda estimada por el modelo/simulación & m/s \\
+$v_j^{med}[k]$ & Velocidad lineal medida de rueda $j$ (lazo abierto) & m/s \\
 $h$ & Paso de integración ($T_{cap}$ en identificación, $T_s$ en lazo cerrado) & s \\
 $n_d$ & Retardo en número de muestras (solo en identificación) & --- \\
 $\mathrm{e}$ & Número de Euler & --- \\
@@ -83,10 +84,11 @@ $\lambda$ & Parámetro de rapidez ($\lambda=3\tau$) & s \\
 $k_c$ & Ganancia del controlador en forma serie & s/m \\
 $\tau_I,\tau_D$ & Tiempos integral y derivativo (forma serie interactuante) & s \\
 $T_i,T_d$ & Tiempos integral y derivativo equivalentes (forma paralela) & s \\
+$K_p^{\lambda},K_i^{\lambda},K_d^{\lambda}$ & Ganancias Lambda en forma paralela estándar & s/m,\ 1/m,\ s$^2$/m \\
 $L_{ef}$ & Retardo efectivo $\max(L_d,\,2/f_{ctrl})$ & s \\
 $K_{\mathrm{norm}}$ & Ganancia estática referida al PWM nominal & m/s \\
 $\mathrm{PWM_{nom}}$ & PWM nominal de diseño ($=143$) & PWM \\
-$f_\lambda$ & Factor de escala a firmware ($\approx22.80$) & adim. \\
+$f_\lambda$ & Factor de escala a la representación interna del firmware ($\approx22.80$); porta la conversión $\mathrm{PWM}\cdot(\text{m/s})/(\text{ticks/frame})$ & esc.\ fw \\
 \midrule
 \multicolumn{3}{l}{\textit{Navegación y exploración}}\\
 $f(n),g_n(n),h_{\mathrm{heur}}(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & --- \\
