@@ -37,7 +37,7 @@ y_{k+1} &= y_k + T_s\, v[k]\,\sin\theta_k \label{eq:pose_y} \\
 \theta_{k+1} &= \theta_k + T_s\, \omega[k] \label{eq:pose_theta}
 \end{align}
  
-\noindent donde $q_k=(x_k,y_k,\theta_k)$ es la pose [m, m, rad] y $v[k],\omega[k]$ las velocidades lineal y angular del robot en el instante $k$ (definidas previamente). Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} constituyen la discretización de primer orden (Euler) del modelo cinemático de referencia. En la implementación, la integración de la odometría la realiza \texttt{diff\_drive\_controller} en lazo cerrado (\texttt{open\_loop=false}, \texttt{position\_feedback=true}), que por defecto emplea integración exacta de arco para $|\Delta\theta_k|\ge\varepsilon$ y Runge--Kutta de 2.º orden para $|\Delta\theta_k|<\varepsilon$; ambas formas coinciden con Euler a primer orden en $T_s$.
+\noindent donde $q_k=(x_k,y_k,\theta_k)$ es la pose [m, m, rad] y $v[k],\omega[k]$ las velocidades lineal y angular del robot en el instante $k$ (definidas previamente). Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} constituyen la discretización de primer orden (Euler) del modelo cinemático de referencia, evaluada con el rumbo al inicio del paso $\theta_k$. En la implementación, la integración de la odometría la realiza \texttt{diff\_drive\_controller} en lazo cerrado (\texttt{open\_loop=false}, \texttt{position\_feedback=true}), que por defecto emplea integración exacta de arco para $|\Delta\theta_k|\ge\varepsilon$ y Runge--Kutta de 2.º orden para $|\Delta\theta_k|<\varepsilon$; ambas formas coinciden con Euler a primer orden en $T_s$.
 
 \begin{align}
 \theta_{k+1} &= \theta_k + T_s\,\omega[k] \notag\\
@@ -46,7 +46,17 @@ y_{k+1} &= y_k - \frac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr)
 \label{eq:pose_exacta}
 \end{align}
 
-\noindent válida cuando el desplazamiento angular del paso supera un umbral, $|\Delta\theta_k|=|\omega[k]|\,T_s\ge\varepsilon$; para $|\Delta\theta_k|<\varepsilon$ se usa Runge--Kutta de 2.º orden con rumbo en el punto medio $\theta_k+\tfrac{1}{2}T_s\,\omega[k]$. Aquí $\varepsilon\approx10^{-6}$~rad es el umbral interno de \texttt{diff\_drive\_controller} (no expuesto por configuración); el resto de variables fueron definidas previamente.
+\noindent válida cuando el desplazamiento angular del paso supera un umbral, $|\Delta\theta_k|=|\omega[k]|\,T_s\ge\varepsilon$; para $|\Delta\theta_k|<\varepsilon$ se usa Runge--Kutta de 2.º orden con rumbo en el punto medio $\theta_m$ (Ec.~\ref{eq:pose_rk2}). Aquí $\varepsilon\approx10^{-6}$~rad es el umbral interno de \texttt{diff\_drive\_controller} (no expuesto por configuración); el resto de variables fueron definidas previamente.
+
+\begin{align}
+\theta_m   &= \theta_k+\tfrac{1}{2}T_s\,\omega[k] \notag\\
+x_{k+1}    &= x_k + T_s\,v[k]\cos\theta_m \notag\\
+y_{k+1}    &= y_k + T_s\,v[k]\sin\theta_m \notag\\
+\theta_{k+1} &= \theta_k + T_s\,\omega[k]
+\label{eq:pose_rk2}
+\end{align}
+
+\noindent donde $\theta_m$ es el rumbo en el punto medio del paso [rad]; el resto de variables fueron definidas previamente. La Ec.~\ref{eq:pose_rk2} es el esquema efectivamente aplicado por \texttt{diff\_drive\_controller} en la rama $|\Delta\theta_k|<\varepsilon$ y se distingue de la forma Euler de referencia (Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta}) en que evalúa el rumbo en el punto medio $\theta_m$ en lugar de $\theta_k$.
 
 \begin{algorithm}[H]
 \caption{Odometría diferencial por encoders (modelo de referencia integrado por \texttt{diff\_drive\_controller})}
@@ -71,7 +81,7 @@ y_{k+1} &= y_k - \frac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr)
         \State $\theta_{k+1} \gets \theta_k+\Delta\theta_k$
         \State $x_{k+1} \gets x_k+\dfrac{v[k]}{\omega[k]}\bigl(\sin\theta_{k+1}-\sin\theta_k\bigr)$
         \State $y_{k+1} \gets y_k-\dfrac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr)$
-    \Else \Comment{RK2 / Euler con rumbo en el punto medio, Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta}}
+    \Else \Comment{RK2, rumbo en el punto medio, Ec.~\ref{eq:pose_rk2}}
         \State $\theta_m \gets \theta_k+\tfrac{1}{2}\Delta\theta_k$
         \State $x_{k+1} \gets x_k+T_s\,v[k]\cos\theta_m$
         \State $y_{k+1} \gets y_k+T_s\,v[k]\sin\theta_m$
@@ -94,6 +104,8 @@ m_j^{cmd}[k] = v_j^{cmd}[k]\,\frac{N_e}{2\pi r\, f_{ctrl}},
 \end{equation}
 
 \noindent donde $m_j^{cmd}[k]$ es la referencia de velocidad de rueda enviada al firmware [ticks/frame], $v_j^{cmd}[k]$ la velocidad lineal de rueda comandada [m/s] y $f_{ctrl}=30$~Hz la frecuencia del lazo (\texttt{PID\_RATE}$=$\texttt{loop\_rate}); el resto de variables fueron definidas previamente. El factor $N_e/(2\pi r\, f_{ctrl})$ (constante \texttt{MPS\_TO\_TICKS\_FACTOR}) tiene unidades de (ticks/frame)/(m/s).
+
+La forma equivalente en términos de la velocidad angular de rueda comandada $\omega_j^{cmd}$ se presenta en la Ec.~\ref{eq:cmd_to_ticks} (capítulo de hardware), relacionada por $v_j^{cmd}=r\,\omega_j^{cmd}$.
  
 \begin{align}
 \texttt{MPS\_TO\_TICKS\_FACTOR}
