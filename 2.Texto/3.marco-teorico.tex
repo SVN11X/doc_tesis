@@ -217,17 +217,25 @@ X_{i,d}^{g+1} &= \max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr)
 \noindent donde $X_{i,d}^{g}$ es la posición de búsqueda normalizada de la partícula $i$ en la dimensión $d\in\{1,2,3\}$ y generación $g$ (adimensional, acotada solo inferiormente por $X_{i,d}^{g}\geq 10^{-4}$; la cota superior $1$ se aplica únicamente al escalar para evaluar el costo, Ec.~\ref{eq:pso_escala}), $V_{i,d}^{g}$ su velocidad de búsqueda, $P_{i,d}$ la mejor posición individual y $P_d^{*}$ la mejor posición global. El peso de inercia decrece como $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$, con $g_{\max}=150$ y tamaño de enjambre $S=50$. Los coeficientes $c_1=c_2=2.05$ ponderan las componentes cognitiva y social (adimensionales) y $\rho_1,\rho_2\sim\mathcal{U}[0,1]$, regenerados por partícula y dimensión en cada iteración. La variante combina factor de constricción e inercia decreciente; el valor $\chi\approx0.7298$ depende únicamente de $\varphi=c_1+c_2=4.1$ (Ec.~\ref{eq:constriccion}) y es independiente de $w_{\mathrm{in}}^{g}$, que modula adicionalmente el balance exploración--explotación a lo largo de las generaciones.
 
 \begin{equation}
-\tilde{X}_{i,d}=\min\!\bigl(\max(X_{i,d}^{g},\,10^{-4}),\;1\bigr),
+\tilde{X}_{i,d}=\min\!\bigl(\max(X_{i,d}^{g},\,10^{-4}),\;X_{\max}\bigr),
 \qquad
 \theta_{i,d}=s_d\,\tilde{X}_{i,d},
 \qquad
-s^{\mathrm{ID}}=(0.01,\;2.0,\;0.5),
-\qquad
-s^{\mathrm{PID}}=(40,\;25,\;0.05)
+X_{\max}=
+\begin{cases}
++\infty, & \text{identificación FODT } (s^{\mathrm{ID}})\\[2pt]
+1, & \text{sintonización PID } (s^{\mathrm{PID}})
+\end{cases}
 \label{eq:pso_escala}
 \end{equation}
 
-\noindent donde $\tilde{X}_{i,d}$ es la posición recortada a $[10^{-4},1]$ usada solo para escalar al evaluar el costo, $\theta_{i,d}$ el parámetro físico $d$ del candidato de la partícula $i$ y $s_d$ el factor de escala de esa dimensión (porta las unidades físicas, pues $X_{i,d}$ es adimensional). La posición de búsqueda $X_{i,d}^{g}$ puede exceder $1$, por lo que el parámetro óptimo final $\theta_{i,d}^{*}=s_d\,X_{i,d}^{*}$ se obtiene sin recorte superior. El vector $s^{\mathrm{ID}}$ aplica en la identificación FODT, con $\boldsymbol{\theta}_i=(K_m,\tau,L_d)_i$, y $s^{\mathrm{PID}}$ en la sintonización del controlador, con $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$.
+\begin{equation*}
+s^{\mathrm{ID}}=(0.01,\;2.0,\;0.5),
+\qquad
+s^{\mathrm{PID}}=(40,\;25,\;0.05)
+\end{equation*}
+
+\noindent donde $\tilde{X}_{i,d}$ es la posición recortada a $[10^{-4},X_{\max}]$ usada solo para escalar al evaluar el costo, $\theta_{i,d}$ el parámetro físico $d$ del candidato de la partícula $i$ y $s_d$ el factor de escala de esa dimensión (porta las unidades físicas, pues $X_{i,d}$ es adimensional). El recorte superior $X_{\max}=1$ se aplica únicamente al evaluar el costo de sintonización PID; en la identificación FODT se emplea $X_{\max}=+\infty$, es decir, solo la cota inferior $X_{i,d}\ge10^{-4}$ (garantizada por la actualización de posición, Ec.~\ref{eq:pso_pos_marco_teorico}). La posición de búsqueda $X_{i,d}^{g}$ puede exceder $1$, por lo que el parámetro óptimo final $\theta_{i,d}^{*}=s_d\,X_{i,d}^{*}$ se obtiene sin recorte superior. El vector $s^{\mathrm{ID}}$ aplica en la identificación FODT, con $\boldsymbol{\theta}_i=(K_m,\tau,L_d)_i$, y $s^{\mathrm{PID}}$ en la sintonización del controlador, con $\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$.
  
 \begin{equation}
 \chi=\frac{2}{\left|2-\varphi-\sqrt{\varphi^2-4\varphi}\right|},
@@ -252,11 +260,11 @@ w_{\mathrm{mse}}\cdot \mathrm{MSE}\bigl(v_j^{ref}-\hat{v}_j\bigr)
 \caption{Optimización por enjambre de partículas con factor de constricción e inercia decreciente (núcleo reutilizable)}
 \label{alg:pso_nucleo}
 \begin{algorithmic}[1]
-\Require Función de costo $J(\cdot)$; vector de escala $s$; enjambre $S=50$; generaciones $g_{\max}=150$; coeficientes $c_1=c_2=2.05$; factor de constricción $\chi=0.7298$; cota inferior $X_{\min}=10^{-4}$
+\Require Función de costo $J(\cdot)$; vector de escala $s$; enjambre $S=50$; generaciones $g_{\max}=150$; coeficientes $c_1=c_2=2.05$; factor de constricción $\chi=0.7298$; cota inferior $X_{\min}=10^{-4}$; cota superior $X_{\max}$ ($X_{\max}=1$ en sintonización PID; $X_{\max}=+\infty$ en identificación FODT)
 \Ensure Mejor posición global $P^{*}$ y parámetros físicos $\boldsymbol{\theta}^{*}=s\odot P^{*}$
 \Statex
 \Function{Evaluar}{$X$}
-    \State $\tilde{X}\gets\min(\max(X,X_{\min}),\,1)$ \Comment{recorte solo para evaluar}
+    \State $\tilde{X}\gets\min(\max(X,X_{\min}),\,X_{\max})$ \Comment{recorte solo para evaluar; $X_{\max}=1$ solo en PID}
     \State \Return $J(s\odot\tilde{X})$
 \EndFunction
 \Statex
