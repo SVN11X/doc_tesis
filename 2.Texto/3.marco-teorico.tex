@@ -9,7 +9,7 @@ Este capítulo presenta los fundamentos teóricos necesarios para el diseño e i
 
 La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{thrun2005probabilistic, borenstein1996}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{siciliano2010robotics, corke2017}. En este trabajo, la odometría es publicada por \texttt{diff\_drive\_controller} y utilizada por \texttt{slam\_toolbox} como estimación inicial para el mapeo.
 
-\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice.
+\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. Análogamente, $\omega$ sin subíndice denota la velocidad angular del \emph{robot} [rad/s]; con subíndice $j$ ($\omega_j$, $\hat{\omega}_j$, $\omega_j^{cmd}$) denota la velocidad angular de \emph{rueda} [rad/s]. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice.
 
 Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas
 $b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad
@@ -176,19 +176,14 @@ m_j[k] = \Delta c_j[k] = c_j[k] - c_j[k-1]
 \noindent donde $e_j[k]$ es el error [ticks/frame], $m_j^{cmd}[k]$ la referencia [ticks/frame] (definida previamente) y $m_j[k]$ la velocidad de rueda medida, igual al incremento de cuentas del encoder en un ciclo [ticks/frame].
  
 \begin{equation}
-u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}},
+u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_o},
 \qquad j\in\{R,L\}
 \label{eq:pid_firmware}
 \end{equation}
  
-\noindent donde $u_j[k]$ es la salida de control (PWM) de la rueda $j$, $K_{p,j},K_{d,j}$ las ganancias proporcional y derivativa, $I_j[k]$ el término integral acumulado y $K_{o,j}=50$ un factor de escala adimensional. El integrador se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}\,e_j[k]$ solo cuando la salida no está saturada (\textit{anti-windup}), con $K_{i,j}$ la ganancia integral. Se aplica una banda muerta por rueda $e_{db,j}$ sobre $e_j[k]$ ($e_{db,R}=1$, $e_{db,L}=2$ ticks/frame)
+\noindent donde $u_j[k]$ es la salida de control (PWM) de la rueda $j$, $K_{p,j},K_{d,j}$ las ganancias proporcional y derivativa, $I_j[k]$ el término integral acumulado y $K_o=50$ un factor de escala adimensional. El integrador se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}\,e_j[k]$ solo cuando la salida no está saturada (\textit{anti-windup}), con $K_{i,j}$ la ganancia integral. Se aplica una banda muerta por rueda $e_{db,j}$ sobre $e_j[k]$ ($e_{db,R}=1$, $e_{db,L}=2$ ticks/frame)
 
-Estas ganancias $K_{p,j},K_{d,j},K_{i,j}$ están en la misma escala interna de
-firmware que las obtenidas por Lambda (Ec.~\ref{eq:lambda_firmware}), es decir,
-$K_{p,j}\equiv K_{p,j}^{fw}$, $K_{d,j}\equiv K_{d,j}^{fw}$ y
-$K_{i,j}\equiv K_{i,j}^{fw}$; el superíndice $^{fw}$ se omite cuando provienen de PSO
-y refinamiento experimental.
-
+Estas ganancias $K_{p,j},K_{d,j},K_{i,j}$ son las ganancias de firmware efectivamente implementadas (escala entera interna). En este trabajo se obtienen por sintonización PSO con refinamiento experimental; la sintonía Lambda (Ec.~\ref{eq:lambda_firmware}) entrega, en esa misma escala, una línea base analítica de las mismas magnitudes. La procedencia (PSO o Lambda) se indica en el texto y no se codifica en el símbolo; su contraparte continua ideal se denota $K_{p,j}^{\mathrm{cont}}$.
 %------------------------------------------------------------------
 \section{Sintonización del controlador PID}
 \label{sec:sintonizacion}
@@ -336,24 +331,24 @@ K_d^{\lambda} &= K_p^{\lambda} \, T_d &&
 \begin{equation}
 f_\lambda = \frac{\mathrm{PWM_{nom}}\,K_o}{\texttt{MPS\_TO\_TICKS\_FACTOR}} \approx 22.80,
 \qquad
-K_p^{fw} = K_p^{\lambda}\,f_\lambda,
+K_p = K_p^{\lambda}\,f_\lambda,
 \quad
-K_d^{fw} = K_d^{\lambda}\,f_\lambda,
+K_d = K_d^{\lambda}\,f_\lambda,
 \quad
-K_i^{fw} = K_i^{\lambda}\,f_\lambda\,T_s
+K_i = K_i^{\lambda}\,f_\lambda\,T_s
 \label{eq:lambda_firmware}
 \end{equation}
  
-\noindent donde $f_\lambda$ es el factor de escala a la representación interna del firmware (adimensional), $K_o=50$ el divisor de normalización, \texttt{MPS\_TO\_TICKS\_FACTOR}$\approx313.56$ (Ec.~\ref{eq:mps_to_ticks_factor}) y $T_s=1/f_{ctrl}$ [s]. Las ganancias $K_p^{fw},K_i^{fw},K_d^{fw}$ constituyen la línea base analítica contrastada con PSO.
+\noindent donde $f_\lambda$ es el factor de escala a la representación interna del firmware (en escala de firmware; véase la nota siguiente), $K_o=50$ el divisor de normalización, \texttt{MPS\_TO\_TICKS\_FACTOR}$\approx313.56$ (Ec.~\ref{eq:mps_to_ticks_factor}) y $T_s=1/f_{ctrl}$ [s]. Las ganancias $K_p,K_i,K_d$ aquí obtenidas son la línea base analítica de origen Lambda, contrastada con las ganancias desplegadas por PSO y refinamiento experimental.
 
-El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\mathrm{PWM}\cdot(\text{m/s})/(\text{ticks/frame})$ que lleva las ganancias analíticas ($K_p^{\lambda}$ [s/m], $K_i^{\lambda}$ [1/m], $K_d^{\lambda}$ [s$^2$/m]) a la escala entera interna del firmware. La etiqueta «adim.» de $K_{p,j}^{fw},K_{i,j}^{fw},K_{d,j}^{fw}$ designa esa escala de cómputo entera, no ausencia de dimensiones.
+El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\mathrm{PWM}\cdot(\text{m/s})/(\text{ticks/frame})$ que lleva las ganancias analíticas ($K_p^{\lambda}$ [s/m], $K_i^{\lambda}$ [1/m], $K_d^{\lambda}$ [s$^2$/m]) a la escala entera interna del firmware. La etiqueta «esc.\ fw» de $K_{p,j},K_{i,j},K_{d,j}$ designa esa escala de cómputo entera, no ausencia de dimensiones.
 
 \begin{algorithm}[H]
 \caption{Sintonía Lambda de referencia: del modelo FODT a las ganancias de firmware}
 \label{alg:lambda_tuning}
 \begin{algorithmic}[1]
 \Require Modelo FODT por rueda $(K_m,\tau,L_d)$; factor $\lambda_{\mathrm{fac}}=3$; $\mathrm{PWM_{nom}}=143$; $K_o=50$; $f_{ctrl}=30$~Hz; \texttt{MPS\_TO\_TICKS\_FACTOR}$\approx313.56$
-\Ensure Ganancias de firmware $(K_p^{fw},K_i^{fw},K_d^{fw})$ por rueda
+\Ensure Ganancias de firmware $(K_p,K_i,K_d)$ por rueda
 \State \textbf{Inicialización:}
 \State $T_s \gets 1/f_{ctrl}$;\quad $f_\lambda \gets \mathrm{PWM_{nom}}\,K_o / \texttt{MPS\_TO\_TICKS\_FACTOR}$
 \Statex
@@ -367,10 +362,10 @@ El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\ma
     \State $K_p^{\lambda} \gets k_c\,(\tau_I+\tau_D)/\tau_I$;\quad $T_i \gets \tau_I+\tau_D$;\quad $T_d \gets \tau_I\tau_D/(\tau_I+\tau_D)$
     \State $K_i^{\lambda} \gets K_p^{\lambda}/T_i$;\quad $K_d^{\lambda} \gets K_p^{\lambda}\,T_d$
     \Statex \quad\textit{// Escala a representación interna del firmware}
-    \State $K_p^{fw} \gets K_p^{\lambda}\,f_\lambda$;\quad $K_d^{fw} \gets K_d^{\lambda}\,f_\lambda$;\quad $K_i^{fw} \gets K_i^{\lambda}\,f_\lambda\,T_s$
+    \State $K_p \gets K_p^{\lambda}\,f_\lambda$;\quad $K_d \gets K_d^{\lambda}\,f_\lambda$;\quad $K_i \gets K_i^{\lambda}\,f_\lambda\,T_s$
 \EndFor
 \Statex
-\State \textbf{Salida:} $(K_p^{fw},K_i^{fw},K_d^{fw})$ por rueda, como línea base analítica contrastada con PSO.
+\State \textbf{Salida:} $(K_p,K_i,K_d)$ por rueda, como línea base analítica contrastada con PSO.
 \end{algorithmic}
 \end{algorithm}
 %------------------------------------------------------------------

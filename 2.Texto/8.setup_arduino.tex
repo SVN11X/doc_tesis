@@ -70,13 +70,13 @@ $K_o$ & 50 & 50 \\
 
 El divisor $K_o$ normaliza la acción de control, por lo que las ganancias efectivas corresponden a $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. La convención de orden usada por el firmware es $K_p$, $K_d$, $K_i$, $K_o$, heredada de \texttt{ROSArduinoBridge}.
 
-Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ son coeficientes adimensionales en la escala interna entera del firmware: la salida se lleva a PWM mediante la división por $K_{o,j}$ y la saturación a $[-255,255]$; no portan unidad física directa.
+Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ son coeficientes adimensionales en la escala interna entera del firmware: la salida se lleva a PWM mediante la división por $K_o$ y la saturación a $[-255,255]$; no portan unidad física directa.
 
 \begin{algorithm}[H]
 \caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
-\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y cuentas de encoder $c_j[k]$ [cuentas] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_{o,j}=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
+\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y cuentas de encoder $c_j[k]$ [cuentas] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_o=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
 \Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
 
 \State \textbf{Inicialización:}
@@ -91,7 +91,7 @@ Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ son coeficientes adimensionales en la es
 \If{$|e_j[k]| \leq e_{db,j}$}
 \State $e_j[k]\gets 0$ \Comment{banda muerta anti-cuantización}
 \EndIf
-\State $u_j[k]\gets u_j[k-1]+\dfrac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_{o,j}}$
+\State $u_j[k]\gets u_j[k-1]+\dfrac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_o}$
 \If{$u_j[k]\geq u_{\max}$}
 \State $u_j[k]\gets u_{\max}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
 \ElsIf{$u_j[k]\leq u_{\min}$}

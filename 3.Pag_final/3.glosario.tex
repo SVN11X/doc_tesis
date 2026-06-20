@@ -48,9 +48,9 @@ $u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de
 $e_j[k]$ & Error de control de rueda $j$ & ticks/frame \\
 $e_{db,j}$ & Banda muerta por rueda ($e_{db,R}=1$, $e_{db,L}=2$) & ticks/frame \\
 $I_j[k]$ & Término integral acumulado de rueda $j$ & --- \\
-$K_{p,j}^{fw},K_{d,j}^{fw},K_{i,j}^{fw}$ & Ganancias PID en la escala entera interna del firmware (convención de cómputo, no adimensionalidad física) & esc.\ fw \\
+$K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala entera interna; convención de cómputo, no adimensionalidad física). Procedencia indicada en el texto: PSO con refinamiento (desplegadas) o Lambda (línea base) & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
-$K_{o,j}$ & Divisor de normalización de la salida PID & adim. \\
+$K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
 \texttt{MPS\_TO\_TICKS\_FACTOR} & Factor de conversión m/s $\to$ ticks/frame ($\approx313.56$) & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
 \midrule
 \multicolumn{3}{l}{\textit{Identificación FODT}}\\
@@ -103,6 +103,8 @@ $d_{\min}(F)$ & Distancia del robot a la frontera $F$ & celdas \\
 $|F|$ & Tamaño (número de celdas) de la frontera $F$ & celdas \\
 $\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}) & m/celda \\
 $w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
+$f_{\mathrm{exp}}$ & Frecuencia de reevaluación del explorador (\texttt{planner\_frequency}) & Hz \\
+$t_{\mathrm{prog}}$ & Tiempo máximo sin progreso del explorador (\texttt{progress\_timeout}) & s \\
 \end{longtable}
 }%
 }
