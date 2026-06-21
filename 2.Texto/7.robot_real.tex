@@ -128,6 +128,7 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
 \caption{Ciclo de control de hardware en \texttt{ros2\_control} (plugin \texttt{DiffDriveArduino})}
 \label{alg:ros2control_cycle}
 \begin{algorithmic}[1]
+\footnotesize
 \Require Comandos de velocidad angular de rueda $\omega_R^{cmd},\omega_L^{cmd}$ [rad/s] (de \texttt{diff\_drive\_controller}); enlace serial al \gls{Arduino}; $N_e$; $f_{ctrl}$; ganancias PID residentes en el firmware.
 \Ensure Estados de rueda $(\phi_j,\hat{\omega}_j)$ para odometría y referencias \textit{ticks/frame} enviadas al firmware.
 \State \textbf{Inicialización} (\texttt{configure}/\texttt{start}):

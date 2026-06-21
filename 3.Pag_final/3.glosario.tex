@@ -51,7 +51,7 @@ $I_j[k]$ & Término integral acumulado de rueda $j$ & --- \\
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala entera interna; convención de cómputo, no adimensionalidad física). Procedencia indicada en el texto: PSO con refinamiento (desplegadas) o Lambda (línea base) & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
-\texttt{MPS\_TO\_TICKS\_FACTOR} & Factor de conversión m/s $\to$ ticks/frame ($\approx313.56$) & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
+\kappa & Factor de conversión m/s $\to$ ticks/frame ($\approx313.56$) & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
 \midrule
 \multicolumn{3}{l}{\textit{Identificación FODT}}\\
 $G_m(s)$ & Función de transferencia FODT de la planta de rueda & --- \\

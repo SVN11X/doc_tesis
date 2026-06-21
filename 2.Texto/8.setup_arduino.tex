@@ -3,8 +3,6 @@
 
 Este capítulo describe el firmware \texttt{ROSArduinoBridge} implementado en el \gls{Arduino} Nano para el control de bajo nivel del robot. El firmware cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos.
 
-\noindent\textit{Nota: el pseudocódigo de este capítulo asume el uso de los paquetes \texttt{algorithm}, \texttt{algpseudocode} y \texttt{float}.}
-
 %------------------------------------------------------------------
 \section{Arquitectura modular del firmware}
 
@@ -46,8 +44,7 @@ donde $N_{R(i)}$ y $N_{L(i)}$ son las cuentas por vuelta completa medidas en la 
 \section{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con $m_j[k]=\Delta c_j[k]=c_j[k]-c_j[k-1]$
-la velocidad medida [ticks/frame $\equiv$ cuentas/ciclo].
+El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con $m_j[k]=\Delta c_j[k]=c_j[k]-c_j[k-1]$ la velocidad medida [ticks/frame $\equiv$ cuentas/ciclo].
 
 La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Marco Teórico. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
 

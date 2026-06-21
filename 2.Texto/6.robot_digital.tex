@@ -45,7 +45,7 @@ La paridad de estos valores es esencial, ya que diferencias en el radio o la sep
 
 El modelo se organiza como un árbol de eslabones y articulaciones. El marco principal es \texttt{base\_link}, desde el cual se conectan las ruedas, el chasis, la rueda loca y el sensor láser. Además, se utiliza \texttt{base\_footprint} como proyección del robot sobre el suelo, lo que facilita la integración con Nav2.
 
-Se adoptan las convenciones REP-103 y REP-105: eje \texttt{x} hacia adelante, eje \texttt{y} hacia la izquierda y eje \texttt{z} hacia arriba \cite{rep103,rep105}. La cadena de transformaciones principal es:
+Se adoptan las convenciones REP-103 y REP-105: eje \texttt{x} hacia adelante, eje \texttt{y} hacia la izquierda y eje \texttt{z} hacia arriba \citep{rep103,rep105}. La cadena de transformaciones principal es:
 
 \begin{center}
 \texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame}
