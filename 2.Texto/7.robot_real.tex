@@ -88,9 +88,9 @@ m_j^{cmd}[k] = \frac{\omega_j^{cmd}[k]}{2\pi/N_e}\cdot\frac{1}{f_{ctrl}}
 \label{eq:cmd_to_ticks}
 \end{equation}
 
-donde $m_j^{cmd}[k]$ es la referencia enviada al firmware [ticks/frame], $\omega_j^{cmd}[k]$ la velocidad angular de rueda comandada [rad/s], $N_e=1980$ la resolución del encoder [cuentas/vuelta] y $f_{ctrl}=30$~Hz la frecuencia común del lazo (\texttt{loop\_rate} configurada igual a \texttt{PID\_RATE}). El término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count}. Esta conversión es equivalente a la Ec.~\ref{eq:mps_to_ticks}, ya que $v_j^{cmd}=r\,\omega_j^{cmd}$.
+donde $m_j^{cmd}[k]$ es la referencia enviada al firmware [ticks/frame], $\omega_j^{cmd}[k]$ la velocidad angular de rueda comandada [rad/s], $N_e=1980$ la resolución del encoder [ticks/vuelta] y $f_{ctrl}=30$~Hz la frecuencia común del lazo (\texttt{loop\_rate} configurada igual a \texttt{PID\_RATE}). El término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count}. Esta conversión es equivalente a la Ec.~\ref{eq:mps_to_ticks}, ya que $v_j^{cmd}=r\,\omega_j^{cmd}$.
 
-En \texttt{read()}, los conteos acumulados del encoder se transforman en ángulo y velocidad de rueda, que alimentan la odometría:
+En \texttt{read()}, los ticks acumulados del encoder se transforman en ángulo y velocidad de rueda, que alimentan la odometría:
 
 \begin{equation}
 \phi_j[k] = c_j[k]\,\frac{2\pi}{N_e},
@@ -100,7 +100,7 @@ En \texttt{read()}, los conteos acumulados del encoder se transforman en ángulo
 \label{eq:enc_to_state}
 \end{equation}
 
-donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ las cuentas acumuladas del encoder [cuentas], $\hat{\omega}_j[k]$ la velocidad angular de rueda estimada [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{ctrl}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
+donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ los ticks acumulados del encoder [ticks], $\hat{\omega}_j[k]$ la velocidad angular de rueda estimada [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{ctrl}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
 
 La velocidad $\hat{\omega}_j[k]$ es la misma magnitud que $\omega_j$ (Ec.~\ref{eq:w_ruedas}); difieren solo en la base temporal: $\omega_j$ usa el período nominal $T_s$ y $\hat{\omega}_j$ el período medido $\Delta t_k$.
 

@@ -47,7 +47,7 @@ N_e^{\mathrm{teo}} = N_{\mathrm{Hall}} \cdot c_q \cdot N_g
 \label{eq:resolucion_encoder}
 \end{equation}
 
-donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder [cuentas/vuelta del eje de salida], $N_{\mathrm{Hall}}=11$ pulsos por vuelta del eje del motor, $c_q=4$ el factor de decodificación en cuadratura (adimensional) y $N_g=46$ la relación de reducción nominal (adimensional, correspondiente a $46{:}1$). Evaluando, $N_e^{\mathrm{teo}}=11\cdot 4\cdot 46 = 2024$ cuentas/vuelta. La medición experimental entregó valores cercanos a 1980 cuentas/vuelta por rueda. Se adopta como resolución efectiva el valor nominal de firmware $N_e=1980$ cuentas/vuelta —ligeramente superior a las medias medidas, detalladas en el Capítulo~\ref{ch:setup_arduino}—, constante unificada para el firmware y la odometría.
+donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder [ticks/vuelta del eje de salida], $N_{\mathrm{Hall}}=11$ pulsos por vuelta del eje del motor, $c_q=4$ el factor de decodificación en cuadratura (adimensional) y $N_g=46$ la relación de reducción nominal (adimensional, correspondiente a $46{:}1$). Evaluando, $N_e^{\mathrm{teo}}=11\cdot 4\cdot 46 = 2024$ ticks/vuelta. La medición experimental entregó valores cercanos a 1980 ticks/vuelta por rueda. Se adopta como resolución efectiva el valor nominal de firmware $N_e=1980$ ticks/vuelta —ligeramente superior a las medias medidas, detalladas en el Capítulo~\ref{ch:setup_arduino}—, constante unificada para el firmware y la odometría.
 
 El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer los encoders, calcular el PID de velocidad de cada rueda y enviar señales \gls{PWM} al driver L298N. Este último permite accionar ambos motores, aunque introduce una zona muerta y caída de tensión que deben compensarse mediante la sintonización experimental del controlador.
 
@@ -87,8 +87,8 @@ La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos usados por 
 $r$ & Radio de rueda & 0.0335 m & Modelo cinemático y odometría \\
 $b$ & Separación entre ruedas & 0.188 m & Modelo cinemático diferencial \\
 $N_g$ & Relación de reducción & 46 (nominal $46{:}1$) & Cálculo teórico del encoder \\
-$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & 2024 cuentas/vuelta & Cálculo teórico \\
-$N_e$ & Resolución efectiva del encoder & 1980 cuentas/vuelta & Firmware y odometría \\
+$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & 2024 ticks/vuelta & Cálculo teórico \\
+$N_e$ & Resolución efectiva del encoder & 1980 ticks/vuelta & Firmware y odometría \\
 $c_q$ & Factor de cuadratura & 4 & Decodificación A/B \\
 $f_{ctrl}$ & Frecuencia del lazo de control & 30 Hz & PID, ros2\_control y odometría \\
 $T_s=1/f_{ctrl}$ & Período de control & 0.0333 s & PID y odometría \\

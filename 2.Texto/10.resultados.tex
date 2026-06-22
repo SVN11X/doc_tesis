@@ -1,7 +1,7 @@
 \chapter{Resultados experimentales}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. El detalle de protocolos, tablas completas y formatos de reporte pendientes se presenta en el Anexo~\ref{anx:protocolo_resultados}.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. El detalle de protocolos, tablas completas y formatos de reporte pendientes se presenta en el \ref{anx:protocolo_resultados}.
 
 % ===========================================================================
 \section{Entorno experimental}
@@ -13,7 +13,7 @@ Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04, manten
 {Vista general del mundo de simulación en Gazebo.}
 {fig:gazebo_world_overview}
 
-En hardware real, las pruebas se realizaron en un espacio interior con suelo de cerámica lisa. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Raspberry Pi 4 ejecutó la pila de control, mapeo y navegación, mientras que RViz2 se utilizó desde una estación de trabajo para supervisión.
+En hardware real, las pruebas se realizaron en un espacio interior con suelo de alfombra. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Raspberry Pi 4 ejecutó la pila de control, mapeo y navegación, mientras que RViz2 se utilizó desde una estación de trabajo para supervisión.
 
 El espacio físico disponible permitió validar odometría, control y mapeo. Sin embargo, la navegación autónoma y la exploración requieren trayectorias más largas y zonas de mayor superficie, por lo que quedaron definidas como pruebas planificadas.
 
@@ -39,6 +39,10 @@ Giro completo de $360^\circ$ & Desviación media & $17.1^\circ$ & $11.7^\circ$ \
 \end{table}
 
 En trayectoria rectilínea, el error medio de hardware fue 3.63\%, valor adecuado para recorridos cortos. La distancia reportada por \texttt{/odom} fue sistemáticamente inferior a la distancia teórica, lo que indica que el robot no alcanza completamente la velocidad de referencia debido a limitaciones de saturación y dinámica del sistema.
+
+\utemFigurePropia{2.Texto/Imag/prueba_recta.png}{0.82\textwidth}
+{Trayectoria rectilínea en simulación.}
+{fig:prueba_recta}
 
 En la prueba de giro, los patrones de error difieren entre ambos entornos porque miden fuentes distintas. En simulación, donde la odometría coincide con la verdad de terreno, el error refleja el seguimiento de consigna: en las cinco repeticiones el giro estimado fue inferior a $360^\circ$ (entre $335.9^\circ$ y $347.4^\circ$), es decir, una subestimación sistemática con baja dispersión y desviación media de $17.1^\circ$ ($4.74\%$). En hardware real, el error corresponde a la discrepancia entre la odometría y el giro físico, con desviaciones bidireccionales —subgiros y sobregiros— y deriva media de $11.7^\circ$; la mayor variabilidad se asocia a deslizamiento, zona muerta del driver L298N y diferencias mecánicas entre ruedas, mientras que la cancelación parcial entre sobre- y subgiros reduce la magnitud media. Los detalles por repetición se presentan en las Tablas~\ref{tab:odom_giro_sim} y~\ref{tab:odom_giro}.
 
@@ -84,15 +88,6 @@ En la prueba de giro, los patrones de error difieren entre ambos entornos porque
 
 La magnitud del error en ambos casos confirma la conveniencia de incorporar una IMU en trabajos futuros para corregir la orientación.
 
-\utemFigurePropia{2.Texto/Imag/prueba_recta.png}{0.82\textwidth}
-{Trayectoria rectilínea en simulación.}
-{fig:prueba_recta}
-
-\utemFigurePropia{2.Texto/Imag/tf_tree_real.pdf}{0.82\textwidth}
-{Árbol de transformaciones del robot real.}
-{fig:tf_tree_real}
-
-También se verificó la publicación continua del árbol de transformaciones: \texttt{map}$\rightarrow$\texttt{odom} por \texttt{slam\_toolbox}, \texttt{odom}$\rightarrow$\texttt{base\_link} por \texttt{diff\_drive\_controller}, y \texttt{base\_link}$\rightarrow$\texttt{laser\_frame} mediante una transformación estática.
 
 % ===========================================================================
 \section{Evaluación del controlador PID}
@@ -198,7 +193,7 @@ Zonas de sombra láser & Mínimas & Presentes \\
 
 La navegación autónoma con Nav2 y la exploración basada en fronteras quedaron integradas funcionalmente, pero su validación cuantitativa requiere un entorno físico de mayor superficie. Se definieron escenarios de meta directa, obstáculo intermedio y paso estrecho, con cinco repeticiones por caso.
 
-Para navegación, se registrarán tasa de éxito, tiempo medio a meta, desviación final y recuperaciones ejecutadas. Para exploración, se registrarán número de fronteras detectadas, metas enviadas, metas alcanzadas, cobertura estimada e intervenciones manuales. El formato de reporte se incluye en el Anexo~\ref{anx:protocolo_resultados}.
+Para navegación, se registrarán tasa de éxito, tiempo medio a meta, desviación final y recuperaciones ejecutadas. Para exploración, se registrarán número de fronteras detectadas, metas enviadas, metas alcanzadas, cobertura estimada e intervenciones manuales. El formato de reporte se incluye en el \ref{anx:protocolo_resultados}.
 
 \begin{table}[H]
 \centering

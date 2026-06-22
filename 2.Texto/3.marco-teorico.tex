@@ -9,11 +9,11 @@ Este capítulo presenta los fundamentos teóricos necesarios para el diseño e i
 
 La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{thrun2005probabilistic, borenstein1996}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{siciliano2010robotics, corke2017}. En este trabajo, la odometría es publicada por \texttt{diff\_drive\_controller} y utilizada por \texttt{slam\_toolbox} como estimación inicial para el mapeo.
 
-\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. Análogamente, $\omega$ sin subíndice denota la velocidad angular del \emph{robot} [rad/s]; con subíndice $j$ ($\omega_j$, $\hat{\omega}_j$, $\omega_j^{cmd}$) denota la velocidad angular de \emph{rueda} [rad/s]. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice.
+\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. Análogamente, $\omega$ sin subíndice denota la velocidad angular del \emph{robot} [rad/s]; con subíndice $j$ ($\omega_j$, $\hat{\omega}_j$, $\omega_j^{cmd}$) denota la velocidad angular de \emph{rueda} [rad/s]. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice. El conteo del encoder se expresa en \emph{ticks}: un \emph{tick} es una cuenta de encoder en cuadratura (unidad \texttt{ENC\_TICKS\_PER\_REV} del firmware).
 
 Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas
 $b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad
-angular se calcula a partir de las cuentas de encoder acumuladas en el intervalo
+angular se calcula a partir de los ticks de encoder acumulados en el intervalo
 de muestreo:
 
 \begin{equation}
@@ -22,7 +22,7 @@ de muestreo:
 \label{eq:w_ruedas}
 \end{equation}
 
-\noindent donde $\omega_{j}[k]$ es la velocidad angular de la rueda $j$ [rad/s], $\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de cuentas del encoder en el intervalo $T_s$ [cuentas], $N_e=1980$ la resolución del encoder [cuentas/vuelta] y $T_s=1/f_{ctrl}$ el período de muestreo [s].
+\noindent donde $\omega_{j}[k]$ es la velocidad angular de la rueda $j$ [rad/s], $\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de ticks del encoder en el intervalo $T_s$ [ticks], $N_e=1980$ la resolución del encoder [ticks/vuelta] y $T_s=1/f_{ctrl}$ el período de muestreo [s].
 
 \begin{align}
 v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right) \label{eq:v_lineal} \\
@@ -66,7 +66,7 @@ y_{k+1}    &= y_k + T_s\,v[k]\sin\theta_m.
 \caption{Odometría diferencial por encoders (esquema por tramos de \texttt{diff\_drive\_controller})}
 \label{alg:odometria_diferencial}
 \begin{algorithmic}[1]
-\Require Incremento de cuentas por rueda $\Delta c_j[k]$, $j\in\{R,L\}$; constantes $N_e$, $T_s$, $r$, $b$; pose previa $q_k=(x_k,y_k,\theta_k)$; umbral $\varepsilon$.
+\Require Incremento de ticks por rueda $\Delta c_j[k]$, $j\in\{R,L\}$; constantes $N_e$, $T_s$, $r$, $b$; pose previa $q_k=(x_k,y_k,\theta_k)$; umbral $\varepsilon$.
 \Ensure Pose actualizada $q_{k+1}$ y velocidades del robot $(v[k],\omega[k])$.
 
 \State \textbf{Inicialización:}
@@ -97,7 +97,7 @@ y_{k+1}    &= y_k + T_s\,v[k]\sin\theta_m.
 \end{algorithmic}
 \end{algorithm}
 
-En esta tesis, $r=0.0335$~m, $b=0.188$~m, $N_e=1980$ cuentas/vuelta y la frecuencia del lazo de control es $f_{ctrl}=30$~Hz, de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware (\texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión $\kappa$:
+En esta tesis, $r=0.0335$~m, $b=0.188$~m, $N_e=1980$ ticks/vuelta y la frecuencia del lazo de control es $f_{ctrl}=30$~Hz, de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware (\texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión $\kappa$:
 
 \begin{equation}
 m_j^{cmd}[k] = \kappa\, v_j^{cmd}[k],
@@ -208,7 +208,7 @@ m_j[k] = \Delta c_j[k] = c_j[k] - c_j[k-1]
 \label{eq:error_pid}
 \end{equation}
  
-\noindent donde $e_j[k]$ es el error [ticks/frame], $m_j^{cmd}[k]$ la referencia [ticks/frame] (definida previamente) y $m_j[k]$ la velocidad de rueda medida, igual al incremento de cuentas del encoder en un ciclo [ticks/frame].
+\noindent donde $e_j[k]$ es el error [ticks/frame], $m_j^{cmd}[k]$ la referencia [ticks/frame] (definida previamente) y $m_j[k]$ la velocidad de rueda medida, igual al incremento de ticks del encoder en un ciclo [ticks/frame].
  
 \begin{equation}
 u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_o},

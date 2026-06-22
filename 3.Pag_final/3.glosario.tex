@@ -29,10 +29,10 @@ $\omega[k]$ & Velocidad angular del robot & rad/s \\
 $\omega_j[k]$ & Velocidad angular de rueda $j\in\{R,L\}$ (período nominal $T_s$) & rad/s \\
 $\hat{\omega}_j[k]$ & Velocidad angular de rueda con período real medido $\Delta t_k$ & rad/s \\
 $\phi_j[k]$ & Ángulo acumulado de rueda $j$ & rad \\
-$c_j[k]$ & Cuentas acumuladas del encoder de rueda $j$ & cuentas \\
-$\Delta c_j[k]$ & Incremento de cuentas del encoder en el intervalo & cuentas \\
-$N_e$ & Resolución efectiva del encoder (\texttt{ENC\_TICKS\_PER\_REV}) & cuentas/vuelta \\
-$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & cuentas/vuelta \\
+$c_j[k]$ & Ticks acumulados del encoder de rueda $j$ & ticks \\
+$\Delta c_j[k]$ & Incremento de ticks del encoder en el intervalo & ticks \\
+$N_e$ & Resolución efectiva del encoder (\texttt{ENC\_TICKS\_PER\_REV}) & ticks/vuelta \\
+$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & ticks/vuelta \\
 $f_{ctrl}$ & Frecuencia del lazo de control (\texttt{PID\_RATE}$=$\texttt{loop\_rate}) & Hz \\
 $T_s=1/f_{ctrl}$ & Período de control (\textit{frame}) & s \\
 $T_{cap}$ & Período de captura en lazo abierto & s \\
@@ -298,7 +298,7 @@ name={encoder incremental},
 text={encoder incremental},
 plural={encoders incrementales},
 description={Sensor rotativo que entrega dos canales en cuadratura (A y B)
-para medir conteos por vuelta, sentido de giro y estimar velocidad angular.
+para medir ticks por vuelta, sentido de giro y estimar velocidad angular.
 La dirección se obtiene comparando la fase entre canales, y la velocidad a partir
 del número de pulsos en un intervalo de muestreo. Algunos modelos incluyen un
 canal Z (index) para referencia de vuelta.}

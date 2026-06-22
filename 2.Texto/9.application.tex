@@ -42,16 +42,18 @@ El mapeo utiliza el marco \texttt{odom} como referencia odométrica, \texttt{map
 %------------------------------------------------------------------
 \section{Navegación autónoma con Nav2}
 \label{sec:nav2_ch9}
-
 Nav2 recibe una meta de navegación, calcula una ruta global y genera comandos de velocidad para que el robot la ejecute evitando obstáculos. La cadena funcional implementada es:
 
 \begin{center}
 \small
-Meta $\rightarrow$ \texttt{bt\_navigator} $\rightarrow$ \texttt{planner\_server} $\rightarrow$ \texttt{controller\_server}
-$\rightarrow$ \texttt{twist\_mux} $\rightarrow$ \texttt{diff\_drive\_controller}
+\begin{minipage}{\linewidth}
+\centering
+Meta $\rightarrow$ \texttt{bt\_navigator} $\rightarrow$ \texttt{planner\_server} $\rightarrow$ \\[3pt]
+\texttt{controller\_server} $\rightarrow$ \texttt{twist\_mux} $\rightarrow$ \texttt{diff\_drive\_controller}
+\end{minipage}
 \end{center}
 
-El planificador global utilizado es NavFn con A\*, activado mediante \texttt{use\_astar}. Este planificador opera sobre el costmap global y genera una trayectoria desde la pose actual hasta la meta. Para el seguimiento local se emplea DWB, que evalúa trayectorias candidatas y selecciona comandos de velocidad compatibles con las restricciones cinemáticas del robot.
+El planificador global utilizado es NavFn con A$^*$, activado mediante \texttt{use\_astar}. Este planificador opera sobre el costmap global y genera una trayectoria desde la pose actual hasta la meta. Para el seguimiento local se emplea DWB, que evalúa trayectorias candidatas y selecciona comandos de velocidad compatibles con las restricciones cinemáticas del robot.
 
 \begin{table}[H]
 \centering
@@ -62,7 +64,7 @@ El planificador global utilizado es NavFn con A\*, activado mediante \texttt{use
 \toprule
 \textbf{Componente} & \textbf{Implementación} & \textbf{Función} \\
 \midrule
-Planificador global & NavFn con A\* & Generar ruta global \\
+Planificador global & NavFn con A$^*$ & Generar ruta global \\
 Controlador local & DWB & Seguir ruta y evitar obstáculos \\
 Costmaps & Global y local & Representar obstáculos y zonas transitables \\
 Árbol de comportamiento & \texttt{bt\_navigator} & Orquestar navegación y recuperación \\
@@ -138,6 +140,7 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 \caption{Ciclo de exploración por fronteras del explorador configurado (\texttt{explore\_lite}/\texttt{m-explore-ros2})}
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
+\footnotesize
 \Require \texttt{global\_costmap} $C$; pose del robot; pesos $w_{\mathrm{pot}}=3.0$, $w_{\mathrm{gain}}=1.0$ y orientación desactivada ($\texttt{orientation\_scale}=0$); resolución $\rho_{\mathrm{map}}=0.05$~m/celda; tamaño mínimo $\rho_{\mathrm{map}}|F|\geq 0.033$~m; frecuencia $f_{\mathrm{exp}}=0.05$~Hz; tiempo sin progreso $t_{\mathrm{prog}}=60$~s; acción \texttt{NavigateToPose} de Nav2.
 \Ensure Mapa del entorno explorado; metas enviadas y alcanzadas.
 

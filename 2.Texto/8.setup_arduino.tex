@@ -15,7 +15,7 @@ El firmware se organiza en módulos con responsabilidades separadas: \texttt{ROS
 %------------------------------------------------------------------
 \section{Constantes físicas y conversión de unidades}
 
-El firmware utiliza las mismas constantes físicas del modelo cinemático y del gemelo digital: el radio de rueda $r=0.0335$~m —parametrizado por el diámetro $D=2r=\texttt{WHEEL\_DIAMETER}=0.067$~m— y $N_e=\texttt{ENC\_TICKS\_PER\_REV}=1980$ cuentas/vuelta. El lazo opera a $f_{ctrl}=\texttt{PID\_RATE}=30$~Hz, por lo que $T_s=1/f_{ctrl}\approx0.0333$~s.
+El firmware utiliza las mismas constantes físicas del modelo cinemático y del gemelo digital: el radio de rueda $r=0.0335$~m —parametrizado por el diámetro $D=2r=\texttt{WHEEL\_DIAMETER}=0.067$~m— y $N_e=\texttt{ENC\_TICKS\_PER\_REV}=1980$ ticks/vuelta. El lazo opera a $f_{ctrl}=\texttt{PID\_RATE}=30$~Hz, por lo que $T_s=1/f_{ctrl}\approx0.0333$~s.
 
 A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame}. El factor de conversión entre m/s y ticks/frame se calcula según la Ec.~\ref{eq:mps_to_ticks_factor}
 ($\approx 313.56$); en el firmware se evalúa de forma equivalente como $N_e/(\pi D\, f_{ctrl})$ con $D=2r$.
@@ -25,11 +25,11 @@ A partir de estas constantes se calcula el factor de conversión entre velocidad
 
 La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante un protocolo serial textual a 57600~baud. Durante la operación normal, los comandos principales son: lectura de encoders, envío de referencias de velocidad, carga de ganancias PID y aplicación de PWM directo para pruebas en lazo abierto. El protocolo completo se documenta en el \ref{anx:firmware}.
 
-\subsection{Obtención experimental de cuentas por vuelta}
+\subsection{Obtención experimental de ticks por vuelta}
 \label{sec:cpr_experimental}
 \label{sec:cpr_promedios}
 
-Para obtener una odometría consistente, se midió experimentalmente el número de cuentas por vuelta completa de rueda. Los promedios obtenidos fueron:
+Para obtener una odometría consistente, se midió experimentalmente el número de ticks por vuelta completa de rueda. Los promedios obtenidos fueron:
 
 \begin{align}
 \bar{N}_R &= \frac{1}{10}\sum_{i=1}^{10} N_{R(i)} = 1976
@@ -38,15 +38,15 @@ Para obtener una odometría consistente, se midió experimentalmente el número 
 \label{eq:promedio_cuentas_L}
 \end{align}
 
-donde $N_{R(i)}$ y $N_{L(i)}$ son las cuentas por vuelta completa medidas en la $i$-ésima repetición de las ruedas derecha e izquierda [cuentas/vuelta]. Ambos promedios difieren en menos del 0.4\%. Se adopta un único valor nominal unificado $N_e=1980$ cuentas/vuelta, ligeramente superior a ambas medias medidas, por coincidir con la constante empleada en el firmware y en la odometría (\texttt{ENC\_TICKS\_PER\_REV}$=$\texttt{enc\_counts\_per\_rev}$=1980$). Respecto de los promedios medidos, esta unificación introduce un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
+donde $N_{R(i)}$ y $N_{L(i)}$ son los ticks por vuelta completa medidos en la $i$-ésima repetición de las ruedas derecha e izquierda [ticks/vuelta]. Ambos promedios difieren en menos del 0.4\%. Se adopta un único valor nominal unificado $N_e=1980$ ticks/vuelta, ligeramente superior a ambas medias medidas, por coincidir con la constante empleada en el firmware y en la odometría (\texttt{ENC\_TICKS\_PER\_REV}$=$\texttt{enc\_counts\_per\_rev}$=1980$). Respecto de los promedios medidos, esta unificación introduce un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
 
 %------------------------------------------------------------------
 \section{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con $m_j[k]=\Delta c_j[k]=c_j[k]-c_j[k-1]$ la velocidad medida [ticks/frame $\equiv$ cuentas/ciclo].
+El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con $m_j[k]=\Delta c_j[k]=c_j[k]-c_j[k-1]$ la velocidad medida [ticks/frame].
 
-La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Marco Teórico. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
+La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap. \ref{marco_teorico}. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
 
 \begin{table}[H]
 \centering
@@ -73,7 +73,7 @@ Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ son coeficientes adimensionales en la es
 \caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
-\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y cuentas de encoder $c_j[k]$ [cuentas] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_o=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
+\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y ticks de encoder $c_j[k]$ [ticks] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_o=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
 \Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
 
 \State \textbf{Inicialización:}
@@ -154,7 +154,7 @@ v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 \end{algorithmic}
 \end{algorithm}
 
-\noindent donde $u_j[k]$ es el PWM aplicado a la rueda $j$ [PWM]; $v_j^{med}[k]$ la velocidad lineal medida de rueda (no del robot) [m/s]; $\Delta c_j[k]$ las cuentas en el intervalo $T_{cap}$ [cuentas]; $c_j[k]$ las cuentas acumuladas [cuentas]; $T_{cap}$ el período de captura [s]; $N_e$ y $r$ definidas previamente.
+\noindent donde $u_j[k]$ es el PWM aplicado a la rueda $j$ [PWM]; $\Delta c_j[k]$ los ticks en el intervalo $T_{cap}$ [ticks]; $c_j[k]$ los ticks acumulados [ticks]; $T_{cap}$ el período de captura [s]; $v_j^{med}$, $N_e$ y $r$ definidas previamente.
 
 \subsection{Identificación y optimización}
 
@@ -204,7 +204,7 @@ El bucle principal atiende el parser serial, ejecuta el PID a 30~Hz y evalúa la
 \section{Integración con ROS 2 mediante \texttt{diffdrive\_arduino}}
 \label{sec:integracion_ros2}
 
-La integración con \gls{ROS2} se realiza mediante el plugin \texttt{DiffDriveArduino}, usado por \texttt{ros2\_control}. El plugin traduce velocidades angulares de rueda hacia \textit{ticks/frame}, envía dichas referencias al \gls{Arduino} y recibe los conteos de encoder para actualizar posición, velocidad y odometría.
+La integración con \gls{ROS2} se realiza mediante el plugin \texttt{DiffDriveArduino}, usado por \texttt{ros2\_control}. El plugin traduce velocidades angulares de rueda hacia \textit{ticks/frame}, envía dichas referencias al \gls{Arduino} y recibe los ticks de encoder para actualizar posición, velocidad y odometría.
 
 La consistencia entre plugin y firmware depende de tres parámetros compartidos: \texttt{enc\_counts\_per\_rev} = 1980, \texttt{loop\_rate} = 30~Hz y \texttt{baud\_rate} = 57600. Estos valores permiten que la odometría publicada por \texttt{diff\_drive\_controller} sea coherente con la medición de encoders y con el modelo cinemático.
 
