@@ -504,7 +504,7 @@ U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion_marco}
 
-La exploración autónoma permite que el robot construya el mapa mientras decide nuevas metas. En el enfoque basado en fronteras, una frontera corresponde al límite entre celdas libres conocidas y celdas aún no observadas \citep{yamauchi1997frontier}. El robot selecciona una frontera, la envía como meta a Nav2 y actualiza el mapa con las nuevas observaciones. Este ciclo se repite hasta agotar las fronteras alcanzables.
+En el enfoque basado en fronteras (Sec.~\ref{sec:exploracion}), el robot selecciona una frontera según el costo de la Ec.~\ref{eq:frontier_cost}, la envía como meta a Nav2 y actualiza el mapa con las nuevas observaciones; el ciclo se repite hasta agotar las fronteras alcanzables.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

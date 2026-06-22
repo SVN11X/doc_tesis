@@ -3,6 +3,8 @@
 
 Este capítulo describe el firmware \texttt{ROSArduinoBridge} implementado en el \gls{Arduino} Nano para el control de bajo nivel del robot. El firmware cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos.
 
+La integración con \gls{ROS2} mediante el plugin \texttt{DiffDriveArduino} y \texttt{ros2\_control} —traducción de velocidades de rueda a \textit{ticks/frame} y lectura de encoders— se desarrolla en el Cap.~\ref{chap:robot_real}. Su consistencia con el firmware depende de los parámetros compartidos reunidos en la Tabla~\ref{tab:anx_trazabilidad_parametros}.
+
 %------------------------------------------------------------------
 \section{Arquitectura modular del firmware}
 
@@ -199,14 +201,6 @@ Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajust
 \label{sec:bucle_principal}
 
 El bucle principal atiende el parser serial, ejecuta el PID a 30~Hz y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
-
-%------------------------------------------------------------------
-\section{Integración con ROS 2 mediante \texttt{diffdrive\_arduino}}
-\label{sec:integracion_ros2}
-
-La integración con \gls{ROS2} se realiza mediante el plugin \texttt{DiffDriveArduino}, usado por \texttt{ros2\_control}. El plugin traduce velocidades angulares de rueda hacia \textit{ticks/frame}, envía dichas referencias al \gls{Arduino} y recibe los ticks de encoder para actualizar posición, velocidad y odometría.
-
-La consistencia entre plugin y firmware depende de tres parámetros compartidos: \texttt{enc\_counts\_per\_rev} = 1980, \texttt{loop\_rate} = 30~Hz y \texttt{baud\_rate} = 57600. Estos valores permiten que la odometría publicada por \texttt{diff\_drive\_controller} sea coherente con la medición de encoders y con el modelo cinemático.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

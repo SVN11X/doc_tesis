@@ -56,7 +56,7 @@ El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer 
 
 La Raspberry Pi 4 ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, actuando como computador principal del robot. Su función es coordinar la comunicación con el \gls{Arduino}, recibir los datos del sensor láser, ejecutar \texttt{slam\_toolbox}, Nav2 y los nodos asociados a la navegación.
 
-El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 360 grados que publica barridos utilizados por SLAM y por los mapas de costo de Nav2. Se selecciona por su bajo costo, integración con \gls{ROS2} y adecuación a entornos interiores planos. Como limitación, no detecta obstáculos fuera del plano de barrido.
+El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 360 grados que publica barridos utilizados por SLAM y por los mapas de costo de Nav2. Su selección y limitaciones se justifican en la Sec.~\ref{sec:sensores}.
 
 %------------------------------------------------------------------
 \section{Alimentación y fabricación}

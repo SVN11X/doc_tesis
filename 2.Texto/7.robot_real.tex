@@ -26,13 +26,7 @@ En hardware real, el archivo \texttt{launch\_robot.launch.py} inicia los nodos n
 \item \texttt{joint\_state\_broadcaster}, que publica el estado de las articulaciones.
 \end{itemize}
 
-La cadena de transformaciones mantiene la misma convención usada en simulación:
-
-\begin{center}
-\texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame}
-\end{center}
-
-En esta cadena, \texttt{slam\_toolbox} publica la transformación \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
+La cadena de transformaciones mantiene la misma convención usada en simulación (Sec.~\ref{sec:tf-convenciones}): \texttt{slam\_toolbox} publica \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
 
 %------------------------------------------------------------------
 \section{Teleoperación y multiplexación de comandos}
@@ -161,7 +155,7 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
 \end{algorithmic}
 \end{algorithm}
 
-El firmware incorpora una auto-detención de seguridad: si no recibe comandos durante más de 2~s, detiene los motores. Esta protección reduce el riesgo ante fallas de comunicación, reinicio de nodos o pérdida de conexión.
+El firmware incorpora además una auto-detención de seguridad ante pérdida de comandos, detallada en la Sec.~\ref{sec:bucle_principal} (Cap.~\ref{ch:setup_arduino}).
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

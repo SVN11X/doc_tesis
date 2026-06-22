@@ -219,7 +219,7 @@ Exploración & Integrada y verificada funcionalmente & Validación cuantitativa 
 
 La comparación entre simulación y hardware muestra coherencia cinemática general. La diferencia entre el error medio de trayectoria recta en simulación (3.39\%) y hardware real (3.63\%) es baja, lo que valida la correspondencia geométrica entre el gemelo digital y el prototipo físico.
 
-Las principales diferencias aparecen en el giro y en el mapeo, y deben interpretarse considerando que cada entorno mide una fuente de error distinta. En simulación, donde la odometría coincide con la verdad de terreno, el error de giro proviene del seguimiento de consigna y es sistemático (subestimación consistente) y de baja dispersión, pero de mayor magnitud media ($17.1^\circ$). En hardware real, el error refleja la discrepancia odometría--física; las fuentes no modeladas —zona muerta del driver, deslizamiento, fricción y ruido sensorial— producen una deriva bidireccional, más variable, pero de menor magnitud media ($11.7^\circ$) por la cancelación parcial entre sobre- y subgiros. Por tanto, el mayor valor en simulación no implica una peor odometría, sino que cuantifica un efecto distinto (consigna vs. estimación).
+Las principales diferencias aparecen en el giro y en el mapeo. El contraste del giro entre simulación ($17.1^\circ$, error de consigna sistemático) y hardware real ($11.7^\circ$, discrepancia odometría--física bidireccional) se analizó en la Sec.~\ref{sec:resultados_odometria}. Por tanto, el mayor valor en simulación no implica una peor odometría, sino que cuantifica un efecto distinto (consigna vs.\ estimación).
 
 \begin{table}[H]
 \centering
@@ -246,6 +246,6 @@ El sobreimpulso del control PID corresponde a la simulación sobre el modelo FOD
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_resultados}
 
-Los resultados muestran que el prototipo alcanza una precisión adecuada de odometría en trayectorias cortas, con error medio de 3.63\% en hardware real. La deriva angular de $11.7^\circ$ por giro completo confirma la necesidad de incorporar una IMU para mejorar la estimación de orientación. El controlador PID sintonizado mediante PSO y refinamiento experimental reduce el sobreimpulso respecto de Lambda, logrando una respuesta más apropiada para navegación en interiores.
+Los resultados muestran que el prototipo alcanza una precisión adecuada de odometría en trayectorias cortas, con error medio de 3.63\% en hardware real. La deriva angular de $11.7^\circ$ por giro completo motiva la incorporación de una IMU planteada en el Trabajo futuro. El controlador PID sintonizado mediante PSO y refinamiento experimental reduce el sobreimpulso respecto de Lambda, logrando una respuesta más apropiada para navegación en interiores.
 
 El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La navegación autónoma y la exploración por fronteras quedaron integradas y verificadas funcionalmente, pero su validación cuantitativa debe completarse en un entorno de mayor superficie siguiendo el protocolo definido en el anexo.

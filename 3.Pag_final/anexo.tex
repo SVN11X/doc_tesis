@@ -16,18 +16,7 @@
 \section{Construcción, componentes y montaje}
 \label{anx:componentes}
 
-Este anexo reúne información complementaria sobre los componentes, el montaje físico, la alimentación y la reproducción del prototipo. En el cuerpo principal se mantienen solo los parámetros que alimentan el modelo, el firmware y la validación.
-
-\subsection{Alimentación y protecciones}
-\label{anx:alimentacion}
-
-El sistema se alimenta desde una batería Li-ion de 12~V. Desde este bus se energizan los motores y, mediante un convertidor reductor, se genera el riel de 5~V para la Raspberry Pi, el \gls{Arduino} y el \gls{LIDAR}. La distribución separa el dominio de potencia del dominio lógico para reducir interferencias producidas por los motores.
-
-La cadena principal de alimentación es:
-
-\begin{center}
-Batería 12~V $\rightarrow$ fusible $\rightarrow$ interruptor maestro $\rightarrow$ reguladores y cargas
-\end{center}
+Este anexo reúne información complementaria sobre los componentes, el montaje físico, y la reproducción del prototipo.
 
 \subsection{Parámetros de impresión 3D}
 \label{anx:impresion3d}
@@ -84,11 +73,7 @@ El modelo se construye a partir de \texttt{robot.urdf.xacro}, que integra la est
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
 
-La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF. La cadena principal validada es:
-
-\begin{center}
-\texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame}
-\end{center}
+La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF principal (Sec.~\ref{sec:tf-convenciones}).
 
 \begin{table}[H]
 \centering
@@ -105,8 +90,6 @@ Marcos principales & \texttt{odom}, \texttt{base\_link}, \texttt{base\_footprint
 \bottomrule
 \end{tabular}
 \end{table}
-
-Las principales fuentes de divergencia simulación--hardware son la fricción real, la zona muerta del driver, el ruido sensorial, la latencia serial y discrepancias entre parámetros declarados en archivos \texttt{xacro}, archivos \texttt{yaml} y firmware.
 
 %======================================================================
 \section{Hardware, red e integración con ROS 2}
@@ -418,7 +401,7 @@ Este anexo conserva observaciones técnicas complementarias derivadas del desarr
 
 \subsection{Brecha simulación--hardware}
 
-La brecha de transferencia se observó principalmente en tres aspectos: ruido sensorial del RPLidar A1, deslizamiento de ruedas en giros y latencias variables de la cadena serial \gls{Arduino}--Raspberry Pi. En simulación, Gazebo idealiza parte de estas condiciones, por lo que los resultados tienden a ser más estables que en hardware real.
+La brecha de transferencia se observó en varios aspectos: fricción real, zona muerta del driver L298N, ruido sensorial del RPLidar A1, deslizamiento de ruedas en giros, latencias variables de la cadena serial \gls{Arduino}--Raspberry Pi y discrepancias entre parámetros declarados en archivos \texttt{xacro}, \texttt{yaml} y firmware. En simulación, Gazebo idealiza parte de estas condiciones, por lo que los resultados tienden a ser más estables que en hardware real.
 
 A pesar de ello, la estrategia de paridad entre simulación y hardware permitió mantener la misma lógica de operación, usando nombres de tópicos, marcos TF y archivos de configuración equivalentes. Esto facilitó transferir la arquitectura desde Gazebo al robot físico sin rediseñar la pila de control.
 
