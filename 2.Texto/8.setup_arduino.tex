@@ -29,7 +29,6 @@ La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante un
 
 \subsection{Obtención experimental de ticks por vuelta}
 \label{sec:cpr_experimental}
-\label{sec:cpr_promedios}
 
 Para obtener una odometría consistente, se midió experimentalmente el número de ticks por vuelta completa de rueda. Los promedios obtenidos fueron:
 
@@ -46,7 +45,7 @@ donde $N_{R(i)}$ y $N_{L(i)}$ son los ticks por vuelta completa medidos en la $i
 \section{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con $m_j[k]=\Delta c_j[k]=c_j[k]-c_j[k-1]$ la velocidad medida [ticks/frame].
+El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con la velocidad medida $m_j[k]$ en ticks/frame.
 
 La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap. \ref{marco_teorico}. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
 

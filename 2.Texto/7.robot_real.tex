@@ -73,16 +73,7 @@ El controlador diferencial recibe comandos de velocidad lineal y angular, y los 
 
 La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} que opera en un ciclo periódico \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} a la frecuencia $f_{ctrl}$ del \texttt{controller\_manager}.
 
-En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} esperado por el \gls{Arduino}:
-
-\begin{equation}
-m_j^{cmd}[k] = \frac{\omega_j^{cmd}[k]}{2\pi/N_e}\cdot\frac{1}{f_{ctrl}}
-= \frac{\omega_j^{cmd}[k]\,N_e}{2\pi\,f_{ctrl}},
-\qquad j\in\{R,L\}
-\label{eq:cmd_to_ticks}
-\end{equation}
-
-donde $m_j^{cmd}[k]$ es la referencia enviada al firmware [ticks/frame], $\omega_j^{cmd}[k]$ la velocidad angular de rueda comandada [rad/s], $N_e=1980$ la resolución del encoder [ticks/vuelta] y $f_{ctrl}=30$~Hz la frecuencia común del lazo (\texttt{loop\_rate} configurada igual a \texttt{PID\_RATE}). El término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count}. Esta conversión es equivalente a la Ec.~\ref{eq:mps_to_ticks}, ya que $v_j^{cmd}=r\,\omega_j^{cmd}$.
+En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} esperado por el \gls{Arduino} aplicando la misma conversión de la Ec.~\ref{eq:mps_to_ticks}. Expresada en términos de la velocidad angular de rueda $\omega_j^{cmd}$ (con $v_j^{cmd}=r\,\omega_j^{cmd}$), equivale a $m_j^{cmd}[k]=\omega_j^{cmd}[k]\,N_e/(2\pi\,f_{ctrl})$, donde el término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count}.
 
 En \texttt{read()}, los ticks acumulados del encoder se transforman en ángulo y velocidad de rueda, que alimentan la odometría:
 
@@ -110,7 +101,7 @@ El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se res
 \item Un nodo de navegación o teleoperación publica un comando de velocidad $(v,\omega)$.
 \item \texttt{twist\_mux} selecciona la fuente de mayor prioridad.
 \item \texttt{diff\_drive\_controller} convierte el comando $(v,\omega)$ en velocidades angulares de rueda $\omega_j^{cmd}$.
-\item \texttt{DiffDriveArduino} traduce $\omega_j^{cmd}$ a \textit{ticks/frame} (Ec.~\ref{eq:cmd_to_ticks}) y los envía al \gls{Arduino}.
+\item \texttt{DiffDriveArduino} traduce $\omega_j^{cmd}$ a \textit{ticks/frame} (Ec.~\ref{eq:mps_to_ticks}) y los envía al \gls{Arduino}.
 \item El \gls{Arduino} fija las referencias PID por rueda y aplica \gls{PWM} a los motores.
 \item El plugin solicita periódicamente los encoders y reconstruye $\phi_j$ y $\hat{\omega}_j$ (Ec.~\ref{eq:enc_to_state}).
 \item \texttt{diff\_drive\_controller} integra la odometría y publica \texttt{/odom} junto con la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
@@ -146,7 +137,7 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
 \State \textbf{write():}
 \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
 \For{$j\in\{R,L\}$}
-\State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{ctrl})$ \Comment{Ec.~\ref{eq:cmd_to_ticks}}
+\State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{ctrl})$ \Comment{Ec.~\ref{eq:mps_to_ticks}}
 \EndFor
 \State Enviar $m_R^{cmd}[k],m_L^{cmd}[k]$ al \gls{Arduino}
 \EndWhile

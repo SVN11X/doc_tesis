@@ -141,7 +141,7 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
 \footnotesize
-\Require \texttt{global\_costmap} $C$; pose del robot; pesos $w_{\mathrm{pot}}=3.0$, $w_{\mathrm{gain}}=1.0$ y orientación desactivada ($\texttt{orientation\_scale}=0$); resolución $\rho_{\mathrm{map}}=0.05$~m/celda; tamaño mínimo $\rho_{\mathrm{map}}|F|\geq 0.033$~m; frecuencia $f_{\mathrm{exp}}=0.05$~Hz; tiempo sin progreso $t_{\mathrm{prog}}=60$~s; acción \texttt{NavigateToPose} de Nav2.
+\Require \texttt{global\_costmap} $C$; pose del robot; pesos $w_{\mathrm{pot}},w_{\mathrm{gain}}$, frecuencia $f_{\mathrm{exp}}$ y tiempo sin progreso $t_{\mathrm{prog}}$ (valores en la Tabla~\ref{tab:explore_params_ch9}); orientación desactivada ($\texttt{orientation\_scale}=0$); resolución $\rho_{\mathrm{map}}=0.05$~m/celda; tamaño mínimo $\rho_{\mathrm{map}}|F|\geq 0.033$~m; acción \texttt{NavigateToPose} de Nav2.
 \Ensure Mapa del entorno explorado; metas enviadas y alcanzadas.
 
 \State \textbf{Inicialización:}

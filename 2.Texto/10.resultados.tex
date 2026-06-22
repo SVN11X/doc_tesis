@@ -219,20 +219,17 @@ Exploración & Integrada y verificada funcionalmente & Validación cuantitativa 
 
 La comparación entre simulación y hardware muestra coherencia cinemática general. La diferencia entre el error medio de trayectoria recta en simulación (3.39\%) y hardware real (3.63\%) es baja, lo que valida la correspondencia geométrica entre el gemelo digital y el prototipo físico.
 
-Las principales diferencias aparecen en el giro y en el mapeo. El contraste del giro entre simulación ($17.1^\circ$, error de consigna sistemático) y hardware real ($11.7^\circ$, discrepancia odometría--física bidireccional) se analizó en la Sec.~\ref{sec:resultados_odometria}. Por tanto, el mayor valor en simulación no implica una peor odometría, sino que cuantifica un efecto distinto (consigna vs.\ estimación).
+Las principales diferencias aparecen en el giro y en el mapeo. El contraste del giro entre simulación ($17.1^\circ$, error de consigna sistemático) y hardware real ($11.7^\circ$, discrepancia odometría--física bidireccional) se analizó en la Sec.~\ref{sec:resultados_odometria}. Por tanto, el mayor valor en simulación no implica una peor odometría, sino que cuantifica un efecto distinto (consigna vs.\ estimación). Los indicadores cuantitativos de odometría y control PID ya se resumieron en las Tablas~\ref{tab:resumen_odometria} y~\ref{tab:pid_performance}; la Tabla~\ref{tab:comparacion_integral} sintetiza el estado de los subsistemas restantes.
 
 \begin{table}[H]
 \centering
-\caption{Comparación integral de desempeño.}
+\caption{Estado integral de los subsistemas restantes.}
 \label{tab:comparacion_integral}
 \small
 \begin{tabular}{p{3.4cm} p{3.6cm} p{2.8cm} p{2.8cm}}
 \toprule
 \textbf{Subsistema} & \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
-Odometría recta & Error medio & 3.39\% & 3.63\% \\
-Odometría giro & Desviación angular & $17.1^\circ$\,(consigna) & $11.7^\circ$\,(estim.) \\
-Control PID & Sobreimpulso (modelo FODT) & N/A & 15.63\% / 10.66\% \\
 SLAM & Consistencia del mapa & Alta & Media--alta \\
 Nav2 & Tasa de éxito & Pendiente & Pendiente \\
 Exploración & Cobertura & Pendiente & Pendiente \\
@@ -240,7 +237,7 @@ Exploración & Cobertura & Pendiente & Pendiente \\
 \end{tabular}
 \end{table}
 
-El sobreimpulso del control PID corresponde a la simulación sobre el modelo FODT con las ganancias del firmware, no a una medición directa de hardware; se incluye en la columna de hardware solo por corresponder a las ganancias desplegadas. Durante sesiones superiores a 10 min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5 V. La caracterización cuantitativa de uso de CPU, memoria y autonomía energética queda como medición pendiente.
+El sobreimpulso del control PID (Tabla~\ref{tab:pid_performance}) corresponde a la simulación sobre el modelo FODT con las ganancias del firmware, no a una medición directa de hardware. Durante sesiones superiores a 10 min de operación continua no se observaron caídas de tensión ni sobrecalentamiento en el riel de 5 V. La caracterización cuantitativa de uso de CPU, memoria y autonomía energética queda como medición pendiente.
 
 % ===========================================================================
 \section*{Conclusión del capítulo}

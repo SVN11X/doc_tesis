@@ -109,7 +109,7 @@ m_j^{cmd}[k] = \kappa\, v_j^{cmd}[k],
 
 \noindent donde $m_j^{cmd}[k]$ es la referencia de velocidad de rueda enviada al firmware [ticks/frame], $v_j^{cmd}[k]$ la velocidad lineal de rueda comandada [m/s] y $\kappa$ el factor de conversión m/s$\to$ticks/frame (constante \texttt{MPS\_TO\_TICKS\_FACTOR} del firmware), con unidades (ticks/frame)/(m/s); el resto de variables fueron definidas previamente. La conversión inversa ticks/frame$\to$m/s es $1/\kappa$ (constante \texttt{TICKS\_TO\_MPS}).
 
-La forma equivalente en términos de la velocidad angular de rueda comandada $\omega_j^{cmd}$ se presenta en la Ec.~\ref{eq:cmd_to_ticks} (capítulo de hardware), relacionada por $v_j^{cmd}=r\,\omega_j^{cmd}$.
+La forma equivalente en términos de la velocidad angular de rueda comandada $\omega_j^{cmd}$ se obtiene mediante $v_j^{cmd}=r\,\omega_j^{cmd}$ y se aplica en el plugin de hardware (Cap.~\ref{chap:robot_real}).
 
 \begin{align}
 \kappa
