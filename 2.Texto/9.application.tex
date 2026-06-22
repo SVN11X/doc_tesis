@@ -7,7 +7,7 @@ Este capítulo describe la arquitectura de software que integra control diferenc
 \section{Mapeo con \texttt{slam\_toolbox}}
 \label{sec:slam_ch9}
 
-El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, que estima simultáneamente la trayectoria del robot y el mapa 2D a partir de la odometría y los barridos del \gls{LIDAR}. Se utiliza el modo \texttt{online\_async}, ya que procesa los datos del láser sin bloquear la adquisición de nuevos barridos, manteniendo una cadena \texttt{tf} estable en una Raspberry Pi 4.
+El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}). Se utiliza el modo \texttt{online\_async}, ya que procesa los datos del láser sin bloquear la adquisición de nuevos barridos, manteniendo una cadena \texttt{tf} estable en una Raspberry Pi 4.
 
 El mapeo utiliza el marco \texttt{odom} como referencia odométrica, \texttt{map} como marco global, \texttt{base\_link} como base del robot y \texttt{/scan} como tópico del sensor láser. La configuración activa cierre de lazo y optimización de grafo mediante Ceres, permitiendo corregir deriva acumulada durante el recorrido.
 
@@ -45,7 +45,7 @@ Meta $\rightarrow$ \texttt{bt\_navigator} $\rightarrow$ \texttt{planner\_server}
 \end{minipage}
 \end{center}
 
-El planificador global utilizado es NavFn con A$^*$, activado mediante \texttt{use\_astar}. Este planificador opera sobre el costmap global y genera una trayectoria desde la pose actual hasta la meta. Para el seguimiento local se emplea DWB, que evalúa trayectorias candidatas y selecciona comandos de velocidad compatibles con las restricciones cinemáticas del robot.
+El planificador global utilizado es NavFn con A$^*$ (Sec.~\ref{sec:nav_marco}), activado mediante \texttt{use\_astar} sobre el \texttt{global\_costmap}. Para el seguimiento local se emplea DWB, que evalúa trayectorias candidatas y selecciona comandos de velocidad compatibles con las restricciones cinemáticas del robot.
 
 \begin{table}[H]
 \centering

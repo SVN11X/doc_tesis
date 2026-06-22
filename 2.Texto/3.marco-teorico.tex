@@ -113,14 +113,13 @@ La forma equivalente en términos de la velocidad angular de rueda comandada $\o
 
 \begin{align}
 \kappa
-&= \frac{N_e}{2\pi r \, f_{ctrl}} = \frac{N_e}{\pi D\, f_{ctrl}}
-\notag \\
-&= \frac{1980}{2\pi \times 0.0335 \times 30}
+&= \frac{N_e}{\pi D\, f_{ctrl}}
+= \frac{1980}{2\pi \times 0.0335 \times 30}
 \approx 313.56 \;\frac{\text{ticks/frame}}{\text{m/s}}
 \label{eq:mps_to_ticks_factor}
 \end{align}
 
-\noindent donde $D=2r$ es el diámetro de rueda [m] (constante \texttt{WHEEL\_DIAMETER}); el resto de variables fueron definidas previamente.
+\noindent evaluación numérica de $\kappa$ (Ec.~\ref{eq:mps_to_ticks}), con $D=2r$ el diámetro de rueda [m] (constante \texttt{WHEEL\_DIAMETER}); el resto de variables fueron definidas previamente.
 
 %------------------------------------------------------------------
 
@@ -397,7 +396,7 @@ k_c=\frac{\tau}{K_{\mathrm{norm}}\left(L_{ef}/2+\lambda\right)},
 \label{eq:lambda_serie}
 \end{equation}
  
-\noindent donde $k_c$ es la ganancia del controlador en forma serie, $\tau_I,\tau_D$ los tiempos integral y derivativo de la forma serie (interactuante) [s], $K_{\mathrm{norm}}=K_m\,\mathrm{PWM_{nom}}$ la ganancia estática referida al PWM nominal [m/s], $L_{ef}=\max(L_d,\,2/f_{ctrl})$ el retardo efectivo [s] y $\lambda=3\tau$ el parámetro de rapidez [s]. Se emplea $\mathrm{PWM_{nom}}=143$.
+\noindent donde $k_c$ es la ganancia del controlador en forma serie, $\tau_I,\tau_D$ los tiempos integral y derivativo de la forma serie (interactuante) [s], $K_{\mathrm{norm}}$ la ganancia estática referida al PWM nominal [m/s], $L_{ef}$ el retardo efectivo [s] y $\lambda=3\tau$ el parámetro de rapidez [s]. Se emplea $\mathrm{PWM_{nom}}=143$.
  
 \begin{align}
 K_p^{\lambda} &= k_c \,\frac{\tau_I + \tau_D}{\tau_I}, &
