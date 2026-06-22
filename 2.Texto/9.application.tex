@@ -1,15 +1,7 @@
 \chapter{Arquitectura de control y navegación: \texttt{ros2\_control}, SLAM y Nav2}
 \label{chap:app_control_nav}
 
-Este capítulo describe la arquitectura de software que integra control diferencial, mapeo, navegación autónoma y exploración de fronteras. Las capas de hardware, firmware y gemelo digital fueron desarrolladas en capítulos anteriores; por ello, aquí se enfatiza la orquestación de los subsistemas mediante \texttt{ros2\_control}, \texttt{slam\_toolbox}, Nav2 y \texttt{m-explore-ros2}. Los parámetros completos de configuración se trasladan al \ref{anx:nav2_slam_config}.
-
-%------------------------------------------------------------------
-\section{Marco de control: \texttt{ros2\_control}}
-\label{sec:ros2ctrl_overview}
-
-El marco \texttt{ros2\_control} permite usar una misma interfaz de control tanto en simulación como en hardware real. El \texttt{controller\_manager} gestiona el \texttt{diff\_drive\_controller}, que convierte comandos de velocidad $(v,\omega)$ en velocidades de rueda y publica la odometría, y el \texttt{joint\_state\_broadcaster}, encargado de actualizar el estado de las articulaciones.
-
-La selección del backend según el entorno —\texttt{DiffDriveArduino} en hardware real y Gazebo en simulación, conservando marcos, tópicos y parámetros geométricos— se detalla en la Sec.~\ref{sec:backend} y el Cap.~\ref{chap:robot_real}.
+Este capítulo describe la arquitectura de software que integra control diferencial, mapeo, navegación autónoma y exploración de fronteras. Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron desarrolladas previamente en los capítulos de construcción del robot, implementación del firmware y diseño del gemelo digital; por ello, aquí se enfatiza la orquestación de los subsistemas mediante \texttt{ros2\_control}, \texttt{slam\_toolbox}, Nav2 y \texttt{m-explore-ros2}. La operación detallada de \texttt{ros2\_control}, incluyendo el rol del \texttt{controller\_manager}, el \texttt{diff\_drive\_controller}, el \texttt{joint\_state\_broadcaster} y el backend \texttt{DiffDriveArduino}, se desarrolla en el Cap.~\ref{chap:robot_real}. En este capítulo, dicho marco se considera solo como parte del ciclo global SLAM--navegación--exploración. Los parámetros completos de configuración se trasladan al \ref{anx:nav2_slam_config}.
 
 %------------------------------------------------------------------
 \section{Mapeo con \texttt{slam\_toolbox}}

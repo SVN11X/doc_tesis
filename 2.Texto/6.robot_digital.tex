@@ -5,6 +5,8 @@ Este capítulo describe el gemelo digital del robot móvil diferencial, implemen
 
 El archivo \texttt{robot.urdf.xacro} actúa como modelo principal del robot e integra los módulos de chasis, ruedas, sensor láser y control. Los parámetros físicos compartidos, como el radio de rueda y la separación entre ruedas, provienen del Capítulo~\ref{ch:componentes}, de modo que el gemelo digital y el robot físico utilizan una misma referencia geométrica.
 
+Para evitar duplicación de parámetros, los valores de radio de rueda, separación entre ruedas, resolución de encoders y frecuencia de control se toman de la Tabla~\ref{tab:parametros_modelo}; en este capítulo solo se verifica que dichos valores sean empleados de forma consistente en los archivos URDF/\texttt{xacro}, Gazebo y configuración de control.
+
 %------------------------------------------------------------------
 \section{Arquitectura del modelo digital}
 \label{sec:atribucion}
@@ -12,32 +14,6 @@ El archivo \texttt{robot.urdf.xacro} actúa como modelo principal del robot e in
 El modelo digital se organiza mediante archivos \texttt{xacro} modulares. El archivo principal \texttt{robot.urdf.xacro} incluye la estructura mecánica del robot, definida en \texttt{robot\_core.xacro}, y selecciona el modelo de sensor según el entorno de ejecución: \texttt{lidar.xacro} para hardware real y \texttt{lidar\_sim.xacro} para simulación.
 
 La contribución principal en esta etapa corresponde al diseño del modelo URDF/\texttt{xacro}, la parametrización geométrica del robot, la definición de marcos de referencia y la integración con los sistemas de control, SLAM y navegación. La atribución completa de paquetes propios, adaptados y externos se documenta en el \ref{anx:gemelo_digital}.
-
-%------------------------------------------------------------------
-\section{Paridad entre simulación y hardware}
-\label{sec:paridad_sim_hardware}
-
-El gemelo digital se utiliza como fuente de verdad geométrica y cinemática. Las dimensiones críticas, como radio de rueda, separación entre ruedas, posición del sensor láser y dimensiones del chasis, se declaran de forma consistente para simulación y hardware real.
-
-\begin{table}[H]
-\centering
-\caption{Parámetros principales compartidos entre gemelo digital y hardware.}
-\label{tab:parametros_robot}
-\small
-\begin{tabular}{p{4.0cm} p{3.0cm} p{5.5cm}}
-\toprule
-\textbf{Parámetro} & \textbf{Valor} & \textbf{Uso principal} \\
-\midrule
-Radio de rueda & 0.0335 m & Cálculo de odometría y control diferencial \\
-Separación entre ruedas & 0.188 m & Modelo cinemático diferencial \\
-Diámetro de rueda & 0.067 m & Modelo de ruedas en Gazebo \\
-Altura del sensor láser & 0.115 m & Posición del marco \texttt{laser\_frame} \\
-Rango simulado del láser & 0.08 a 12 m & Publicación del tópico \texttt{/scan} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-La paridad de estos valores es esencial, ya que diferencias en el radio o la separación de ruedas producirían errores en la odometría simulada y dificultarían la transferencia hacia el robot físico.
 
 %------------------------------------------------------------------
 \section{Estructura URDF/xacro y marcos de referencia}
