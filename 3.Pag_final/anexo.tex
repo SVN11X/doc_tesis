@@ -18,30 +18,6 @@
 
 Este anexo reúne información complementaria sobre los componentes, el montaje físico, la alimentación y la reproducción del prototipo. En el cuerpo principal se mantienen solo los parámetros que alimentan el modelo, el firmware y la validación.
 
-\subsection{Componentes principales}
-\label{anx:bom}
-
-\begin{table}[H]
-\centering
-\caption{Componentes principales del prototipo.}
-\label{tab:anx_bom_resumido}
-\small
-\begin{tabular}{p{4.0cm} p{3.2cm} p{6.0cm}}
-\toprule
-\textbf{Subsistema} & \textbf{Componente} & \textbf{Función} \\
-\midrule
-Estructura & Chasis impreso en PLA+ & Soporte físico del robot y alojamiento de componentes. \\
-Locomoción & 2 motores JGA25-370 & Actuación diferencial. \\
-Odometría & Encoders Hall en cuadratura & Medición de desplazamiento y velocidad de ruedas. \\
-Control de motores & Driver L298N & Accionamiento bidireccional mediante \gls{PWM}. \\
-Control de bajo nivel & \gls{Arduino} Nano & Lectura de encoders y control PID. \\
-Cómputo principal & Raspberry Pi 4 & Ejecución de \gls{ROS2}, SLAM y navegación. \\
-Percepción & RPLidar A1 & Barridos láser 2D para mapeo y costmaps. \\
-Alimentación & Batería 12~V y regulador 5~V & Suministro de energía para motores, lógica y sensores. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \subsection{Alimentación y protecciones}
 \label{anx:alimentacion}
 
@@ -280,23 +256,6 @@ Para determinar el número de ticks por revolución de rueda, se hizo girar cada
 \end{tabular}
 \end{table}
 
-\begin{table}[H]
-\centering
-\caption{Parámetros PID finales y constantes principales del firmware.}
-\label{tab:anx_pid_firmware}
-\small
-\begin{tabular}{lcc}
-\toprule
-\textbf{Parámetro} & \textbf{Rueda izquierda} & \textbf{Rueda derecha} \\
-\midrule
-\texttt{Kp} & 16.00 & 16.42 \\
-\texttt{Kd} & 20.30 & 20.05 \\
-\texttt{Ki} & 0.075 & 0.001 \\
-\texttt{Ko} & 50 & 50 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \subsection{Identificación FODT y PSO}
 \label{anx:fodt_pso}
 
@@ -353,26 +312,6 @@ Las configuraciones de simulación y hardware se mantienen en archivos separados
 
 \begin{table}[H]
 \centering
-\caption{Parámetros principales de \texttt{slam\_toolbox}.}
-\label{tab:anx_slam_params}
-\small
-\begin{tabular}{lll}
-\toprule
-\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
-\midrule
-\texttt{solver\_plugin} & \texttt{CeresSolver} & Optimizador del grafo. \\
-\texttt{odom\_frame} & \texttt{odom} & Marco de odometría. \\
-\texttt{map\_frame} & \texttt{map} & Marco global. \\
-\texttt{base\_frame} & \texttt{base\_link} & Marco base. \\
-\texttt{scan\_topic} & \texttt{/scan} & Tópico del \gls{LIDAR}. \\
-\texttt{resolution} & 0.05~m & Resolución del mapa. \\
-\texttt{do\_loop\_closing} & \texttt{true} & Cierre de lazo activado. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
 \caption{Parámetros principales de Nav2 y DWB.}
 \label{tab:anx_nav2_dwb_params}
 \small
@@ -385,26 +324,6 @@ Las configuraciones de simulación y hardware se mantienen en archivos separados
 \texttt{max\_vel\_theta} & 0.5~rad/s & 1.0~rad/s \\
 \texttt{xy\_goal\_tolerance} & 0.10~m & 0.25~m \\
 \texttt{use\_astar} & \texttt{true} & \texttt{true} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Parámetros principales del explorador de fronteras.}
-\label{tab:anx_explore_params}
-\small
-\begin{tabular}{lll}
-\toprule
-\textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
-\midrule
-\texttt{robot\_base\_frame} & \texttt{base\_link} & Marco base del robot. \\
-\texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & Costmap global. \\
-\texttt{planner\_frequency} & 0.05~Hz & Frecuencia de evaluación. \\
-\texttt{progress\_timeout} & 60.0~s & Tiempo máximo sin progreso. \\
-\texttt{gain\_scale} & 1.0 & Peso de ganancia de información. \\
-\texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera. \\
-\texttt{visualize} & \texttt{true} & Visualización en RViz2. \\
 \bottomrule
 \end{tabular}
 \end{table}

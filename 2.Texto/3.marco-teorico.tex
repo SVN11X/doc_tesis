@@ -279,11 +279,6 @@ X_{\max} &=
 \end{aligned}
 \label{eq:pso_escala}
 \end{equation}
-\begin{equation*}
-s^{\mathrm{ID}}=(0.01,\;2.0,\;0.5),
-\qquad
-s^{\mathrm{PID}}=(40,\;25,\;0.05)
-\end{equation*}
 
 \noindent La Ec.~\ref{eq:pso_escala} se lee en dos pasos: (1) \emph{recortar} $X$ al intervalo $[10^{-4},X_{\max}]$ y (2) \emph{escalar} multiplicando por $s_d$. Por ejemplo, en la sintonización del PID una partícula con $X_i=(0.40,\;0.80,\;0.60)$ produce, tras recortar (sin cambios, pues ya está en $[10^{-4},1]$) y escalar por $s^{\mathrm{PID}}=(40,25,0.05)$, el candidato
 \begin{equation*}

@@ -38,7 +38,7 @@ Para obtener una odometría consistente, se midió experimentalmente el número 
 \label{eq:promedio_cuentas_L}
 \end{align}
 
-donde $N_{R(i)}$ y $N_{L(i)}$ son los ticks por vuelta completa medidos en la $i$-ésima repetición de las ruedas derecha e izquierda [ticks/vuelta]. Ambos promedios difieren en menos del 0.4\%. Se adopta un único valor nominal unificado $N_e=1980$ ticks/vuelta, ligeramente superior a ambas medias medidas, por coincidir con la constante empleada en el firmware y en la odometría (\texttt{ENC\_TICKS\_PER\_REV}$=$\texttt{enc\_counts\_per\_rev}$=1980$). Respecto de los promedios medidos, esta unificación introduce un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), considerado aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
+donde $N_{R(i)}$ y $N_{L(i)}$ son los ticks por vuelta completa medidos en la $i$-ésima repetición de las ruedas derecha e izquierda [ticks/vuelta]. Ambos promedios difieren en menos del 0.4\%. El valor unificado $N_e=1980$ ticks/vuelta adoptado en el Cap.~\ref{ch:componentes} introduce, respecto de estas medias, un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
 
 %------------------------------------------------------------------
 \section{Control PID en el firmware}
@@ -109,7 +109,7 @@ Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ son coeficientes adimensionales en la es
 \section{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
 
-Las ganancias PID se determinaron mediante un procedimiento híbrido. Primero se capturó la respuesta al escalón de cada rueda en lazo abierto; luego se identificó un modelo FODT mediante PSO; posteriormente se optimizaron las ganancias del controlador sobre el modelo identificado; finalmente, las ganancias fueron refinadas experimentalmente en el hardware real.
+Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental. Esta sección detalla su ejecución sobre el hardware —captura de la respuesta al escalón, identificación y optimización—, formalizada en el Alg.~\ref{alg:sintonizacion}.
 
 \subsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -192,7 +192,7 @@ La identificación FODT se realiza evaluando la Ec.~\ref{eq:fodt_discreto} con p
 \subsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
 
-Las ganancias obtenidas por PSO se usaron como punto de partida. Luego se ajustaron sobre el robot real para compensar efectos no modelados, como fricción estática, zona muerta del L298N y diferencias mecánicas entre ruedas. El resultado final fueron ganancias asimétricas, lo que permite compensar mejor el comportamiento individual de cada motor.
+Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El resultado final fueron ganancias asimétricas, que compensan mejor el comportamiento individual de cada motor.
 
 %------------------------------------------------------------------
 \section{Bucle principal y auto-detención}

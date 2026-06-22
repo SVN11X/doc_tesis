@@ -9,7 +9,7 @@ Este capítulo describe la arquitectura de software que integra control diferenc
 
 El marco \texttt{ros2\_control} permite usar una misma interfaz de control tanto en simulación como en hardware real. El \texttt{controller\_manager} gestiona el \texttt{diff\_drive\_controller}, que convierte comandos de velocidad $(v,\omega)$ en velocidades de rueda y publica la odometría, y el \texttt{joint\_state\_broadcaster}, encargado de actualizar el estado de las articulaciones.
 
-En hardware real, la interfaz se conecta al \gls{Arduino} mediante el plugin \texttt{DiffDriveArduino}; en simulación, Gazebo reemplaza al hardware físico. En ambos casos se conservan los mismos marcos, tópicos y parámetros geométricos, facilitando la transferencia simulación--hardware.
+La selección del backend según el entorno —\texttt{DiffDriveArduino} en hardware real y Gazebo en simulación, conservando marcos, tópicos y parámetros geométricos— se detalla en la Sec.~\ref{sec:backend} y el Cap.~\ref{chap:robot_real}.
 
 %------------------------------------------------------------------
 \section{Mapeo con \texttt{slam\_toolbox}}
