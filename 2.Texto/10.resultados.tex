@@ -15,7 +15,7 @@ Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04, manten
 
 En hardware real, las pruebas se realizaron en un espacio interior con suelo de alfombra. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Raspberry Pi 4 ejecutó la pila de control, mapeo y navegación, mientras que RViz2 se utilizó desde una estación de trabajo para supervisión.
 
-El espacio físico disponible permitió validar odometría, control y mapeo. Sin embargo, la navegación autónoma y la exploración requieren trayectorias más largas y zonas de mayor superficie, por lo que quedaron definidas como pruebas planificadas.
+El espacio físico disponible permitió validar odometría, control y mapeo; la navegación autónoma y la exploración se evalúan en la Sec.~\ref{sec:resultados_nav2}.
 
 % ===========================================================================
 \section{Validación de odometría y control diferencial}
@@ -122,7 +122,7 @@ La comparación con sintonía Lambda muestra que Lambda reduce el tiempo de subi
 
 \begin{table}[H]
 \centering
-\caption{Comparación resumida entre sintonización final y Lambda.}
+\caption{Comparación resumida entre sintonización final y Lambda. Las columnas de PSO reproducen los valores de la Tabla~\ref{tab:pid_performance} para permitir la comparación directa con Lambda.}
 \label{tab:comparacion_metodos}
 \small
 \begin{tabular}{p{3.5cm} c c c}

@@ -454,7 +454,7 @@ El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\ma
 \section{SLAM basado en grafos}
 \label{sec:slam}
 
-La odometría pura acumula deriva, por lo que se requiere estimar simultáneamente la trayectoria del robot y el mapa del entorno. Este proceso se conoce como SLAM (\textit{Simultaneous Localization and Mapping}) \citep{thrun2005probabilistic, bailey2006slam}.
+La odometría pura acumula deriva, por lo que se requiere SLAM (definido en la Sec.~\ref{sec:slam_lidar}) para estimar simultáneamente la trayectoria del robot y el mapa del entorno \citep{bailey2006slam}.
 
 Este trabajo utiliza \texttt{slam\_toolbox} en modo asíncrono en línea. El sistema construye un grafo cuyos nodos representan poses del robot y cuyas aristas representan restricciones de odometría y observaciones del \gls{LIDAR}. Al detectar cierre de lazo, el grafo se reoptimiza para corregir la deriva acumulada y mejorar la consistencia del mapa \citep{grisetti2010tutorial, macenski2020slamtoolbox}. El resultado es un mapa 2D y la transformación $\text{map}\rightarrow\text{odom}$ requerida por Nav2.
 

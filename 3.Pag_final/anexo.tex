@@ -257,25 +257,6 @@ Derecha & 0.000890 & 0.3485 & 0.0001 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[H]
-\centering
-\caption{Hiperparámetros utilizados en el PSO.}
-\label{tab:anx_pso_hiperparametros}
-\small
-\begin{tabular}{lll}
-\toprule
-\textbf{Símbolo} & \textbf{Valor} & \textbf{Descripción} \\
-\midrule
-$S$ & 50 & Tamaño del enjambre. \\
-$g_{max}$ & 150 & Generaciones máximas. \\
-$c_1$ & 2.05 & Coeficiente cognitivo. \\
-$c_2$ & 2.05 & Coeficiente social. \\
-$\chi$ & 0.7298 & Factor de constricción. \\
-$w_{\mathrm{in}}^g$ & $(g_{max}-g)/g_{max}$ & Inercia decreciente. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \begin{equation}
 \texttt{rads\_per\_count}
 =
@@ -393,34 +374,5 @@ Intervenciones manuales & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\section{Detalle complementario de conclusiones}
-\label{anx:detalle_conclusiones}
-
-Este anexo conserva observaciones técnicas complementarias derivadas del desarrollo del prototipo, las cuales respaldan las conclusiones sin sobrecargar el capítulo final.
-
-\subsection{Brecha simulación--hardware}
-
-La brecha de transferencia se observó en varios aspectos: fricción real, zona muerta del driver L298N, ruido sensorial del RPLidar A1, deslizamiento de ruedas en giros, latencias variables de la cadena serial \gls{Arduino}--Raspberry Pi y discrepancias entre parámetros declarados en archivos \texttt{xacro}, \texttt{yaml} y firmware. En simulación, Gazebo idealiza parte de estas condiciones, por lo que los resultados tienden a ser más estables que en hardware real.
-
-A pesar de ello, la estrategia de paridad entre simulación y hardware permitió mantener la misma lógica de operación, usando nombres de tópicos, marcos TF y archivos de configuración equivalentes. Esto facilitó transferir la arquitectura desde Gazebo al robot físico sin rediseñar la pila de control.
-
-\subsection{Observaciones sobre Nav2}
-
-La pila Nav2 se integró mediante NavFn con A\*, controlador DWB, mapas de costo y árbol de comportamiento con acciones de recuperación. En simulación, el seguimiento de ruta fue estable; en hardware, la configuración requiere mantener márgenes conservadores debido a la deriva odométrica y a la incertidumbre del entorno real.
-
-Los escenarios más exigentes previstos son pasillos y puertas, donde el ancho disponible se aproxima al radio de inflación del costmap. En estos casos, el ajuste de inflación, tolerancia de meta y pesos de DWB puede influir significativamente en la tasa de éxito.
-
-\subsection{Observaciones sobre exploración por fronteras}
-
-El enfoque de exploración por fronteras permite generar metas hacia zonas no observadas del mapa. Sin embargo, puede seleccionar fronteras pequeñas o de difícil acceso, generando ciclos de replaneación. El parámetro \texttt{min\_frontier\_size} permite reducir parcialmente este problema, aunque su valor óptimo depende del entorno.
-
-Una mejora futura consiste en ponderar no solo el tamaño de la frontera, sino también su accesibilidad, distancia real de navegación y probabilidad de éxito.
-
-\subsection{Consideraciones sobre escalabilidad}
-
-La Raspberry Pi 4 resultó suficiente para ejecutar \texttt{slam\_toolbox}, Nav2 y la comunicación con el microcontrolador. No obstante, algoritmos más demandantes, como SLAM visual o percepción semántica en tiempo real, podrían requerir hardware de mayor capacidad o procesamiento externo.
-
-La migración a una distribución mantenida de \gls{ROS2}, como Humble o Jazzy, permitiría acceder a versiones más recientes de Nav2, \texttt{ros2\_control} y \texttt{slam\_toolbox}, además de mejorar la mantenibilidad del sistema.
 
 \end{appendices}
