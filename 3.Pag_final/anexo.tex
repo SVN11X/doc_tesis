@@ -172,45 +172,6 @@ Para evitar cambios de nombres en los puertos serie, se utilizan reglas \texttt{
 
 Este anexo complementa el capítulo de firmware con datos experimentales y parámetros usados durante la sintonización del controlador PID.
 
-\subsection{Organización modular y protocolo serial}
-\label{anx:firmware_modular}
-
-\begin{table}[H]
-\centering
-\caption{Módulos principales del firmware.}
-\label{tab:anx_modulos_firmware}
-\small
-\begin{tabular}{p{4.5cm} p{8.5cm}}
-\toprule
-\textbf{Archivo} & \textbf{Función} \\
-\midrule
-\texttt{ROSArduinoBridge.ino} & Coordina el parser serial, el ciclo de control y la auto-detención. \\
-\texttt{commands.h} & Define los comandos ASCII usados por el protocolo serial. \\
-\texttt{encoder\_driver} & Lee los encoders mediante interrupciones por cambio de pin. \\
-\texttt{motor\_driver} & Controla el driver L298N mediante señales \gls{PWM}. \\
-\texttt{diff\_controller.h} & Implementa la estructura del PID y su actualización. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Comandos principales del protocolo serial.}
-\label{tab:anx_comandos_seriales}
-\small
-\begin{tabular}{lll}
-\toprule
-\textbf{Comando} & \textbf{Nombre} & \textbf{Uso} \\
-\midrule
-\texttt{e} & \texttt{READ\_ENCODERS} & Lectura de contadores absolutos. \\
-\texttt{m} & \texttt{MOTOR\_SPEEDS} & Referencia en \textit{ticks/frame}. \\
-\texttt{k} & \texttt{SET\_VEL\_MPS} & Referencia en m/s. \\
-\texttt{z} & \texttt{UPDATE\_PID\_LR} & Carga de ganancias PID por rueda. \\
-\texttt{o} & \texttt{MOTOR\_RAW\_PWM} & PWM directo para pruebas en lazo abierto. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \subsection{Ticks por vuelta y ganancias finales}
 \label{anx:pid_data}
 
