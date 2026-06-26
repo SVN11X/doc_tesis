@@ -503,8 +503,7 @@ U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion_marco}
 
-En el enfoque basado en fronteras (Sec.~\ref{sec:exploracion}), el robot selecciona una frontera según el costo de la Ec.~\ref{eq:frontier_cost}, la envía como meta a Nav2 y actualiza el mapa con las nuevas observaciones; el ciclo se repite hasta agotar las fronteras alcanzables.
-
+En el enfoque basado en fronteras (Sec.~\ref{sec:exploracion}), el robot selecciona la frontera de menor costo según la Ec.~\ref{eq:frontier_cost} y la envía como meta a Nav2. La implementación del ciclo completo —actualización del mapa, veto de fronteras inalcanzables y tiempo máximo sin progreso— se formaliza en el Algoritmo~\ref{alg:exploracion_fronteras} (Cap.~\ref{chap:app_control_nav}).
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 

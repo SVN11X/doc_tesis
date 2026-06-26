@@ -158,7 +158,7 @@ v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 
 \subsection{Identificación y optimización}
 
-La identificación FODT se realiza evaluando la Ec.~\ref{eq:fodt_discreto} con paso $h=T_{cap}=0.1$~s y retardo $n_d=\lfloor L_d/T_{cap}\rfloor$, ajustando $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto. En la simulación del controlador, la planta es el mismo modelo de primer orden identificado, evaluado a $h=T_s=1/f_{ctrl}$ y \emph{sin} el retardo puro (Ec.~\ref{eq:fodt_lazo_cerrado}); las diferencias entre ambas etapas se detallan en la Sec.~\ref{sec:fodt} (Tabla~\ref{tab:fodt_usos}). El procedimiento completo de sintonización se resume en el Algoritmo~\ref{alg:sintonizacion}.
+La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo y entrada— se detallan en la Sec.~\ref{sec:fodt} (Tabla~\ref{tab:fodt_usos}). El procedimiento completo de sintonización se resume en el Algoritmo~\ref{alg:sintonizacion}.
 
 \begin{algorithm}[H]
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
