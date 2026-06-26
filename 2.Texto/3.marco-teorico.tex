@@ -97,7 +97,7 @@ y_{k+1}    &= y_k + T_s\,v[k]\sin\theta_m.
 \end{algorithmic}
 \end{algorithm}
 
-En esta tesis, $r=0.0335$~m, $b=0.188$~m, $N_e=1980$ ticks/vuelta y la frecuencia del lazo de control es $f_{ctrl}=30$~Hz, de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware (\texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión $\kappa$:
+En esta tesis se adoptan $r=0.0335$~m, $b=0.188$~m, $N_e=1980$~ticks/vuelta y $f_{ctrl}=30$~Hz (parámetros consolidados en la Tabla~\ref{tab:parametros_modelo}), de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware (\texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión $\kappa$:
 
 \begin{equation}
 m_j^{cmd}[k] = \kappa\, v_j^{cmd}[k],

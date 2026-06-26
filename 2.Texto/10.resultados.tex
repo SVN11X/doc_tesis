@@ -1,7 +1,7 @@
 \chapter{Resultados experimentales}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. El detalle de protocolos, tablas completas y formatos de reporte pendientes se presenta en el \ref{anx:protocolo_resultados}.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. Los resultados complementarios de exploración y mapeo en hardware real se presentan en el \ref{anx:protocolo_resultados}.
 
 % ===========================================================================
 \section{Entorno experimental}
@@ -191,28 +191,49 @@ Zonas de sombra láser & Mínimas & Presentes \\
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
-La navegación autónoma con Nav2 y la exploración basada en fronteras quedaron integradas funcionalmente, pero su validación cuantitativa requiere un entorno físico de mayor superficie. Se definieron escenarios de meta directa, obstáculo intermedio y paso estrecho, con cinco repeticiones por caso.
+La navegación autónoma con Nav2 quedó integrada y verificada funcionalmente, pero su validación cuantitativa por escenarios (meta directa, obstáculo intermedio y paso estrecho, con cinco repeticiones por caso) requiere un entorno físico de mayor superficie; el protocolo instrumentado se describe en el \ref{anx:protocolo_resultados}.
 
-Para navegación, se registrarán tasa de éxito, tiempo medio a meta, desviación final y recuperaciones ejecutadas. Para exploración, se registrarán número de fronteras detectadas, metas enviadas, metas alcanzadas, cobertura estimada e intervenciones manuales. El formato de reporte se incluye en el \ref{anx:protocolo_resultados}.
+La exploración basada en fronteras se evaluó mediante el framework \texttt{sesiones\_mapeo}, que ejecuta iteraciones independientes con reset completo de SLAM y Nav2. Se completaron cinco iteraciones válidas sobre el espacio interior disponible ($\approx$3.5~m$^2$ de área libre); una sexta iteración se abortó por fallo en la inicialización de Nav2. En todas las iteraciones el explorador detectó fronteras y desplazó el robot de forma autónoma, sin intervención manual.
+
+\begin{table}[H]
+\centering
+\caption{Resumen de exploración autónoma en hardware real (5 iteraciones válidas). El detalle por iteración se presenta en el \ref{anx:protocolo_resultados}.}
+\label{tab:resumen_exploracion}
+\small
+\begin{tabular}{p{5.0cm} p{3.0cm} p{3.0cm}}
+\toprule
+\textbf{Indicador} & $\boldsymbol{\mu}$ & $\boldsymbol{\sigma}$ \\
+\midrule
+Duración de sesión (rosbag) & 2.5 min & 0.5 min \\
+Duración de exploración activa & 1.1 min & 0.6 min \\
+Metas alcanzadas por Nav2 & 0.4 & 0.9 \\
+Metas fallidas o abortadas & 132.2 & 89.1 \\
+Cobertura estimada & 62.2\% & 12.9\% \\
+Área libre mapeada & 3.50 m$^2$ & 0.03 m$^2$ \\
+Intervenciones manuales & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La cobertura media de 62.2\% confirma que el sistema detecta fronteras y explora el entorno de forma autónoma. La mejor iteración alcanzó 82.9\% de cobertura en 2.1~min de exploración activa. La alta tasa de metas fallidas (media 132 por iteración) refleja que Nav2 rechaza o aborta la mayoría de las metas generadas por el explorador debido a la inflación del costmap en un espacio reducido, no a un fallo del módulo de exploración. La única iteración con metas alcanzadas (iteración~5, 2 de 101 intentos) confirma que la cadena completa percepción--planificación--ejecución es funcional de extremo a extremo.
 
 \begin{table}[H]
 \centering
 \caption{Estado de validación por subsistema.}
 \label{tab:estado_validacion}
 \small
-\begin{tabular}{p{4cm} p{4cm} p{4cm}}
+\begin{tabular}{p{3.2cm} p{4.0cm} p{5.2cm}}
 \toprule
 \textbf{Subsistema} & \textbf{Estado} & \textbf{Observación} \\
 \midrule
 Odometría & Validada cuantitativamente & Simulación y hardware real \\
 Control PID & Validado cuantitativamente & Modelo FODT y pruebas experimentales \\
 SLAM & Validado cuantitativa y cualitativamente & Simulación; hardware cualitativo \\
-Nav2 & Integrado y verificado funcionalmente & Validación cuantitativa pendiente \\
-Exploración & Integrada y verificada funcionalmente & Validación cuantitativa pendiente \\
+Nav2 & Verificada funcionalmente & Validación por escenarios requiere mayor superficie \\
+Exploración & Verificada cuantitativamente & Cobertura media 62.2\% en 5 iteraciones (espacio reducido) \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 % ===========================================================================
 \section{Coherencia entre simulación y hardware}
 \label{sec:comparacion_sim_real}
@@ -231,8 +252,8 @@ Las principales diferencias aparecen en el giro y en el mapeo. El contraste del 
 \textbf{Subsistema} & \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
 SLAM & Consistencia del mapa & Alta & Media--alta \\
-Nav2 & Tasa de éxito & Pendiente & Pendiente \\
-Exploración & Cobertura & Pendiente & Pendiente \\
+Nav2 & Tasa de éxito & No evaluada & Verificada funcionalmente \\
+Exploración & Cobertura media & No evaluada & 62.2\% ($n=5$) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -245,4 +266,4 @@ El sobreimpulso del control PID (Tabla~\ref{tab:pid_performance}) corresponde a 
 
 Los resultados muestran que el prototipo alcanza una precisión adecuada de odometría en trayectorias cortas, con error medio de 3.63\% en hardware real. La deriva angular de $11.7^\circ$ por giro completo motiva la incorporación de una IMU planteada en el Trabajo futuro. El controlador PID sintonizado mediante PSO y refinamiento experimental reduce el sobreimpulso respecto de Lambda, logrando una respuesta más apropiada para navegación en interiores.
 
-El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La navegación autónoma y la exploración por fronteras quedaron integradas y verificadas funcionalmente, pero su validación cuantitativa debe completarse en un entorno de mayor superficie siguiendo el protocolo definido en el anexo.
+El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La exploración por fronteras alcanzó una cobertura media de 62.2\% ($\sigma=12.9$) en cinco iteraciones independientes sobre un espacio de $\approx$3.5~m$^2$, confirmando la integración funcional de la cadena percepción--planificación--ejecución. La navegación autónoma por escenarios quedó verificada funcionalmente; su validación cuantitativa requiere un entorno de mayor superficie siguiendo el protocolo definido en el \ref{anx:protocolo_resultados}.
