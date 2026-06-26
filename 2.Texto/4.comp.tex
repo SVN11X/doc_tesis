@@ -61,7 +61,7 @@ El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 36
 %------------------------------------------------------------------
 \section{Alimentación y fabricación}
 
-El sistema se alimenta desde una batería Li-ion de 12 V. Desde este bus principal se alimentan los motores y, mediante un convertidor reductor, se obtiene el riel de 5 V para la Raspberry Pi, el \gls{Arduino} y el \gls{LIDAR}. La distribución separa potencia y lógica para reducir interferencias producidas por los motores.
+El sistema se alimenta desde una batería Li-ion de 12 V, de la cual se derivan el bus de potencia de los motores y un riel regulado de 5 V para la Raspberry Pi, el \gls{Arduino} y el \gls{LIDAR}. La organización de estos dominios y la separación entre potencia y lógica se detallan en el Cap.~\ref{chap:robot_real}.
 
 El chasis y las cubiertas fueron fabricados mediante impresión 3D FDM en PLA+. El diseño considera espacio para la Raspberry Pi, el \gls{Arduino}, el driver de motores, el regulador de tensión, la batería y el sensor RPLidar A1.
 
