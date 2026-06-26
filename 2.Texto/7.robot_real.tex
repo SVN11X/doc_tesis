@@ -52,7 +52,7 @@ Teleoperación & \texttt{/cmd\_vel\_joy} & Alta \\
 \section{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
 
-El controlador diferencial recibe comandos de velocidad lineal y angular, y los convierte en velocidades de rueda mediante el modelo cinemático descrito en el Capítulo~\ref{marco_teorico}. Los parámetros geométricos son consistentes con el modelo físico y el gemelo digital: \texttt{wheel\_radius} = 0.0335~m y \texttt{wheel\_separation} = 0.188~m.
+El controlador diferencial recibe comandos de velocidad lineal y angular, y los convierte en velocidades de rueda mediante el modelo cinemático descrito en el Capítulo~\ref{marco_teorico}. Sus parámetros geométricos (\texttt{wheel\_radius} = $r$ y \texttt{wheel\_separation} = $b$) coinciden con el modelo físico y el gemelo digital, según los valores consolidados en la Tabla~\ref{tab:parametros_modelo}.
 
 \begin{table}[H]
 \centering

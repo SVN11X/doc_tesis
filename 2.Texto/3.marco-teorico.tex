@@ -39,14 +39,14 @@ y_{k+1} &= y_k + T_s\, v[k]\,\sin\theta_k \label{eq:pose_y} \\
 
 \noindent donde $q_k=(x_k,y_k,\theta_k)$ es la pose [m, m, rad] y $v[k],\omega[k]$ las velocidades lineal y angular del robot en el instante $k$ (definidas previamente). Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} son la discretización de primer orden (Euler) del modelo cinemático, evaluada con el rumbo al inicio del paso $\theta_k$. Se incluyen \emph{solo como referencia conceptual}: no corresponden al esquema que ejecuta \texttt{diff\_drive\_controller}.
 
-En la implementación, la odometría la integra \texttt{diff\_drive\_controller} en lazo cerrado mediante un esquema \emph{por tramos}. El rumbo se actualiza de forma común,
+En la implementación, la odometría la integra \texttt{diff\_drive\_controller} en lazo cerrado mediante un esquema \emph{por tramos}. El rumbo se actualiza de forma común según la Ec.~\eqref{eq:pose_theta}, con incremento
+
 \begin{equation}
-\theta_{k+1}=\theta_k+T_s\,\omega[k],
-\qquad
 \Delta\theta_k=T_s\,\omega[k],
 \label{eq:pose_theta_impl}
 \end{equation}
-y la regla para $(x_{k+1},y_{k+1})$ depende de $|\Delta\theta_k|$ frente al umbral $\varepsilon\approx10^{-6}$~rad (umbral interno de \texttt{diff\_drive\_controller}, no expuesto por configuración). Para $|\Delta\theta_k|\ge\varepsilon$ se aplica la integración exacta de arco,
+
+\noindent y la regla para $(x_{k+1},y_{k+1})$ depende de $|\Delta\theta_k|$ frente al umbral $\varepsilon\approx10^{-6}$~rad (umbral interno de \texttt{diff\_drive\_controller}, no expuesto por configuración). Para $|\Delta\theta_k|\ge\varepsilon$ se aplica la integración exacta de arco,
 \begin{align}
 x_{k+1} &= x_k + \frac{v[k]}{\omega[k]}\bigl(\sin\theta_{k+1}-\sin\theta_k\bigr), \notag\\
 y_{k+1} &= y_k - \frac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr),

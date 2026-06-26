@@ -19,8 +19,7 @@ El firmware se organiza en módulos con responsabilidades separadas: \texttt{ROS
 
 El firmware utiliza las mismas constantes físicas del modelo cinemático y del gemelo digital (Tabla~\ref{tab:parametros_modelo}), parametrizadas como constantes de compilación: \texttt{WHEEL\_DIAMETER}$\,=D=2r=0.067$~m, \texttt{ENC\_TICKS\_PER\_REV}$\,=N_e$ y \texttt{PID\_RATE}$\,=f_{ctrl}$.
 
-A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame}. El factor de conversión entre m/s y ticks/frame se calcula según la Ec.~\ref{eq:mps_to_ticks_factor}
-($\approx 313.56$); en el firmware se evalúa de forma equivalente como $N_e/(\pi D\, f_{ctrl})$ con $D=2r$.
+A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks_factor} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
 %------------------------------------------------------------------
 \section{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}

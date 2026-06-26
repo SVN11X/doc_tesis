@@ -288,7 +288,7 @@ Se ejecutaron seis iteraciones; la iteración~02 se abortó por fallo en la inic
 
 \begin{table}[H]
 \centering
-\caption{Resultados de exploración autónoma por iteración en hardware real. Cada iteración corresponde a una ejecución independiente (reset completo de SLAM y Nav2). La duración de sesión corresponde al rosbag completo; la duración de exploración al tiempo en que \texttt{explore\_server} estuvo activo. En todas las iteraciones el explorador detectó fronteras y desplazó el robot, pero Nav2 rechazó o abortó la mayoría de las metas en el espacio reducido, reportando \texttt{metas\_generadas}$\,=0$.}
+\caption{Resultados de exploración autónoma por iteración en hardware real. }
 \label{tab:anx_explore_reporte}
 \small
 \begin{tabular}{rcccccc}
@@ -307,7 +307,7 @@ $\sigma$   & 0.5 & 0.6 & 0.9 &  89.1 & 12.9 & 0.03 \\
 \end{tabular}
 \end{table}
 
-La cobertura media fue de 62.2\% ($\sigma=12.9$) sobre un área libre de $\approx$3.50~m$^2$, con cero intervenciones manuales en todas las iteraciones. La iteración~01 alcanzó la mayor cobertura (82.9\%) con la mayor duración de exploración (2.1~min), lo que sugiere que ciclos más largos mejoran la cobertura a pesar de las metas rechazadas. La única iteración con metas alcanzadas (iteración~05, 2 de 101 intentos) confirma que la cadena percepción--planificación--ejecución es funcional. La alta tasa de metas fallidas refleja la limitación del entorno: Nav2 genera rutas que la inflación del costmap bloquea en zonas estrechas, consistente con la observación de la Sec.~\ref{sec:resultados_nav2}. La distancia recorrida por odometría no se registró en esta sesión (archivos de trayectoria vacíos); se recomienda verificar la suscripción a \texttt{/odom} del script de captura.
+Cada iteración de la Tabla \ref{tab:anx_explore_reporte}, corresponde a una ejecución independiente (reset completo de SLAM y Nav2). La duración de sesión corresponde al rosbag completo; la duración de exploración al tiempo en que \texttt{explore\_server} estuvo activo. En todas las iteraciones el explorador detectó fronteras y desplazó el robot, pero Nav2 rechazó o abortó la mayoría de las metas en el espacio reducido, reportando \texttt{metas\_generadas}$\,=0$.
 
 \subsection{Indicadores de mapeo en hardware real}
 
