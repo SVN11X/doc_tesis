@@ -261,7 +261,7 @@ X_{i,d}^{g+1} &= \max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr)
 \end{description}
 La cota $\max(\cdot,10^{-4})$ de la Ec.~\ref{eq:pso_pos_marco_teorico} impide posiciones nulas o negativas durante la búsqueda.
 
-\noindent\textbf{Escalado y recorte.} La posición de búsqueda $X_{i,d}$ es adimensional; para evaluar una partícula primero se la convierte al parámetro físico $\theta_{i,d}$ multiplicando por el factor de escala $s_d$, que es el valor físico correspondiente a $X=1$ (fija el rango y aporta las unidades de cada dimensión). Antes de escalar, la posición se recorta al intervalo $[10^{-4},X_{\max}]$:
+\noindent\textbf{Escalado y recorte.} Antes de escalar la posición de búsqueda $X_{i,d}$ al parámetro físico $\theta_{i,d}$ (definido previamente), se la recorta al intervalo $[10^{-4},X_{\max}]$:
 \begin{equation}
 \begin{aligned}
 \tilde{X}_{i,d} &=
