@@ -102,7 +102,7 @@
   sortcites=true,
   maxcitenames=2,
   giveninits=true,
-  doi=false,isbn=false,eprint=false,url=true
+  doi=true,isbn=false,eprint=false,url=true
 ]{biblatex}
 \addbibresource{referencias.bib}
 \DeclareLanguageMapping{spanish}{spanish-apa}
@@ -132,92 +132,141 @@
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ESTILOS/MACROS
+% ESTILOS/MACROS FIGURAS UTEM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\DeclareCaptionLabelFormat{utemfig}{Figura~#2}
-\captionsetup[figure]{labelformat=utemfig,labelsep=colon,labelfont=bf,textfont=normalfont}
 
-% ===== Figura tipo UTEM =====
+\DeclareCaptionLabelFormat{utemfig}{Figura~#2}
+
+\captionsetup[figure]{
+  labelformat=utemfig,
+  labelsep=period,
+  labelfont=bf,
+  textfont=normalfont,
+  justification=centering,
+  singlelinecheck=false,
+  position=above
+}
+
+% ===== Figura UTEM con fuente bibliográfica =====
+% Uso:
+% \utemFigure{ruta/imagen.png}{0.8\textwidth}{Título de la figura}{claveBib}{fig:etiqueta}
+
 \newcommand{\utemFigure}[5]{%
   \begin{figure}[H]
     \centering
-    \setlength{\fboxsep}{6pt}
-    \fbox{\includegraphics[width=#2]{#1}}
+
     \caption{#3}
-    \vspace{6pt}
-    \footnotesize \textit{\textbf{Fuente: \cite{#4}. Enlace: \citefield{#4}{url}}}
     \label{#5}
+
+    \vspace{4pt}
+
+    \setlength{\fboxsep}{6pt}
+    \fbox{%
+      \includegraphics[width=#2]{#1}%
+    }
+
+    \vspace{6pt}
+
+    {\footnotesize\textit{Fuente: \citep{#4}.}}
   \end{figure}
 }
 
-% ===== Figura tipo UTEM para elaboracion propia=====
+% ===== Figura UTEM de elaboración propia =====
+% Uso:
+% \utemFigurePropia{ruta/imagen.png}{0.8\textwidth}{Título de la figura}{fig:etiqueta}
+
 \newcommand{\utemFigurePropia}[4]{%
   \begin{figure}[H]
     \centering
-    \setlength{\fboxsep}{6pt}
-    \fbox{\includegraphics[width=#2]{#1}}
+
     \caption{#3}
-    \vspace{6pt}
-    \footnotesize \textit{Elaboración Propia}
     \label{#4}
+
+    \vspace{4pt}
+
+    \setlength{\fboxsep}{6pt}
+    \fbox{%
+      \includegraphics[width=#2]{#1}%
+    }
+
+    \vspace{6pt}
+
+    {\footnotesize\textit{Fuente: Elaboración propia.}}
   \end{figure}
 }
 
-% ===== Entorno UTEM Dinámico para Múltiples Imágenes =====
+% ===== Entorno UTEM para múltiples imágenes con fuentes bibliográficas =====
+% Uso:
+% \begin{utemMultiFigure}{Título general}{fig:etiqueta}
+%   \addutem{0.45}{ruta/img1.png}{Título imagen 1}{claveBib1}
+%   \hfill
+%   \addutem{0.45}{ruta/img2.png}{Título imagen 2}{claveBib2}
+% \end{utemMultiFigure}
+
 \newenvironment{utemMultiFigure}[2]{%
-    % 1. Guardamos los argumentos en comandos temporales
-    \def\tempCaption{#1}% 
-    \def\tempLabel{#2}%
-    
-    \begin{figure}[H]
+  \begin{figure}[H]
     \centering
+
+    \caption{#1}
+    \label{#2}
+
+    \vspace{4pt}
+
     \setlength{\fboxsep}{6pt}
-    
-    % Definimos el comando interno (usamos renewcommand para evitar errores de duplicado)
-    \newcommand{\addutem}[4]{%
-        \begin{subfigure}[b]{##1\textwidth}
-            \centering
-            \fbox{\includegraphics[width=\textwidth]{##2}}
-            \caption{##3}
-            \vspace{6pt}
-            \footnotesize \textit{\textbf{Fuente: \cite{##4}}}
-        \end{subfigure}
-    }
+
+    \providecommand{\addutem}{}%
+    \renewcommand{\addutem}[4]{%
+      \begin{subfigure}[b]{##1\textwidth}
+        \centering
+        \fbox{%
+          \includegraphics[width=\textwidth]{##2}%
+        }
+        \caption{##3}
+        \vspace{4pt}
+
+        {\footnotesize\textit{Fuente: \citep{##4}.}}
+      \end{subfigure}
+    }%
 }{%
-    % 2. Aquí usamos las memorias temporales en lugar de #1 y #2
-    \vspace{8pt}
-    \caption{\tempCaption}
-    \label{\tempLabel}
-    \end{figure}
+  \end{figure}
 }
 
-% ===== Entorno UTEM Dinámico para Múltiples Imágenes Propia =====
+% ===== Entorno UTEM para múltiples imágenes de elaboración propia =====
+% Uso:
+% \begin{utemMultiFigurePropia}{Título general}{fig:etiqueta}
+%   \addutem{0.45}{ruta/img1.png}{Título imagen 1}
+%   \hfill
+%   \addutem{0.45}{ruta/img2.png}{Título imagen 2}
+% \end{utemMultiFigurePropia}
+
 \newenvironment{utemMultiFigurePropia}[2]{%
-    % 1. Guardamos los argumentos en comandos temporales
-    \def\tempCaption{#1}% 
-    \def\tempLabel{#2}%
-    
-    \begin{figure}[H]
+  \begin{figure}[H]
     \centering
-    \setlength{\fboxsep}{6pt}
-    
-    % Definimos el comando interno (usamos renewcommand para evitar errores de duplicado)
-    \newcommand{\addutem}[3]{%
-        \begin{subfigure}[b]{##1\textwidth}
-            \centering
-            \fbox{\includegraphics[width=\textwidth]{##2}}
-            \caption{##3}
-        \end{subfigure}
-    }
-}{%
-    % 2. Aquí usamos las memorias temporales en lugar de #1 y #2
-    \vspace{8pt}
-    \caption{\tempCaption}
-    {\footnotesize \textit{Elaboración Propia}}
-    \label{\tempLabel}
-    \end{figure}
-}
 
+    \caption{#1}
+    \label{#2}
+
+    \vspace{4pt}
+
+    \setlength{\fboxsep}{6pt}
+
+    \providecommand{\addutem}{}%
+    \renewcommand{\addutem}[3]{%
+      \begin{subfigure}[b]{##1\textwidth}
+        \centering
+        \fbox{%
+          \includegraphics[width=\textwidth]{##2}%
+        }
+        \caption{##3}
+      \end{subfigure}
+    }%
+}{%
+    \vspace{6pt}
+
+    {\footnotesize\textit{Fuente: Elaboración propia.}}
+
+  \end{figure}
+}
 % ===== Ajustes generales de robustez =====
 \emergencystretch=2em
 
@@ -354,7 +403,6 @@
 \include{1-PagPreliminar/Nota.tex}
 \include{1-PagPreliminar/dedicatoria.tex}
 \include{1-PagPreliminar/agradecimiento.tex}
-\include{1-PagPreliminar/resumen.tex}
 
 % ===== Índices (título + contenido juntos y con salto libre) =====
 \clearpage
@@ -364,6 +412,10 @@
 \clearpage
 \listoftables
 \clearpage
+
+% -----
+\include{1-PagPreliminar/resumen.tex}
+
 
 % ---------------- Texto principal ----------------
 \cleardoublepage
@@ -383,7 +435,7 @@
 % ---------------- Páginas finales ----------------
 \begingroup
   \doublespacing
-  \printbibliography[title={BIBLIOGRAFÍA},env=bibnum]
+  \printbibliography[heading=bibintoc,title={BIBLIOGRAFÍA},env=bibnum]
 \endgroup
 
 \printglossary[title={GLOSARIO},toctitle={GLOSARIO}]
