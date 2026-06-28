@@ -11,7 +11,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TIPO DE DOCUMENTO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pdfminorversion=7
+% \pdfminorversion=7
 \documentclass[letterpaper,12pt]{report}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,13 +20,12 @@
 \usepackage{textcomp}
 % --- Tipografía e idioma ---
 \usepackage[english]{tracklang}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
+% \usepackage[T1]{fontenc}
+% \usepackage[utf8]{inputenc}
 \usepackage{enumitem}
-\usepackage[spanish,activeacute]{babel}
-\usepackage{helvet}
-
-\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,activeacute,es-lcroman]{babel}
+\usepackage{fontspec}
+\setmainfont{Arial}
 \usepackage{microtype}
 \usepackage{amssymb}
 
@@ -48,6 +47,10 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
+% Evita que algpseudocode use versalitas/small caps con Arial
+\algrenewcommand\textproc{\textnormal}
+
+
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage[flushleft]{threeparttable}
@@ -65,6 +68,17 @@
 \usepackage{titletoc}   % Entradas del TOC
 \usepackage{caption}
 \usepackage{subcaption}
+
+% --- Evitar small caps en captions de algoritmos ---
+\floatname{algorithm}{Algoritmo}
+
+\captionsetup[algorithm]{
+  labelfont=bf,
+  textfont=normalfont,
+  font=normalsize,
+  justification=centering,
+  singlelinecheck=false
+}
 
 % --- Listas y utilidades ---
 
@@ -408,9 +422,9 @@
 \clearpage
 \tableofcontents
 \clearpage
-\listoffigures
-\clearpage
 \listoftables
+\clearpage
+\listoffigures
 \clearpage
 
 % -----
