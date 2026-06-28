@@ -12,7 +12,7 @@ Respecto del control de bajo nivel, el firmware implementado en el \gls{Arduino}
 
 El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. En simulación se obtuvo un mapa consistente, con cobertura estimada de 95.6\%, resolución de 0.05~m/celda y 45 nodos en el grafo. En hardware real también se obtuvieron mapas utilizables, aunque su calidad dependió de mantener velocidades bajas, aproximadamente entre 0.06 y 0.09~m/s, para reducir la degradación producida por deriva odométrica y ruido sensorial.
 
-La navegación autónoma con Nav2 quedó integrada mediante el planificador global NavFn con A\*, el controlador local DWB, mapas de costo y un árbol de comportamiento con acciones de recuperación. Asimismo, la exploración autónoma basada en fronteras quedó integrada mediante \texttt{explore\_server}, generando metas hacia zonas no exploradas del mapa. Sin embargo, la validación cuantitativa de navegación y exploración quedó pendiente por la falta de un entorno físico de mayor superficie. Por ello, estas capacidades se consideran integradas y verificadas funcionalmente, pero no cerradas cuantitativamente.
+La navegación autónoma con Nav2 quedó integrada mediante el planificador global NavFn con A\*, el controlador local DWB, mapas de costo y un árbol de comportamiento con acciones de recuperación. Asimismo, la exploración autónoma basada en fronteras quedó integrada mediante \texttt{explore\_server}, generando metas hacia zonas no exploradas del mapa. Sin embargo, la validación cuantitativa de navegación y exploración requiere un entorno físico de mayor superficie que el disponible y se plantea como trabajo futuro. Por ello, estas capacidades se consideran integradas y verificadas funcionalmente, pero no cerradas cuantitativamente.
 
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
@@ -21,9 +21,9 @@ El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
 \item[\autoref{oe2} -- Control de bajo nivel:] \textit{Cumplido.} Se implementó firmware para encoders, odometría y control PID, con sintonización mediante PSO y refinamiento experimental.
 
-\item[\autoref{oe3} -- Mapeo y navegación:] \textit{Cumplido parcialmente.} El mapeo con \texttt{slam\_toolbox} fue validado en simulación y hardware. La navegación con Nav2 quedó integrada y verificada funcionalmente, pero su validación cuantitativa queda pendiente.
+\item[\autoref{oe3} -- Mapeo y navegación:] \textit{Cumplido parcialmente.} El mapeo con \texttt{slam\_toolbox} fue validado en simulación y hardware. La navegación con Nav2 quedó integrada y verificada funcionalmente; su validación cuantitativa se plantea para un entorno de mayor superficie.
 
-\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de exploración por fronteras fue integrado con Nav2 y \texttt{slam\_toolbox}, pero su validación cuantitativa queda pendiente por limitaciones del entorno de prueba.
+\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de exploración por fronteras fue integrado con Nav2 y \texttt{slam\_toolbox}, y su validación cuantitativa se plantea para un entorno de prueba de mayor superficie.
 \end{description}
 
 En consecuencia, el objetivo general se alcanzó en sus componentes de diseño, construcción, control y mapeo, mientras que navegación y exploración quedaron integradas y listas para validación cuantitativa en un entorno de mayor superficie.
