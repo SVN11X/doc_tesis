@@ -103,7 +103,7 @@ Las acciones de recuperación configuradas incluyen limpieza de costmaps, retroc
 \section{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
 
-Para mapear entornos desconocidos sin intervención manual continua, se integra un módulo de exploración basado en fronteras. Se utiliza \texttt{m-explore-ros2}, derivado de \texttt{explore\_lite}, cuyo nodo \texttt{explore\_server} identifica fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2.
+Para mapear entornos desconocidos sin intervención manual continua, se integra un módulo de exploración basado en fronteras. Se utiliza el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{m-explore-ros2}); su nodo \texttt{explore\_server} identifica fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2.
 
 El explorador consume el costmap global, evalúa las fronteras disponibles y selecciona metas considerando distancia y ganancia de información. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 
