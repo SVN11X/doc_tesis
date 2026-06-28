@@ -309,27 +309,6 @@ $\sigma$   & 0.5 & 0.6 & 0.9 &  89.1 & 12.9 & 0.03 & 1.10 \\
 
 Cada iteración de la Tabla \ref{tab:anx_explore_reporte}, corresponde a una ejecución independiente (reset completo de SLAM y Nav2). La duración de sesión corresponde al rosbag completo; la duración de exploración al tiempo en que \texttt{explore\_server} estuvo activo. En todas las iteraciones el explorador detectó fronteras y desplazó el robot, pero Nav2 rechazó o abortó la mayoría de las metas en el espacio reducido, reportando \texttt{metas\_generadas}$\,=0$.
 
-\subsection{Indicadores de mapeo en hardware real}
-
-\begin{table}[H]
-\centering
-\caption{Indicadores de mapeo durante la exploración en hardware real. Valores extraídos de la mejor iteración (iteración~01, cobertura máxima): cobertura y área desde el mapa PGM, y distancia y duración desde el rosbag.}
-\label{tab:anx_slam_real_indicadores}
-\small
-\begin{tabular}{ll}
-\toprule
-\textbf{Indicador} & \textbf{Valor} \\
-\midrule
-Resolución del mapa & 0.05 m/celda \\
-Cobertura estimada & 82.9\% \\
-Área libre mapeada & 3.51 m$^2$ \\
-Distancia recorrida por odometría & 6.31 m \\
-Duración de la sesión de mapeo & 3.4 min \\
-Intervenciones manuales & 0 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \subsection{Navegación autónoma con Nav2}
 \label{anx:protocolo_nav}
 
