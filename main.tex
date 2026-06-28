@@ -137,8 +137,16 @@
 % \usepackage[hidelinks]{hyperref}
 
 % --- Encabezados y pies ---
+% --- Encabezados y pies ---
 \usepackage{fancyhdr}
-\fancypagestyle{fancy}{
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\fancypagestyle{plain}{
   \fancyhf{}
   \fancyfoot[R]{\thepage}
   \renewcommand{\headrulewidth}{0pt}
