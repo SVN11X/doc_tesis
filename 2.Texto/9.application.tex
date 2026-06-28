@@ -71,7 +71,7 @@ Multiplexor & \texttt{twist\_mux} & Priorizar navegación o teleoperación \\
 
 Nav2 utiliza dos mapas de costos. El \texttt{global\_costmap} entrega la representación usada por el planificador global, mientras que el \texttt{local\_costmap} se actualiza alrededor del robot y permite al controlador DWB reaccionar ante obstáculos cercanos. Ambos mapas incorporan una capa de inflación, necesaria para mantener una distancia de seguridad respecto de los obstáculos.
 
-En hardware real se utiliza una resolución de 0.05~m/celda y un radio de inflación de 0.15~m. En simulación se emplean parámetros más permisivos, adecuados al modelo virtual del robot. El detalle completo de frecuencias, radios y pesos se presenta en el \ref{anx:nav2_slam_config}.
+En hardware real, la capa de inflación aplica el modelo de costo y el radio de inflación de la Ec.~\ref{eq:inflation} sobre el \texttt{global\_costmap}, a la resolución del mapa de 0.05~m/celda. En simulación se emplean parámetros más permisivos, adecuados al modelo virtual del robot. El detalle completo de frecuencias, radios y pesos se presenta en el \ref{anx:nav2_slam_config}.
 
 %------------------------------------------------------------------
 \section{Árbol de comportamiento y recuperación}

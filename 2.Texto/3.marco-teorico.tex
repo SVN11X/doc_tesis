@@ -22,7 +22,7 @@ de muestreo:
 \label{eq:w_ruedas}
 \end{equation}
 
-\noindent donde $\omega_{j}[k]$ es la velocidad angular de la rueda $j$ [rad/s], $\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de ticks del encoder en el intervalo $T_s$ [ticks], $N_e=1980$ la resolución del encoder [ticks/vuelta] y $T_s=1/f_{ctrl}$ el período de muestreo [s].
+\noindent donde $\omega_{j}[k]$ es la velocidad angular de la rueda $j$ [rad/s], $\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de ticks del encoder en el intervalo $T_s$ [ticks], $N_e$ la resolución del encoder [ticks/vuelta] y $T_s=1/f_{ctrl}$ el período de muestreo [s].
 
 \begin{align}
 v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right) \label{eq:v_lineal} \\
@@ -455,7 +455,7 @@ El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\ma
 
 La odometría pura acumula deriva, por lo que se requiere SLAM (definido en la Sec.~\ref{sec:slam_lidar}) para estimar simultáneamente la trayectoria del robot y el mapa del entorno \citep{bailey2006slam}.
 
-Este trabajo utiliza \texttt{slam\_toolbox} en modo asíncrono en línea. El sistema construye un grafo cuyos nodos representan poses del robot y cuyas aristas representan restricciones de odometría y observaciones del \gls{LIDAR}. Al detectar cierre de lazo, el grafo se reoptimiza para corregir la deriva acumulada y mejorar la consistencia del mapa \citep{grisetti2010tutorial, macenski2020slamtoolbox}. El resultado es un mapa 2D y la transformación $\text{map}\rightarrow\text{odom}$ requerida por Nav2.
+Este trabajo utiliza \texttt{slam\_toolbox}. El sistema construye un grafo cuyos nodos representan poses del robot y cuyas aristas representan restricciones de odometría y observaciones del \gls{LIDAR}. Al detectar cierre de lazo, el grafo se reoptimiza para corregir la deriva acumulada y mejorar la consistencia del mapa \citep{grisetti2010tutorial, macenski2020slamtoolbox}. El resultado es un mapa 2D y la transformación $\text{map}\rightarrow\text{odom}$ requerida por Nav2.
 
 %------------------------------------------------------------------
 \section{Planificación y control local}

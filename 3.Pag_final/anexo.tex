@@ -159,8 +159,8 @@ Para evitar cambios de nombres en los puertos serie, se utilizan reglas \texttt{
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Uso} \\
 \midrule
-\texttt{ENC\_TICKS\_PER\_REV} & 1980 & Conversión de encoder a posición. \\
-\texttt{PID\_RATE} & 30~Hz & Frecuencia del lazo de control. \\
+\texttt{ENC\_TICKS\_PER\_REV} & 1980 & Conversión de encoder a posición ($N_e$, Tabla~\ref{tab:parametros_modelo}). \\
+\texttt{PID\_RATE} & 30~Hz & Frecuencia del lazo de control ($f_{ctrl}$, Tabla~\ref{tab:parametros_modelo}). \\
 \texttt{BAUDRATE} & 57600 & Comunicación serial Arduino--Raspberry Pi. \\
 \texttt{AUTO\_STOP\_INTERVAL} & 2000~ms & Auto-detención por pérdida de comandos. \\
 \bottomrule
