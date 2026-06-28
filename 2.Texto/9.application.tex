@@ -1,4 +1,4 @@
-\chapter{Arquitectura de control y navegación: \texttt{ros2\_control}, SLAM y Nav2}
+\chapter{ARQUITECTURA DE CONTROL Y NAVEGACIÓN: \texttt{ros2\_control}, SLAM Y NAV2}
 \label{chap:app_control_nav}
 
 Este capítulo describe la arquitectura de software que integra control diferencial, mapeo, navegación autónoma y exploración de fronteras. Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron desarrolladas previamente en los capítulos de construcción del robot, implementación del firmware y diseño del gemelo digital; por ello, aquí se enfatiza la orquestación de los subsistemas mediante \texttt{ros2\_control}, \texttt{slam\_toolbox}, Nav2 y \texttt{m-explore-ros2}. La operación detallada de \texttt{ros2\_control}, incluyendo el rol del \texttt{controller\_manager}, el \texttt{diff\_drive\_controller}, el \texttt{joint\_state\_broadcaster} y el backend \texttt{DiffDriveArduino}, se desarrolla en el Cap.~\ref{chap:robot_real}. En este capítulo, dicho marco se considera solo como parte del ciclo global SLAM--navegación--exploración. Los parámetros completos de configuración se trasladan al \ref{anx:nav2_slam_config}.

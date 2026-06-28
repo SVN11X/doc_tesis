@@ -2,8 +2,7 @@
 \renewcommand{\appendixtocname}{ANEXOS}
 \renewcommand{\appendixpagename}{ANEXOS}
 
-\renewcommand{\thesection}{ANEXO \arabic{section}.}
-\renewcommand{\thesubsection}{\thesection\arabic{subsection}}
+
 
 
 \appendix
@@ -11,12 +10,14 @@
 \appendixpage
 
 \begin{appendices}
+\renewcommand{\thesection}{ANEXO \arabic{section}.}
+\renewcommand{\thesubsection}{\thesection\arabic{subsection}}
 
 %======================================================================
 \section{Construcción, componentes y montaje}
 \label{anx:componentes}
 
-Este anexo reúne información complementaria sobre los componentes, el montaje físico, y la reproducción del prototipo.
+Este anexo reúne información complementaria sobre los componentes, el montaje físico y la reproducción del prototipo.
 
 \subsection{Parámetros de impresión 3D}
 \label{anx:impresion3d}
@@ -288,9 +289,9 @@ Se ejecutaron seis iteraciones; la iteración~02 se abortó por fallo en la inic
 
 \begin{table}[H]
 \centering
-\caption{Resultados de exploración autónoma por iteración en hardware real. }
+\caption{Resultados de exploración autónoma por iteración en hardware real.}
 \label{tab:anx_explore_reporte}
-\small
+\footnotesize
 \begin{tabular}{rccccccc}
 \toprule
 \textbf{Iter} & \textbf{Sesión (min)} & \textbf{Explor.\ (min)} & \textbf{Alcanz.} & \textbf{Fallidas} & \textbf{Cobert.\ (\%)} & \textbf{Área (m$^2$)} & \textbf{Dist.\ (m)} \\
@@ -307,7 +308,7 @@ $\sigma$   & 0.5 & 0.6 & 0.9 &  89.1 & 12.9 & 0.03 & 1.10 \\
 \end{tabular}
 \end{table}
 
-Cada iteración de la Tabla \ref{tab:anx_explore_reporte}, corresponde a una ejecución independiente (reset completo de SLAM y Nav2). La duración de sesión corresponde al rosbag completo; la duración de exploración al tiempo en que \texttt{explore\_server} estuvo activo. En todas las iteraciones el explorador detectó fronteras y desplazó el robot, pero Nav2 rechazó o abortó la mayoría de las metas en el espacio reducido, reportando \texttt{metas\_generadas}$\,=0$.
+Cada iteración de la Tabla~\ref{tab:anx_explore_reporte} corresponde a una ejecución independiente (reset completo de SLAM y Nav2). La duración de sesión corresponde al rosbag completo; la duración de exploración al tiempo en que \texttt{explore\_server} estuvo activo. Cada iteración de la Tabla~\ref{tab:anx_explore_reporte} corresponde a una ejecución independiente, con reset completo de SLAM y Nav2. La duración de sesión corresponde al registro completo del \texttt{rosbag}, mientras que la duración de exploración corresponde al tiempo en que \texttt{explore\_server} estuvo activo. En todas las iteraciones el explorador detectó fronteras y desplazó el robot de forma autónoma. Sin embargo, Nav2 rechazó o abortó la mayoría de las metas debido al tamaño reducido del entorno y a la inflación del mapa de costos. La única iteración con metas alcanzadas fue la iteración~5, con 2 metas exitosas de 101 intentos.
 
 \subsection{Navegación autónoma con Nav2}
 \label{anx:protocolo_nav}
