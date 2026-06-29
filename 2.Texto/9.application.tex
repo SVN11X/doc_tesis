@@ -133,7 +133,7 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
 \footnotesize
-\Require \texttt{global\_costmap} $C$; pose del robot; pesos $w_{\mathrm{pot}},w_{\mathrm{gain}}$, frecuencia $f_{\mathrm{exp}}$ y tiempo sin progreso $t_{\mathrm{prog}}$ (valores en la Tabla~\ref{tab:explore_params_ch9}); orientación desactivada ($\texttt{orientation\_scale}=0$); resolución $\rho_{\mathrm{map}}=0.05$~m/celda; tamaño mínimo $\rho_{\mathrm{map}}|F|\geq 0.033$~m; acción \texttt{NavigateToPose} de Nav2.
+\Require \texttt{global\_costmap} $C$; pose del robot; pesos $w_{\mathrm{pot}},w_{\mathrm{gain}}$, frecuencia $f_{\mathrm{exp}}$ y tiempo sin progreso $t_{\mathrm{prog}}$ (valores en la Tabla~\ref{tab:explore_params_ch9}); orientación desactivada ($\texttt{orientation\_scale}=0$); resolución $\rho_{\mathrm{map}}=0.05$~m/celda; tamaño mínimo $\rho_{\mathrm{map}}|F|\geq 0.05$~m; acción \texttt{NavigateToPose} de Nav2.
 \Ensure Mapa del entorno explorado; metas enviadas y alcanzadas.
 
 \State \textbf{Inicialización:}
@@ -146,7 +146,7 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 \For{cada frontera $F$}
 \State Calcular tamaño $|F|$ [celdas], centroide y distancia mínima $d_{\min}(F)$ [celdas]
 \EndFor
-\State Descartar fronteras con $\rho_{\mathrm{map}}|F|<0.033$~m
+\State Descartar fronteras con $\rho_{\mathrm{map}}|F|<0.05$~m
 \State Calcular $U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,|F|$ \Comment{Ec.~\ref{eq:frontier_cost}}
 \State Ordenar las fronteras por $U(F)$ ascendente
 \State $F^{*}\gets$ primera frontera cuyo punto representativo $\notin B$

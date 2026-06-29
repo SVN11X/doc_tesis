@@ -63,7 +63,7 @@ Omnidireccional & Muy alta & Alta & Media \\
 \end{tabular}
 \end{table}
 
-La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación, soporte en \gls{ROS2} y calidad de odometría para interiores. El prototipo desarrollado se ubica cerca de plataformas educativas como TurtleBot, pero incorpora firmware, integración de hardware y parametrización propios.
+La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación, soporte en \gls{ROS2} y calidad de odometría para interiores. El prototipo desarrollado se ubica cerca de plataformas educativas como TurtleBot, pero incorpora firmware adaptado, integración de hardware y parametrización propios.
 
 %======================================================================
 \section{Gemelo digital y verificación estructural}
@@ -108,18 +108,20 @@ El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación
 \caption{Paquetes principales del workspace.}
 \label{tab:anx_ws_roles}
 \small
-\begin{tabular}{p{4.0cm} p{9.0cm}}
+\begin{tabular}{p{3.0cm} p{7.2cm} p{2.6cm}}
 \toprule
-\textbf{Paquete} & \textbf{Rol en el sistema} \\
+\textbf{Paquete} & \textbf{Rol en el sistema} & \textbf{Origen} \\
 \midrule
-\texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. \\
-\texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. \\
-\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. \\
-\texttt{m-explore-ros2} & Exploración autónoma basada en fronteras. \\
-\texttt{pid\_config} & Scripts de captura, identificación FODT y sintonización PSO. \\
+\texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. & Adaptado de terceros \\
+\texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. & Adaptado de terceros \\
+\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. & Adaptado de terceros \\
+\texttt{m-explore-ros2} & Exploración autónoma basada en fronteras. & Adaptado de terceros \\
+\texttt{pid\_config} & Scripts de captura, identificación FODT y sintonización PSO. & Adaptado de terceros \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\noindent Todos los paquetes provienen de bases de código de terceros (de código abierto), modificadas y configuradas por el autor. El aporte propio corresponde a la adaptación e integración de estos paquetes, la parametrización del modelo URDF/\texttt{xacro}, la identificación FODT y la sintonización PID mediante PSO con refinamiento experimental.
 
 \subsection{Asignación de pines y dispositivos}
 \label{anx:pinout_dispositivos}
@@ -258,7 +260,7 @@ Las configuraciones de simulación y hardware se mantienen en archivos separados
 \section{Costos y comparación económica}
 \label{anx:costos}
 
-El costo total de materiales del prototipo fue de aproximadamente CLP~582.447, considerando componentes principales, fijaciones, cableado y accesorios. Este valor es comparable con plataformas educativas de bajo costo, pero con la ventaja de que el firmware, la integración de hardware y la parametrización fueron desarrollados y documentados para el prototipo.
+El costo total de materiales del prototipo fue de aproximadamente CLP~582.447, considerando componentes principales, fijaciones, cableado y accesorios. Este valor es comparable con plataformas educativas de bajo costo, pero con la ventaja de que el firmware adaptado, la integración de hardware y la parametrización fueron ajustados, integrados y documentados para el prototipo.
 
 \begin{table}[H]
 \centering
@@ -269,7 +271,7 @@ El costo total de materiales del prototipo fue de aproximadamente CLP~582.447, c
 \toprule
 \textbf{Plataforma} & \textbf{Costo aprox.} & \textbf{Observación} \\
 \midrule
-Este prototipo & CLP~582.447 & Desarrollo propio de firmware e integración. \\
+Este prototipo & CLP~582.447 & Firmware adaptado e integración propia. \\
 TurtleBot 3 Burger & US\$~550 & Plataforma educativa de referencia. \\
 TurtleBot 3 Waffle Pi & US\$~1.800 & Incluye LiDAR y cámara. \\
 Clearpath Jackal & US\$~18.000 & Plataforma industrial. \\
