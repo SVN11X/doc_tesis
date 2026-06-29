@@ -69,7 +69,7 @@ La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de
 \section{Gemelo digital y verificación estructural}
 \label{anx:gemelo_digital}
 
-El modelo se construye a partir de \texttt{robot.urdf.xacro}, que integra la estructura mecánica definida en \texttt{robot\_core.xacro}. Según el entorno de ejecución, se utiliza \texttt{lidar.xacro} para hardware real o \texttt{lidar\_sim.xacro} para simulación. La selección del backend de control se realiza mediante los argumentos \texttt{sim\_mode} y \texttt{use\_ros2\_control}.
+La organización modular del modelo (\texttt{robot.urdf.xacro}, \texttt{robot\_core.xacro} y \texttt{lidar.xacro}/\texttt{lidar\_sim.xacro}) se describe en la Sec.~\ref{sec:atribucion}. La selección del backend de control se realiza mediante los argumentos \texttt{sim\_mode} y \texttt{use\_ros2\_control}.
 
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
@@ -213,8 +213,8 @@ Para determinar el número de ticks por revolución de rueda, se hizo girar cada
 \toprule
 \textbf{Rueda} & $K_m$ \textbf{((m/s)/PWM)} & $\tau$ \textbf{(s)} & $L_d$ \textbf{(s)} \\
 \midrule
-Izquierda & 0.000913 & 0.3291 & 0.0215 \\
-Derecha & 0.000890 & 0.3485 & 0.0001 \\
+Izquierda & 0.000913 & 0.3291 & 0.0001 \\
+Derecha & 0.000890 & 0.3485 & 0.0845 \\
 \bottomrule
 \end{tabular}
 \end{table}
