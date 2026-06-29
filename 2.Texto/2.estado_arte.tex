@@ -38,7 +38,7 @@ Para un robot diferencial de interiores basado en Raspberry Pi 4, el \gls{LIDAR}
 \section{Navegación autónoma con Nav2}
 \label{sec:nav2}
 
-Nav2 (\textit{Navigation2}) es la pila de navegación estándar en \gls{ROS2} \citep{nav2_doc}. Su pertinencia para este trabajo radica en que integra los componentes requeridos para navegación autónoma: planificación global, control local, mapas de costo, árbol de comportamiento y acciones de recuperación. En particular, se adopta NavFn con A* como planificador global y DWB como controlador local, debido a su compatibilidad con robots diferenciales y a su bajo costo computacional relativo. El detalle de configuración se desarrolla en el capítulo de implementación de navegación.
+Nav2 (\textit{Navigation2}) es la pila de navegación estándar en \gls{ROS2} \citep{macenski2020nav2,nav2_doc}. Su pertinencia para este trabajo radica en que integra los componentes requeridos para navegación autónoma: planificación global, control local, mapas de costo, árbol de comportamiento y acciones de recuperación. En particular, se adopta NavFn con A* \citep{hart1968astar} como planificador global y DWB, basado en el enfoque de ventana dinámica \citep{fox1997dwa}, como controlador local, debido a su compatibilidad con robots diferenciales y a su bajo costo computacional relativo. El detalle de configuración se desarrolla en el capítulo de implementación de navegación.
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}

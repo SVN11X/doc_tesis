@@ -461,7 +461,7 @@ Este trabajo utiliza \texttt{slam\_toolbox}. El sistema construye un grafo cuyos
 \section{Planificación y control local}
 \label{sec:nav_marco}
 
-El planificador global calcula una ruta desde la posición actual hasta la meta sobre un mapa de costos. En Nav2 se usa NavFn en modo A\*, cuya función de evaluación es:
+El planificador global calcula una ruta desde la posición actual hasta la meta sobre un mapa de costos \citep{lavalle2006planning}. En Nav2 se usa NavFn en modo A\* \citep{hart1968astar}, cuya función de evaluación es:
 
 \begin{equation}
 f(n)=g_n(n)+h_{\mathrm{heur}}(n)

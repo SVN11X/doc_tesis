@@ -58,6 +58,7 @@ En la prueba de giro, los patrones de error difieren entre ambos entornos porque
 5 & 360.0 & 337.41 & $-22.59$ & 6.28\% \\
 \midrule
 \multicolumn{3}{r}{\textbf{Desviación media}} & $\mathbf{17.1^\circ}$ & \textbf{4.74\%} \\
+\multicolumn{3}{r}{Desviación estándar ($n{=}5$)} & $5.8^\circ$ & $1.61\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -78,6 +79,7 @@ En la prueba de giro, los patrones de error difieren entre ambos entornos porque
 5 & 360.0 & 356.0 & $-4.0$ \\
 \midrule
 \multicolumn{3}{r}{\textbf{Deriva media} $\lvert\cdot\rvert$} & $\mathbf{11.7^\circ}$ \\
+\multicolumn{3}{r}{Desviación estándar $\lvert\cdot\rvert$ ($n{=}5$)} & $8.0^\circ$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -211,7 +213,7 @@ Intervenciones manuales & 0 & 0 \\
 \end{tabular}
 \end{table}
 
-La cobertura media de 62.2\% confirma que el sistema detecta fronteras y explora el entorno de forma autónoma. La mejor iteración alcanzó 82.9\% de cobertura en 2.1~min de exploración activa. La alta tasa de metas fallidas (media 132 por iteración) refleja que Nav2 rechaza o aborta la mayoría de las metas generadas por el explorador debido a la inflación del costmap en un espacio reducido, no a un fallo del módulo de exploración. La única iteración con metas alcanzadas (iteración~5, 2 de 101 intentos) confirma que la cadena completa percepción--planificación--ejecución es funcional de extremo a extremo.
+La cobertura media de 62.2\% indica que el detector de fronteras opera y que la cadena percepción--planificación--ejecución está correctamente integrada de extremo a extremo. No obstante, esta cobertura no debe interpretarse como navegación dirigida exitosa: la tasa de metas alcanzadas por Nav2 fue muy baja (media de 0.4 por iteración, frente a 132.2 metas falladas o abortadas), y solo una de las cinco iteraciones (iteración~5, 2 de 101 intentos) alcanzó alguna meta. La cobertura se acumula, en gran medida, mientras \texttt{slam\_toolbox} integra barridos durante los reintentos y las acciones de recuperación, más que por arribos efectivos a las fronteras. La alta tasa de metas fallidas refleja que Nav2 rechaza o aborta la mayoría de las metas generadas por el explorador debido a la inflación del costmap en un espacio reducido --- el radio de inflación de $0.15$~m frente a un radio inscrito $\approx0.08$~m deja inflada casi toda celda libre del recinto de $\approx$3.5~m$^2$ (Ec.~\ref{eq:inflation}) ---, no a un fallo del módulo de exploración. La mejor iteración alcanzó 82.9\% de cobertura en 2.1~min de exploración activa. En consecuencia, el resultado demuestra la integración funcional de la cadena completa, pero la validación cuantitativa de la navegación autónoma queda pendiente para un entorno de mayor superficie o, alternativamente, para una reconfiguración de la inflación acorde al recinto (véase \autoref{anx:protocolo_resultados}).
 
 \begin{table}[H]
 \centering
@@ -246,4 +248,4 @@ El sobreimpulso del control PID (Tabla~\ref{tab:pid_performance}) corresponde a 
 
 Los resultados muestran que el prototipo alcanza una precisión adecuada de odometría en trayectorias cortas, con error medio de 3.63\% en hardware real. La deriva angular de $11.7^\circ$ por giro completo motiva la incorporación de una IMU planteada en el Trabajo futuro. El controlador PID sintonizado mediante PSO y refinamiento experimental reduce el sobreimpulso respecto de Lambda, logrando una respuesta más apropiada para navegación en interiores.
 
-El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La exploración por fronteras alcanzó una cobertura media de 62.2\% ($\sigma=12.9$) en cinco iteraciones independientes sobre un espacio de $\approx$3.5~m$^2$, confirmando la integración funcional de la cadena percepción--planificación--ejecución. La navegación autónoma por escenarios quedó verificada funcionalmente; su validación cuantitativa requiere un entorno de mayor superficie siguiendo el protocolo definido en el \ref{anx:protocolo_resultados}.
+El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La exploración por fronteras alcanzó una cobertura media de 62.2\% ($\sigma=12.9$) en cinco iteraciones independientes sobre un espacio de $\approx$3.5~m$^2$, lo que confirma la integración funcional de la cadena percepción--planificación--ejecución; sin embargo, la tasa de metas alcanzadas por Nav2 fue muy baja (media de 0.4 por iteración), por lo que la navegación dirigida no queda demostrada cuantitativamente. La navegación autónoma por escenarios quedó verificada funcionalmente; su validación cuantitativa requiere un entorno de mayor superficie siguiendo el protocolo definido en el Anexo~\ref{anx:protocolo_resultados}.
