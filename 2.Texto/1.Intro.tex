@@ -4,13 +4,13 @@
 
 La robótica móvil autónoma permite desarrollar sistemas capaces de desplazarse en entornos desconocidos, construir representaciones del espacio y ejecutar trayectorias sin intervención manual permanente. En este contexto, el uso de \gls{ROS2}, sensores \gls{LIDAR} 2D, computadores embebidos como la Raspberry Pi 4 y microcontroladores de bajo costo facilita la implementación de prototipos académicos orientados a navegación, mapeo y exploración de interiores.
 
-El presente trabajo de titulación aborda el diseño e implementación de un robot móvil de tracción diferencial capaz de generar un mapa 2D de su entorno y navegar de forma autónoma hacia zonas por explorar. Para ello, se integra un gemelo digital en Gazebo, un sistema de control de bajo nivel basado en Arduino Nano, odometría por encoders, control PID de velocidad de ruedas, mapeo mediante \texttt{slam\_toolbox}, navegación autónoma con Nav2 y exploración basada en fronteras.
+El presente trabajo de titulación aborda el diseño e implementación de un robot móvil de tracción diferencial capaz de construir un mapa 2D de su entorno, navegar de forma autónoma hacia metas dentro del mapa y explorar autónomamente zonas no mapeadas. Para ello, se integra un gemelo digital en Gazebo, un sistema de control de bajo nivel basado en Arduino Nano con odometría por encoders y control PID de velocidad de ruedas sintonizado mediante optimización por enjambre de partículas (PSO), mapeo mediante \texttt{slam\_toolbox}, navegación autónoma con Nav2 y exploración basada en fronteras.
 
 \section*{Planteamiento del problema}
 \phantomsection
 \addcontentsline{toc}{section}{Planteamiento del problema}
 
-El desarrollo de un robot móvil autónomo para interiores requiere resolver de forma integrada la percepción del entorno, la estimación de la posición, el control del movimiento y la planificación de trayectorias. En una plataforma de bajo costo, estos procesos deben ejecutarse sobre hardware con recursos limitados, manteniendo coherencia entre simulación y robot real. Por ello, el problema central de este trabajo consiste en determinar si es posible construir un prototipo de robot diferencial que, usando componentes accesibles y herramientas de código abierto, sea capaz de mapear, navegar y explorar entornos interiores de manera autónoma.
+El desarrollo de un robot móvil autónomo para interiores requiere resolver de forma integrada la percepción del entorno, la estimación de la posición, el control del movimiento y la planificación de trayectorias. En una plataforma de bajo costo, estos procesos deben distribuirse adecuadamente entre el hardware embebido —encargado del control en tiempo real y la adquisición sensorial— y un computador de mayor capacidad que ejecuta el mapeo y la planificación, manteniendo la coherencia entre simulación y robot real. Por ello, el problema central de este trabajo consiste en determinar si es posible construir un prototipo de robot diferencial que, usando componentes accesibles y herramientas de código abierto, sea capaz de mapear, navegar y explorar entornos interiores de manera autónoma.
 
 \section*{Justificación}
 \phantomsection
@@ -22,7 +22,7 @@ Este proyecto se justifica por su aporte académico y tecnológico al integrar c
 \phantomsection
 \addcontentsline{toc}{section}{Objetivo general}
 
-Diseñar e implementar un prototipo de robot móvil diferencial capaz de generar un mapa 2D de su entorno y navegar de forma autónoma hacia destinos por explorar, usando ROS 2 sobre una Raspberry Pi 4.
+Diseñar e implementar un prototipo de robot móvil de tracción diferencial de bajo costo, basado en ROS 2, capaz de construir un mapa 2D de su entorno mediante SLAM, navegar de forma autónoma hacia metas dentro del mapa y explorar autónomamente zonas no mapeadas. El sistema se despliega sobre una arquitectura distribuida: la Raspberry Pi 4 ejecuta la adquisición del LiDAR, la interfaz de hardware y el control de bajo nivel, mientras que un computador de escritorio ejecuta el SLAM, la navegación (Nav2) y la exploración, comunicados mediante DDS sobre una red local.
 
 \section*{Objetivos específicos}
 \phantomsection
@@ -33,7 +33,7 @@ Diseñar e implementar un prototipo de robot móvil diferencial capaz de generar
 
 \item[\ObEsp.\label{oe2}] Implementar el sistema de control de bajo nivel, incluyendo modelo cinemático diferencial, odometría por encoders y controlador PID en lazo cerrado sobre las velocidades de las ruedas.
 
-\item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo y la navegación autónoma del robot: SLAM basado en grafos de poses con SLAM Toolbox (optimización del grafo mediante el solver Ceres) para generar mapas 2D del entorno, y navegación con el framework Nav2 de ROS 2, con planificación global basada en A*, control local mediante el controlador de ventana dinámica (DWB), mapas de costos con inflación y árboles de comportamiento para la recuperación ante bloqueos.
+\item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo y la navegación autónoma del robot: SLAM basado en grafos de poses con SLAM Toolbox (optimización del grafo mediante el solver Ceres) para generar mapas 2D del entorno, y navegación con el framework Nav2 de ROS 2, con planificación global mediante A$^*$ (plugin \texttt{NavfnPlanner} de Nav2 con \texttt{use\_astar}), control local mediante el controlador de ventana dinámica DWB, mapas de costos con inflación y árboles de comportamiento para la recuperación ante bloqueos.
 
 \item[\ObEsp.\label{oe4}] Integrar la exploración autónoma basada en fronteras (\texttt{explore\_lite} y \texttt{m-explore-ros2}) para generar metas de navegación hacia zonas no mapeadas sin intervención manual continua.
 \end{description}
@@ -45,7 +45,7 @@ Diseñar e implementar un prototipo de robot móvil diferencial capaz de generar
 
 El alcance del trabajo comprende el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial para interiores. El sistema opera sobre superficies planas, utiliza un \gls{LIDAR} 2D RPLidar A1 como sensor principal y emplea odometría por encoders para estimar el desplazamiento. La validación considera pruebas en simulación y en hardware real, abordando odometría, control, mapeo, navegación y exploración.
 
-Entre sus limitaciones se considera que el prototipo no incorpora \gls{IMU}, cámara ni fusión sensorial, por lo que la odometría puede degradarse en trayectorias largas o giros acumulados. Además, el sistema no está orientado a exteriores, superficies irregulares ni obstáculos dinámicos rápidos. La implementación se desarrolla sobre \gls{ROS2} Foxy y Ubuntu 20.04, manteniendo compatibilidad con los paquetes utilizados durante el desarrollo.
+Entre sus limitaciones se considera que el prototipo no incorpora \gls{IMU}, cámara ni fusión sensorial, por lo que la odometría puede degradarse en trayectorias largas o giros acumulados. Además, el sistema no está orientado a exteriores, superficies irregulares ni obstáculos dinámicos rápidos. La implementación se desarrolla sobre \gls{ROS2} Foxy y Ubuntu 20.04 LTS, con simulación en Gazebo Classic 11; esta combinación se congela al inicio del proyecto para garantizar la compatibilidad de la cadena completa de paquetes sobre el hardware disponible. La migración a una distribución con soporte vigente se plantea como trabajo futuro.
 
 \section*{Metodología}
 \phantomsection
