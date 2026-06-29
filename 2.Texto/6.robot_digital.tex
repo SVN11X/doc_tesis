@@ -49,7 +49,7 @@ La validación estructural del modelo, incluyendo el conteo de eslabones, articu
 \section{Selección del backend de control}
 \label{sec:backend}
 
-El modelo permite seleccionar el backend de control según el entorno de ejecución. En hardware real se utiliza \texttt{ros2\_control} con el plugin \texttt{diffdrive\_arduino/DiffDriveArduino}; en simulación, Gazebo reemplaza al hardware mediante un plugin diferencial. En ambos casos se conservan los mismos marcos, tópicos y parámetros geométricos, permitiendo ejecutar SLAM, navegación y teleoperación sin cambios estructurales.
+El modelo permite seleccionar el backend de control según el entorno de ejecución. En hardware real se utiliza \texttt{ros2\_control} con el plugin \texttt{diffdrive\_arduino/DiffDriveArduino}, adaptado a partir de implementaciones de referencia de \texttt{ros2\_control} para robots diferenciales de bajo costo \citep{amadi2024introduction}; en simulación, Gazebo reemplaza al hardware mediante un plugin diferencial. En ambos casos se conservan los mismos marcos, tópicos y parámetros geométricos, permitiendo ejecutar SLAM, navegación y teleoperación sin cambios estructurales.
 
 \begin{table}[H]
 \centering

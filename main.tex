@@ -293,10 +293,14 @@
 \emergencystretch=2em
 
 % ===== Títulos numerados (capítulos/secciones) =====
-\titleformat{\chapter}
-  {\normalfont\huge\bfseries\filcenter}{CAPÍTULO \thechapter: }{0pt}{\Huge}
-\titlespacing*{\chapter}{0pt}{-80pt}{40pt}
-\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+% Formato de títulos de capítulos
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\centering}
+  {\Large CAPÍTULO \thechapter}
+  {0.1em}
+  {\Large\MakeUppercase}
+
+\titlespacing*{\chapter}{0pt}{-40pt}{30pt}
 
 % ===== Entradas del TOC (sangrías y puntos guía compactos) =====
 \contentsmargin{0cm}

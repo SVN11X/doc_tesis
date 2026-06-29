@@ -31,7 +31,7 @@ La cadena de transformaciones mantiene la misma convención usada en simulación
 %------------------------------------------------------------------
 \section{Teleoperación y multiplexación de comandos}
 
-El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad antes de enviar comandos al controlador diferencial. La teleoperación tiene mayor prioridad que la navegación autónoma y funciona como mecanismo de seguridad mediante un \textit{dead-man switch}. Su salida se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
+El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad antes de enviar comandos al controlador diferencial. La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}), tiene mayor prioridad que la navegación autónoma (prioridad 100 frente a 10) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación del mando. Su salida se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
 
 \begin{table}[H]
 \centering

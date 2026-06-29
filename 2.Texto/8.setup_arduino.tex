@@ -1,7 +1,7 @@
 \chapter{IMPLEMENTACIÓN DEL FIRMWARE DE BAJO NIVEL EN ARDUINO NANO}
 \label{ch:setup_arduino}
 
-Este capítulo describe el firmware \texttt{ROSArduinoBridge} implementado en el \gls{Arduino} Nano para el control de bajo nivel del robot. El firmware cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos.
+Este capítulo describe el firmware \texttt{ROSArduinoBridge} implementado en el \gls{Arduino} Nano para el control de bajo nivel del robot. El firmware parte de un proyecto de código abierto homónimo y se adaptó para este trabajo, modificando el controlador PID por rueda, la resolución de encoders y la rutina de auto-detención de seguridad. El firmware cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos.
 
 La integración con \gls{ROS2} mediante el plugin \texttt{DiffDriveArduino} y \texttt{ros2\_control} —traducción de velocidades de rueda a \textit{ticks/frame} y lectura de encoders— se desarrolla en el Cap.~\ref{chap:robot_real}. Su consistencia con el firmware depende de los parámetros compartidos reunidos en la Tabla~\ref{tab:anx_trazabilidad_parametros}.
 
