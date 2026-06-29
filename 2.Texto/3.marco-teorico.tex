@@ -497,7 +497,7 @@ U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_
 \label{eq:frontier_cost}
 \end{equation}
 
-\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $|F|$ el tamaño (número de celdas) de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m/celda la resolución del costmap (símbolo unificado con \texttt{resolution}), $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva (\texttt{orientation\_scale}$=0$). El robot selecciona la frontera de menor $U(F)$ que cumple \rho_{\mathrm{map}}\,|F|\geq 0.05~m (\texttt{min\_frontier\_size}).
+\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{m-explore-ros2} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $|F|$ el tamaño (número de celdas) de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m/celda la resolución del costmap (símbolo unificado con \texttt{resolution}), $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva ($\texttt{orientation\_scale}=0$). El robot selecciona la frontera de menor $U(F)$ que cumple $\rho_{\mathrm{map}}\,|F|\geq 0.05~\mathrm{m}$ (\texttt{min\_frontier\_size}).
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
