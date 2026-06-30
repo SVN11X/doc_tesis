@@ -118,8 +118,8 @@ El explorador consume el costmap global, evalúa las fronteras disponibles y sel
 \midrule
 \texttt{robot\_base\_frame} & \texttt{base\_link} & Marco base del robot \\
 \texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & Costmap usado para detectar fronteras \\
-\texttt{planner\_frequency} & 0.05~Hz & Frecuencia de reevaluación \\
-\texttt{progress\_timeout} & 60.0~s & Tiempo máximo sin progreso \\
+\texttt{planner\_frequency} & 0.3~Hz & Frecuencia de reevaluación \\
+\texttt{progress\_timeout} & 10.0~s & Tiempo máximo sin progreso \\
 \texttt{gain\_scale} & 1.0 & Peso de ganancia de información (Ec.~\ref{eq:frontier_cost}) \\
 \texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera (Ec.~\ref{eq:frontier_cost}) \\
 \bottomrule
