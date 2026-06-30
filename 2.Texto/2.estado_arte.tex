@@ -44,7 +44,7 @@ Nav2 (\textit{Navigation2}) es la pila de navegación estándar en \gls{ROS2} \c
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion}
 
-La exploración autónoma permite que el robot seleccione metas sin intervención manual mientras construye el mapa. El enfoque basado en fronteras dirige el robot hacia los límites entre el espacio libre conocido y las zonas aún no observadas \citep{yamauchi1997frontier, placed2023active}. En este trabajo se adopta \texttt{m-explore-ros2}, adaptación a \gls{ROS2} de \texttt{explore\_lite}, porque reutiliza el mapa generado por \texttt{slam\_toolbox} y envía metas directamente a Nav2, sin requerir sensores adicionales.
+La exploración autónoma permite que el robot seleccione metas sin intervención manual mientras construye el mapa. El enfoque basado en fronteras dirige el robot hacia los límites entre el espacio libre conocido y las zonas aún no observadas \citep{yamauchi1997frontier, placed2023active}. En este trabajo se adopta \texttt{explore\_lite}, el paquete de exploración por fronteras del proyecto \texttt{m-explore} \citep{horner_mexplore}, en su adaptación a \gls{ROS2}, porque reutiliza el mapa generado por \texttt{slam\_toolbox} y envía metas directamente a Nav2, sin requerir sensores adicionales.
 
 %------------------------------------------------------------------
 \section{Validación mediante gemelo digital}
@@ -92,7 +92,7 @@ A partir de la revisión anterior, se adoptan las siguientes decisiones de dise�
 \item \textbf{Pila de navegación}: Nav2 con planificador global NavFn (A$^*$), controlador local DWB y árbol de comportamiento para recuperación.
 \item \textbf{Framework de control}: \texttt{ros2\_control} con \texttt{diff\_drive\_controller} y plugin \texttt{DiffDriveArduino} sobre protocolo serial con \gls{Arduino} \citep{amadi2024introduction, openrobotics2024ros2control}.
 \item \textbf{Sintonización PID}: PSO y refinamiento experimental sobre hardware real \citep{gokcce2021particle}.
-\item \textbf{Exploración autónoma}: estrategia basada en fronteras mediante \texttt{m-explore-ros2}, integrada con \texttt{slam\_toolbox} y Nav2.
+\item \textbf{Exploración autónoma}: estrategia basada en fronteras mediante el paquete \texttt{explore\_lite} (proyecto \texttt{m-explore}), integrada con \texttt{slam\_toolbox} y Nav2.
 \item \textbf{Estrategia de validación}: validación cruzada entre Gazebo y hardware real, con métricas cuantitativas para odometría, control PID y SLAM, y verificación funcional para navegación y exploración.
 \end{enumerate}
 
