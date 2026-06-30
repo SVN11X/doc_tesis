@@ -129,7 +129,7 @@ El explorador consume el costmap global, evalúa las fronteras disponibles y sel
 El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:exploracion_fronteras}. La selección de meta usa el costo de la Ec.~\ref{eq:frontier_cost}, prioriza el menor $U(F)$ y gestiona fronteras no alcanzables mediante lista negra y el tiempo máximo sin progreso (\texttt{progress\_timeout}).
 
 \begin{algorithm}[H]
-\caption{Ciclo de exploración por fronteras del explorador configurado (\texttt{explore\_lite}/\texttt{m-explore-ros2})}
+\caption{Ciclo de exploración por fronteras del explorador configurado (\texttt{m-explore-ros2}, adaptación a \gls{ROS2} de \texttt{explore\_lite})}
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
 \footnotesize
