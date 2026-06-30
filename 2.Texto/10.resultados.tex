@@ -9,7 +9,7 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 
 Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04, manteniendo la misma estructura de tópicos y parámetros utilizada en el robot real, mediante archivos YAML equivalentes (transferencia sim--hardware detallada en la Sec.~\ref{sec:verificacion_ch9}).
 
-En hardware real, las pruebas se realizaron en un espacio interior con suelo de alfombra. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Raspberry Pi 4 ejecutó la adquisición del LiDAR, la interfaz de hardware y el control de bajo nivel, mientras que la estación de trabajo ejecutó SLAM, Nav2 y la exploración, además de RViz2 para supervisión.el aporte propio corresponde a su adaptación e integración, la parametrización del modelo, la identificación FODT y la sintonización PID mediante PSO con refinamiento experimental.
+En hardware real, las pruebas se realizaron en un espacio interior con suelo de alfombra. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Raspberry Pi 4 ejecutó la adquisición del LiDAR, la interfaz de hardware y el control de bajo nivel, mientras que la estación de trabajo ejecutó SLAM, Nav2 y la exploración, además de RViz2 para supervisión.
 
 El espacio físico disponible permitió validar odometría, control y mapeo; la navegación autónoma y la exploración se evalúan en la Sec.~\ref{sec:resultados_nav2}.
 
