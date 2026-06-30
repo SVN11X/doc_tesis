@@ -488,7 +488,7 @@ J_{\mathrm{DWB}}(v,\omega)=\sum_c w_c\, C_c(v,\omega)
 \label{eq:inflation}
 \end{equation}
  
-\noindent donde $d_o$ es la distancia al obstáculo [m], $r_{\mathrm{inscrito}}$ el radio inscrito del robot [m] (calculado por Nav2 a partir del \textit{footprint} declarado en \texttt{nav2\_params.yaml}, igual a la distancia del origen \texttt{base\_link} al borde más cercano del \textit{footprint}; para el prototipo $r_{\mathrm{inscrito}}\approx0.08$~m), $r_{\mathrm{inflacion}}=0.15$~m el radio de inflación [m], $\beta=5.0$ el factor de decaimiento (\texttt{cost\_scaling\_factor}) [1/m] y $\mathrm{e}$ el número de Euler.
+\noindent donde $d_o$ es la distancia al obstáculo [m], $r_{\mathrm{inscrito}}$ el radio inscrito del robot [m] (calculado por Nav2 a partir del \textit{footprint} declarado en \texttt{nav2\_params.yaml}, igual a la distancia del origen \texttt{base\_link} al borde más cercano del \textit{footprint}; para el prototipo $r_{\mathrm{inscrito}}\approx0.08$~m), $r_{\mathrm{inflacion}}=0.15$~m el radio de inflación [m], $\beta=5.0$ el factor de decaimiento (\texttt{cost\_scaling\_factor}) [1/m] y $\mathrm{e}$ el número de Euler (Ec.~\ref{eq:fodt}).
 
 Los niveles $254$, $253$ y $0$ corresponden a las constantes \texttt{LETHAL\_OBSTACLE}, \texttt{INSCRIBED\_INFLATED\_OBSTACLE} y \texttt{FREE\_SPACE} del costmap; el decaimiento exponencial se escala por $\texttt{INSCRIBED\_INFLATED\_OBSTACLE}-1=252$.
  

@@ -67,7 +67,7 @@ $K_o$ & 50 & 50 \\
 
 El divisor $K_o$ normaliza la acción de control, por lo que las ganancias efectivas corresponden a $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. La convención de orden usada por el firmware es $K_p$, $K_d$, $K_i$, $K_o$, heredada de \texttt{ROSArduinoBridge}.
 
-Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ son coeficientes adimensionales en la escala interna entera del firmware: la salida se lleva a PWM mediante la división por $K_o$ y la saturación a $[-255,255]$; no portan unidad física directa.
+Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se interpretan en la escala interna entera del firmware (Sec.~\ref{sec:pid}); la salida se lleva a PWM dividiendo por $K_o$ y saturando a $[-255,255]$.
 
 \begin{algorithm}[H]
 \caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
