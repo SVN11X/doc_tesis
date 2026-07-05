@@ -50,7 +50,7 @@ El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer 
 %------------------------------------------------------------------
 \section{Cómputo, percepción e integración con ROS 2}
 
-La Raspberry Pi 4 ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, actuando como computador principal del robot. Su función es coordinar la comunicación con el \gls{Arduino}, adquirir y publicar los datos del sensor láser, y ejecutar la interfaz de hardware y el control de bajo nivel; el SLAM, la navegación (Nav2) y la exploración se ejecutan en la estación de trabajo.
+La Raspberry Pi 4 ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, actuando como computador principal del robot. Su función es coordinar la comunicación con el \gls{Arduino}, adquirir y publicar los datos del sensor láser, y ejecutar la interfaz de hardware y el control de bajo nivel; el cómputo de alto nivel se ejecuta en la estación de trabajo, según la arquitectura distribuida del Objetivo general.
 
 El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 360 grados que publica barridos utilizados por SLAM y por los mapas de costo de Nav2. Su selección y limitaciones se justifican en la Sec.~\ref{sec:sensores}.
 

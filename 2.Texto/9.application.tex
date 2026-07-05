@@ -175,7 +175,7 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 
 Los subsistemas operan de forma encadenada. \texttt{slam\_toolbox} construye el mapa y publica la transformación \texttt{map}$\rightarrow$\texttt{odom}; Nav2 utiliza ese mapa para planificar y controlar el movimiento; \texttt{twist\_mux} envía los comandos al controlador diferencial; y \texttt{explore\_server} genera nuevas metas hacia fronteras no exploradas.
 
-Esta integración permite que el robot pase desde teleoperación y mapeo inicial hacia navegación autónoma y exploración de zonas desconocidas, manteniendo la misma base de marcos y tópicos tanto en simulación como en hardware.
+Esta integración permite que el robot pase desde teleoperación y mapeo inicial hacia navegación autónoma y exploración de zonas desconocidas, sobre la base común de marcos y tópicos entre simulación y hardware (Sec.~\ref{sec:verificacion_ch9}).
 
 %------------------------------------------------------------------
 \section{Transferencia simulación--hardware}
