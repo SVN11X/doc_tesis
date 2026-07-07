@@ -10,7 +10,7 @@ El presente trabajo de titulación aborda el diseño e implementación de un rob
 \phantomsection
 \addcontentsline{toc}{section}{Planteamiento del problema}
 
-El desarrollo de un robot móvil autónomo para interiores requiere resolver de forma integrada la percepción del entorno, la estimación de la posición, el control del movimiento y la planificación de trayectorias. En una plataforma de bajo costo, estos procesos deben distribuirse adecuadamente entre el hardware embebido —encargado del control en tiempo real y la adquisición sensorial— y un computador de mayor capacidad que ejecuta el mapeo y la planificación, manteniendo la coherencia entre simulación y robot real. Por ello, el problema central de este trabajo consiste en determinar si es posible construir un prototipo de robot diferencial que, usando componentes accesibles y herramientas de código abierto, sea capaz de mapear, navegar y explorar entornos interiores de manera autónoma.
+El desarrollo de un robot móvil autónomo para interiores requiere resolver de forma integrada la percepción del entorno, la estimación de la posición, el control del movimiento y la planificación de trayectorias. En una plataforma de bajo costo, estos procesos deben distribuirse adecuadamente entre el hardware embebido; encargado del control en tiempo real y la adquisición sensorial, y un computador de mayor capacidad que ejecuta el mapeo y la planificación, manteniendo la coherencia entre simulación y robot real. Por ello, el problema central de este trabajo consiste en determinar si es posible construir un prototipo de robot diferencial que, usando componentes accesibles y herramientas de código abierto, sea capaz de mapear, navegar y explorar entornos interiores de manera autónoma.
 
 \section*{Justificación}
 \phantomsection
@@ -33,9 +33,10 @@ Diseñar e implementar un prototipo de robot móvil de tracción diferencial de 
 
 \item[\ObEsp.\label{oe2}] Implementar el sistema de control de bajo nivel, incluyendo modelo cinemático diferencial, odometría por encoders y controlador PID en lazo cerrado sobre las velocidades de las ruedas.
 
-\item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo y la navegación autónoma del robot: SLAM basado en grafos de poses con SLAM Toolbox (optimización del grafo mediante el solver Ceres) para generar mapas 2D del entorno, y navegación con el framework Nav2 de ROS 2, con planificación global mediante A$^*$ (plugin \texttt{NavfnPlanner} de Nav2 con \texttt{use\_astar}), control local mediante el controlador de ventana dinámica DWB, mapas de costos con inflación y árboles de comportamiento para la recuperación ante bloqueos.
+\item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo y la navegación autónoma del robot: SLAM basado en grafos de poses con SLAM Toolbox (optimización del grafo mediante el solver Ceres) para generar mapas 2D del entorno, y navegación con el framework Nav2 de ROS 2, con planificación global basada en A$^*$, control local mediante el controlador de ventana dinámica (DWB), mapas de costos con inflación y árboles de comportamiento para la recuperación ante bloqueos.
 
 \item[\ObEsp.\label{oe4}] Integrar la exploración autónoma basada en fronteras mediante el paquete \texttt{explore\_lite} (proyecto \texttt{m-explore}, en su adaptación a \gls{ROS2}) para generar metas de navegación hacia zonas no mapeadas sin intervención manual continua.
+
 \end{description}
 
 \section*{Alcances y limitaciones}
@@ -51,7 +52,7 @@ Entre sus limitaciones se considera que el prototipo no incorpora \gls{IMU}, cá
 \phantomsection
 \addcontentsline{toc}{section}{Metodología}
 
-La metodología es experimental e iterativa, organizada en seis etapas: diseño del gemelo digital y simulación en Gazebo; construcción del hardware con Raspberry Pi 4, Arduino Nano, L298N, encoders y RPLidar A1; implementación del control de bajo nivel con PID y sintonización mediante PSO; configuración de SLAM y navegación autónoma con \texttt{slam\_toolbox} y Nav2; integración de exploración autónoma basada en fronteras; y documentación final del sistema desarrollado.
+La metodología es experimental e iterativa, organizada en seis etapas: Diseño del gemelo digital y simulación, Construcción del hardware, Control de bajo nivel, SLAM y navegación autónoma, Exploración y validación final, y Documentación.
 
 \section*{Organización del documento}
 \phantomsection

@@ -3,6 +3,12 @@
 
 Este capítulo presenta los fundamentos teóricos necesarios para el diseño e implementación del robot móvil diferencial. Se abordan el modelo cinemático y la odometría por encoders, la identificación FODT para sintonización, el control PID discreto, la optimización PSO, el SLAM basado en grafos, la navegación con A\* y DWB, y la exploración autónoma basada en fronteras. Estos conceptos se vinculan directamente con la implementación en \gls{ROS2}, Gazebo y el firmware del \gls{Arduino}.
 
+\utemFigurePropia{2.Texto/Imag/arquitectura_alto_nivel.png}{1.0\textwidth}
+{Arquitectura de alto nivel del proyecto}
+{fig:arquitectura_alto_nivel}
+
+La Fig. \ref{fig:arquitectura_alto_nivel} presenta la arquitectura de alto nivel del sistema de robótica móvil desarrollado, organizada en dos entornos principales: el robot móvil y la estación de trabajo. En el robot, los encoders proporcionan la realimentación necesaria para que el Arduino ejecute el control PID de velocidad y obtenga la medición del giro de las ruedas, mientras que el LiDAR 2D entrega información del entorno a la Raspberry Pi 4.
+
 %------------------------------------------------------------------
 \section{Odometría y modelo cinemático diferencial}
 \label{sec:odometria}
@@ -11,10 +17,7 @@ La odometría estima la pose del robot a partir del desplazamiento de sus ruedas
 
 \noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. Análogamente, $\omega$ sin subíndice denota la velocidad angular del \emph{robot} [rad/s]; con subíndice $j$ ($\omega_j$, $\hat{\omega}_j$, $\omega_j^{cmd}$) denota la velocidad angular de \emph{rueda} [rad/s]. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice. El conteo del encoder se expresa en \emph{ticks}: un \emph{tick} es una cuenta de encoder en cuadratura (unidad \texttt{ENC\_TICKS\_PER\_REV} del firmware).
 
-Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas
-$b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad
-angular se calcula a partir de los ticks de encoder acumulados en el intervalo
-de muestreo:
+Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad angular se calcula a partir de los ticks de encoder acumulados en el intervalo de muestreo:
 
 \begin{equation}
 \omega_{j}[k] = \frac{2\pi\, \Delta c_{j}[k]}{N_e\, T_s},
@@ -52,7 +55,7 @@ x_{k+1} &= x_k + \frac{v[k]}{\omega[k]}\bigl(\sin\theta_{k+1}-\sin\theta_k\bigr)
 y_{k+1} &= y_k - \frac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr),
 \label{eq:pose_exacta}
 \end{align}
-y para $|\Delta\theta_k|<\varepsilon$, Runge--Kutta de 2.\textsuperscript{o} orden (RK2)con el rumbo evaluado en el punto medio del paso,
+y para $|\Delta\theta_k|<\varepsilon$, Runge--Kutta de 2.\textsuperscript{o} orden (RK2) con el rumbo evaluado en el punto medio del paso,
 \begin{align}
 \theta_m   &= \theta_k+\tfrac{1}{2}T_s\,\omega[k], \notag\\
 x_{k+1}    &= x_k + T_s\,v[k]\cos\theta_m, \notag\\

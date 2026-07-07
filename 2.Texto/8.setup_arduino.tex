@@ -10,10 +10,6 @@ La integración con \gls{ROS2} mediante el plugin \texttt{DiffDriveArduino} y \t
 
 El firmware se organiza en módulos con responsabilidades separadas: \texttt{ROSArduinoBridge.ino} coordina la comunicación serial y el ciclo principal; \texttt{commands.h} define los comandos; \texttt{encoder\_driver} realiza la lectura de encoders; \texttt{motor\_driver} acciona el L298N; y \texttt{diff\_controller.h} implementa el controlador PID. Esta organización facilita la trazabilidad entre el modelo cinemático, el firmware y la interfaz con \texttt{ros2\_control}.
 
-\utemFigurePropia{2.Texto/Imag/diagrama_arquitectura_firmware.png}{0.85\textwidth}
-{Arquitectura modular del firmware \texttt{ROSArduinoBridge}.}
-{fig:arquitectura_firmware}
-
 %------------------------------------------------------------------
 \section{Constantes físicas y conversión de unidades}
 

@@ -9,7 +9,7 @@ Esta revisión del estado del arte contextualiza las decisiones técnicas adopta
 
 El problema de localización y mapeo simultáneos (\gls{slam}) consiste en que un robot construya el mapa de un entorno desconocido mientras estima su propia posición dentro de él \citep{thrun2005probabilistic}. En interiores, los sensores \gls{LIDAR}~2D son adecuados por su precisión, bajo costo y robustez frente a cambios de iluminación \citep{cadena2016past, ismail2022eslam}.
 
-En el ecosistema \gls{ROS2}, existen distintas alternativas para SLAM 2D. GMapping presenta bajo consumo, pero carece de cierre de lazo robusto; Hector SLAM puede operar sin odometría, aunque es sensible a geometrías repetitivas; Cartographer ofrece buena consistencia global, pero con mayor costo computacional. Frente a estas opciones, \texttt{slam\_toolbox} \citep{macenski2020slamtoolbox, macenski2021slamtoolbox} resulta pertinente para este trabajo, ya que fue diseñado para \gls{ROS2}, integra optimización por grafos, cierre de lazo y mantiene un consumo compatible con una Raspberry Pi 4.
+En el ecosistema \gls{ROS2} coexisten varias alternativas para SLAM 2D --GMapping, Hector SLAM y Cartographer--, cuyas ventajas y limitaciones se comparan en la Tabla~\ref{tab:comparativa_slam}. Frente a ellas, \texttt{slam\_toolbox} \citep{macenski2020slamtoolbox, macenski2021slamtoolbox} resulta pertinente para este trabajo, ya que fue diseñado para \gls{ROS2}, integra optimización por grafos, cierre de lazo y mantiene un consumo compatible con una Raspberry Pi 4.
 
 \begin{table}[H]
 \centering
@@ -38,19 +38,19 @@ Para un robot diferencial de interiores basado en Raspberry Pi 4, el \gls{LIDAR}
 \section{Navegación autónoma con Nav2}
 \label{sec:nav2}
 
-Nav2 (\textit{Navigation2}) es la pila de navegación estándar en \gls{ROS2} \citep{macenski2020nav2,nav2_doc,macenski2023desks}. Su pertinencia para este trabajo radica en que integra los componentes requeridos para navegación autónoma: planificación global, control local, mapas de costo, árbol de comportamiento y acciones de recuperación. En particular, se adopta NavFn con A* \citep{hart1968astar} como planificador global y DWB, basado en el enfoque de ventana dinámica \citep{fox1997dwa}, como controlador local, debido a su compatibilidad con robots diferenciales y a su bajo costo computacional relativo. El detalle de configuración se desarrolla en el capítulo de implementación de navegación.
+Nav2 (\textit{Navigation2}) es la pila de navegación estándar en \gls{ROS2} \citep{macenski2020nav2,nav2_doc,macenski2023desks}. Su pertinencia para este trabajo radica en que integra los componentes requeridos para navegación autónoma: planificación global, control local, mapas de costo, árbol de comportamiento y acciones de recuperación. Para la planificación global, además de NavFn (A*), Nav2 ofrece planificadores como Smac (\textit{Hybrid-A*}, \textit{State Lattice}) que generan trayectorias cinemáticamente factibles pensadas para plataformas tipo Ackermann \citep{macenski2023desks}; esta ventaja es poco relevante en un robot diferencial capaz de girar sobre su eje. Para el control local, alternativas como TEB (\textit{Timed Elastic Band}) producen trayectorias más suaves a costa de mayor carga computacional. Por ello se adopta NavFn con A* \citep{hart1968astar} como planificador global y DWB, basado en el enfoque de ventana dinámica \citep{fox1997dwa}, como controlador local, por su compatibilidad directa con robots diferenciales y su menor costo computacional sobre la Raspberry Pi 4.
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion}
 
-La exploración autónoma permite que el robot seleccione metas sin intervención manual mientras construye el mapa. El enfoque basado en fronteras dirige el robot hacia los límites entre el espacio libre conocido y las zonas aún no observadas \citep{yamauchi1997frontier, placed2023active}. En este trabajo se adopta \texttt{explore\_lite}, el paquete de exploración por fronteras del proyecto \texttt{m-explore} \citep{horner_mexplore}, en su adaptación a \gls{ROS2}, porque reutiliza el mapa generado por \texttt{slam\_toolbox} y envía metas directamente a Nav2, sin requerir sensores adicionales.
+La exploración autónoma permite que el robot seleccione metas sin intervención manual mientras construye el mapa. El enfoque basado en fronteras dirige el robot hacia los límites entre el espacio libre conocido y las zonas aún no observadas \citep{yamauchi1997frontier}. Frente a él, las estrategias por ganancia de información y \textit{active SLAM} eligen metas que minimizan la incertidumbre del mapa y de la pose, a costa de mayor esfuerzo de cómputo y, por lo general, de un modelo de sensor más completo \citep{placed2023active}. Dado el objetivo de bajo costo y la carga limitada de la Raspberry Pi 4, en este trabajo se adopta \texttt{explore\_lite}, el paquete de exploración por fronteras del proyecto \texttt{m-explore} \citep{horner_mexplore} en su adaptación a \gls{ROS2}, porque reutiliza el mapa generado por \texttt{slam\_toolbox} y envía metas directamente a Nav2, sin requerir sensores adicionales.
 
 %------------------------------------------------------------------
 \section{Validación mediante gemelo digital}
 \label{sec:gemelo_digital}
 
-El uso de un gemelo digital en Gazebo permite validar la geometría, la cinemática, la cadena de transformaciones y la configuración de control antes de operar el robot físico. En este trabajo, la simulación no reemplaza la validación experimental, sino que reduce riesgos durante la puesta en marcha y permite comparar el comportamiento simulado con el hardware real, considerando la brecha simulación--realidad asociada a fricción, zona muerta del driver y ruido sensorial \citep{koenig2004gazebo, openrobotics2024gazebo}.
+El uso de un gemelo digital en Gazebo permite validar la geometría, la cinemática, la cadena de transformaciones y la configuración de control antes de operar el robot físico. Entre los simuladores de robótica disponibles, herramientas como Isaac Sim priorizan el realismo fotorrealista y físico pero exigen aceleración por GPU, mientras que Gazebo ofrece un compromiso adecuado al integrarse de forma nativa con \gls{ROS2} y \texttt{ros2\_control} y ejecutarse sobre hardware modesto \citep{koenig2004gazebo, openrobotics2024gazebo}. En este trabajo, la simulación no reemplaza la validación experimental, sino que reduce riesgos durante la puesta en marcha y permite comparar el comportamiento simulado con el hardware real, considerando la brecha simulación--realidad asociada a fricción, zona muerta del driver y ruido sensorial.
 
 %------------------------------------------------------------------
 \section{Trabajos relacionados}
@@ -77,24 +77,6 @@ La Tabla~\ref{tab:trabajos_relacionados} sintetiza trabajos académicos relacion
 \bottomrule
 \end{tabular}
 \end{table}
-
-A diferencia de los trabajos revisados, este proyecto integra en una misma plataforma de bajo costo el diseño físico del robot, un gemelo digital en Gazebo, control PID de velocidad por rueda con sintonización PSO y refinamiento experimental, mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración basada en fronteras. Su aporte, más que un nuevo algoritmo, es la integración documentada y verificable de estos subsistemas sobre hardware real.
-
-%------------------------------------------------------------------
-\section{Decisiones de diseño}
-\label{sec:decisiones_diseno}
-
-A partir de la revisión anterior, se adoptan las siguientes decisiones de diseño para el prototipo:
-
-\begin{enumerate}
-\item \textbf{Método SLAM}: \texttt{slam\_toolbox} en modo asíncrono en línea \citep{ngoc2023efficient}.
-\item \textbf{Sensor principal}: \gls{LIDAR}~2D RPLidar A1.
-\item \textbf{Pila de navegación}: Nav2 con planificador global NavFn (A$^*$), controlador local DWB y árbol de comportamiento para recuperación.
-\item \textbf{Framework de control}: \texttt{ros2\_control} con \texttt{diff\_drive\_controller} y plugin \texttt{DiffDriveArduino} sobre protocolo serial con \gls{Arduino} \citep{amadi2024introduction, openrobotics2024ros2control}.
-\item \textbf{Sintonización PID}: PSO y refinamiento experimental sobre hardware real \citep{gokcce2021particle}.
-\item \textbf{Exploración autónoma}: estrategia basada en fronteras mediante el paquete \texttt{explore\_lite} (proyecto \texttt{m-explore}), integrada con \texttt{slam\_toolbox} y Nav2.
-\item \textbf{Estrategia de validación}: validación cruzada entre Gazebo y hardware real, con métricas cuantitativas para odometría, control PID y SLAM, y verificación funcional para navegación y exploración.
-\end{enumerate}
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}
