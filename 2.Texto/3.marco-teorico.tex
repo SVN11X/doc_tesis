@@ -114,15 +114,14 @@ m_j^{cmd}[k] = \kappa\, v_j^{cmd}[k],
 
 La forma equivalente en términos de la velocidad angular de rueda comandada $\omega_j^{cmd}$ se obtiene mediante $v_j^{cmd}=r\,\omega_j^{cmd}$ y se aplica en el plugin de hardware (Cap.~\ref{chap:robot_real}).
 
-\begin{align}
+\begin{equation*}
 \kappa
-&= \frac{N_e}{\pi D\, f_{ctrl}}
+= \frac{N_e}{\pi D\, f_{ctrl}}
 = \frac{1980}{2\pi \times 0.0335 \times 30}
 \approx 313.56 \;\frac{\text{ticks/frame}}{\text{m/s}}
-\label{eq:mps_to_ticks_factor}
-\end{align}
+\end{equation*}
 
-\noindent evaluación numérica de $\kappa$ (Ec.~\ref{eq:mps_to_ticks}), con $D=2r$ el diámetro de rueda [m] (constante \texttt{WHEEL\_DIAMETER}); el resto de variables fueron definidas previamente.
+\noindent es la evaluación numérica de $\kappa$ (Ec.~\ref{eq:mps_to_ticks}), con $D=2r$ el diámetro de rueda [m] (constante \texttt{WHEEL\_DIAMETER}); el resto de variables fueron definidas previamente.
 
 %------------------------------------------------------------------
 
@@ -423,7 +422,7 @@ K_i = K_i^{\lambda}\,f_\lambda\,T_s
 \label{eq:lambda_firmware}
 \end{equation}
  
-\noindent donde $f_\lambda$ es el factor de escala a la representación interna del firmware (en escala de firmware; véase la nota siguiente), $K_o$ el divisor de normalización (Ec.~\ref{eq:pid_firmware}), $\kappa\approx313.56$ (Ec.~\ref{eq:mps_to_ticks_factor}) y $T_s=1/f_{ctrl}$ [s]. Las ganancias $K_p,K_i,K_d$ aquí obtenidas son la línea base analítica de origen Lambda, contrastada con las ganancias desplegadas por PSO y refinamiento experimental.
+\noindent donde $f_\lambda$ es el factor de escala a la representación interna del firmware (en escala de firmware; véase la nota siguiente), $K_o$ el divisor de normalización (Ec.~\ref{eq:pid_firmware}), $\kappa\approx313.56$ (Ec.~\ref{eq:mps_to_ticks}) y $T_s=1/f_{ctrl}$ [s]. Las ganancias $K_p,K_i,K_d$ aquí obtenidas son la línea base analítica de origen Lambda, contrastada con las ganancias desplegadas por PSO y refinamiento experimental.
 
 El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\mathrm{PWM}\cdot(\text{m/s})/(\text{ticks/frame})$ que lleva las ganancias analíticas ($K_p^{\lambda}$ [s/m], $K_i^{\lambda}$ [1/m], $K_d^{\lambda}$ [s$^2$/m]) a la escala entera interna del firmware. La etiqueta «esc.\ fw» de $K_{p,j},K_{i,j},K_{d,j}$ designa esa escala de cómputo entera, no ausencia de dimensiones.
 
