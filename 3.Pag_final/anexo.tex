@@ -9,9 +9,11 @@
 \addappheadtotoc
 \appendixpage
 
+\renewcommand{\thesection}{ANEXO \arabic{section}}
+\renewcommand{\thesubsection}{\thesection .\arabic{subsection}}
+
 \begin{appendices}
-\renewcommand{\thesection}{ANEXO \arabic{section}.}
-\renewcommand{\thesubsection}{\thesection\arabic{subsection}}
+
 
 %======================================================================
 \section{Construcción, componentes y montaje}
@@ -224,13 +226,15 @@ Derecha & 0.000890 & 0.3485 & 0.0845 \\
 \begin{equation}
 \texttt{rads\_per\_count}
 =
-\frac{2\pi}{\texttt{enc\_counts\_per\_rev}}
+\frac{2\pi}{N_e}
 =
 \frac{2\pi}{1980}
 \approx 0.003173
 \text{ rad/tick}
 \label{eq:anx_rads_per_count}
 \end{equation}
+
+\noindent donde $N_e$ es la resolución del encoder (definida previamente); en el código corresponde a \texttt{ENC\_TICKS\_PER\_REV} (firmware) y a \texttt{enc\_counts\_per\_rev} (parámetro del plugin \texttt{DiffDriveArduino}), ambos con valor $1980$. La constante \texttt{rads\_per\_count} es el ángulo por tick [rad/tick].
 
 %======================================================================
 \section{Configuración complementaria de SLAM, Nav2 y exploración}
