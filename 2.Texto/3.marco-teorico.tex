@@ -254,7 +254,7 @@ X_{i,d}^{g+1} &= \max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr)
 \item[{$X_{i,d}^{g}$}] posición de búsqueda (adimensional) de la partícula $i$, dimensión $d$, generación $g$.
 \item[{$V_{i,d}^{g}$}] velocidad de búsqueda de esa partícula y dimensión.
 \item[{$P_{i,d}$}] mejor posición visitada por la propia partícula $i$ (memoria individual).
-\item[{$P_d^{*}$}] mejor posición encontrada por todo el enjambre (memoria global).
+\item[{$P_d^{*}$}] mejor posición global del enjambre; se actualiza con la posición \emph{actual} $X_{i^{*}}$ de la partícula de menor costo personal, con $i^{*}=\arg\min_i J_i^{best}$ (memoria global).
 \item[{$\chi\approx0.7298$}] factor de constricción; acota la magnitud de la actualización y estabiliza la convergencia (Ec.~\ref{eq:constriccion}).
 \item[{$w_{\mathrm{in}}^{g}$}] peso de inercia, $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$; decrece de $\approx1$ a $0$, favoreciendo la exploración al inicio y la explotación al final.
 \item[{$c_1=c_2=2.05$}] coeficientes cognitivo y social (adimensionales).
@@ -346,7 +346,7 @@ En la identificación FODT se usa la misma maquinaria, pero con el costo $\mathr
 \State \textbf{Inicialización:}
 \State Para cada partícula $i$ y dimensión $d$: $X_{i,d}\sim\mathcal{U}[0,1]$,\; $V_{i,d}\sim\mathcal{U}[0,1]$
 \State $J_i^{best}\gets\Call{Evaluar}{X_i}$;\quad $P_i\gets X_i$
-\State $P^{*}\gets P_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$;\quad $g\gets 0$
+\State $P^{*}\gets X_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$;\quad $g\gets 0$
 \Statex
 \State \textbf{Ejecución principal:}
 \While{$g < g_{\max}$}
@@ -363,7 +363,7 @@ En la identificación FODT se usa la misma maquinaria, pero con el costo $\mathr
         \EndIf
     \EndFor
     \If{$\min_i J_i^{best} < J^{*}$}
-        \State $P^{*}\gets P_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$
+        \State $P^{*}\gets X_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$
     \EndIf
 \EndWhile
 \Statex
