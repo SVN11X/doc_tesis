@@ -282,6 +282,99 @@ Clearpath Jackal & US\$~18.000 & Plataforma industrial. \\
 \bottomrule
 \end{tabular}
 \end{table}
+%======================================================================
+\section{Detalle de validación de odometría}
+\label{anx:odometria_detalle}
+
+Este anexo recoge el detalle por repetición de las pruebas de odometría resumidas en la Sec.~\ref{sec:resultados_odometria}: trayectoria rectilínea de 2~m (medias en la Tabla~\ref{tab:resumen_odometria}) y giro completo de $360^\circ$ (medias en la Tabla~\ref{tab:resumen_giro}). Se presentan las cinco repeticiones por entorno.
+
+\subsection{Trayectoria rectilínea de 2~m}
+
+\begin{table}[H]
+\centering
+\caption{Error de odometría en trayectoria rectilínea de 2~m --- simulación (Gazebo). La odometría coincide con la verdad de terreno, por lo que el error refleja seguimiento de consigna.}
+\label{tab:odom_recta_sim}
+\small
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Prueba} & \textbf{Dist.\ teórica (m)} & \textbf{Dist.\ odom.\ (m)} & \textbf{Dist.\ real GT (m)} & \textbf{Error (\%)} \\
+\midrule
+1 & 2.00 & 1.866 & 1.866 & 6.69\% \\
+2 & 2.00 & 1.954 & 1.954 & 2.28\% \\
+3 & 2.00 & 1.946 & 1.946 & 2.72\% \\
+4 & 2.00 & 1.923 & 1.923 & 3.83\% \\
+5 & 2.00 & 1.972 & 1.972 & 1.40\% \\
+\midrule
+\multicolumn{4}{r}{\textbf{Error medio}} & \textbf{3.39\%} \\
+\multicolumn{4}{r}{Desviación estándar ($n{=}5$)} & $2.04\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Error de odometría en trayectoria rectilínea de 2~m --- hardware real. El error corresponde a la discrepancia entre la odometría de encoders y la distancia física medida.}
+\label{tab:odom_recta_real}
+\small
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Prueba} & \textbf{Dist.\ teórica (m)} & \textbf{Dist.\ odom.\ (m)} & \textbf{Dist.\ real (m)} & \textbf{Error (\%)} \\
+\midrule
+1 & 2.00 & 1.920 & 1.846 & 4.01\% \\
+2 & 2.00 & 1.922 & 1.868 & 2.88\% \\
+3 & 2.00 & 1.923 & 1.851 & 3.87\% \\
+4 & 2.00 & 1.926 & 1.856 & 3.78\% \\
+5 & 2.00 & 1.928 & 1.861 & 3.61\% \\
+\midrule
+\multicolumn{4}{r}{\textbf{Error medio}} & \textbf{3.63\%} \\
+\multicolumn{4}{r}{Desviación estándar ($n{=}5$)} & $0.44\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Giro completo de \texorpdfstring{$360^\circ$}{360°}}
+
+\begin{table}[H]
+\centering
+\caption{Error de odometría en giro completo de $360^\circ$ --- simulación (Gazebo). La odometría coincide con la verdad de terreno, por lo que el error refleja seguimiento de consigna.}
+\label{tab:odom_giro_sim}
+\small
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Prueba} & \textbf{Giro teórico (\textdegree{})} & \textbf{Giro estimado (\textdegree{})} & \textbf{Desviación (\textdegree{})} & \textbf{Error (\%)} \\
+\midrule
+1 & 360.0 & 335.86 & $-24.14$ & 6.71\% \\
+2 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
+3 & 360.0 & 346.62 & $-13.38$ & 3.72\% \\
+4 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
+5 & 360.0 & 337.41 & $-22.59$ & 6.28\% \\
+\midrule
+\multicolumn{3}{r}{\textbf{Desviación media}} & $\mathbf{17.1^\circ}$ & \textbf{4.74\%} \\
+\multicolumn{3}{r}{Desviación estándar ($n{=}5$)} & $5.8^\circ$ & $1.61\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Error de odometría en giro completo de $360^\circ$ --- hardware real. Las desviaciones son bidireccionales (sobre- y subgiros).}
+\label{tab:odom_giro}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{Prueba} & \textbf{Giro teórico (\textdegree{})} & \textbf{Giro medido (\textdegree{})} & \textbf{Desviación (\textdegree{})} \\
+\midrule
+1 & 360.0 & 355.7 & $-4.3$ \\
+2 & 360.0 & 340.0 & $-20.0$ \\
+3 & 360.0 & 380.0 & $+20.0$ \\
+4 & 360.0 & 370.0 & $+10.0$ \\
+5 & 360.0 & 356.0 & $-4.0$ \\
+\midrule
+\multicolumn{3}{r}{\textbf{Deriva media} $\lvert\cdot\rvert$} & $\mathbf{11.7^\circ}$ \\
+\multicolumn{3}{r}{Desviación estándar $\lvert\cdot\rvert$ ($n{=}5$)} & $8.0^\circ$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 %======================================================================
 \section{Resultados complementarios de exploración y mapeo}

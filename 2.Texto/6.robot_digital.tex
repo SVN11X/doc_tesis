@@ -3,7 +3,7 @@
 
 Este capítulo describe el gemelo digital del robot móvil diferencial, implementado en \gls{ROS2} Foxy mediante URDF/\texttt{xacro} y desplegado en Gazebo. El objetivo del modelo es validar la geometría, la cinemática, la cadena de transformaciones y la configuración de control antes de operar el prototipo físico, manteniendo paridad entre simulación y hardware real.
 
-El archivo \texttt{robot.urdf.xacro} actúa como modelo principal del robot e integra los módulos de chasis, ruedas, sensor láser y control. Para evitar duplicación de parámetros, los valores de radio de rueda, separación entre ruedas, resolución de encoders y frecuencia de control se toman de la Tabla~\ref{tab:parametros_modelo}; en este capítulo solo se verifica que dichos valores sean empleados de forma consistente en los archivos URDF/\texttt{xacro}, Gazebo y configuración de control, de modo que el gemelo digital y el robot físico utilizan una misma referencia geométrica.
+En el codigo del proyecto, existe un archivo llamado \texttt{robot.urdf.xacro} que actúa como modelo principal del robot e integra los módulos de chasis, ruedas, sensor láser y control. Para evitar duplicación de parámetros, los valores de radio de rueda, separación entre ruedas, resolución de encoders y frecuencia de control se toman de la Tabla~\ref{tab:parametros_modelo}; en este capítulo solo se verifica que dichos valores sean empleados de forma consistente en los archivos URDF/\texttt{xacro}, Gazebo y configuración de control, de modo que el gemelo digital y el robot físico utilizan una misma referencia geométrica.
 
 %------------------------------------------------------------------
 \section{Arquitectura del modelo digital}

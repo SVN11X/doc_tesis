@@ -9,14 +9,14 @@ Este capítulo describe la arquitectura de software que integra control diferenc
 
 El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}). Se utiliza el modo \texttt{online\_async}, ya que procesa los datos del láser sin bloquear la adquisición de nuevos barridos, manteniendo una cadena \texttt{tf} estable en una Raspberry Pi 4.
 
-El mapeo utiliza el marco \texttt{odom} como referencia odométrica, \texttt{map} como marco global, \texttt{base\_link} como base del robot y \texttt{/scan} como tópico del sensor láser. La configuración activa cierre de lazo y optimización de grafo mediante Ceres, permitiendo corregir deriva acumulada durante el recorrido.
+El mapeo utiliza el marco \texttt{odom} como referencia odométrica, \texttt{map} como marco global, \texttt{base\_link} como base del robot y \texttt{/scan} como tópico del sensor láser. La configuración activa cierre de lazo y optimización de grafo, permitiendo corregir deriva acumulada durante el recorrido.
 
 \begin{table}[H]
 \centering
 \caption{Parámetros principales de \texttt{slam\_toolbox}.}
 \label{tab:slam_params_ch9}
 \small
-\begin{tabular}{lll}
+\begin{tabular}{p{3.5cm} p{3cm} p{5cm}}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Función} \\
 \midrule
@@ -112,7 +112,7 @@ El explorador consume el costmap global, evalúa las fronteras disponibles y sel
 \caption{Parámetros principales del explorador de fronteras.}
 \label{tab:explore_params_ch9}
 \small
-\begin{tabular}{lll}
+\begin{tabular}{p{3.5cm} p{4.5cm} p{5.8cm}}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Función} \\
 \midrule

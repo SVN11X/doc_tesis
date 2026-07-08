@@ -29,52 +29,26 @@ La odometría se evaluó mediante pruebas de trayectoria rectilínea de 2 m y gi
 \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
 Error medio & 3.39\% & 3.63\% \\
+Desviación estándar ($n{=}5$) & 2.04\% & 0.44\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-En trayectoria rectilínea, el error medio de hardware fue 3.63\%, valor adecuado para recorridos cortos. La distancia reportada por \texttt{/odom} fue sistemáticamente inferior a la distancia teórica, lo que indica que el robot no alcanza completamente la velocidad de referencia debido a limitaciones de saturación y dinámica del sistema.
+En trayectoria rectilínea, el error medio de hardware fue 3.63\%, valor adecuado para recorridos cortos. La distancia reportada por \texttt{/odom} fue sistemáticamente inferior a la distancia teórica, lo que indica que el robot no alcanza completamente la velocidad de referencia debido a limitaciones de saturación y dinámica del sistema. El detalle por repetición se presenta en el \ref{anx:odometria_detalle}.
 
-En la prueba de giro, los patrones de error difieren entre ambos entornos porque miden fuentes distintas. En simulación, donde la odometría coincide con la verdad de terreno, el error refleja el seguimiento de consigna: en las cinco repeticiones el giro estimado fue inferior a $360^\circ$ (entre $335.9^\circ$ y $347.4^\circ$), es decir, una subestimación sistemática con baja dispersión y desviación media de $17.1^\circ$ ($4.74\%$). En hardware real, el error corresponde a la discrepancia entre la odometría y el giro físico, con desviaciones bidireccionales —subgiros y sobregiros— y deriva media de $11.7^\circ$; la mayor variabilidad se asocia a deslizamiento, zona muerta del driver L298N y diferencias mecánicas entre ruedas, mientras que la cancelación parcial entre sobre- y subgiros reduce la magnitud media. Los detalles por repetición se presentan en las Tablas~\ref{tab:odom_giro_sim} y~\ref{tab:odom_giro}.
-
-\begin{table}[H]
-\centering
-\caption{Error de odometría en giro completo de $360^\circ$ --- simulación (Gazebo). La odometría coincide con la verdad de terreno, por lo que el error refleja seguimiento de consigna.}
-\label{tab:odom_giro_sim}
-\small
-\begin{tabular}{ccccc}
-\toprule
-\textbf{Prueba} & \textbf{Giro teórico (\textdegree{})} & \textbf{Giro estimado (\textdegree{})} & \textbf{Desviación (\textdegree{})} & \textbf{Error (\%)} \\
-\midrule
-1 & 360.0 & 335.86 & $-24.14$ & 6.71\% \\
-2 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
-3 & 360.0 & 346.62 & $-13.38$ & 3.72\% \\
-4 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
-5 & 360.0 & 337.41 & $-22.59$ & 6.28\% \\
-\midrule
-\multicolumn{3}{r}{\textbf{Desviación media}} & $\mathbf{17.1^\circ}$ & \textbf{4.74\%} \\
-\multicolumn{3}{r}{Desviación estándar ($n{=}5$)} & $5.8^\circ$ & $1.61\%$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+En la prueba de giro, los patrones de error difieren entre ambos entornos porque miden fuentes distintas. En simulación, donde la odometría coincide con la verdad de terreno, el error refleja el seguimiento de consigna: se observa una subestimación sistemática del giro, con baja dispersión y desviación media de $17.1^\circ$ ($4.74\%$). En hardware real, el error corresponde a la discrepancia entre la odometría y el giro físico, con desviaciones bidireccionales (subgiros y sobregiros) y deriva media de $11.7^\circ$; la mayor variabilidad se asocia a deslizamiento, zona muerta del driver L298N y diferencias mecánicas entre ruedas, mientras que la cancelación parcial entre sobre- y subgiros reduce la magnitud media. El detalle por repetición se presenta en el \ref{anx:odometria_detalle}.
 
 \begin{table}[H]
 \centering
-\caption{Error de odometría en giro completo de $360^\circ$ --- hardware real. Las desviaciones son bidireccionales (sobre- y subgiros).}
-\label{tab:odom_giro}
+\caption{Resumen del error de odometría en giro completo de $360^\circ$ (5 repeticiones por entorno). El detalle por repetición se presenta en el \ref{anx:odometria_detalle}.}
+\label{tab:resumen_giro}
 \small
-\begin{tabular}{cccc}
+\begin{tabular}{p{4.0cm} p{3.2cm} p{3.2cm}}
 \toprule
-\textbf{Prueba} & \textbf{Giro teórico (\textdegree{})} & \textbf{Giro medido (\textdegree{})} & \textbf{Desviación (\textdegree{})} \\
+\textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
-1 & 360.0 & 355.7 & $-4.3$ \\
-2 & 360.0 & 340.0 & $-20.0$ \\
-3 & 360.0 & 380.0 & $+20.0$ \\
-4 & 360.0 & 370.0 & $+10.0$ \\
-5 & 360.0 & 356.0 & $-4.0$ \\
-\midrule
-\multicolumn{3}{r}{\textbf{Deriva media} $\lvert\cdot\rvert$} & $\mathbf{11.7^\circ}$ \\
-\multicolumn{3}{r}{Desviación estándar $\lvert\cdot\rvert$ ($n{=}5$)} & $8.0^\circ$ \\
+Desviación media $\lvert\cdot\rvert$ & $17.1^\circ$ ($4.74\%$) & $11.7^\circ$ \\
+Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -97,7 +71,7 @@ El controlador PID fue evaluado usando las ganancias finales implementadas en el
 \caption{Indicadores de desempeño PID con ganancias finales (modelo FODT, ganancias del firmware).}
 \label{tab:pid_performance}
 \small
-\begin{tabular}{p{4.2cm} cc}
+\begin{tabular}{p{5.8cm} cc}
 \toprule
 \textbf{Indicador} & \textbf{Rueda izquierda} & \textbf{Rueda derecha} \\
 \midrule
@@ -145,7 +119,7 @@ El mapeo se evaluó primero en simulación, teleoperando el robot dentro del mun
 \caption{Indicadores del mapeo en simulación.}
 \label{tab:slam_sim_indicadores}
 \small
-\begin{tabular}{p{5.5cm} p{5.5cm}}
+\begin{tabular}{p{5.9cm} p{5.5cm}}
 \toprule
 \textbf{Indicador} & \textbf{Valor} \\
 \midrule
@@ -167,7 +141,7 @@ En hardware real también se obtuvieron mapas utilizables. La calidad del mapa d
 \caption{Comparación cualitativa entre mapas de simulación y hardware real.}
 \label{tab:diferencias_mapas}
 \small
-\begin{tabular}{p{3.8cm} p{3.6cm} p{3.6cm}}
+\begin{tabular}{p{4.8cm} p{3.6cm} p{4.6cm}}
 \toprule
 \textbf{Aspecto} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
@@ -186,7 +160,7 @@ Zonas de sombra láser & Mínimas & Presentes \\
 
 La navegación autónoma con Nav2 quedó integrada y verificada funcionalmente, pero su validación cuantitativa por escenarios (meta directa, obstáculo intermedio y paso estrecho, con cinco repeticiones por caso) requiere un entorno físico de mayor superficie; el protocolo instrumentado se describe en el \ref{anx:protocolo_resultados}.
 
-La exploración basada en fronteras se evaluó mediante el framework \texttt{sesiones\_mapeo}, que ejecuta iteraciones independientes con reset completo de SLAM y Nav2. De seis iteraciones ejecutadas se completaron cinco válidas sobre el espacio interior disponible ($\approx$3.5~m$^2$ de área libre); la iteración restante se abortó por fallo en la inicialización de Nav2. En todas las iteraciones el explorador detectó fronteras y desplazó el robot de forma autónoma, sin intervención manual.
+La exploración basada en fronteras se evaluó en cinco iteraciones válidas sobre el espacio interior disponible ($\approx$3.5~m$^2$ de área libre). El protocolo instrumentado; framework \texttt{sesiones\_mapeo}, reset de SLAM y Nav2 por iteración y la iteración descartada por fallo de inicialización de Nav2, se detalla en el \ref{anx:protocolo_resultados}. En todas las iteraciones el explorador detectó fronteras y desplazó el robot de forma autónoma, sin intervención manual.
 
 \begin{table}[H]
 \centering
