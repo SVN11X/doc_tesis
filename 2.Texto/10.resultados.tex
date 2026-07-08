@@ -36,10 +36,6 @@ Giro completo de $360^\circ$ & Desviación media & $17.1^\circ$ & $11.7^\circ$ \
 
 En trayectoria rectilínea, el error medio de hardware fue 3.63\%, valor adecuado para recorridos cortos. La distancia reportada por \texttt{/odom} fue sistemáticamente inferior a la distancia teórica, lo que indica que el robot no alcanza completamente la velocidad de referencia debido a limitaciones de saturación y dinámica del sistema.
 
-\utemFigurePropia{2.Texto/Imag/prueba_recta.png}{0.82\textwidth}
-{Trayectoria rectilínea en simulación.}
-{fig:prueba_recta}
-
 En la prueba de giro, los patrones de error difieren entre ambos entornos porque miden fuentes distintas. En simulación, donde la odometría coincide con la verdad de terreno, el error refleja el seguimiento de consigna: en las cinco repeticiones el giro estimado fue inferior a $360^\circ$ (entre $335.9^\circ$ y $347.4^\circ$), es decir, una subestimación sistemática con baja dispersión y desviación media de $17.1^\circ$ ($4.74\%$). En hardware real, el error corresponde a la discrepancia entre la odometría y el giro físico, con desviaciones bidireccionales —subgiros y sobregiros— y deriva media de $11.7^\circ$; la mayor variabilidad se asocia a deslizamiento, zona muerta del driver L298N y diferencias mecánicas entre ruedas, mientras que la cancelación parcial entre sobre- y subgiros reduce la magnitud media. Los detalles por repetición se presentan en las Tablas~\ref{tab:odom_giro_sim} y~\ref{tab:odom_giro}.
 
 \begin{table}[H]
@@ -198,7 +194,7 @@ La exploración basada en fronteras se evaluó mediante el framework \texttt{ses
 \caption{Resumen de exploración autónoma en hardware real (5 iteraciones válidas). El detalle por iteración se presenta en el \ref{anx:protocolo_resultados}.}
 \label{tab:resumen_exploracion}
 \small
-\begin{tabular}{p{5.0cm} p{3.0cm} p{3.0cm}}
+\begin{tabular}{p{6.0cm} p{3.0cm} p{3.0cm}}
 \toprule
 \textbf{Indicador} & $\boldsymbol{\mu}$ & $\boldsymbol{\sigma}$ \\
 \midrule
@@ -220,7 +216,7 @@ La cobertura media de 62.2\% indica que el detector de fronteras opera y que la 
 \caption{Estado de validación por subsistema.}
 \label{tab:estado_validacion}
 \small
-\begin{tabular}{p{3.2cm} p{4.0cm} p{5.2cm}}
+\begin{tabular}{p{2.1cm} p{5.4cm} p{5.9cm}}
 \toprule
 \textbf{Subsistema} & \textbf{Estado} & \textbf{Observación} \\
 \midrule
@@ -248,4 +244,4 @@ El sobreimpulso del control PID (Tabla~\ref{tab:pid_performance}) corresponde a 
 
 Los resultados muestran que el prototipo alcanza una precisión adecuada de odometría en trayectorias cortas, con error medio de 3.63\% en hardware real. La deriva angular de $11.7^\circ$ por giro completo motiva la incorporación de una IMU planteada en el Trabajo futuro. El controlador PID sintonizado mediante PSO y refinamiento experimental reduce el sobreimpulso respecto de Lambda, logrando una respuesta más apropiada para navegación en interiores.
 
-El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La exploración por fronteras alcanzó una cobertura media de 62.2\% ($\sigma=12.9$) en cinco iteraciones independientes sobre un espacio de $\approx$3.5~m$^2$, lo que confirma la integración funcional de la cadena percepción--planificación--ejecución; sin embargo, la tasa de metas alcanzadas por Nav2 fue muy baja (media de 0.4 por iteración), por lo que la navegación dirigida no queda demostrada cuantitativamente. La navegación autónoma por escenarios quedó verificada funcionalmente; su validación cuantitativa requiere un entorno de mayor superficie siguiendo el protocolo definido en el Anexo~\ref{anx:protocolo_resultados}.
+El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en simulación y hardware real, especialmente a velocidades bajas. La exploración por fronteras alcanzó una cobertura media de 62.2\% ($\sigma=12.9$) en cinco iteraciones independientes sobre un espacio de $\approx$3.5~m$^2$, lo que confirma la integración funcional de la cadena percepción--planificación--ejecución; sin embargo, la tasa de metas alcanzadas por Nav2 fue muy baja (media de 0.4 por iteración), por lo que la navegación dirigida no queda demostrada cuantitativamente. La navegación autónoma por escenarios quedó verificada funcionalmente; su validación cuantitativa requiere un entorno de mayor superficie siguiendo el protocolo definido en el \ref{anx:protocolo_resultados}.
