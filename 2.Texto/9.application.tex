@@ -181,7 +181,7 @@ Esta integración permite que el robot pase desde teleoperación y mapeo inicial
 \section{Transferencia simulación--hardware}
 \label{sec:verificacion_ch9}
 
-La transferencia al hardware se realiza manteniendo la estructura de tópicos y marcos, pero seleccionando archivos de configuración específicos para el entorno real. En simulación se emplean archivos con \texttt{use\_sim\_time: true}; en hardware, los archivos equivalentes usan \texttt{use\_sim\_time: false}. Además, se ajustan límites cinemáticos, frecuencias, tolerancias e inflación de costmaps según las capacidades del prototipo físico.
+La transferencia al hardware se realiza manteniendo la estructura de tópicos y marcos, pero seleccionando archivos de configuración específicos para el entorno real; la asignación de \texttt{use\_sim\_time} y los archivos YAML equivalentes de simulación y hardware se detallan en el \ref{anx:nav2_slam_config}. Además, se ajustan límites cinemáticos, frecuencias, tolerancias e inflación de costmaps según las capacidades del prototipo físico.
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

@@ -219,7 +219,7 @@ Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajust
 
 \begin{table}[H]
 \centering
-\caption{Resultados de la sintonización: modelo FODT identificado, ganancias sugeridas por PSO y ganancias finales.}
+\caption{Resultados de la sintonización: modelo FODT identificado y ganancias sugeridas por PSO.}
 \label{tab:pso_resultados}
 \small
 \begin{tabular}{l S[table-format=1.4] S[table-format=1.4]}
@@ -233,16 +233,12 @@ $L_d$ [s]         & 0.0001   & 0.0845 \\ \addlinespace
 \multicolumn{3}{l}{\textit{Ganancias sugeridas por PSO (Etapa 2)}} \\
 $K_p$ & 12.48 & 13.76 \\
 $K_d$ & 31.12 & 43.52 \\
-$K_i$ & 0.00001 & 0.00001 \\ \addlinespace
-\multicolumn{3}{l}{\textit{Ganancias finales (tras refinamiento, en firmware)}} \\
-$K_p$ & 16.00 & 16.42 \\
-$K_d$ & 20.30 & 20.05 \\
-$K_i$ & 0.075 & 0.001 \\
+$K_i$ & 0.00001 & 0.00001 \\
 \bottomrule
 \end{tabular}
 
 \vspace{3pt}
-\parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales coinciden con las codificadas en el firmware (Tabla~\ref{tab:ganancias_pid}); el desempeño del lazo cerrado se reporta en la Tabla~\ref{tab:pid_performance}.}
+\parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales (tras refinamiento experimental) se reportan en la Tabla~\ref{tab:ganancias_pid}; el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.}
 \end{table}
 
 %------------------------------------------------------------------
