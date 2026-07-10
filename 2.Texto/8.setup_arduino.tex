@@ -105,7 +105,34 @@ Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se interpretan en la escala interna ente
 \section{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
 
-Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental. Esta sección detalla su ejecución sobre el hardware —captura de la respuesta al escalón, identificación y optimización—, formalizada en el Alg.~\ref{alg:sintonizacion}.
+Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental. Esta sección detalla su ejecución sobre el hardware; captura de la respuesta al escalón, identificación y optimización, formalizada en el Alg.~\ref{alg:sintonizacion}.
+
+\begin{table}[H]
+\centering
+\caption{Configuración de la sintonización por PSO (qué se optimizó y con qué hiperparámetros).}
+\label{tab:pso_config}
+\small
+\begin{tabular}{p{5.2cm} p{4.3cm} p{4.3cm}}
+\toprule
+\textbf{Parámetro} & \textbf{Etapa 1: Identificación FODT} & \textbf{Etapa 2: Sintonización PID} \\
+\midrule
+Variables optimizadas & $(K_m,\tau,L_d)$ & $(K_p,K_d,K_i)$ \\
+Dimensión del espacio & 3 & 3 \\
+Función de costo & $\mathrm{MSE}(v^{med}-\hat{v})$ & $w_{\mathrm{mse}}\mathrm{MSE}+w_{\mathrm{OS}}\Delta_{\mathrm{OS}}^2$ \\
+Vector de escala $s$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
+Cota superior $X_{\max}$ & $+\infty$ & $1$ \\
+\midrule
+\multicolumn{3}{l}{\textit{Hiperparámetros comunes del enjambre}} \\
+Tamaño del enjambre $S$ & \multicolumn{2}{c}{50} \\
+Generaciones $g_{\max}$ & \multicolumn{2}{c}{150} \\
+Coeficientes $c_1=c_2$ & \multicolumn{2}{c}{2.05} \\
+Factor de constricción $\chi$ & \multicolumn{2}{c}{0.7298} \\
+Cota inferior $X_{\min}$ & \multicolumn{2}{c}{$10^{-4}$} \\
+Pesos del costo $(w_{\mathrm{mse}},w_{\mathrm{OS}})$ & \multicolumn{2}{c}{$(1.0,\ 3.0)$} \\
+Escalón de captura / referencia & \multicolumn{2}{c}{PWM $=143$ ($\approx 0.13$ m/s)} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -154,7 +181,7 @@ v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
 
 \subsection{Identificación y optimización}
 
-La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo y entrada— se detallan en la Sec.~\ref{sec:fodt} (Tabla~\ref{tab:fodt_usos}). El procedimiento completo de sintonización se resume en el Algoritmo~\ref{alg:sintonizacion}.
+La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo y entrada— se detallan en la Sec.~\ref{sec:fodt} (Tabla~\ref{tab:fodt_usos}). El procedimiento completo de sintonización se resume en el Alg.~\ref{alg:sintonizacion}.
 
 \begin{algorithm}[H]
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
@@ -183,12 +210,41 @@ La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al es
 \end{algorithmic}
 \end{algorithm}
 
-\noindent En el Algoritmo~\ref{alg:sintonizacion}, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s]; $\hat{v}_j$ es la velocidad de rueda estimada por simulación (modelo FODT en la Etapa 1; lazo cerrado simulado en la Etapa 2) [m/s]; y $v_j^{ref}$ la velocidad de consigna de la simulación del PID [m/s]; el resto de variables fueron definidas previamente.
+\noindent En el Alg.~\ref{alg:sintonizacion}, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s]; $\hat{v}_j$ es la velocidad de rueda estimada por simulación (modelo FODT en la Etapa 1; lazo cerrado simulado en la Etapa 2) [m/s]; y $v_j^{ref}$ la velocidad de consigna de la simulación del PID [m/s]; el resto de variables fueron definidas previamente.
 
 \subsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
 
 Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El resultado final fueron ganancias asimétricas, que compensan mejor el comportamiento individual de cada motor.
+
+\begin{table}[H]
+\centering
+\caption{Resultados de la sintonización: modelo identificado, ganancias sugeridas por PSO, ganancias finales y desempeño.}
+\label{tab:pso_resultados}
+\small
+\begin{tabular}{l S[table-format=1.4] S[table-format=1.4]}
+\toprule
+\textbf{Resultado} & {\textbf{Rueda izq.}} & {\textbf{Rueda der.}} \\
+\midrule
+\multicolumn{3}{l}{\textit{Modelo FODT identificado (Etapa 1)}} \\
+$K_m$ [(m/s)/PWM] & 0.000913 & 0.000890 \\
+$\tau$ [s]        & 0.3291   & 0.3485 \\
+$L_d$ [s]         & 0.0001   & 0.0845 \\ \addlinespace
+\multicolumn{3}{l}{\textit{Ganancias sugeridas por PSO (Etapa 2)}} \\
+$K_p$ & 12.48 & 13.76 \\
+$K_d$ & 31.12 & 43.52 \\
+$K_i$ & 0.00001 & 0.00001 \\ \addlinespace
+\multicolumn{3}{l}{\textit{Ganancias finales (tras refinamiento, en firmware)}} \\
+$K_p$ & 16.00 & 16.42 \\
+$K_d$ & 20.30 & 20.05 \\
+$K_i$ & 0.075 & 0.001 \\ \addlinespace
+\multicolumn{3}{l}{\textit{Desempeño del lazo cerrado (modelo FODT)}} \\
+Sobreimpulso [\%]        & 15.63 & 10.66 \\
+Tiempo de subida [s]     & 0.600 & 0.600 \\
+Error estacionario [m/s] & 0.00488 & 0.00192 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 %------------------------------------------------------------------
 \section{Bucle principal y auto-detención}

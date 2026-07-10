@@ -3,12 +3,6 @@
 
 Este capítulo presenta los fundamentos teóricos necesarios para el diseño e implementación del robot móvil diferencial. Se abordan el modelo cinemático y la odometría por encoders, la identificación FODT para sintonización, el control PID discreto, la optimización PSO, el SLAM basado en grafos, la navegación con A\* y DWB, y la exploración autónoma basada en fronteras. Estos conceptos se vinculan directamente con la implementación en \gls{ROS2}, Gazebo y el firmware del \gls{Arduino}.
 
-\utemFigurePropia{2.Texto/Imag/arquitectura_alto_nivel.png}{1.0\textwidth}
-{Arquitectura de alto nivel del proyecto}
-{fig:arquitectura_alto_nivel}
-
-La Fig. \ref{fig:arquitectura_alto_nivel} presenta la arquitectura de alto nivel del sistema de robótica móvil desarrollado, organizada en dos entornos principales: el robot móvil y la estación de trabajo. En el robot, los encoders proporcionan la realimentación necesaria para que el Arduino ejecute el control PID de velocidad y obtenga la medición del giro de las ruedas, mientras que el LiDAR 2D entrega información del entorno a la Raspberry Pi 4.
-
 %------------------------------------------------------------------
 \section{Odometría y modelo cinemático diferencial}
 \label{sec:odometria}
@@ -327,7 +321,34 @@ w_{\mathrm{mse}}\cdot
 \item[{$\Delta_{\mathrm{OS}}$}] sobreimpulso absoluto [m/s]; vale $0$ si la respuesta no supera la consigna.
 \item[{$w_{\mathrm{mse}}=1.0,\ w_{\mathrm{OS}}=3.0$}] pesos relativos (adimensionales); el mayor peso de $w_{\mathrm{OS}}$ castiga el sobreimpulso.
 \end{description}
-En la identificación FODT se usa la misma maquinaria, pero con el costo $\mathrm{MSE}(v_j^{med}-\hat{v}_j)$ entre la velocidad medida en lazo abierto y la del modelo (Sec.~\ref{sec:fodt}).
+En la identificación FODT se usa la misma maquinaria, pero con el costo $\mathrm{MSE}(v_j^{med}-\hat{v}_j)$ entre la velocidad medida en lazo abierto y la del modelo (Sec.~\ref{sec:fodt}). Conviene distinguir tres nociones de error que operan sobre magnitudes distintas:
+
+\begin{description}
+  \item[Error instantáneo.] $e_j[k]=m_j^{cmd}[k]-m_j[k]$ es el error de control
+  de la rueda $j$ en el instante $k$ [ticks/frame]; es la señal que consume el
+  PID del firmware (Ec.~\ref{eq:pid_firmware}).
+  \item[Vector de error de seguimiento.] Sobre la respuesta simulada, se define
+  la secuencia $\mathbf{e}=\bigl(e[1],\dots,e[N]\bigr)$ con
+  $e[k]=v_j^{ref}-\hat{v}_j[k]$ [m/s], usada para \emph{puntuar} un conjunto de
+  ganancias.
+  \item[Norma-2 y MSE.] La magnitud global del vector de error se mide con la
+  norma euclidiana (norma-2) o, equivalentemente, con el error cuadrático medio:
+\end{description}
+
+\begin{equation}
+\lVert\mathbf{e}\rVert_2=\sqrt{\sum_{k=1}^{N} e[k]^2},
+\qquad
+\mathrm{MSE}(\mathbf{e})=\frac{1}{N}\sum_{k=1}^{N} e[k]^2
+=\frac{\lVert\mathbf{e}\rVert_2^{\,2}}{N}.
+\label{eq:norma_mse}
+\end{equation}
+
+\noindent De la Ec.~\ref{eq:norma_mse} se desprende que
+$\lVert\mathbf{e}\rVert_2=\sqrt{N\,\mathrm{MSE}(\mathbf{e})}$: el MSE es la
+norma-2 al cuadrado, normalizada por el número de muestras $N$. En este trabajo
+la función de costo del PSO (Ec.~\ref{eq:costo_pso}) usa el MSE por ser
+independiente de $N$ y directamente comparable entre respuestas de distinta
+duración; la norma-2 se reserva como medida de magnitud absoluta del error.
 
 \begin{algorithm}[H]
 \caption{Optimización por enjambre de partículas con factor de constricción e inercia decreciente (núcleo reutilizable)}
