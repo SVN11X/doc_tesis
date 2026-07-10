@@ -205,23 +205,7 @@ Para determinar el número de ticks por revolución de rueda, se hizo girar cada
 \end{tabular}
 \end{table}
 
-\subsection{Identificación FODT y PSO}
-\label{anx:fodt_pso}
-
-\begin{table}[H]
-\centering
-\caption{Parámetros FODT utilizados como base para la sintonización.}
-\label{tab:anx_fodt}
-\small
-\begin{tabular}{lccc}
-\toprule
-\textbf{Rueda} & $K_m$ \textbf{((m/s)/PWM)} & $\tau$ \textbf{(s)} & $L_d$ \textbf{(s)} \\
-\midrule
-Izquierda & 0.000913 & 0.3291 & 0.0001 \\
-Derecha & 0.000890 & 0.3485 & 0.0845 \\
-\bottomrule
-\end{tabular}
-\end{table}
+A partir de la resolución del encoder $N_e$, la conversión de ticks a ángulo (constante \texttt{rads\_per\_count}) empleada por la odometría es:
 
 \begin{equation}
 \texttt{rads\_per\_count}
@@ -519,7 +503,6 @@ $\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}) & m/c
 $w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
 $f_{\mathrm{exp}}$ & Frecuencia de reevaluación del explorador (\texttt{planner\_frequency}) & Hz \\
 $t_{\mathrm{prog}}$ & Tiempo máximo sin progreso del explorador (\texttt{progress\_timeout}) & s \\
-$e_j[k]$ & Error de control instantáneo de rueda $j$ & ticks/frame \\
 $\mathbf{e}$ & Vector de error de seguimiento $\{v_j^{ref}-\hat{v}_j[k]\}$ & m/s \\
 $\lVert\mathbf{e}\rVert_2$ & Norma euclidiana (norma-2) del vector de error & m/s \\
 $\mathrm{MSE}(\mathbf{e})$ & Error cuadrático medio, $\lVert\mathbf{e}\rVert_2^2/N$ & (m/s)$^2$ \\

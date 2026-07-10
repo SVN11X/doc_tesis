@@ -219,7 +219,7 @@ Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajust
 
 \begin{table}[H]
 \centering
-\caption{Resultados de la sintonización: modelo identificado, ganancias sugeridas por PSO, ganancias finales y desempeño.}
+\caption{Resultados de la sintonización: modelo FODT identificado, ganancias sugeridas por PSO y ganancias finales.}
 \label{tab:pso_resultados}
 \small
 \begin{tabular}{l S[table-format=1.4] S[table-format=1.4]}
@@ -237,13 +237,12 @@ $K_i$ & 0.00001 & 0.00001 \\ \addlinespace
 \multicolumn{3}{l}{\textit{Ganancias finales (tras refinamiento, en firmware)}} \\
 $K_p$ & 16.00 & 16.42 \\
 $K_d$ & 20.30 & 20.05 \\
-$K_i$ & 0.075 & 0.001 \\ \addlinespace
-\multicolumn{3}{l}{\textit{Desempeño del lazo cerrado (modelo FODT)}} \\
-Sobreimpulso [\%]        & 15.63 & 10.66 \\
-Tiempo de subida [s]     & 0.600 & 0.600 \\
-Error estacionario [m/s] & 0.00488 & 0.00192 \\
+$K_i$ & 0.075 & 0.001 \\
 \bottomrule
 \end{tabular}
+
+\vspace{3pt}
+\parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales coinciden con las codificadas en el firmware (Tabla~\ref{tab:ganancias_pid}); el desempeño del lazo cerrado se reporta en la Tabla~\ref{tab:pid_performance}.}
 \end{table}
 
 %------------------------------------------------------------------
