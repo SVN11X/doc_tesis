@@ -122,6 +122,9 @@ El explorador consume el costmap global, evalúa las fronteras disponibles y sel
 \texttt{progress\_timeout} & 10.0~s & Tiempo máximo sin progreso \\
 \texttt{gain\_scale} & 1.0 & Peso de ganancia de información (Ec.~\ref{eq:frontier_cost}) \\
 \texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera (Ec.~\ref{eq:frontier_cost}) \\
+\texttt{orientation\_scale} & 0.0 & Desactiva el término de orientación \\
+\texttt{min\_frontier\_size} & 0.05~m & Tamaño mínimo de una frontera válida \\
+\texttt{resolution} & 0.05~m/celda & Resolución usada para evaluar el costo \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -133,7 +136,7 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
 \footnotesize
-\Require \texttt{global\_costmap} $C$; pose del robot; pesos $w_{\mathrm{pot}},w_{\mathrm{gain}}$, frecuencia $f_{\mathrm{exp}}$ y tiempo sin progreso $t_{\mathrm{prog}}$ (valores en la Tabla~\ref{tab:explore_params_ch9}); orientación desactivada ($\texttt{orientation\_scale}=0$); resolución $\rho_{\mathrm{map}}=0.05$~m/celda; tamaño mínimo $\rho_{\mathrm{map}}|F|\geq 0.05$~m; acción \texttt{NavigateToPose} de Nav2.
+\Require \texttt{global\_costmap} $C$; pose del robot; configuración de la Tabla~\ref{tab:explore_params_ch9}; acción \texttt{NavigateToPose} de Nav2.
 \Ensure Mapa del entorno explorado; metas enviadas y alcanzadas.
 
 \State \textbf{Inicialización:}

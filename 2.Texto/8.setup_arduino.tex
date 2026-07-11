@@ -187,7 +187,7 @@ La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al es
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
-\Require Respuesta al escalón en lazo abierto $(u_j[k],\,v_j^{med}[k])$ por rueda; período de captura $T_{cap}=0.1$~s; período de control $T_s=1/f_{ctrl}$; vectores de escala $s^{\mathrm{ID}}=(0.01,2.0,0.5)$ y $s^{\mathrm{PID}}=(40,25,0.05)$; pesos $w_{\mathrm{mse}}=1.0$, $w_{\mathrm{OS}}=3.0$; banda muerta de simulación $e_{db}=2$ (el firmware desplegado usa $e_{db,R}=1,\,e_{db,L}=2$).
+\Require Respuesta al escalón en lazo abierto $(u_j[k],v_j^{med}[k])$ por rueda; períodos $T_{cap}$ y $T_s$; configuración PSO de la Tabla~\ref{tab:pso_config}; banda muerta de simulación $e_{db}=2$.
 \Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
 
 \State \textbf{Inicialización:} cargar datos de lazo abierto y suavizar $v_j^{med}$.
@@ -210,7 +210,8 @@ La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al es
 \end{algorithmic}
 \end{algorithm}
 
-\noindent En el Alg.~\ref{alg:sintonizacion}, $v_j^{med}[k]$ es la velocidad medida de rueda en lazo abierto [m/s]; $\hat{v}_j$ es la velocidad de rueda estimada por simulación (modelo FODT en la Etapa 1; lazo cerrado simulado en la Etapa 2) [m/s]; y $v_j^{ref}$ la velocidad de consigna de la simulación del PID [m/s]; el resto de variables fueron definidas previamente.
+\noindent La notación del Alg.~\ref{alg:sintonizacion} sigue la definición
+de $v_j^{med}[k]$ dada en la Ec.~\eqref{eq:vel_lazo_abierto} y las definiciones de $\hat{v}_j$ y $v_j^{ref}$ establecidas en las Secs.~\ref{sec:fodt} y~\ref{sec:pso_marco}.
 
 \subsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}

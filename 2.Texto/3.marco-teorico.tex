@@ -123,15 +123,17 @@ La forma equivalente en términos de la velocidad angular de rueda comandada $\o
 \label{sec:fodt}
 
 Para sintonizar el controlador PID se identifica un modelo de primer orden con retardo, FODT (\textit{First Order Plus Dead Time}), a partir de la respuesta de cada rueda ante un escalón de PWM \citep{maxim2023fopdt}. Su función de transferencia es:
+
 \begin{equation}
 G_m(s)=\frac{K_m}{1+\tau s}\,\mathrm{e}^{-L_d s}
 \label{eq:fodt}
 \end{equation}
 \noindent donde $K_m$ es la ganancia estática [(m/s)/PWM], $\tau$ la constante de tiempo [s], $L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler.
 
-La discretización por Euler explícito de la Ec.~\ref{eq:fodt} se emplea en \emph{dos etapas} con la \emph{misma} estructura de primer orden, ejecutadas fuera de línea y en este orden: primero (a) identifica el modelo de cada rueda; luego (b) reutiliza ese modelo ya identificado como planta para sintonizar el PID. Las dos etapas difieren solo en tres aspectos (Tabla~\ref{tab:fodt_usos}): el paso de integración $h$, el tratamiento del retardo puro $L_d$ y la fuente de la entrada $u_j$.
+La discretización por Euler explícito de la Ec.~\ref{eq:fodt} se utiliza en dos etapas consecutivas, cuyas condiciones operativas se resumen en la Tabla~\ref{tab:fodt_usos}. En la identificación en lazo abierto se emplea la siguiente recurrencia:
 
 \noindent\textbf{(a) Identificación (lazo abierto) --- se ejecuta una sola vez por rueda para obtener $(K_m,\tau,L_d)$.} Se aplica un escalón de PWM sin control y se registra la respuesta de velocidad. La entrada $u_j$ es ese escalón y el retardo puro se incluye como un desfase de $n_d$ muestras:
+
 \begin{equation}
 \begin{aligned}
 \hat{v}_j[k] &=
@@ -146,9 +148,16 @@ K_m\,u_j[k-n_d]-\hat{v}_j[k-1]
 \end{aligned}
 \label{eq:fodt_discreto}
 \end{equation}
-\noindent donde $\hat{v}_j[k]$ es la velocidad de rueda estimada por el modelo [m/s]; $u_j$ la entrada PWM [PWM]; $h$ el paso de integración [s]; y $n_d$ el retardo en número de muestras. Aquí $h=T_{cap}=0.1$~s (período de captura) y, para $k<n_d$, se mantiene $u_j[k-n_d]=u_j[0]$. Los parámetros $(K_m,\tau,L_d)$ \emph{no se calculan de forma analítica}: se estiman por optimización por enjambre de partículas (Sec.~\ref{sec:pso_marco}), buscando el triplete que minimiza el error cuadrático medio entre la salida del modelo $\hat{v}_j$ y la respuesta experimental al escalón en lazo abierto. El resultado es un modelo $(K_m,\tau,L_d)$ por rueda.
 
-\noindent\textbf{(b) Simulación del controlador (lazo cerrado) --- se ejecuta al sintonizar el PID, con $(K_m,\tau)$ ya fijos.} El mismo modelo, con los parámetros ya identificados en (a), actúa como \emph{planta} excitada por la salida del PID simulado; por cada conjunto candidato de ganancias se integra esta recurrencia para obtener la respuesta y puntuarla. Se evalúa al período de control $h=T_s=1/f_{ctrl}$ y \emph{sin reinyectar el retardo puro} $L_d$ (su efecto queda absorbido en $K_m,\tau$); la entrada es la acción de control del paso anterior $u_j[k-1]$:
+\noindent donde $\hat{v}_j[k]$ es la velocidad estimada [m/s], $u_j$ la
+entrada PWM, $h$ el paso de integración y $n_d$ el retardo en muestras.
+Los parámetros $(K_m,\tau,L_d)$ se estiman mediante PSO minimizando el MSE
+entre la respuesta experimental y la salida del modelo.
+
+\noindent\textbf{(b) Simulación del controlador en lazo cerrado.}
+Con los parámetros identificados, el modelo actúa como planta para evaluar
+cada conjunto candidato de ganancias PID:
+
 \begin{equation}
 \begin{aligned}
 \hat{v}_j[k] &=
@@ -161,7 +170,8 @@ j\in\{R,L\}.
 \end{aligned}
 \label{eq:fodt_lazo_cerrado}
 \end{equation}
-\noindent donde la restricción $\hat{v}_j[k]\ge 0$ es el recorte de no-negatividad de la velocidad simulada; $K_m,\tau,L_d$ fueron definidos previamente. La Tabla~\ref{tab:fodt_usos} resume las diferencias entre ambas etapas.
+
+\noindent donde $\hat{v}_j[k]\geq0$ representa el recorte de no-negatividad. Las diferencias operativas respecto de la identificación se recogen en la Tabla~\ref{tab:fodt_usos}.
 
 \begin{table}[H]
 \centering
@@ -451,25 +461,22 @@ El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\ma
 \caption{Sintonía Lambda de referencia: del modelo FODT a las ganancias de firmware}
 \label{alg:lambda_tuning}
 \begin{algorithmic}[1]
-\Require Modelo FODT por rueda $(K_m,\tau,L_d)$; factor $\lambda_{\mathrm{fac}}=3$; $\mathrm{PWM_{nom}}=143$; $K_o=50$; $f_{ctrl}=30$~Hz; $\kappa\approx313.56$
+\Require Modelo FODT por rueda $(K_m,\tau,L_d)$ y parámetros de diseño
+$\lambda_{\mathrm{fac}}$, $\mathrm{PWM_{nom}}$, $K_o$, $f_{ctrl}$ y $\kappa$
 \Ensure Ganancias de firmware $(K_p,K_i,K_d)$ por rueda
-\State \textbf{Inicialización:}
-\State $T_s \gets 1/f_{ctrl}$;\quad $f_\lambda \gets \mathrm{PWM_{nom}}\,K_o / \kappa$
-\Statex
-\State \textbf{Ejecución principal:}
-\For{$j \in \{R,L\}$}
-    \State $K_{\mathrm{norm}} \gets K_m\,\mathrm{PWM_{nom}}$
-    \State $L_{ef} \gets \max\!\left(L_d,\; 2/f_{ctrl}\right)$;\quad $\lambda \gets \lambda_{\mathrm{fac}}\,\tau$
-    \Statex \quad\textit{// Forma serie (interactuante)}
-    \State $k_c \gets \dfrac{\tau}{K_{\mathrm{norm}}\,(L_{ef}/2+\lambda)}$;\quad $\tau_I \gets \tau$;\quad $\tau_D \gets L_{ef}/2$
-    \Statex \quad\textit{// Forma paralela estándar}
-    \State $K_p^{\lambda} \gets k_c\,(\tau_I+\tau_D)/\tau_I$;\quad $T_i \gets \tau_I+\tau_D$;\quad $T_d \gets \tau_I\tau_D/(\tau_I+\tau_D)$
-    \State $K_i^{\lambda} \gets K_p^{\lambda}/T_i$;\quad $K_d^{\lambda} \gets K_p^{\lambda}\,T_d$
-    \Statex \quad\textit{// Escala a representación interna del firmware}
-    \State $K_p \gets K_p^{\lambda}\,f_\lambda$;\quad $K_d \gets K_d^{\lambda}\,f_\lambda$;\quad $K_i \gets K_i^{\lambda}\,f_\lambda\,T_s$
+
+\For{$j\in\{R,L\}$}
+\State Calcular $K_{\mathrm{norm}}$, $L_{ef}$ y
+$\lambda=\lambda_{\mathrm{fac}}\tau$
+\State Obtener $(k_c,\tau_I,\tau_D)$ mediante la
+Ec.~\eqref{eq:lambda_serie}
+\State Convertir a $(K_p^{\lambda},K_i^{\lambda},K_d^{\lambda})$
+mediante la Ec.~\eqref{eq:lambda_paralelo}
+\State Convertir las ganancias a la escala del firmware mediante la
+Ec.~\eqref{eq:lambda_firmware}
 \EndFor
-\Statex
-\State \textbf{Salida:} $(K_p,K_i,K_d)$ por rueda, como línea base analítica contrastada con PSO.
+
+\State \textbf{Salida:} $(K_p,K_i,K_d)$ por rueda como línea base analítica.
 \end{algorithmic}
 \end{algorithm}
 %------------------------------------------------------------------
@@ -520,7 +527,7 @@ U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_
 \label{eq:frontier_cost}
 \end{equation}
 
-\noindent donde $U(F)$ es el costo de la frontera $F$ evaluado por \texttt{explore\_lite} [m], $d_{\min}(F)$ la distancia desde el robot a la frontera [celdas], $|F|$ el tamaño (número de celdas) de la frontera [celdas], $\rho_{\mathrm{map}}=0.05$~m/celda la resolución del costmap (símbolo unificado con \texttt{resolution}), $w_{\mathrm{pot}}=3.0$ (\texttt{potential\_scale}) y $w_{\mathrm{gain}}=1.0$ (\texttt{gain\_scale}); el término de orientación se desactiva ($\texttt{orientation\_scale}=0$). El robot selecciona la frontera de menor $U(F)$ que cumple $\rho_{\mathrm{map}}\,|F|\geq 0.05~\mathrm{m}$ (\texttt{min\_frontier\_size}).
+\noindent donde $U(F)$ es el costo de la frontera $F$, $d_{\min}(F)$ la distancia mínima desde el robot a la frontera [celdas], $|F|$ su tamaño [celdas], $\rho_{\mathrm{map}}$ la resolución del costmap, $w_{\mathrm{pot}}$ el peso asociado a la distancia y $w_{\mathrm{gain}}$ el peso asociado a la ganancia de exploración. Los valores utilizados en la implementación se presentan en la Tabla~\ref{tab:explore_params_ch9}.
 
 %------------------------------------------------------------------
 \section{Exploración autónoma basada en fronteras}
