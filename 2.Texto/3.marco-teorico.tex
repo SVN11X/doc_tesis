@@ -72,7 +72,6 @@ y_{k+1}    &= y_k + T_s\,v[k]\sin\theta_m.
     \State Calcular $v[k]$ y $\omega[k]$ mediante las
     Ecs.~\ref{eq:v_lineal} y~\ref{eq:v_angular}
 
-    \State Calcular $\Delta\theta_k$ mediante la     Ec.~\ref{eq:pose_theta}
     \State Actualizar $\theta_{k+1}$ mediante la Ec.~\ref{eq:pose_theta} y definir $\Delta\theta_k\gets\theta_{k+1}-\theta_k$
 
     \If{$|\Delta\theta_k|\geq\varepsilon$}
@@ -260,7 +259,7 @@ X_{i,d}^{g+1} &= \max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr)
 \item[{$\rho_1,\rho_2$}] números aleatorios uniformes en $[0,1]$, regenerados por partícula, dimensión e iteración.
 \item[{$g_{\max}=150,\ S=50$}] número de generaciones y tamaño del enjambre.
 \end{description}
-La cota $\max(\cdot,10^{-4})$ de la Ec.~\ref{eq:pso_pos_marco_teorico} impide posiciones nulas o negativas durante la búsqueda.
+
 
 \noindent\textbf{Escalado y recorte.} Antes de escalar la posición de búsqueda $X_{i,d}$ al parámetro físico $\theta_{i,d}$ (definido previamente), se la recorta al intervalo $[10^{-4},X_{\max}]$:
 \begin{equation}
@@ -379,8 +378,8 @@ duración; la norma-2 se reserva como medida de magnitud absoluta del error.
     \State $g\gets g+1$;\quad $w_{\mathrm{in}}^{g}\gets (g_{\max}-g)/g_{\max}$
     \For{cada partícula $i$, dimensión $d$}
         \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]$
-        \State $V_{i,d}\gets \chi\bigl[w_{\mathrm{in}}^{g}V_{i,d}+c_1\rho_1(P_{i,d}-X_{i,d})+c_2\rho_2(P_d^{*}-X_{i,d})\bigr]$ \Comment{Ec.~\ref{eq:pso_vel_marco_teorico}}
-        \State $X_{i,d}\gets \max(X_{i,d}+V_{i,d},\,X_{\min})$ \Comment{Ec.~\ref{eq:pso_pos_marco_teorico}}
+    \State Actualizar $V_{i,d}$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico}.
+    \State Actualizar $X_{i,d}$ mediante la Ec.~\eqref{eq:pso_pos_marco_teorico}.
     \EndFor
     \For{cada partícula $i$}
         \State $J_i\gets\Call{Evaluar}{X_i}$

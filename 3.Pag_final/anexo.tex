@@ -137,12 +137,12 @@ El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación
 \toprule
 \textbf{Función} & \textbf{Pin Arduino} & \textbf{Destino} \\
 \midrule
-PWM avance izquierdo & D6 & IN1 L298N \\
-PWM retroceso izquierdo & D10 & IN2 L298N \\
-PWM avance derecho & D9 & IN3 L298N \\
-PWM retroceso derecho & D5 & IN4 L298N \\
-Habilitación izquierda & D13 & ENA L298N \\
-Habilitación derecha & D12 & ENB L298N \\
+PWM avance izquierdo & D6 & IN3 L298N \\
+PWM retroceso izquierdo & D10 & IN4 L298N \\
+PWM avance derecho & D9 & IN1 L298N \\
+PWM retroceso derecho & D5 & IN2 L298N \\
+Habilitación izquierda & D13 & ENB L298N \\
+Habilitación derecha & D12 & ENA L298N \\
 Encoder izquierdo A/B & D3/D2 & Encoder izquierdo \\
 Encoder derecho A/B & A4/A5 & Encoder derecho \\
 \bottomrule
@@ -433,6 +433,8 @@ $N_e^{\mathrm{teo}}$ & Resolución teórica del encoder ($N_e^{\mathrm{teo}}=N_{
 $N_{\mathrm{Hall}}$ & Pulsos por vuelta del sensor Hall en el eje del motor & pulsos/vuelta \\
 $c_q$ & Factor de decodificación en cuadratura & adim. \\
 $N_g$ & Relación de reducción del motorreductor (nominal $46{:}1$) & adim. \\
+$\bar{N}_R,\bar{N}_L$ & Promedio experimental de ticks por vuelta (rueda derecha/izquierda, Ecs.~\ref{eq:promedio_cuentas_R}--\ref{eq:promedio_cuentas_L}) & ticks/vuelta \\
+$N_{R(i)},N_{L(i)}$ & Ticks por vuelta medidos en la repetición $i$ & ticks/vuelta \\
 $f_{ctrl}$ & Frecuencia del lazo de control (\texttt{PID\_RATE}$=$\texttt{loop\_rate}) & Hz \\
 $T_s=1/f_{ctrl}$ & Período de control (\textit{frame}) & s \\
 $T_{cap}$ & Período de captura en lazo abierto & s \\
@@ -471,6 +473,9 @@ $P_{i,d},P_d^{*}$ & Mejor posición individual y mejor posición global & adim. 
 $\chi$ & Factor de constricción ($\approx0.7298$) & adim. \\
 $w_{\mathrm{in}}^{g}$ & Peso de inercia (decreciente con la generación $g$) & adim. \\
 $c_1,c_2$ & Coeficientes cognitivo y social & adim. \\
+$\varphi$ & Suma de coeficientes cognitivo y social ($\varphi=c_1+c_2=4.1$, Ec.~\ref{eq:constriccion}) & adim. \\
+% en PSO, tras $X_{\min},X_{\max}$:
+$\tilde{X}_{i,d}$ & Posición de búsqueda recortada usada solo para evaluar el costo (Ec.~\ref{eq:pso_escala}) & adim. \\
 $\rho_1,\rho_2$ & Coeficientes aleatorios $\sim\mathcal{U}[0,1]$ & adim. \\
 $g,g_{\max}$ & Generación actual y generación máxima & --- \\
 $S$ & Tamaño del enjambre & --- \\
@@ -508,6 +513,7 @@ $f_{\mathrm{exp}}$ & Frecuencia de reevaluación del explorador (\texttt{planner
 $t_{\mathrm{prog}}$ & Tiempo máximo sin progreso del explorador (\texttt{progress\_timeout}) & s \\
 $\mathbf{e}$ & Vector de error de seguimiento $\{v_j^{ref}-\hat{v}_j[k]\}$ & m/s \\
 $\lVert\mathbf{e}\rVert_2$ & Norma euclidiana (norma-2) del vector de error & m/s \\
+$N$ & Número de muestras del vector de error $\mathbf{e}$ & --- \\
 $\mathrm{MSE}(\mathbf{e})$ & Error cuadrático medio, $\lVert\mathbf{e}\rVert_2^2/N$ & (m/s)$^2$ \\
 \end{longtable}
 }%

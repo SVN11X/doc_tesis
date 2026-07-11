@@ -36,9 +36,7 @@ Desviación estándar ($n{=}5$) & 2.04\% & 0.44\% \\
 
 En trayectoria rectilínea, el error medio de hardware fue 3.63\%, valor adecuado para recorridos cortos. La distancia reportada por \texttt{/odom} fue sistemáticamente inferior a la distancia teórica, lo que indica que el robot no alcanza completamente la velocidad de referencia debido a limitaciones de saturación y dinámica del sistema. El detalle por repetición se presenta en el \ref{anx:odometria_detalle}.
 
-La comparación entre simulación y hardware muestra coherencia cinemática general. La proximidad entre los errores medios de trayectoria rectilínea de ambos entornos, resumidos en la Tabla~\ref{tab:resumen_odometria}, respalda la correspondencia geométrica entre el gemelo digital y el prototipo físico.
-
-Las principales diferencias aparecen en el giro y en el mapeo. Como se analizó en la Sec.~\ref{sec:resultados_odometria}, el giro simulado cuantifica seguimiento de consigna, mientras que la prueba real compara odometría y medición física; por tanto, sus magnitudes no representan exactamente la misma fuente de error. El contraste cualitativo del mapa se presenta en la Tabla~\ref{tab:diferencias_mapas}.
+Los resultados correspondientes al giro completo se resumen en la Tabla~\ref{tab:resumen_giro}; su comparación entre simulación y hardware se desarrolla en la Sec.~\ref{sec:comparacion_sim_real}.
 
 \begin{table}[H]
 \centering

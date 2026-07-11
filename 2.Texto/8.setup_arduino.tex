@@ -71,8 +71,8 @@ Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del fir
 \Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
 
 \Statex \textbf{Inicialización:}
-\State $u_j[-1]\gets 0,\quad I_j[0]\gets 0,\quad m_j[-1]\gets 0,\quad c_j[-1]\gets 0,\qquad \forall j\in\{R,L\}$
-
+\State $u_j[-1]\gets 0,\quad I_j[0]\gets 0,\quad m_j[-1]\gets 0,\qquad \forall j\in\{R,L\}$
+\State $c_j[-1]\gets$ lectura actual del encoder \Comment{evita un $\Delta c_j$ espurio tras el reinicio}
 \Statex
 \Statex \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
 \While{el controlador está activo}
@@ -119,7 +119,7 @@ Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en
 \midrule
 Variables optimizadas & $(K_m,\tau,L_d)$ & $(K_p,K_d,K_i)$ \\
 Dimensión del espacio & 3 & 3 \\
-Función de costo & $\mathrm{MSE}(v^{med}-\hat{v})$ & $w_{\mathrm{mse}}\mathrm{MSE}+w_{\mathrm{OS}}\Delta_{\mathrm{OS}}^2$ \\
+Función de costo & $\mathrm{MSE}(v^{med}-\hat{v})$ & Ec.~\eqref{eq:costo_pso} \\
 Vector de escala $s$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
 Cota superior $X_{\max}$ & $+\infty$ & $1$ \\
 \midrule
@@ -139,7 +139,7 @@ Escalón de captura / referencia & \multicolumn{2}{c}{PWM $=143$ ($\approx 0.13$
 \label{sec:captura_lazo_abierto}
 
 La velocidad lineal medida de cada rueda se obtiene a partir de la
-Ec.~\ref{eq:w_ruedas}, usando $v_j=r\omega_j$ y reemplazando el período
+Ec.~\ref{eq:w_ruedas}, usando $v_j^{med}=r\,\omega_j$ y reemplazando el período
 de control por el período de captura $T_{cap}$:
 
 \begin{equation}
@@ -159,7 +159,7 @@ de captura experimental.
 \caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
 \label{alg:captura_lazo_abierto}
 \begin{algorithmic}[1]
-\Require Enlace serial al \gls{Arduino}; PWM nominal $\mathrm{PWM}_{nom}=143$; período de captura $T_{cap}=0.1$~s; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
+\Require Enlace serial al \gls{Arduino}; PWM nominal $\mathrm{PWM_{nom}}=143$; período de captura $T_{cap}=0.1$~s; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
 \Ensure Series por rueda $\bigl(u_j[k],v_j^{med}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT de la Etapa~1 del Alg.~\ref{alg:sintonizacion}.
 
 \Statex \textbf{Inicialización:}
@@ -171,7 +171,7 @@ de captura experimental.
 \Statex \textbf{Ejecución principal:}
 \While{$t_k\leq t_f$}
     \If{$t_k\geq t_{step}$}
-        \State $u_j[k]\gets \mathrm{PWM}_{nom}$, para $j\in\{R,L\}$
+        \State $u_j[k]\gets \mathrm{PWM_{nom}}$, para $j\in\{R,L\}$
         \Comment{escalón sin PID}
     \Else
         \State $u_j[k]\gets 0$, para $j\in\{R,L\}$
@@ -202,6 +202,7 @@ $\bigl(u_j[k],v_j^{med}[k]\bigr)$ para identificar el modelo FODT.
 
 La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo y entrada— se detallan en la Sec.~\ref{sec:fodt} (Tabla~\ref{tab:fodt_usos}). El procedimiento completo de sintonización se resume en el Alg.~\ref{alg:sintonizacion}.
 
+
 \begin{algorithm}[H]
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
 \label{alg:sintonizacion}
@@ -209,23 +210,33 @@ La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al es
 \Require Respuesta al escalón en lazo abierto $(u_j[k],v_j^{med}[k])$ por rueda; períodos $T_{cap}$ y $T_s$; configuración PSO de la Tabla~\ref{tab:pso_config}; banda muerta de simulación $e_{db}=2$.
 \Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
 
-\State \textbf{Inicialización:} cargar datos de lazo abierto y suavizar $v_j^{med}$.
+\State \textbf{Inicialización:} cargar los datos de lazo abierto y suavizar $v_j^{med}$.
 
 \For{$j \in \{R,L\}$}
-\State \textbf{Etapa 1 — Identificación FODT por PSO:}
-\State $J_{\mathrm{ID}}(\boldsymbol{\theta})\gets \mathrm{MSE}\!\left(v_j^{med}-\hat{v}_j(\boldsymbol{\theta})\right)$, con $\hat{v}_j$ por Euler a $T_{cap}$ (Ec.~\ref{eq:fodt_discreto})
-\State $(K_m,\tau,L_d)_j \gets \Call{PSO}{J_{\mathrm{ID}},\,s^{\mathrm{ID}}}$ \Comment{Alg.~\ref{alg:pso_nucleo}}
+    \State \textbf{Etapa 1 — Identificación FODT por PSO:}
+    \State $J_{\mathrm{ID}}(\boldsymbol{\theta})\gets
+    \mathrm{MSE}\!\left(v_j^{med}-\hat{v}_j(\boldsymbol{\theta})\right)$,
+    con $\hat{v}_j$ obtenida mediante la discretización de Euler a $T_{cap}$
+    de la Ec.~\eqref{eq:fodt_discreto}.
+    \State $(K_m,\tau,L_d)_j \gets
+    \Call{PSO}{J_{\mathrm{ID}},\,s^{\mathrm{ID}}}$
+    \Comment{Alg.~\ref{alg:pso_nucleo}}
 
-\Statex
-\State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
-\State $J(\boldsymbol{\theta})\gets w_{\mathrm{mse}}\,\mathrm{MSE}(v_j^{ref}-\hat{v}_j) + w_{\mathrm{OS}}\,\Delta_{\mathrm{OS}}^{2}$, simulando el PID del firmware (Ec.~\ref{eq:pid_firmware}) sobre el modelo FODT a $T_s$ sin retardo (Ec.~\ref{eq:fodt_lazo_cerrado}) con $e_{db}$ (Ec.~\ref{eq:costo_pso})
-\State $(K_{p},K_{d},K_{i})_j \gets \Call{PSO}{J,\,s^{\mathrm{PID}}}$ \Comment{Alg.~\ref{alg:pso_nucleo}}
+    \Statex
+    \State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
+    \State Definir $J(\boldsymbol{\theta})$ mediante la
+    Ec.~\eqref{eq:costo_pso}, simulando el PID del firmware
+    (Ec.~\eqref{eq:pid_firmware}) sobre el modelo FODT a $T_s$ sin retardo
+    (Ec.~\eqref{eq:fodt_lazo_cerrado}) y con banda muerta $e_{db}$.
+    \State $(K_p,K_d,K_i)_j \gets
+    \Call{PSO}{J,\,s^{\mathrm{PID}}}$
+    \Comment{Alg.~\ref{alg:pso_nucleo}}
 \EndFor
 
 \Statex
 \State \textbf{Etapa 3 — Refinamiento experimental:}
-\State Ajustar las ganancias sobre el hardware real para compensar fricción estática, zona muerta del L298N y asimetrías mecánicas.
-\State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$
+\State Ajustar las ganancias sobre el hardware real para compensar la fricción estática, la zona muerta del L298N y las asimetrías mecánicas.
+\State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$.
 \end{algorithmic}
 \end{algorithm}
 
