@@ -103,9 +103,7 @@ Las acciones de recuperación configuradas (Tabla~\ref{tab:recovery_ch9}) siguen
 \section{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
 
-Para mapear entornos desconocidos sin intervención manual continua, se integra un módulo de exploración basado en fronteras. Se utiliza el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}); su nodo \texttt{explore\_server} identifica fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2.
-
-El explorador consume el costmap global, evalúa las fronteras disponibles y selecciona metas considerando distancia y ganancia de información. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
+Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}); su nodo \texttt{explore\_server} identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 
 \begin{table}[H]
 \centering
