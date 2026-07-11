@@ -95,19 +95,7 @@ Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmwa
 \section{Flujo de datos del sistema}
 \label{sec:flujo_datos}
 
-El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se resume en las siguientes etapas:
-
-\begin{enumerate}
-\item Un nodo de navegación o teleoperación publica un comando de velocidad $(v,\omega)$.
-\item \texttt{twist\_mux} selecciona la fuente de mayor prioridad.
-\item \texttt{diff\_drive\_controller} convierte el comando $(v,\omega)$ en velocidades angulares de rueda $\omega_j^{cmd}$.
-\item \texttt{DiffDriveArduino} traduce $\omega_j^{cmd}$ a \textit{ticks/frame} (Ec.~\ref{eq:mps_to_ticks}) y los envía al \gls{Arduino}.
-\item El \gls{Arduino} fija las referencias PID por rueda y aplica \gls{PWM} a los motores.
-\item El plugin solicita periódicamente los encoders y reconstruye $\phi_j$ y $\hat{\omega}_j$ (Ec.~\ref{eq:enc_to_state}).
-\item \texttt{diff\_drive\_controller} integra la odometría y publica \texttt{/odom} junto con la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
-\end{enumerate}
-
-El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se formaliza en el Algoritmo~\ref{alg:ros2control_cycle}.
+El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se formaliza en el Algoritmo~\ref{alg:ros2control_cycle}. Este comprende la recepción de los comandos de velocidad, su conversión en referencias para cada rueda, la comunicación serial con el \gls{Arduino} y la realimentación de los encoders para calcular la odometría.
 
 \begin{algorithm}[H]
 \caption{Ciclo de control de hardware en \texttt{ros2\_control} (plugin \texttt{DiffDriveArduino})}
@@ -146,7 +134,7 @@ El ciclo recurrente que ejecuta \texttt{ros2\_control} sobre este flujo se forma
 \end{algorithmic}
 \end{algorithm}
 
-El firmware incorpora además una auto-detención de seguridad ante pérdida de comandos, detallada en la Sec.~\ref{sec:bucle_principal} (Cap.~\ref{ch:setup_arduino}).
+El firmware incorpora además una auto-detención de seguridad ante pérdida de comandos, detallada en la Sec.~\ref{sec:bucle_principal}
 
 %------------------------------------------------------------------
 \section*{Conclusión del capítulo}

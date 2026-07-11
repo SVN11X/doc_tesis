@@ -9,7 +9,7 @@ Este capítulo describe la arquitectura de software que integra control diferenc
 
 El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}). Se utiliza el modo \texttt{online\_async}, ya que procesa los datos del láser sin bloquear la adquisición de nuevos barridos, manteniendo una cadena \texttt{tf} estable en una Raspberry Pi 4.
 
-El mapeo utiliza el marco \texttt{odom} como referencia odométrica, \texttt{map} como marco global, \texttt{base\_link} como base del robot y \texttt{/scan} como tópico del sensor láser. La configuración activa cierre de lazo y optimización de grafo, permitiendo corregir deriva acumulada durante el recorrido.
+Los marcos, el tópico de entrada y los parámetros principales del mapeo se resumen en la Tabla~\ref{tab:slam_params_ch9}. La optimización del grafo permite corregir la deriva acumulada durante el recorrido.
 
 \begin{table}[H]
 \centering
