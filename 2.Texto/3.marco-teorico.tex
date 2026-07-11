@@ -66,31 +66,40 @@ y_{k+1}    &= y_k + T_s\,v[k]\sin\theta_m.
 \Require Incremento de ticks por rueda $\Delta c_j[k]$, $j\in\{R,L\}$; constantes $N_e$, $T_s$, $r$, $b$; pose previa $q_k=(x_k,y_k,\theta_k)$; umbral $\varepsilon$.
 \Ensure Pose actualizada $q_{k+1}$ y velocidades del robot $(v[k],\omega[k])$.
 
-\State \textbf{Inicialización:}
+\Statex \textbf{Inicialización:}
 \State $q_0 \gets (0,0,0)$
 
 \Statex
-\State \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
+\Statex \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
 \While{el controlador está activo}
     \For{$j\in\{R,L\}$}
-        \State $\omega_j[k] \gets \dfrac{2\pi\,\Delta c_j[k]}{N_e\,T_s}$ \Comment{Ec.~\ref{eq:w_ruedas}}
+        \State Calcular $\omega_j[k]$ mediante la Ec.~\ref{eq:w_ruedas}
     \EndFor
-    \State $v[k] \gets \dfrac{r}{2}\bigl(\omega_R[k]+\omega_L[k]\bigr)$ \Comment{Ec.~\ref{eq:v_lineal}}
-    \State $\omega[k] \gets \dfrac{r}{b}\bigl(\omega_R[k]-\omega_L[k]\bigr)$ \Comment{Ec.~\ref{eq:v_angular}}
-    \State $\Delta\theta_k \gets \omega[k]\,T_s$;\quad $\theta_{k+1} \gets \theta_k+\Delta\theta_k$ \Comment{rumbo común, Ec.~\ref{eq:pose_theta_impl}}
-    \If{$|\Delta\theta_k|\ge\varepsilon$} \Comment{arco exacto, Ec.~\ref{eq:pose_exacta}}
-        \State $x_{k+1} \gets x_k+\dfrac{v[k]}{\omega[k]}\bigl(\sin\theta_{k+1}-\sin\theta_k\bigr)$
-        \State $y_{k+1} \gets y_k-\dfrac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr)$
-    \Else \Comment{RK2, rumbo en el punto medio, Ec.~\ref{eq:pose_rk2}}
-        \State $\theta_m \gets \theta_k+\tfrac{1}{2}\Delta\theta_k$
-        \State $x_{k+1} \gets x_k+T_s\,v[k]\cos\theta_m$
-        \State $y_{k+1} \gets y_k+T_s\,v[k]\sin\theta_m$
+
+    \State Calcular $v[k]$ y $\omega[k]$ mediante las
+    Ecs.~\ref{eq:v_lineal} y~\ref{eq:v_angular}
+
+    \State Calcular $\Delta\theta_k$ mediante la
+    Ec.~\ref{eq:pose_theta_impl}
+    \State Actualizar $\theta_{k+1}$ mediante la
+    Ec.~\ref{eq:pose_theta}
+
+    \If{$|\Delta\theta_k|\geq\varepsilon$}
+        \State Actualizar $(x_{k+1},y_{k+1})$ mediante la
+        Ec.~\ref{eq:pose_exacta}
+    \Else
+        \State Actualizar $\theta_m$, $x_{k+1}$ y $y_{k+1}$ mediante la
+        Ec.~\ref{eq:pose_rk2}
     \EndIf
-    \State Publicar $q_{k+1}$ y la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}
+
+    \State Publicar $q_{k+1}$ y la transformación
+    \texttt{odom}$\rightarrow$\texttt{base\_link}
 \EndWhile
 
 \Statex
-\State \textbf{Salida:} pose $q_{k+1}=(x_{k+1},y_{k+1},\theta_{k+1})$ y velocidades $(v[k],\omega[k])$.
+\Statex \textbf{Salida:} pose
+$q_{k+1}=(x_{k+1},y_{k+1},\theta_{k+1})$ y velocidades
+$(v[k],\omega[k])$.
 \end{algorithmic}
 \end{algorithm}
 
@@ -235,10 +244,8 @@ Las ganancias del PID se obtienen mediante un procedimiento híbrido de tres pas
 
 \noindent\textbf{Idea general.} El PSO (\textit{Particle Swarm Optimization}) es una metaheurística poblacional: un enjambre de $S$ \emph{partículas} explora el espacio de soluciones y cada partícula representa un candidato \citep{gokcce2021particle}. Aquí cada candidato tiene tres parámetros, por lo que el espacio de búsqueda tiene dimensión $d\in\{1,2,3\}$.
 
-\noindent\textbf{Posición normalizada y parámetro físico.} Cada partícula $i$ guarda una \emph{posición de búsqueda} $X_{i,d}$ adimensional, de orden $1$ (se inicializa en $[0,1]$). El candidato físico se obtiene escalando esa posición por un factor $s_d$ que aporta unidades y rango:
-\begin{equation*}
-\theta_{i,d}=s_d\,X_{i,d}.
-\end{equation*}
+\noindent\textbf{Posición normalizada y parámetro físico.} Cada partícula $i$ guarda una \emph{posición de búsqueda} $X_{i,d}$ adimensional, de orden $1$ (se inicializa en $[0,1]$). El candidato físico se obtiene mediante el recorte y escalado definidos en la Ec.~\ref{eq:pso_escala}; el factor $s_d$ aporta las unidades y el rango de cada dimensión.
+
 Buscar en $X$ normalizada mantiene un espacio homogéneo en las tres dimensiones; el vector de escala traslada cada dimensión a su magnitud física: $s^{\mathrm{ID}}=(0.01,2.0,0.5)$ para identificar $(K_m,\tau,L_d)$ y $s^{\mathrm{PID}}=(40,25,0.05)$ para sintonizar $(K_p,K_d,K_i)$.
 
 \noindent\textbf{Dinámica del enjambre.} En cada generación $g$, la partícula actualiza primero su \emph{velocidad de búsqueda} $V_{i,d}$ y luego su posición. La velocidad combina tres tendencias: mantener su dirección actual (inercia), regresar a su mejor posición propia (componente cognitiva) y acercarse a la mejor posición del enjambre (componente social):
@@ -369,9 +376,9 @@ duración; la norma-2 se reserva como medida de magnitud absoluta del error.
 \Ensure Mejor posición global $P^{*}$ y parámetros físicos $\theta_d^{*}=s_d\,P_d^{*}$
 \Statex
 \Function{Evaluar}{$X$}
-    \State $\tilde{X}_d\gets\min(\max(X_d,X_{\min}),\,X_{\max})$ \Comment{por componente $d$}
-    \State $\theta_d\gets s_d\,\tilde{X}_d$ \Comment{escalado componente a componente}
-    \State \Return $J(\theta)$
+    \State Construir $\boldsymbol{\theta}$ a partir de $X$ mediante la
+    Ec.~\ref{eq:pso_escala}
+    \State \Return $J(\boldsymbol{\theta})$
 \EndFunction
 \Statex
 \State \textbf{Inicialización:}

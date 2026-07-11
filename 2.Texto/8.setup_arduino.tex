@@ -61,44 +61,45 @@ $K_o$ & 50 & 50 \\
 \end{tabular}
 \end{table}
 
-El divisor $K_o$ normaliza la acción de control, por lo que las ganancias efectivas corresponden a $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$. La convención de orden usada por el firmware es $K_p$, $K_d$, $K_i$, $K_o$, heredada de \texttt{ROSArduinoBridge}.
-
-Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se interpretan en la escala interna entera del firmware (Sec.~\ref{sec:pid}); la salida se lleva a PWM dividiendo por $K_o$ y saturando a $[-255,255]$.
+Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del firmware. La acción de control se normaliza mediante $K_o$, equivalente a emplear $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$, y se satura al intervalo PWM $[-255,255]$. La convención heredada de \texttt{ROSArduinoBridge} ordena los parámetros como $K_p$, $K_d$, $K_i$, $K_o$.
 
 \begin{algorithm}[H]
 \caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
-\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y ticks de encoder $c_j[k]$ [ticks] por rueda $j\in\{R,L\}$; ganancias $K_{p,j},K_{d,j},K_{i,j}$ y divisor $K_o=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
+\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y ticks de encoder $c_j[k]$ [ticks] por rueda $j\in\{R,L\}$; ganancias $K_{p,j}$, $K_{d,j}$, $K_{i,j}$ y divisor $K_o=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
 \Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
 
-\State \textbf{Inicialización:}
-\State $u_j[-1]\gets 0$,\; $I_j[0]\gets 0$,\; $m_j[-1]\gets 0$,\; $c_j[-1]\gets 0$ \quad para $j\in\{R,L\}$
+\Statex \textbf{Inicialización:}
+\State $u_j[-1]\gets 0,\quad I_j[0]\gets 0,\quad m_j[-1]\gets 0,\quad c_j[-1]\gets 0,\qquad \forall j\in\{R,L\}$
 
 \Statex
-\State \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
+\Statex \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
 \While{el controlador está activo}
-\For{$j\in\{R,L\}$}
-\State $m_j[k]\gets c_j[k]-c_j[k-1]$ \Comment{velocidad medida [ticks/frame]}
-\State $e_j[k]\gets m_j^{cmd}[k]-m_j[k]$
-\If{$|e_j[k]| \leq e_{db,j}$}
-\State $e_j[k]\gets 0$ \Comment{banda muerta anti-cuantización}
-\EndIf
-\State $u_j[k]\gets u_j[k-1]+\dfrac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_o}$
-\If{$u_j[k]\geq u_{\max}$}
-\State $u_j[k]\gets u_{\max}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
-\ElsIf{$u_j[k]\leq u_{\min}$}
-\State $u_j[k]\gets u_{\min}$;\quad $I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
-\Else
-\State $I_j[k+1]\gets I_j[k]+K_{i,j}\,e_j[k]$
-\EndIf
-\State Aplicar PWM $u_j[k]$ al motor $j$
-\State $m_j[k-1]\gets m_j[k]$;\quad $u_j[k-1]\gets u_j[k]$
-\EndFor
+    \For{$j\in\{R,L\}$}
+        \State Calcular $m_j[k]$ y $e_j[k]$ mediante la Ec.~\ref{eq:error_pid}
+
+        \If{$|e_j[k]|\leq e_{db,j}$}
+            \State $e_j[k]\gets 0$ \Comment{banda muerta anti-cuantización}
+        \EndIf
+
+        \State Actualizar $u_j[k]$ mediante la Ec.~\ref{eq:pid_firmware}
+
+        \If{$u_j[k]\geq u_{\max}$}
+            \State $u_j[k]\gets u_{\max};\quad I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
+        \ElsIf{$u_j[k]\leq u_{\min}$}
+            \State $u_j[k]\gets u_{\min};\quad I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
+        \Else
+            \State $I_j[k+1]\gets I_j[k]+K_{i,j}e_j[k]$
+        \EndIf
+
+        \State Aplicar PWM $u_j[k]$ al motor $j$
+        \State $m_j[k-1]\gets m_j[k];\quad u_j[k-1]\gets u_j[k]$
+    \EndFor
 \EndWhile
 
 \Statex
-\State \textbf{Salida:} $u_R[k],u_L[k]$ aplicados al L298N; estado $(I_j,\,u_j[k-1],\,m_j[k-1])$ actualizado.
+\Statex \textbf{Salida:} $u_R[k]$ y $u_L[k]$ aplicados al L298N; estado $(I_j,u_j[k-1],m_j[k-1])$ actualizado.
 \end{algorithmic}
 \end{algorithm}
 %------------------------------------------------------------------
@@ -137,43 +138,63 @@ Escalón de captura / referencia & \multicolumn{2}{c}{PWM $=143$ ($\approx 0.13$
 \subsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
 
-La captura se realizó aplicando un escalón de PWM sin controlador PID activo, registrando los datos con un período de muestreo $T_{cap}=0.1$~s, distinto del período de control $T_s=1/f_{ctrl}\approx0.0333$~s. La velocidad lineal de cada rueda se calculó como:
+La velocidad lineal medida de cada rueda se obtiene a partir de la
+Ec.~\ref{eq:w_ruedas}, usando $v_j=r\omega_j$ y reemplazando el período
+de control por el período de captura $T_{cap}$:
 
 \begin{equation}
-v_j^{med}[k] = \frac{\Delta c_j[k]}{N_e}\cdot\frac{2\pi r}{T_{cap}},
-\qquad j \in \{R,L\}
+v_j^{med}[k]
+=
+\frac{\Delta c_j[k]}{N_e}
+\frac{2\pi r}{T_{cap}},
+\qquad j\in\{R,L\}.
 \label{eq:vel_lazo_abierto}
 \end{equation}
- 
-\noindent donde $v_j^{med}[k]$ es la velocidad lineal medida de rueda [m/s] (no la del robot) y $2\pi r$ la circunferencia de la rueda [m]; las restantes variables se detallan tras el Alg.~\ref{alg:captura_lazo_abierto}.
+
+\noindent Esta expresión corresponde a la Ec.~\ref{eq:w_ruedas}
+expresada como velocidad lineal de rueda y evaluada sobre cada intervalo
+de captura experimental.
 
 \begin{algorithm}[H]
 \caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
 \label{alg:captura_lazo_abierto}
 \begin{algorithmic}[1]
-\Require Enlace serial al \gls{Arduino}; PWM nominal $\mathrm{PWM_{nom}}=143$; período de captura $T_{cap}=0.1$~s; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución $N_e$; radio de rueda $r$
-\Ensure Series por rueda $\bigl(u_j[k],\,v_j^{med}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT (Etapa~1 del Alg.~\ref{alg:sintonizacion})
+\Require Enlace serial al \gls{Arduino}; PWM nominal $\mathrm{PWM}_{nom}=143$; período de captura $T_{cap}=0.1$~s; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
+\Ensure Series por rueda $\bigl(u_j[k],v_j^{med}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT de la Etapa~1 del Alg.~\ref{alg:sintonizacion}.
 
-\State \textbf{Inicialización:}
-\State Abrir puerto serial; fijar PWM $=0$; esperar estabilización
-\State Leer encoders iniciales $c_j[-1]$ para $j\in\{R,L\}$;\quad $k\gets 0$
+\Statex \textbf{Inicialización:}
+\State Abrir el puerto serial, fijar PWM en cero y esperar la estabilización.
+\State Leer los encoders iniciales $c_j[-1]$, para $j\in\{R,L\}$.
+\State $k\gets 0$
 
 \Statex
-\State \textbf{Ejecución principal:}
-\While{$t_k \leq t_f$}
-\If{$t_k \geq t_{step}$}
-\State $u_j[k] \gets \mathrm{PWM_{nom}}$ \Comment{escalón sin PID}
-\Else
-\State $u_j[k] \gets 0$
-\EndIf
-\State Aplicar PWM $u_j[k]$ a ambos motores (lazo abierto)
-\State Leer encoders $c_j[k]$;\quad $\Delta c_j[k] \gets c_j[k]-c_j[k-1]$
-\State $v_j^{med}[k] \gets \dfrac{\Delta c_j[k]}{N_e}\cdot\dfrac{2\pi r}{T_{cap}}$ \Comment{Ec.~\ref{eq:vel_lazo_abierto}}
-\State Registrar $\bigl(u_j[k],\,v_j^{med}[k]\bigr)$;\quad $c_j[k-1]\gets c_j[k]$;\quad $k\gets k+1$
+\Statex \textbf{Ejecución principal:}
+\While{$t_k\leq t_f$}
+    \If{$t_k\geq t_{step}$}
+        \State $u_j[k]\gets \mathrm{PWM}_{nom}$, para $j\in\{R,L\}$
+        \Comment{escalón sin PID}
+    \Else
+        \State $u_j[k]\gets 0$, para $j\in\{R,L\}$
+    \EndIf
+
+    \State Aplicar $u_L[k]$ y $u_R[k]$ a los motores en lazo abierto.
+    \State Leer los encoders $c_j[k]$, para $j\in\{R,L\}$.
+
+    \For{$j\in\{R,L\}$}
+        \State Calcular $\Delta c_j[k]\gets c_j[k]-c_j[k-1]$.
+        \State Calcular $v_j^{med}[k]$ mediante la
+        Ec.~\ref{eq:vel_lazo_abierto}.
+        \State Registrar $\bigl(u_j[k],v_j^{med}[k]\bigr)$.
+        \State $c_j[k-1]\gets c_j[k]$
+    \EndFor
+
+    \State $k\gets k+1$
 \EndWhile
 
 \Statex
-\State \textbf{Salida:} Detener motores; entregar $\bigl(u_j[k],\,v_j^{med}[k]\bigr)$ como respuesta al escalón para identificar el modelo FODT.
+\Statex \textbf{Salida:}
+\State Detener ambos motores y entregar las series
+$\bigl(u_j[k],v_j^{med}[k]\bigr)$ para identificar el modelo FODT.
 \end{algorithmic}
 \end{algorithm}
 

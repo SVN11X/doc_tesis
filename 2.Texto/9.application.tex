@@ -137,38 +137,58 @@ El ciclo del explorador configurado se formaliza en el Algoritmo~\ref{alg:explor
 \begin{algorithmic}[1]
 \footnotesize
 \Require \texttt{global\_costmap} $C$; pose del robot; configuración de la Tabla~\ref{tab:explore_params_ch9}; acción \texttt{NavigateToPose} de Nav2.
-\Ensure Mapa del entorno explorado; metas enviadas y alcanzadas.
+\Ensure Mapa actualizado y metas de frontera gestionadas.
 
-\State \textbf{Inicialización:}
-\State Lista negra $B\gets\varnothing$;\quad meta actual $F_{\mathrm{act}}\gets\MakeUppercase{nula}$;\quad $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
+\Statex \textbf{Inicialización:}
+\State $B\gets\varnothing$
+\Comment{lista negra de fronteras inalcanzables}
+\State $F_{\mathrm{act}}\gets\varnothing$
+\State $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
 
 \Statex
-\State \textbf{Ejecución principal} (cada $1/f_{\mathrm{exp}}$):
+\Statex \textbf{Ejecución principal} (cada $1/f_{\mathrm{exp}}$):
 \While{el nodo de exploración está activo}
-\State Buscar fronteras en $C$ por difusión sobre el espacio libre; agrupar celdas frontera contiguas
-\For{cada frontera $F$}
-\State Calcular tamaño $|F|$ [celdas], centroide y distancia mínima $d_{\min}(F)$ [celdas]
-\EndFor
-\State Descartar fronteras con $\rho_{\mathrm{map}}|F|<0.05$~m
-\State Calcular $U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,|F|$ \Comment{Ec.~\ref{eq:frontier_cost}}
-\State Ordenar las fronteras por $U(F)$ ascendente
-\State $F^{*}\gets$ primera frontera cuyo punto representativo $\notin B$
-\If{no existe $F^{*}$}
-\State \textbf{Detener:} exploración completa (sin fronteras alcanzables)
-\State \textbf{break}
-\EndIf
-\If{$F^{*}=F_{\mathrm{act}}$ \textbf{y} $t_{\mathrm{now}}-t_{\mathrm{ref}}>t_{\mathrm{prog}}$}
-\State $B\gets B\cup\{\text{punto de }F_{\mathrm{act}}\}$ \Comment{sin progreso: vetar y reseleccionar}
-\ElsIf{$F^{*}\neq F_{\mathrm{act}}$}
-\State Enviar \texttt{NavigateToPose}(centroide de $F^{*}$);\quad $F_{\mathrm{act}}\gets F^{*}$;\quad $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
-\EndIf
-\If{Nav2 devuelve \texttt{ABORTED} o meta rechazada}
-\State $B\gets B\cup\{\text{punto de }F_{\mathrm{act}}\}$ \Comment{frontera inalcanzable}
-\EndIf
+    \State Buscar fronteras en $C$ mediante difusión sobre el espacio libre.
+    \State Agrupar las celdas frontera contiguas.
+
+    \For{cada frontera $F$}
+        \State Calcular $|F|$, su centroide y la distancia mínima $d_{\min}(F)$.
+    \EndFor
+
+    \State Descartar las fronteras que no cumplan
+    \texttt{min\_frontier\_size} de la
+    Tabla~\ref{tab:explore_params_ch9}.
+    \State Calcular $U(F)$ mediante la Ec.~\ref{eq:frontier_cost}.
+    \State Ordenar las fronteras por $U(F)$ en orden ascendente.
+    \State Seleccionar como $F^{*}$ la primera frontera cuyo punto
+    representativo no pertenezca a $B$.
+
+    \If{no existe $F^{*}$}
+        \State Detener la exploración.
+        \Comment{sin fronteras alcanzables}
+        \State \textbf{break}
+    \EndIf
+
+    \If{$F^{*}=F_{\mathrm{act}}$ \textbf{y}
+    $t_{\mathrm{now}}-t_{\mathrm{ref}}>t_{\mathrm{prog}}$}
+        \State $B\gets B\cup\{\text{punto representativo de }F_{\mathrm{act}}\}$
+        \Comment{sin progreso}
+    \ElsIf{$F^{*}\neq F_{\mathrm{act}}$}
+        \State Enviar \texttt{NavigateToPose} al centroide de $F^{*}$.
+        \State $F_{\mathrm{act}}\gets F^{*}$
+        \State $t_{\mathrm{ref}}\gets t_{\mathrm{now}}$
+    \EndIf
+
+    \If{Nav2 devuelve \texttt{ABORTED} o rechaza la meta}
+        \State $B\gets B\cup\{\text{punto representativo de }F_{\mathrm{act}}\}$
+        \Comment{frontera inalcanzable}
+    \EndIf
 \EndWhile
 
 \Statex
-\State \textbf{Salida:} mapa actualizado por \texttt{slam\_toolbox} a partir de las observaciones acumuladas durante el recorrido de metas.
+\Statex \textbf{Salida:}
+\State Entregar el mapa actualizado por \texttt{slam\_toolbox} a partir
+de las observaciones acumuladas durante la exploración.
 \end{algorithmic}
 \end{algorithm}
 
