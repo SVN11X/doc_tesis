@@ -116,7 +116,7 @@ El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se for
 \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
 \State $(c_R[k],c_L[k])\gets$ leer encoders
 \For{$j\in\{R,L\}$}
-\State $\phi_j[k]\gets c_j[k]\cdot(2\pi/N_e)$; \quad $\hat{\omega}_j[k]\gets(\phi_j[k]-\phi_j[k-1])/\Delta t_k$ \Comment{Ec.~\ref{eq:enc_to_state}}
+\State Calcular $\phi_j[k]$ y $\hat{\omega}_j[k]$ mediante la Ec.~\ref{eq:enc_to_state}.
 \EndFor
 \State Exportar $\phi_j[k],\hat{\omega}_j[k]$ como \textit{state interfaces}
 \Statex
@@ -125,7 +125,7 @@ El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se for
 \State \textbf{write():}
 \If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
 \For{$j\in\{R,L\}$}
-\State $m_j^{cmd}[k]\gets \omega_j^{cmd}[k]\,N_e/(2\pi f_{ctrl})$ \Comment{Ec.~\ref{eq:mps_to_ticks}}
+\State Calcular $m_j^{cmd}[k]$ mediante la Ec.~\ref{eq:mps_to_ticks}, usando $v_j^{cmd}=r\,\omega_j^{cmd}$.
 \EndFor
 \State Enviar $m_R^{cmd}[k],m_L^{cmd}[k]$ al \gls{Arduino}
 \EndWhile

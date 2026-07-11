@@ -205,20 +205,7 @@ Para determinar el número de ticks por revolución de rueda, se hizo girar cada
 \end{tabular}
 \end{table}
 
-A partir de la resolución del encoder $N_e$, la conversión de ticks a ángulo (constante \texttt{rads\_per\_count}) empleada por la odometría es:
-
-\begin{equation}
-\texttt{rads\_per\_count}
-=
-\frac{2\pi}{N_e}
-=
-\frac{2\pi}{1980}
-\approx 0.003173
-\text{ rad/tick}
-\label{eq:anx_rads_per_count}
-\end{equation}
-
-\noindent donde $N_e$ es la resolución del encoder (definida previamente); en el código corresponde a \texttt{ENC\_TICKS\_PER\_REV} (firmware) y a \texttt{enc\_counts\_per\_rev} (parámetro del plugin \texttt{DiffDriveArduino}), ambos con valor $1980$. La constante \texttt{rads\_per\_count} es el ángulo por tick [rad/tick].
+A partir del factor $2\pi/N_e$ de la Ec.~\eqref{eq:enc_to_state}, la constante \texttt{rads\_per\_count} vale, para $N_e=1980$, $2\pi/1980\approx0.003173$~rad/tick. En el código, $N_e$ corresponde a \texttt{ENC\_TICKS\_PER\_REV} en el firmware y a \texttt{enc\_counts\_per\_rev} en el plugin \texttt{DiffDriveArduino}.
 
 %======================================================================
 \section{Configuración complementaria de SLAM, Nav2 y exploración}

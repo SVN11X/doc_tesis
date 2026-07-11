@@ -67,7 +67,7 @@ Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del fir
 \caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
-\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y ticks de encoder $c_j[k]$ [ticks] por rueda $j\in\{R,L\}$; ganancias $K_{p,j}$, $K_{d,j}$, $K_{i,j}$ y divisor $K_o=50$; banda muerta por rueda $e_{db,R}=1$, $e_{db,L}=2$ [ticks/frame]; saturación $[u_{\min},u_{\max}]=[-255,255]$ [PWM]; frecuencia $f_{ctrl}=30$~Hz.
+\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y ticks de encoder $c_j[k]$ [ticks] por rueda $j\in\{R,L\}$; ganancias de la Tabla~\ref{tab:ganancias_pid}; bandas muertas, saturación y frecuencia definidas previamente.
 \Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
 
 \Statex \textbf{Inicialización:}
@@ -201,7 +201,6 @@ $\bigl(u_j[k],v_j^{med}[k]\bigr)$ para identificar el modelo FODT.
 \subsection{Identificación y optimización}
 
 La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo y entrada— se detallan en la Sec.~\ref{sec:fodt} (Tabla~\ref{tab:fodt_usos}). El procedimiento completo de sintonización se resume en el Alg.~\ref{alg:sintonizacion}.
-
 
 \begin{algorithm}[H]
 \caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}

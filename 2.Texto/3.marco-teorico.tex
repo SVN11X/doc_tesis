@@ -11,7 +11,7 @@ La odometría estima la pose del robot a partir del desplazamiento de sus ruedas
 
 \noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. Análogamente, $\omega$ sin subíndice denota la velocidad angular del \emph{robot} [rad/s]; con subíndice $j$ ($\omega_j$, $\hat{\omega}_j$, $\omega_j^{cmd}$) denota la velocidad angular de \emph{rueda} [rad/s]. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice. El conteo del encoder se expresa en \emph{ticks}: un \emph{tick} es una cuenta de encoder en cuadratura (unidad \texttt{ENC\_TICKS\_PER\_REV} del firmware).
 
-Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$. Para cada rueda $j\in\{R,L\}$, la velocidad angular se calcula a partir de los ticks de encoder acumulados en el intervalo de muestreo:
+Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad]. Para cada rueda $j\in\{R,L\}$, la velocidad angular se calcula a partir de los ticks de encoder acumulados en el intervalo de muestreo:
 
 \begin{equation}
 \omega_{j}[k] = \frac{2\pi\, \Delta c_{j}[k]}{N_e\, T_s},
@@ -34,7 +34,7 @@ y_{k+1} &= y_k + T_s\, v[k]\,\sin\theta_k \label{eq:pose_y} \\
 \theta_{k+1} &= \theta_k + T_s\, \omega[k] \label{eq:pose_theta}
 \end{align}
 
-\noindent donde $q_k=(x_k,y_k,\theta_k)$ es la pose [m, m, rad] y $v[k],\omega[k]$ las velocidades lineal y angular del robot en el instante $k$ (definidas previamente). Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} son la discretización de primer orden (Euler) del modelo cinemático, evaluada con el rumbo al inicio del paso $\theta_k$. Se incluyen \emph{solo como referencia conceptual}: no corresponden al esquema que ejecuta \texttt{diff\_drive\_controller}.
+\noindent Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} son la discretización de primer orden (Euler) del modelo cinemático, evaluada con el rumbo al inicio del paso $\theta_k$. Se incluyen \emph{solo como referencia conceptual}: no corresponden al esquema que ejecuta \texttt{diff\_drive\_controller}.
 
 En la implementación, la odometría la integra \texttt{diff\_drive\_controller} en lazo cerrado mediante un esquema \emph{por tramos}. El rumbo se actualiza de forma común mediante la Ec.~\eqref{eq:pose_theta}; se denota $\Delta\theta_k=\theta_{k+1}-\theta_k$ para seleccionar la rama de integración. La regla para $(x_{k+1},y_{k+1})$ depende de $|\Delta\theta_k|$ frente al umbral $\varepsilon\approx10^{-6}$~rad (umbral interno de \texttt{diff\_drive\_controller}, no expuesto por configuración). Para $|\Delta\theta_k|\ge\varepsilon$ se aplica la integración exacta de arco,
 \begin{align}
@@ -233,7 +233,7 @@ Las ganancias del PID se obtienen mediante un procedimiento híbrido de tres pas
 
 \noindent\textbf{Posición normalizada y parámetro físico.} Cada partícula $i$ guarda una \emph{posición de búsqueda} $X_{i,d}$ adimensional, de orden $1$ (se inicializa en $[0,1]$). El candidato físico se obtiene mediante el recorte y escalado definidos en la Ec.~\ref{eq:pso_escala}; el factor $s_d$ aporta las unidades y el rango de cada dimensión.
 
-Buscar en $X$ normalizada mantiene un espacio homogéneo en las tres dimensiones; el vector de escala traslada cada dimensión a su magnitud física: $s^{\mathrm{ID}}=(0.01,2.0,0.5)$ para identificar $(K_m,\tau,L_d)$ y $s^{\mathrm{PID}}=(40,25,0.05)$ para sintonizar $(K_p,K_d,K_i)$.
+Buscar en $X$ normalizada mantiene un espacio homogéneo en las tres dimensiones; el vector de escala traslada cada dimensión a su magnitud física. Los vectores implementados para la identificación FODT y la sintonización PID se especifican en la Tabla~\ref{tab:pso_config}.
 
 \noindent\textbf{Dinámica del enjambre.} En cada generación $g$, la partícula actualiza primero su \emph{velocidad de búsqueda} $V_{i,d}$ y luego su posición. La velocidad combina tres tendencias: mantener su dirección actual (inercia), regresar a su mejor posición propia (componente cognitiva) y acercarse a la mejor posición del enjambre (componente social):
 \begin{align}
@@ -253,11 +253,11 @@ X_{i,d}^{g+1} &= \max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr)
 \item[{$V_{i,d}^{g}$}] velocidad de búsqueda de esa partícula y dimensión.
 \item[{$P_{i,d}$}] mejor posición visitada por la propia partícula $i$ (memoria individual).
 \item[{$P_d^{*}$}] mejor posición global del enjambre; se actualiza con la posición \emph{actual} $X_{i^{*}}$ de la partícula de menor costo personal, con $i^{*}=\arg\min_i J_i^{best}$ (memoria global).
-\item[{$\chi\approx0.7298$}] factor de constricción; acota la magnitud de la actualización y estabiliza la convergencia (Ec.~\ref{eq:constriccion}).
-\item[{$w_{\mathrm{in}}^{g}$}] peso de inercia, $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$; decrece de $\approx1$ a $0$, favoreciendo la exploración al inicio y la explotación al final.
-\item[{$c_1=c_2=2.05$}] coeficientes cognitivo y social (adimensionales).
+\item[{$\chi$}] factor de constricción definido mediante la Ec.~\ref{eq:constriccion}; acota la magnitud de la actualización y estabiliza la convergencia.
+\item[{$w_{\mathrm{in}}^{g}$}] peso de inercia, $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$; favorece la exploración al inicio y la explotación al final.
+\item[{$c_1,c_2$}] coeficientes cognitivo y social.
 \item[{$\rho_1,\rho_2$}] números aleatorios uniformes en $[0,1]$, regenerados por partícula, dimensión e iteración.
-\item[{$g_{\max}=150,\ S=50$}] número de generaciones y tamaño del enjambre.
+\item[{$g_{\max},S$}] número de generaciones y tamaño del enjambre. Los valores implementados se presentan en la Tabla~\ref{tab:pso_config}.
 \end{description}
 
 
@@ -323,7 +323,7 @@ w_{\mathrm{mse}}\cdot
 \item[{$\hat{v}_j[k]$}] respuesta simulada de la rueda $j$ [m/s].
 \item[{$\mathrm{MSE}(v_j^{ref}-\hat{v}_j)$}] error cuadrático medio de seguimiento [(m/s)$^2$].
 \item[{$\Delta_{\mathrm{OS}}$}] sobreimpulso absoluto [m/s]; vale $0$ si la respuesta no supera la consigna.
-\item[{$w_{\mathrm{mse}}=1.0,\ w_{\mathrm{OS}}=3.0$}] pesos relativos (adimensionales); el mayor peso de $w_{\mathrm{OS}}$ castiga el sobreimpulso.
+\item[{$w_{\mathrm{mse}},w_{\mathrm{OS}}$}] pesos relativos adimensionales; el mayor peso asignado a $w_{\mathrm{OS}}$ castiga el sobreimpulso. Sus valores se presentan en la Tabla~\ref{tab:pso_config}.
 \end{description}
 En la identificación FODT se usa la misma maquinaria, pero con el costo $\mathrm{MSE}(v_j^{med}-\hat{v}_j)$ entre la velocidad medida en lazo abierto y la del modelo (Sec.~\ref{sec:fodt}). Conviene distinguir tres nociones de error que operan sobre magnitudes distintas:
 
