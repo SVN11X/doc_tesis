@@ -237,7 +237,7 @@ Las configuraciones de simulación y hardware se mantienen en archivos separados
 \midrule
 \texttt{controller\_frequency} & 8.0~Hz & 20.0~Hz \\
 \texttt{max\_vel\_x} & 0.15~m/s & 0.26~m/s \\
-\texttt{max\_vel\_theta} & 0.5~rad/s & 1.0~rad/s \\
+\texttt{max\_vel\_theta} & 0.35~rad/s & 1.0~rad/s \\
 \texttt{xy\_goal\_tolerance} & 0.10~m & 0.25~m \\
 \texttt{use\_astar} & \texttt{true} & \texttt{true} \\
 \bottomrule
@@ -429,7 +429,10 @@ $\phi_j[k]$ & Ángulo acumulado de rueda $j$ & rad \\
 $c_j[k]$ & Ticks acumulados del encoder de rueda $j$ & ticks \\
 $\Delta c_j[k]$ & Incremento de ticks del encoder en el intervalo & ticks \\
 $N_e$ & Resolución efectiva del encoder (\texttt{ENC\_TICKS\_PER\_REV}) & ticks/vuelta \\
-$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & ticks/vuelta \\
+$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder ($N_e^{\mathrm{teo}}=N_{\mathrm{Hall}}\,c_q\,N_g$) & ticks/vuelta \\
+$N_{\mathrm{Hall}}$ & Pulsos por vuelta del sensor Hall en el eje del motor & pulsos/vuelta \\
+$c_q$ & Factor de decodificación en cuadratura & adim. \\
+$N_g$ & Relación de reducción del motorreductor (nominal $46{:}1$) & adim. \\
 $f_{ctrl}$ & Frecuencia del lazo de control (\texttt{PID\_RATE}$=$\texttt{loop\_rate}) & Hz \\
 $T_s=1/f_{ctrl}$ & Período de control (\textit{frame}) & s \\
 $T_{cap}$ & Período de captura en lazo abierto & s \\
