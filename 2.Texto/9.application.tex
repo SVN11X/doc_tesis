@@ -79,7 +79,7 @@ En hardware real, la capa de inflación aplica el modelo de costo y el radio de 
 
 La navegación de alto nivel se organiza mediante un árbol de comportamiento. La rama principal calcula la ruta global y ejecuta el seguimiento local; si ocurre un fallo, se activan acciones de recuperación. Esta estructura permite reintentos y recuperación ante bloqueos sin modificar la lógica completa del sistema.
 
-Las acciones de recuperación configuradas incluyen limpieza de costmaps, retroceso, giro en el lugar, espera y replanificación. La lógica sigue un principio de escalada: primero acciones de bajo costo computacional y luego maniobras físicas, como retroceder o girar.
+Las acciones de recuperación configuradas (Tabla~\ref{tab:recovery_ch9}) siguen un principio de escalada: primero acciones de bajo costo computacional (limpieza de costmaps) y luego maniobras físicas (retroceso o giro), con replanificación entre reintentos.
 
 \begin{table}[H]
 \centering
