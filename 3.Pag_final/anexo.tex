@@ -191,7 +191,6 @@ Para evitar cambios de nombres en los puertos serie, se utilizan reglas \texttt{
 \end{tabular}
 \end{table}
 
-
 \subsection{Prioridades de \texttt{twist\_mux}}
 \label{anx:twist_mux_config}
 
@@ -521,7 +520,6 @@ Ocho valores \\
 
 \noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \emph{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del firmware; si no se recibe una nueva orden durante el intervalo de auto-detención definido en la Tabla~\ref{tab:anx_trazabilidad_parametros}, los motores se detienen automáticamente. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados, pero permanecen vigentes solo hasta la siguiente llamada a \texttt{resetPID()}.
 
-
 \subsection{Ecuaciones y estados internos del PID embebido}
 \label{anx:pid_ecuaciones}
 
@@ -789,20 +787,23 @@ X_{i,d}^{g}+V_{i,d}^{g+1},
 \noindent No se aplica una cota superior al estado almacenado $X_{i,d}$. La transformación utilizada para evaluar cada partícula depende de la etapa:
 
 \begin{equation}
+\begin{aligned}
+X_{i,d}^{eval}
+&=
+\min\!\left(1,\max\!\left(X_{i,d},10^{-4}\right)\right),\\[2pt]
 \boldsymbol{\theta}_i^{eval}
-=
+&=
 \begin{cases}
-\boldsymbol{s}^{ID}\odot\boldsymbol{X}_i,
+\left(0.01X_{i,1},\,2.0X_{i,2},\,0.5X_{i,3}\right),
 & \text{identificación FODT},\\[2pt]
-\boldsymbol{s}^{PID}\odot
-\operatorname{clip}
-\left(\boldsymbol{X}_i,10^{-4},1\right),
-& \text{sintonización PID},
+\left(40X_{i,1}^{eval},\,25X_{i,2}^{eval},\,0.05X_{i,3}^{eval}\right),
+& \text{sintonización PID}.
 \end{cases}
+\end{aligned}
 \label{eq:pso_escala}
 \end{equation}
 
-\noindent donde $\boldsymbol{s}^{ID}=(0.01,2.0,0.5)$ y $\boldsymbol{s}^{PID}=(40,25,0.05)$. En la identificación, $\boldsymbol{\theta}^{eval}=(K_m,\tau,L_d)$; en la sintonización, $\boldsymbol{\theta}^{eval}=(K_p,K_d,K_i)$. El recorte superior a 1 existe solo dentro de la función de costo PID.
+\noindent En la identificación, $\boldsymbol{\theta}^{eval}=(K_m,\tau,L_d)$; en la sintonización, $\boldsymbol{\theta}^{eval}=(K_p,K_d,K_i)$. El recorte superior a 1 existe solo dentro de la función de costo PID.
 
 La función de costo PID utiliza el máximo de la señal de referencia como objetivo y combina el error cuadrático medio con una penalización por sobreimpulso absoluto. Además, el script asigna una penalización fija cuando la simulación genera una excepción o contiene valores no finitos:
 
@@ -894,19 +895,24 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \begin{equation}
 \boldsymbol{\theta}^{out}
 =
-\boldsymbol{s}\odot\boldsymbol{G}^{final}.
+\begin{cases}
+\left(0.01G_1^{final},\,2.0G_2^{final},\,0.5G_3^{final}\right),
+& \text{identificación FODT},\\[2pt]
+\left(40G_1^{final},\,25G_2^{final},\,0.05G_3^{final}\right),
+& \text{sintonización PID}.
+\end{cases}
 \label{eq:pso_salida}
 \end{equation}
 
-\noindent En la etapa PID, $\boldsymbol{\theta}^{out}$ puede superar los máximos implícitos de $\boldsymbol{s}^{PID}$, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
+\noindent En la etapa PID, $\boldsymbol{\theta}^{out}$ puede superar los valores de escala 40, 25 y 0.05, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
 
 \begin{algorithm}[H]
 \caption{PSO ejecutado por \texttt{pyPso.py} y evaluación utilizada en la sintonización}
 \label{alg:pso_nucleo}
 \begin{algorithmic}[1]
 \footnotesize
-\Require Función de costo; tamaño $S$; dimensiones $D$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID; vector de escala $s$.
-\Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y salida $\theta^{out}=s\odot G$.
+\Require Función de costo; tamaño $S$; dimensiones $D$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
+\Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y parámetros escalados $\theta^{out}$.
 \State Inicializar $X_{i,d}\sim\mathcal{U}[0,1]$ y $V_{i,d}\sim\mathcal{U}[0,1]$ sin semilla fija.
 \State Evaluar las posiciones iniciales.
 \State $P_i\gets X_i$ y $J_i^{best}\gets J_i$.
@@ -919,10 +925,10 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \State $X_i\gets X_i+V_i$.
 \State $X_i\gets\max(X_i,10^{-4})$ elemento a elemento.
 \If{modo ID}
-\State $\theta_i^{eval}\gets s^{ID}\odot X_i$.
+\State $\theta_i^{eval}\gets(0.01X_{i,1},\,2.0X_{i,2},\,0.5X_{i,3})$.
 \Else
-\State $X_i^{eval}\gets\operatorname{clip}(X_i,10^{-4},1)$.
-\State $\theta_i^{eval}\gets s^{PID}\odot X_i^{eval}$.
+\State $X_{i,d}^{eval}\gets\min\!\left(1,\max\!\left(X_{i,d},10^{-4}\right)\right)$, para $d=1,\ldots,D$.
+\State $\theta_i^{eval}\gets(40X_{i,1}^{eval},\,25X_{i,2}^{eval},\,0.05X_{i,3}^{eval})$.
 \EndIf
 \State Evaluar $J_i\gets J(\theta_i^{eval})$.
 \If{$J_i<J_i^{best}$}
@@ -937,7 +943,12 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \State $J^*\gets J_{new}^*$.
 \EndIf
 \EndFor
-\State $\theta^{out}\gets s\odot G$ sin recorte superior final.
+\If{modo ID}
+\State $\theta^{out}\gets(0.01G_1,\,2.0G_2,\,0.5G_3)$.
+\Else
+\State $\theta^{out}\gets(40G_1,\,25G_2,\,0.05G_3)$.
+\EndIf
+\State No aplicar un recorte superior final.
 \end{algorithmic}
 \end{algorithm}
 
@@ -958,7 +969,7 @@ Dimensión del espacio & 3 & 3 \\
 Función de costo & Ec.~\eqref{eq:costo_identificacion} & Ec.~\eqref{eq:costo_pso} \\
 Vector de escala $s$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
 Cota superior del estado $X$ & No aplicada & No aplicada \\
-Recorte superior durante la evaluación & No aplicado & $X_i^{eval}=\operatorname{clip}(X_i,10^{-4},1)$ \\
+Recorte superior durante la evaluación & No aplicado & $X_{i,d}^{eval}=\min\!\left(1,\max\!\left(X_{i,d},10^{-4}\right)\right)$ \\
 \midrule
 \multicolumn{3}{l}{\textit{Hiperparámetros comunes del enjambre}} \\
 Tamaño del enjambre $S$ & \multicolumn{2}{c}{50} \\
@@ -1076,7 +1087,6 @@ Ec.~\eqref{eq:costo_pso}, simulando una aproximación de la estructura acumulati
 \noindent La notación del Alg.~\ref{alg:sintonizacion} sigue la definición
 de $v_j^{med}[k]$ dada en la Ec.~\eqref{eq:vel_lazo_abierto} y las definiciones de $\hat{v}_j$ y $v_j^{ref}$ establecidas en las Secs.~\ref{sec:fodt} y~\ref{sec:pso_marco}. El orden $\{L,R\}$ del bucle corresponde a la lista \texttt{wheels=["IZQUIERDA","DERECHA"]} utilizada por los scripts.
 
-
 \subsection{Resultados de la ejecución PSO empleada}
 \label{anx:resultados_pso_ejecucion}
 
@@ -1105,7 +1115,6 @@ $K_i$ & 0.00001 & 0.00001 \\
 \end{table}
 
 \noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{cap}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{cap}$ y producen, en ambos casos, $n_{d,j}=\lfloor L_{d,j}/T_{cap}\rfloor=0$ muestras. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
-
 
 \subsection{Captura de la respuesta en lazo cerrado}
 \label{anx:captura_lazo_cerrado}
@@ -1144,7 +1153,6 @@ Las configuraciones de simulación y hardware se mantienen en archivos separados
 \end{table}
 
 \noindent En hardware, DWB puede muestrear hasta 0.15~m/s, pero la salida posterior queda limitada a $\pm0.13$~m/s por \texttt{diff\_drive\_controller} en \texttt{my\_controllers.yaml}.
-
 
 \subsection{Geometría del costmap e inflación}
 \label{anx:costmap_inflacion}
