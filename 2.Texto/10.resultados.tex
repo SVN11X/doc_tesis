@@ -80,7 +80,7 @@ $360^\circ$.
 \caption{Métricas diferenciadas de seguimiento y odometría en la trayectoria rectilínea de 2~m.}
 \label{tab:resumen_odometria}
 \small
-\begin{tabular}{p{5.2cm} p{3.2cm} p{3.2cm}}
+\begin{tabular}{p{7.2cm} p{2.2cm} p{2.8cm}}
 \toprule
 \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
@@ -109,7 +109,7 @@ Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref
 \toprule
 \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
-Desviación media $\lvert\cdot\rvert$ & $17.1^\circ$ ($4.74\%$) & $11.7^\circ$ \\
+Desviación angular media & $17.1^\circ$ ($4.74\%$) & $11.7^\circ$ \\
 Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ \\
 \bottomrule
 \end{tabular}
@@ -179,11 +179,11 @@ la imagen PGM del mapa:
 \begin{align}
 N_{\mathrm{libre}}
 &=
-\sum_{p\in M}\mathbf{1}[p\geq230],
+\text{número de celdas de } M \text{ con } p\geq230,
 \notag\\
 N_{\mathrm{desconocido}}
 &=
-\sum_{p\in M}\mathbf{1}[50<p<230],
+\text{número de celdas de } M \text{ con } 50<p<230,
 \notag\\
 C_{\mathrm{libre}}
 &=
@@ -219,7 +219,7 @@ de lectura y redondeo entre los scripts se documentan en el
 \caption{Indicadores del mapeo en simulación.}
 \label{tab:slam_sim_indicadores}
 \small
-\begin{tabular}{p{5.9cm} p{5.5cm}}
+\begin{tabular}{p{8.9cm} p{2.5cm}}
 \toprule
 \textbf{Indicador} & \textbf{Valor} \\
 \midrule
@@ -260,7 +260,7 @@ estados son salidas diagnósticas de \texttt{run\_explore.sh}; no representan
 identificadores únicos de metas.}
 \label{tab:resumen_exploracion}
 \small
-\begin{tabular}{p{7.0cm} p{2.5cm} p{2.5cm}}
+\begin{tabular}{p{9.5cm} p{1.7cm} p{1.7cm}}
 \toprule
 \textbf{Indicador} & $\boldsymbol{\mu}$ & $\boldsymbol{\sigma}$ \\
 \midrule

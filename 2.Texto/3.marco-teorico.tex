@@ -191,12 +191,16 @@ salida saturada pueden resumirse como:
 
 \begin{align*}
 \Delta u_j[k]
-&\propto
+&=
+\frac{
 K_{p,j}e_j[k]
 -
 K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)
 +
-I_j[k],\\
+I_j[k]
+}{
+K_{o,j}
+},\\
 u_j[k]
 &=
 \operatorname{sat}_{[-255,255]}

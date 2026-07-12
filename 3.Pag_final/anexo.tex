@@ -96,7 +96,7 @@ Marcos principales & \texttt{odom}, \texttt{base\_link}, \texttt{base\_footprint
 \caption{Criterios mínimos de aceptación del gemelo digital.}
 \label{tab:criterios_aceptacion_resumen}
 \small
-\begin{tabular}{p{4.0cm} p{4.0cm} p{4.5cm}}
+\begin{tabular}{p{4.3cm} p{4.8cm} p{4.5cm}}
 \toprule
 \textbf{Criterio} & \textbf{Verificación} & \textbf{Resultado esperado} \\
 \midrule
@@ -176,7 +176,7 @@ Para evitar cambios de nombres en los puertos serie, se utilizan reglas \texttt{
 \caption{Parámetros compartidos entre firmware y plugin de hardware.}
 \label{tab:anx_trazabilidad_parametros}
 \small
-\begin{tabular}{lll}
+\begin{tabular}{llp{6.1cm}}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Uso} \\
 \midrule
@@ -243,7 +243,6 @@ T_{\mathrm{PID,sched}}
 \caption{Resumen de la transformación entre encoders, estados y consignas}
 \label{alg:odometria_diferencial}
 \begin{algorithmic}[1]
-\footnotesize
 \Require Conteos acumulados $c_L,c_R$; resolución $N_e$; consignas $\omega_L^{cmd},\omega_R^{cmd}$; $f_{\mathrm{loop}}$.
 \Ensure Estados angulares de rueda y referencias enteras de ticks/frame.
 \For{$j\in\{L,R\}$}
@@ -805,29 +804,36 @@ X_{i,d}^{eval}
 
 \noindent En la identificación, $\boldsymbol{\theta}^{eval}=(K_m,\tau,L_d)$; en la sintonización, $\boldsymbol{\theta}^{eval}=(K_p,K_d,K_i)$. El recorte superior a 1 existe solo dentro de la función de costo PID.
 
-La función de costo PID utiliza el máximo de la señal de referencia como objetivo y combina el error cuadrático medio con una penalización por sobreimpulso absoluto. Además, el script asigna una penalización fija cuando la simulación genera una excepción o contiene valores no finitos:
+La función de costo PID utiliza el máximo de la señal de referencia como
+objetivo y combina el error cuadrático medio con una penalización cuadrática
+por sobreimpulso. Además, el script asigna una penalización fija cuando la
+simulación genera una excepción o cuando la respuesta contiene valores no
+finitos:
 
 \begin{equation}
-J_{PID}
+J_{\mathrm{PID}}
 =
 \begin{cases}
 10^{6},
-& \texttt{simular\_pid\_firmware} \text{ genera una excepción},\\[2pt]
-10^{6},
-& \widehat{v}_j \text{ contiene valores no finitos},\\[4pt]
-\displaystyle
+& \text{si la simulación no es válida},\\[6pt]
+\begin{aligned}
+&\displaystyle
 \frac{1}{N}
 \sum_{k=1}^{N}
-\left(v_j^{ref}-\widehat{v}_j[k]\right)^2
-+
-3
-\left[
-\max
 \left(
+v_j^{\mathrm{ref}}-\widehat{v}_j[k]
+\right)^2
+\\[-1pt]
+&\displaystyle\quad+
+3\left[
+\max\left(
 0,
-\max_k\widehat{v}_j[k]-v_j^{ref}
+\max_{1\leq k\leq N}\widehat{v}_j[k]
+-
+v_j^{\mathrm{ref}}
 \right)
 \right]^2,
+\end{aligned}
 & \text{en otro caso}.
 \end{cases}
 \label{eq:costo_pso}
@@ -875,16 +881,14 @@ J^{*,g+1}
 \label{eq:pso_mejor_costo}
 \end{equation}
 
-pero, cuando este costo mejora, asigna la posición global desde la posición actual de la partícula cuyo costo histórico es mínimo:
+Sea $i^*$ el índice de la partícula cuyo costo histórico
+$J_i^{best}$ es mínimo. Entonces, el script actualiza la posición
+global mediante:
 
 \begin{equation}
 G^{g+1}
 =
-X_{i^*}^{g+1},
-\qquad
-i^*
-=
-\arg\min_i J_i^{best},
+X_{i^*}^{g+1}.
 \label{eq:pso_globalp_real}
 \end{equation}
 
@@ -910,7 +914,7 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \caption{PSO ejecutado por \texttt{pyPso.py} y evaluación utilizada en la sintonización}
 \label{alg:pso_nucleo}
 \begin{algorithmic}[1]
-\footnotesize
+\small
 \Require Función de costo; tamaño $S$; dimensiones $D$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
 \Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y parámetros escalados $\theta^{out}$.
 \State Inicializar $X_{i,d}\sim\mathcal{U}[0,1]$ y $V_{i,d}\sim\mathcal{U}[0,1]$ sin semilla fija.
@@ -1001,6 +1005,7 @@ v_j^{med}[k]
 \begin{algorithm}[H]
 \caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
 \label{alg:captura_lazo_abierto}
+\small
 \begin{algorithmic}[1]
 \Require Enlace serial al \gls{Arduino}; PWM nominal de la Tabla~\ref{tab:pso_config}; período de captura $T_{cap}=0.1$~s e instantes de muestreo $t_k=k\,T_{cap}$ [s]; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
 \Ensure Series por rueda $\bigl(u_j[k],v_j^{med}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT de la Etapa~1 del Alg.~\ref{alg:sintonizacion}.
@@ -1257,7 +1262,6 @@ La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, cor
 \caption{Integración operativa de \texttt{explore\_lite} con Nav2}
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
-\footnotesize
 \Require Costmap global $C$; pose del robot; parámetros de la Tabla~\ref{tab:explore_params_ch9}; lista negra $B$.
 \Ensure Metas \texttt{NavigateToPose} seleccionadas a partir de las fronteras disponibles.
 \State Ejecutar una planificación inmediata y programar las siguientes con el período de la Ec.~\eqref{eq:periodo_explorador_real}.
@@ -1402,7 +1406,7 @@ simulación (Gazebo).}
 \small
 \begin{tabular}{ccccc}
 \toprule
-\textbf{Prueba} & \textbf{Referencia nominal (\textdegree{})} & \textbf{Giro acumulado \texttt{/odom} (\textdegree{})} & \textbf{Desviación (\textdegree{})} & \textbf{$E_{\theta,360}$ (\%)} \\
+\textbf{Prueba} & \textbf{Ref. nominal (\textdegree{})} & \textbf{Giro acumulado \texttt{/odom} (\textdegree{})} & \textbf{Desviación (\textdegree{})} & \textbf{$E_{\theta,360}$ (\%)} \\
 \midrule
 1 & 360.0 & 335.86 & $-24.14$ & 6.71\% \\
 2 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
@@ -1420,7 +1424,7 @@ simulación (Gazebo).}
 \small
 \begin{tabular}{cccc}
 \toprule
-\textbf{Prueba} & \textbf{Referencia nominal (\textdegree{})} & \textbf{Giro físico medido (\textdegree{})} & \textbf{Desviación (\textdegree{})} \\
+\textbf{Prueba} & \textbf{Ref. nominal (\textdegree{})} & \textbf{Giro físico medido (\textdegree{})} & \textbf{Desviación (\textdegree{})} \\
 \midrule
 1 & 360.0 & 355.7 & $-4.3$ \\
 2 & 360.0 & 340.0 & $-20.0$ \\
