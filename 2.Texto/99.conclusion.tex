@@ -2,65 +2,53 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{CONCLUSIONES}
 
-El presente trabajo tuvo como objetivo diseñar e implementar un prototipo de robot móvil diferencial capaz de generar mapas 2D y navegar de forma autónoma hacia destinos por explorar, usando \gls{ROS2} Foxy sobre una Raspberry Pi 4. El desarrollo integró diseño mecánico, electrónica de potencia, firmware de bajo nivel, gemelo digital en Gazebo, mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración autónoma basada en fronteras.
+El presente trabajo tuvo como objetivo diseñar e implementar un prototipo de robot móvil diferencial capaz de generar mapas 2D, ejecutar navegación autónoma y realizar exploración basada en fronteras mediante \gls{ROS2} Foxy. El desarrollo integró diseño mecánico, electrónica de potencia, firmware de bajo nivel, gemelo digital en Gazebo, mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración autónoma.
 
-En relación con la plataforma física, se construyó un robot diferencial de bajo costo con dos motores DC, encoders de cuadratura, driver L298N, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1. La separación entre cómputo de alto nivel y control de bajo nivel resultó adecuada para la arquitectura basada en \texttt{ros2\_control}, ya que permitió delegar la lectura de encoders y el control PID al microcontrolador, mientras la Raspberry Pi ejecuta la adquisición del \gls{LIDAR}, la interfaz de hardware y la comunicación con la estación de trabajo, donde se ejecutan SLAM, navegación, exploración y supervisión.
+En relación con la plataforma física, se construyó un robot diferencial de bajo costo con dos motores DC, encoders de cuadratura, driver L298N, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1. El \gls{Arduino} ejecuta la lectura de encoders y el control PID de cada rueda. La Raspberry Pi ejecuta la interfaz \texttt{DiffDriveArduino}, \texttt{diff\_drive\_controller}, la adquisición del \gls{LIDAR} y la comunicación con la estación de trabajo; esta última ejecuta SLAM, navegación, exploración y supervisión.
 
-El gemelo digital desarrollado en Gazebo permitió validar previamente la geometría, la cinemática, la cadena de transformaciones y la configuración de control. La paridad entre simulación y hardware se mantuvo mediante el uso de nombres de tópicos, marcos TF y parámetros equivalentes. Los resultados muestran coherencia entre ambos entornos: el error medio en trayectoria recta fue de 3.39\% en simulación y 3.63\% en hardware real.
+El gemelo digital desarrollado en Gazebo utiliza \texttt{ros2\_control} con el backend \texttt{gazebo\_ros2\_control/GazeboSystem}, seleccionado por \texttt{launch\_sim.launch.py}. Esta configuración permitió verificar la geometría, la cinemática, la cadena de transformaciones y la interfaz de control antes de operar el robot físico. En simulación, el error medio de seguimiento de la consigna rectilínea fue 3.39\%, mientras que la odometría coincidió con la verdad de terreno de Gazebo. En hardware real, el error odométrico medio fue 3.63\% y el error físico de seguimiento respecto de la consigna fue 7.18\%.
 
-Respecto del control de bajo nivel, el firmware implementado en el \gls{Arduino} integra lectura de encoders, comunicación serial, odometría diferencial y control PID por rueda a 30~Hz. La sintonización híbrida mediante PSO y refinamiento experimental permitió obtener ganancias asimétricas para cada motor, compensando diferencias mecánicas del tren motriz. En comparación con la sintonía Lambda, evaluada en simulación sobre el modelo FODT identificado con las ganancias de firmware, el enfoque propuesto redujo el sobreimpulso desde valores superiores al 40\% hasta un rango de 10.66\%--15.63\%, comportamiento más adecuado para navegación cerca de obstáculos.
+Respecto del control de bajo nivel, el firmware ejecuta un programador con incremento entero de 33~ms, derivado de \texttt{PID\_INTERVAL = 1000/PID\_RATE} con \texttt{PID\_RATE=30}. El controlador implementa ganancias, bandas muertas y estados independientes por rueda, además de saturación de salida y actualización condicional del integrador. La Fig.~\ref{fig:respuesta_escalon_final} corresponde a una adquisición experimental en lazo cerrado. Los sobreimpulsos de 10.66\%--15.63\% de la Tabla~\ref{tab:pid_performance} proceden de una ejecución simulada de \texttt{SintonizacionLambda.py}; no son mediciones directas sobre el robot y deben interpretarse considerando las aproximaciones numéricas de ese script.
 
-El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. En simulación se obtuvo un mapa consistente, con cobertura estimada de 95.6\%, resolución de 0.05~m/celda y 45 nodos en el grafo. En hardware real también se obtuvieron mapas utilizables, aunque su calidad dependió de mantener velocidades bajas, aproximadamente entre 0.06 y 0.09~m/s, para reducir la degradación producida por deriva odométrica y ruido sensorial.
+El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. En simulación se obtuvo un índice de cobertura libre de 95.6\%, una resolución de 0.05~m/celda y 45 nodos en el grafo. En hardware real se obtuvieron mapas utilizables y se cuantificaron la cobertura libre y el área mapeada durante las iteraciones de exploración; los datos disponibles no sustentan una relación cuantitativa entre calidad del mapa y un intervalo específico de velocidad.
 
-La navegación autónoma con Nav2 quedó integrada mediante el planificador global NavFn con A\*, el controlador local DWB, mapas de costo y un árbol de comportamiento con acciones de recuperación. Asimismo, la exploración autónoma basada en fronteras quedó integrada mediante \texttt{explore\_server}, generando metas hacia zonas no exploradas del mapa. Sin embargo, la validación cuantitativa de navegación y exploración requiere un entorno físico de mayor superficie que el disponible y se plantea como trabajo futuro. Por ello, estas capacidades se consideran integradas y verificadas funcionalmente, pero no cerradas cuantitativamente.
+La navegación con Nav2 quedó integrada mediante NavFn con A\*, DWB, mapas de costo y un árbol de comportamiento con recuperaciones. La exploración por fronteras se ejecutó en cinco iteraciones válidas y alcanzó un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$) sobre el espacio disponible. No obstante, \texttt{run\_explore.sh} cuenta coincidencias de texto y estados de acción sin deduplicar identificadores de meta; además, los resúmenes registran cero metas generadas junto con coincidencias de éxito y fallo. En consecuencia, esos contadores no permiten calcular una tasa de éxito de Nav2 ni demostrar arribos únicos a fronteras. Se verifica la integración funcional y se cuantifica la cobertura, pero la navegación dirigida no queda validada cuantitativamente con el registro disponible.
 
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
 \begin{description}
-\item[\autoref{oe1} -- Construcción y gemelo digital:] \textit{Cumplido.} Se diseñó, construyó y validó una plataforma diferencial física y su gemelo digital en Gazebo.
+\item[\autoref{oe1} -- Construcción y gemelo digital:] \textit{Cumplido.} Se diseñó y construyó la plataforma diferencial física y se verificó su gemelo digital con el backend de \texttt{ros2\_control} ejecutado en Gazebo.
 
-\item[\autoref{oe2} -- Control de bajo nivel:] \textit{Cumplido.} Se implementó firmware para encoders, odometría y control PID, con sintonización mediante PSO y refinamiento experimental.
+\item[\autoref{oe2} -- Control de bajo nivel:] \textit{Cumplido.} Se implementaron la lectura de encoders y el control PID en el firmware; la posición y velocidad de rueda se exportan mediante \texttt{DiffDriveArduino}, y la odometría se integra en \texttt{diff\_drive\_controller}.
 
-\item[\autoref{oe3} -- Mapeo y navegación:] \textit{Cumplido parcialmente.} El mapeo con \texttt{slam\_toolbox} fue validado en simulación y hardware. La navegación con Nav2 quedó integrada y verificada funcionalmente; su validación cuantitativa se plantea para un entorno de mayor superficie.
+\item[\autoref{oe3} -- Mapeo y navegación:] \textit{Cumplido parcialmente.} El mapeo fue validado cuantitativamente en simulación y verificado en hardware. Nav2 quedó integrado y verificado funcionalmente, pero no se obtuvo una tasa cuantitativa de metas únicas con los registros existentes.
 
-\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de exploración por fronteras fue integrado con Nav2 y \texttt{slam\_toolbox}, y su validación cuantitativa se plantea para un entorno de prueba de mayor superficie.
+\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras fue integrado y su cobertura fue cuantificada. Los contadores disponibles no permiten cuantificar metas únicas alcanzadas o fallidas.
 \end{description}
 
-En consecuencia, el objetivo general se alcanzó en sus componentes de diseño, construcción, control y mapeo, mientras que navegación y exploración quedaron integradas y listas para validación cuantitativa en un entorno de mayor superficie.
+En consecuencia, el objetivo general se alcanzó en diseño, construcción, control y mapeo. La navegación y la exploración quedaron integradas funcionalmente; la cobertura fue cuantificada, pero el éxito de navegación por metas permanece sin una medición válida en los datos disponibles.
 
-% -------------------------------------------------------------------
 \section*{Limitaciones}
 \phantomsection
 \addcontentsline{toc}{section}{Limitaciones}
 
 \begin{itemize}
 \item \textbf{Deriva odométrica:} la odometría basada solo en encoders acumula error, especialmente en giros y trayectorias largas.
-\item \textbf{Espacio de pruebas reducido:} el recinto disponible permitió validar control, odometría y mapeo, pero no navegación ni exploración en recorridos extensos.
-\item \textbf{Fidelidad limitada de la simulación:} Gazebo no reproduce completamente fricción, zona muerta del driver, ruido sensorial ni latencias reales.
-\item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial, lo que limita futuras actualizaciones.
-\item \textbf{Navegación en espacios estrechos:} pasillos y puertas requieren una sintonización más fina de inflación, tolerancias y controlador local.
+\item \textbf{Espacio de pruebas reducido:} el recinto disponible limita la ejecución de recorridos extensos y condiciona la geometría de los mapas de costo.
+\item \textbf{Registro de navegación:} los contadores de \texttt{run\_explore.sh} no identifican metas únicas y no sustentan una tasa de éxito de Nav2.
+\item \textbf{Métricas PID:} la figura experimental y las métricas simuladas provienen de procedimientos distintos y no deben interpretarse como una única prueba.
+\item \textbf{Fidelidad de la simulación:} Gazebo no reproduce completamente fricción, zona muerta del driver, ruido sensorial ni latencias reales.
+\item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.
 \end{itemize}
 
-% -------------------------------------------------------------------
 \section*{Trabajo futuro}
 \phantomsection
 \addcontentsline{toc}{section}{Trabajo futuro}
 
 \begin{enumerate}
-\item Ejecutar la validación cuantitativa de navegación y exploración en un entorno de mayor superficie.
+\item Ejecutar el protocolo cuantitativo de navegación en un entorno de mayor superficie, registrando cada meta y su resultado de forma unívoca.
 \item Integrar una \gls{IMU} mediante \texttt{robot\_localization} para reducir la deriva angular.
-\item Migrar el sistema a una distribución mantenida de \gls{ROS2}, como Humble o Jazzy.
-\item Evaluar controladores y planificadores más avanzados de Nav2 para espacios estrechos.
-\item Mejorar el criterio de selección de fronteras, considerando accesibilidad y distancia real de navegación.
-\item Desarrollar una interfaz remota para envío de metas y supervisión sin depender de RViz2.
-\item Evaluar la migración del microcontrolador a \gls{microRos}.
+\item Migrar el sistema a una distribución mantenida de \gls{ROS2}.
+\item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
+\item Evaluar la exploración con un protocolo que distinga selección de frontera, envío de meta, resultado de la acción y cobertura obtenida.
 \end{enumerate}
-
-% -------------------------------------------------------------------
-\section*{Reflexión final}
-\phantomsection
-\addcontentsline{toc}{section}{Reflexión final}
-
-El proyecto demuestra que es posible desarrollar un robot móvil diferencial funcional con componentes accesibles y herramientas de código abierto. La principal dificultad no estuvo en cada subsistema por separado, sino en la integración coherente entre hardware, firmware, simulación, SLAM, navegación y exploración sobre una plataforma con recursos limitados.
-
-La metodología incremental empleada permitió reducir riesgos: primero se validó la odometría, luego el control, después el mapeo, y finalmente la integración de navegación y exploración. Esta estrategia se considera adecuada para futuros desarrollos de robótica móvil con \gls{ROS2}.

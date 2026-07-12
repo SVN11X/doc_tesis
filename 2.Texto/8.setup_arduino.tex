@@ -1,46 +1,43 @@
 \chapter{IMPLEMENTACIÓN DEL FIRMWARE DE BAJO NIVEL EN ARDUINO NANO}
 \label{ch:setup_arduino}
 
-Este capítulo describe el firmware \texttt{ROSArduinoBridge} implementado en el \gls{Arduino} Nano para el control de bajo nivel del robot. El firmware parte de un proyecto de código abierto homónimo y se adaptó para este trabajo, modificando el controlador PID por rueda, la resolución de encoders y la rutina de auto-detención de seguridad. El firmware cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos.
+Este capítulo describe el firmware \texttt{ROSArduinoBridge} implementado en el \gls{Arduino} Nano para el control de bajo nivel del robot. El firmware parte de un proyecto de código abierto homónimo y se adaptó para este trabajo. La versión utilizada incorpora ganancias PID independientes por rueda y la resolución efectiva de encoders configurada para el prototipo. El firmware cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos.
 
 La integración con \gls{ROS2} mediante el plugin \texttt{DiffDriveArduino} y \texttt{ros2\_control}; traducción de velocidades de rueda a \textit{ticks/frame} y lectura de encoders, se desarrolla en el Cap.~\ref{chap:robot_real}. Su consistencia con el firmware depende de los parámetros compartidos reunidos en la Tabla~\ref{tab:anx_trazabilidad_parametros}.
 
-%------------------------------------------------------------------
 \section{Arquitectura modular del firmware}
 
 El firmware se organiza en módulos con responsabilidades separadas: \texttt{ROSArduinoBridge.ino} coordina la comunicación serial y el ciclo principal; \texttt{commands.h} define los comandos; \texttt{encoder\_driver} realiza la lectura de encoders; \texttt{motor\_driver} acciona el L298N; y \texttt{diff\_controller.h} implementa el controlador PID. Esta organización facilita la trazabilidad entre el modelo cinemático, el firmware y la interfaz con \texttt{ros2\_control}.
 
-%------------------------------------------------------------------
 \section{Constantes físicas y conversión de unidades}
 
-El firmware utiliza las mismas constantes físicas del modelo cinemático y del gemelo digital (Tabla~\ref{tab:parametros_modelo}), parametrizadas como constantes de compilación: \texttt{WHEEL\_DIAMETER}$\,=D=2r=0.067$~m, \texttt{ENC\_TICKS\_PER\_REV}$\,=N_e$ y \texttt{PID\_RATE}$\,=f_{ctrl}$.
+El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución efectiva $N_e$ compartidos con la ruta de hardware real (Tabla~\ref{tab:parametros_modelo}), parametrizados como \texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware. Este valor interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}; por ello, \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos. El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}.
 
 A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
-%------------------------------------------------------------------
+
 \section{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
 
-La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante un protocolo serial textual a 57600~baud. Durante la operación normal, los comandos principales son: lectura de encoders, envío de referencias de velocidad, carga de ganancias PID y aplicación de PWM directo para pruebas en lazo abierto. El protocolo completo se documenta en el \ref{anx:firmware}.
+La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante un protocolo serial textual a 57600~baud. Durante la operación normal, los comandos principales permiten leer los encoders, enviar referencias de velocidad, cargar las ganancias PID y aplicar PWM directo durante las pruebas en lazo abierto. El protocolo completo se presenta en la Tabla~\ref{tab:protocolo_serial}.
 
 \subsection{Obtención experimental de ticks por vuelta}
 \label{sec:cpr_experimental}
 
-Para obtener una odometría consistente, se midió experimentalmente el número de ticks por vuelta completa de rueda. Los promedios obtenidos fueron:
+Los contadores de encoder se midieron durante diez vueltas completas por
+rueda. Las medias obtenidas fueron 1976~ticks/vuelta para la rueda derecha y
+1969~ticks/vuelta para la izquierda; a partir de ellas se adoptó el valor
+unificado $N_e=1980$~ticks/vuelta. La diferencia respecto de ambas medias es
+inferior al 0.6\%.
 
-\begin{align}
-\bar{N}_R &= \frac{1}{10}\sum_{i=1}^{10} N_{R(i)} = 1976
-\label{eq:promedio_cuentas_R} \\
-\bar{N}_L &= \frac{1}{10}\sum_{i=1}^{10} N_{L(i)} = 1969
-\label{eq:promedio_cuentas_L}
-\end{align}
+Las muestras individuales, el tratamiento de la lectura no atómica de los
+contadores y el cálculo formal de las medias se conservan en el
+\ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R} y
+\eqref{eq:promedio_cuentas_L}.
 
-donde $N_{R(i)}$ y $N_{L(i)}$ son los ticks por vuelta completa medidos en la $i$-ésima repetición de las ruedas derecha e izquierda [ticks/vuelta]. Ambos promedios difieren en menos del 0.4\%. El valor unificado $N_e=1980$ ticks/vuelta adoptado en el Cap.~\ref{ch:componentes} introduce, respecto de estas medias, un error sistemático inferior al 0.6\% por rueda ($|1980-\bar{N}_R|/\bar{N}_R\approx0.20\%$ y $|1980-\bar{N}_L|/\bar{N}_L\approx0.56\%$), aceptable frente a la deriva propia de la odometría. Las muestras experimentales se incluyen en el \ref{anx:firmware}.
-
-%------------------------------------------------------------------
 \section{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con la velocidad medida $m_j[k]$ en ticks/frame.
+El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con la medición entera $m_j^{int}[k]$ en ticks/frame.
 
 La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap. \ref{marco_teorico}. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
 
@@ -61,223 +58,57 @@ $K_o$ & 50 & 50 \\
 \end{tabular}
 \end{table}
 
-Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del firmware. La acción de control se normaliza mediante $K_o$, equivalente a emplear $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$, y se satura al intervalo PWM $[-255,255]$. La convención heredada de \texttt{ROSArduinoBridge} ordena los parámetros como $K_p$, $K_d$, $K_i$, $K_o$.
+Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del firmware. El código divide por $K_o$ el numerador completo de la Ec.~\ref{eq:pid_incremento} y después asigna el resultado a una variable \texttt{long}. Debido a ese truncamiento y a los estados enteros, la operación ejecutada no debe reemplazarse en la tesis por tres ganancias predivididas $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$ como si fueran algebraicamente equivalentes. La salida se satura al intervalo PWM $[u_{\min},u_{\max}]=[-255,255]$ (constante \texttt{MAX\_PWM} del firmware). La convención heredada de \texttt{ROSArduinoBridge} ordena los parámetros como $K_p$, $K_d$, $K_i$, $K_o$.
 
-\begin{algorithm}[H]
-\caption{Control PID discreto de velocidad por rueda en el firmware (forma incremental, derivada sobre la medición, anti-windup condicional)}
-\label{alg:pid_firmware}
-\begin{algorithmic}[1]
-\Require Referencia $m_j^{cmd}[k]$ [ticks/frame] y ticks de encoder $c_j[k]$ [ticks] por rueda $j\in\{R,L\}$; ganancias de la Tabla~\ref{tab:ganancias_pid}; bandas muertas, saturación y frecuencia definidas previamente.
-\Ensure Salida PWM $u_j[k]$ por rueda y estado interno actualizado.
+La función \texttt{resetPID()} no se limita a reiniciar estados: también vuelve a cargar las ganancias predeterminadas mostradas en la Tabla~\ref{tab:ganancias_pid}. Se invoca al reiniciar encoders, antes de aplicar PWM directo y cuando ambos comandos de velocidad son exactamente cero. En consecuencia, cualquier ganancia cargada temporalmente mediante \texttt{u} o \texttt{z} se reemplaza por los valores codificados al producirse cualquiera de esos reinicios.
 
-\Statex \textbf{Inicialización:}
-\State $u_j[-1]\gets 0,\quad I_j[0]\gets 0,\quad m_j[-1]\gets 0,\qquad \forall j\in\{R,L\}$
-\State $c_j[-1]\gets$ lectura actual del encoder \Comment{evita un $\Delta c_j$ espurio tras el reinicio}
-\Statex
-\Statex \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
-\While{el controlador está activo}
-    \For{$j\in\{R,L\}$}
-        \State Calcular $m_j[k]$ y $e_j[k]$ mediante la Ec.~\ref{eq:error_pid}
+La secuencia exacta de lectura, actualización de estados, saturación y
+aplicación de las salidas se conserva en el Alg.~\ref{alg:pid_firmware} del
+\ref{anx:firmware_detalle}.
 
-        \If{$|e_j[k]|\leq e_{db,j}$}
-            \State $e_j[k]\gets 0$ \Comment{banda muerta anti-cuantización}
-        \EndIf
-
-        \State Actualizar $u_j[k]$ mediante la Ec.~\ref{eq:pid_firmware}
-
-        \If{$u_j[k]\geq u_{\max}$}
-            \State $u_j[k]\gets u_{\max};\quad I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
-        \ElsIf{$u_j[k]\leq u_{\min}$}
-            \State $u_j[k]\gets u_{\min};\quad I_j[k+1]\gets I_j[k]$ \Comment{anti-windup}
-        \Else
-            \State $I_j[k+1]\gets I_j[k]+K_{i,j}e_j[k]$
-        \EndIf
-
-        \State Aplicar PWM $u_j[k]$ al motor $j$
-        \State $m_j[k-1]\gets m_j[k];\quad u_j[k-1]\gets u_j[k]$
-    \EndFor
-\EndWhile
-
-\Statex
-\Statex \textbf{Salida:} $u_R[k]$ y $u_L[k]$ aplicados al L298N; estado $(I_j,u_j[k-1],m_j[k-1])$ actualizado.
-\end{algorithmic}
-\end{algorithm}
-%------------------------------------------------------------------
 \section{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
 
 Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental. Esta sección detalla su ejecución sobre el hardware; captura de la respuesta al escalón, identificación y optimización, formalizada en el Alg.~\ref{alg:sintonizacion}.
 
-\begin{table}[H]
-\centering
-\caption{Configuración de la sintonización por PSO (qué se optimizó y con qué hiperparámetros).}
-\label{tab:pso_config}
-\small
-\begin{tabular}{p{5.2cm} p{4.3cm} p{4.3cm}}
-\toprule
-\textbf{Parámetro} & \textbf{Etapa 1: Identificación FODT} & \textbf{Etapa 2: Sintonización PID} \\
-\midrule
-Variables optimizadas & $(K_m,\tau,L_d)$ & $(K_p,K_d,K_i)$ \\
-Dimensión del espacio & 3 & 3 \\
-Función de costo & $\mathrm{MSE}(v^{med}-\hat{v})$ & Ec.~\eqref{eq:costo_pso} \\
-Vector de escala $s$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
-Cota superior $X_{\max}$ & $+\infty$ & $1$ \\
-\midrule
-\multicolumn{3}{l}{\textit{Hiperparámetros comunes del enjambre}} \\
-Tamaño del enjambre $S$ & \multicolumn{2}{c}{50} \\
-Generaciones $g_{\max}$ & \multicolumn{2}{c}{150} \\
-Coeficientes $c_1=c_2$ & \multicolumn{2}{c}{2.05} \\
-Factor de constricción $\chi$ & \multicolumn{2}{c}{0.7298} \\
-Cota inferior $X_{\min}$ & \multicolumn{2}{c}{$10^{-4}$} \\
-Pesos del costo $(w_{\mathrm{mse}},w_{\mathrm{OS}})$ & \multicolumn{2}{c}{$(1.0,\ 3.0)$} \\
-Escalón de captura / referencia & \multicolumn{2}{c}{PWM $=143$ ($\approx 0.13$ m/s)} \\
-\bottomrule
-\end{tabular}
-\end{table}
+La identificación y la sintonización utilizan enjambres de 50 partículas
+durante 150 generaciones. Las variables, escalas, cotas y funciones de costo se
+conservan en la Tabla~\ref{tab:pso_config} del
+\ref{anx:protocolos_sintonizacion}.
 
 \subsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
 
-La velocidad lineal medida de cada rueda se obtiene a partir de la
-Ec.~\ref{eq:w_ruedas}, usando $v_j^{med}=r\,\omega_j$ y reemplazando el período
-de control por el período de captura $T_{cap}$:
-
-\begin{equation}
-v_j^{med}[k]
-=
-\frac{\Delta c_j[k]}{N_e}
-\frac{2\pi r}{T_{cap}},
-\qquad j\in\{R,L\}.
-\label{eq:vel_lazo_abierto}
-\end{equation}
-
-\noindent Esta expresión corresponde a la Ec.~\ref{eq:w_ruedas}
-expresada como velocidad lineal de rueda y evaluada sobre cada intervalo
-de captura experimental.
-
-\begin{algorithm}[H]
-\caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
-\label{alg:captura_lazo_abierto}
-\begin{algorithmic}[1]
-\Require Enlace serial al \gls{Arduino}; PWM nominal $\mathrm{PWM_{nom}}=143$; período de captura $T_{cap}=0.1$~s; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
-\Ensure Series por rueda $\bigl(u_j[k],v_j^{med}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT de la Etapa~1 del Alg.~\ref{alg:sintonizacion}.
-
-\Statex \textbf{Inicialización:}
-\State Abrir el puerto serial, fijar PWM en cero y esperar la estabilización.
-\State Leer los encoders iniciales $c_j[-1]$, para $j\in\{R,L\}$.
-\State $k\gets 0$
-
-\Statex
-\Statex \textbf{Ejecución principal:}
-\While{$t_k\leq t_f$}
-    \If{$t_k\geq t_{step}$}
-        \State $u_j[k]\gets \mathrm{PWM_{nom}}$, para $j\in\{R,L\}$
-        \Comment{escalón sin PID}
-    \Else
-        \State $u_j[k]\gets 0$, para $j\in\{R,L\}$
-    \EndIf
-
-    \State Aplicar $u_L[k]$ y $u_R[k]$ a los motores en lazo abierto.
-    \State Leer los encoders $c_j[k]$, para $j\in\{R,L\}$.
-
-    \For{$j\in\{R,L\}$}
-        \State Calcular $\Delta c_j[k]\gets c_j[k]-c_j[k-1]$.
-        \State Calcular $v_j^{med}[k]$ mediante la
-        Ec.~\ref{eq:vel_lazo_abierto}.
-        \State Registrar $\bigl(u_j[k],v_j^{med}[k]\bigr)$.
-        \State $c_j[k-1]\gets c_j[k]$
-    \EndFor
-
-    \State $k\gets k+1$
-\EndWhile
-
-\Statex
-\Statex \textbf{Salida:}
-\State Detener ambos motores y entregar las series
-$\bigl(u_j[k],v_j^{med}[k]\bigr)$ para identificar el modelo FODT.
-\end{algorithmic}
-\end{algorithm}
+La prueba aplica un escalón PWM nominal de 143 y registra los
+conteos de encoder cada $T_{cap}=0.1$~s durante 10~s. La velocidad se calcula
+con el período nominal, mientras el tiempo real del ciclo solo determina el
+remanente de espera. La ecuación y el procedimiento reproducible se trasladan
+al \ref{anx:protocolos_sintonizacion}, Ec.~\eqref{eq:vel_lazo_abierto} y
+Alg.~\ref{alg:captura_lazo_abierto}.
 
 \subsection{Identificación y optimización}
 
-La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo y entrada— se detallan en la Sec.~\ref{sec:fodt} (Tabla~\ref{tab:fodt_usos}). El procedimiento completo de sintonización se resume en el Alg.~\ref{alg:sintonizacion}.
-
-\begin{algorithm}[H]
-\caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
-\label{alg:sintonizacion}
-\begin{algorithmic}[1]
-\Require Respuesta al escalón en lazo abierto $(u_j[k],v_j^{med}[k])$ por rueda; períodos $T_{cap}$ y $T_s$; configuración PSO de la Tabla~\ref{tab:pso_config}; banda muerta de simulación $e_{db}=2$.
-\Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
-
-\State \textbf{Inicialización:} cargar los datos de lazo abierto y suavizar $v_j^{med}$.
-
-\For{$j \in \{R,L\}$}
-    \State \textbf{Etapa 1 — Identificación FODT por PSO:}
-    \State $J_{\mathrm{ID}}(\boldsymbol{\theta})\gets
-    \mathrm{MSE}\!\left(v_j^{med}-\hat{v}_j(\boldsymbol{\theta})\right)$,
-    con $\hat{v}_j$ obtenida mediante la discretización de Euler a $T_{cap}$
-    de la Ec.~\eqref{eq:fodt_discreto}.
-    \State $(K_m,\tau,L_d)_j \gets
-    \Call{PSO}{J_{\mathrm{ID}},\,s^{\mathrm{ID}}}$
-    \Comment{Alg.~\ref{alg:pso_nucleo}}
-
-    \Statex
-    \State \textbf{Etapa 2 — Optimización de ganancias PID por PSO:}
-    \State Definir $J(\boldsymbol{\theta})$ mediante la
-    Ec.~\eqref{eq:costo_pso}, simulando el PID del firmware
-    (Ec.~\eqref{eq:pid_firmware}) sobre el modelo FODT a $T_s$ sin retardo
-    (Ec.~\eqref{eq:fodt_lazo_cerrado}) y con banda muerta $e_{db}$.
-    \State $(K_p,K_d,K_i)_j \gets
-    \Call{PSO}{J,\,s^{\mathrm{PID}}}$
-    \Comment{Alg.~\ref{alg:pso_nucleo}}
-\EndFor
-
-\Statex
-\State \textbf{Etapa 3 — Refinamiento experimental:}
-\State Ajustar las ganancias sobre el hardware real para compensar la fricción estática, la zona muerta del L298N y las asimetrías mecánicas.
-\State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$.
-\end{algorithmic}
-\end{algorithm}
-
-\noindent La notación del Alg.~\ref{alg:sintonizacion} sigue la definición
-de $v_j^{med}[k]$ dada en la Ec.~\eqref{eq:vel_lazo_abierto} y las definiciones de $\hat{v}_j$ y $v_j^{ref}$ establecidas en las Secs.~\ref{sec:fodt} y~\ref{sec:pso_marco}.
+La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo, referencia y tipos numéricos— se detallan en la Sec.~\ref{sec:fodt}. El orden completo de identificación, optimización y refinamiento se conserva en el Alg.~\ref{alg:sintonizacion} del \ref{anx:protocolos_sintonizacion}.
 
 \subsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
 
-Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El resultado final fueron ganancias asimétricas, que compensan mejor el comportamiento individual de cada motor.
+Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El código final solo conserva las ganancias resultantes por rueda; no registra de forma automática qué modificación experimental se asocia a cada fenómeno mecánico.
 
-\begin{table}[H]
-\centering
-\caption{Resultados de la sintonización: modelo FODT identificado y ganancias sugeridas por PSO.}
-\label{tab:pso_resultados}
-\small
-\begin{tabular}{l S[table-format=1.4] S[table-format=1.4]}
-\toprule
-\textbf{Resultado} & {\textbf{Rueda izq.}} & {\textbf{Rueda der.}} \\
-\midrule
-\multicolumn{3}{l}{\textit{Modelo FODT identificado (Etapa 1)}} \\
-$K_m$ [(m/s)/PWM] & 0.000913 & 0.000890 \\
-$\tau$ [s]        & 0.3291   & 0.3485 \\
-$L_d$ [s]         & 0.0215   & 0.0001 \\ \addlinespace
-\multicolumn{3}{l}{\textit{Ganancias sugeridas por PSO (Etapa 2)}} \\
-$K_p$ & 12.48 & 10.10 \\
-$K_d$ & 35.34 & 28.04 \\
-$K_i$ & 0.00001 & 0.00001 \\
-\bottomrule
-\end{tabular}
+La salida de la ejecución utilizada como punto de partida, incluidos los
+parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en
+la Tabla~\ref{tab:pso_resultados} del
+\ref{anx:resultados_pso_ejecucion}. Al no fijarse una semilla pseudoaleatoria,
+los valores pueden variar entre ejecuciones. Además, con
+$T_{cap}=0.1$~s, los retardos obtenidos en esa ejecución son inferiores a un
+período de captura y no producen un desplazamiento temporal efectivo en el
+modelo discreto.
 
-\vspace{3pt}
-\parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales (tras refinamiento experimental) se reportan en la Tabla~\ref{tab:ganancias_pid}; el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.}
-\end{table}
-
-%------------------------------------------------------------------
 \section{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
 
-El bucle principal atiende el parser serial, ejecuta el PID a 30~Hz y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
+El bucle principal atiende el parser serial, programa el PID mediante incrementos enteros de 33~ms y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no llama directamente a \texttt{resetPID()}; en la siguiente actualización programada, esta función solo se ejecuta si alguno de los valores \texttt{PrevInput} es distinto de cero. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
 
-%------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
 El firmware implementado permite leer encoders, ejecutar control PID por rueda, comunicarse con \gls{ROS2} y detener el robot ante pérdida de comandos. La sintonización híbrida PSO más refinamiento experimental permitió obtener ganancias asimétricas adecuadas para el hardware real. Esta capa de bajo nivel constituye la base para la odometría, el control diferencial, el SLAM y la navegación autónoma.

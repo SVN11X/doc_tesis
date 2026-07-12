@@ -17,22 +17,28 @@ La Fig.~\ref{fig:arquitectura_alto_nivel} organiza la solución en cuatro
 dominios funcionales, identificados por color:
 
 \begin{description}
-  \item[Sensado.] Los \emph{encoders} de cuadratura miden el giro de cada rueda
-  y el \gls{LIDAR} 2D percibe el entorno; son las dos fuentes de información del
-  sistema.
-  \item[Control de bajo nivel.] El \gls{Arduino} lee los encoders y ejecuta el
-  control PID de velocidad de cada rueda, accionando los motores DC de tracción
-  diferencial.
-  \item[Sistema computacional del robot.] La Raspberry Pi~4 integra \gls{ROS2},
-  estima la odometría a partir de las velocidades de rueda y actúa de puente
-  entre el hardware embebido y la estación de trabajo.
-  \item[Mapeo y navegación.] En la estación de trabajo, \texttt{slam\_toolbox}
-  construye el mapa y estima la pose, Nav2 planifica y controla la navegación,
-  el explorador de fronteras genera metas autónomas y RViz2 permite la
-  supervisión.
+\item[Sensado.] Los \emph{encoders} de cuadratura miden el giro de cada rueda
+y el \gls{LIDAR} 2D percibe el entorno; son las dos fuentes de información del
+sistema.
+\item[Control de bajo nivel.] El \gls{Arduino} lee los encoders y ejecuta el
+control PID de velocidad de cada rueda, accionando los motores DC de tracción
+diferencial.
+\item[Sistema computacional del robot.] La Raspberry Pi~4 integra \gls{ROS2},
+estima la odometría a partir de las velocidades de rueda y actúa de puente
+entre el hardware embebido y la estación de trabajo.
+\item[Mapeo y navegación.] En la estación de trabajo, \texttt{slam\_toolbox}
+construye el mapa y estima la pose, Nav2 planifica y controla la navegación,
+el explorador de fronteras genera metas autónomas y RViz2 permite la
+supervisión.
 \end{description}
 
 El flujo de datos es el siguiente: los encoders realimentan al Arduino, que
-cierra el lazo PID y entrega la medición de giro; la Raspberry Pi combina esa
-odometría con los barridos del \gls{LIDAR} y los intercambia con la estación de
-trabajo, donde el mapa realimenta a la navegación y a la exploración.
+cierra el lazo PID y entrega los conteos acumulados; la interfaz
+\texttt{DiffDriveArduino} convierte esos conteos en estados de rueda y
+\texttt{diff\_drive\_controller} publica \texttt{/odom} y la transformación
+\texttt{odom}$\rightarrow$\texttt{base\_link}. La Raspberry Pi publica además
+los barridos \texttt{/scan}; en la estación de trabajo,
+\texttt{slam\_toolbox} consume \texttt{/scan} y obtiene la pose odométrica
+mediante TF, en lugar de suscribirse directamente a \texttt{/odom}, para
+estimar la trayectoria y construir el mapa, que posteriormente alimenta a
+Nav2 y al explorador de fronteras.

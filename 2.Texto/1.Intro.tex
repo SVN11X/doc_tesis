@@ -4,8 +4,6 @@
 
 La robótica móvil autónoma permite desarrollar sistemas capaces de desplazarse en entornos desconocidos, construir representaciones del espacio y ejecutar trayectorias sin intervención manual permanente. En este contexto, el uso de \gls{ROS2}, sensores \gls{LIDAR} 2D, computadores embebidos como la Raspberry Pi 4 y microcontroladores de bajo costo facilita la implementación de prototipos académicos orientados a navegación, mapeo y exploración de interiores.
 
-El presente trabajo de titulación aborda el diseño e implementación de un robot móvil de tracción diferencial capaz de construir un mapa 2D de su entorno, navegar de forma autónoma hacia metas dentro del mapa y explorar autónomamente zonas no mapeadas.
-
 \section*{Planteamiento del problema}
 \phantomsection
 \addcontentsline{toc}{section}{Planteamiento del problema}
@@ -22,7 +20,7 @@ Este proyecto se justifica por su aporte académico y tecnológico al integrar c
 \phantomsection
 \addcontentsline{toc}{section}{Objetivo general}
 
-Diseñar e implementar un prototipo de robot móvil de tracción diferencial de bajo costo, basado en ROS 2, capaz de construir un mapa 2D de su entorno mediante SLAM, navegar de forma autónoma hacia metas dentro del mapa y explorar autónomamente zonas no mapeadas. El sistema se despliega sobre una arquitectura distribuida: la Raspberry Pi 4 ejecuta la adquisición del LiDAR, la interfaz de hardware y el control de bajo nivel, mientras que un computador de escritorio ejecuta el SLAM, la navegación (Nav2) y la exploración, comunicados mediante DDS sobre una red local.
+Diseñar e implementar un prototipo de robot móvil de tracción diferencial de bajo costo, basado en ROS 2, capaz de construir un mapa 2D de su entorno mediante SLAM, navegar de forma autónoma hacia metas dentro del mapa y explorar autónomamente zonas no mapeadas. El sistema se despliega sobre una arquitectura distribuida: el Arduino Nano ejecuta la lectura de encoders y el PID de velocidad por rueda; la Raspberry Pi 4 adquiere el LiDAR, ejecuta la interfaz de hardware \texttt{DiffDriveArduino} y \texttt{diff\_drive\_controller}; y un computador de escritorio ejecuta SLAM, Nav2 y la exploración, comunicados mediante DDS sobre una red local.
 
 \section*{Objetivos específicos}
 \phantomsection
@@ -59,4 +57,3 @@ La metodología es experimental e iterativa, organizada en seis etapas: Diseño 
 \addcontentsline{toc}{section}{Organización del documento}
 
 El documento se organiza en capítulos que desarrollan progresivamente el estado del arte, el marco teórico, la selección de componentes, el gemelo digital, la construcción del robot real, el firmware de bajo nivel, la aplicación de SLAM, navegación y exploración, y finalmente los resultados experimentales. La bibliografía, el glosario y los anexos complementan la información técnica utilizada durante el desarrollo del proyecto.
-

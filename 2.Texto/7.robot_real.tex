@@ -1,9 +1,8 @@
 \chapter{CONSTRUCCIÓN DE HARDWARE Y COMUNICACIÓN CON ROS 2}
 \label{chap:robot_real}
 
-Este capítulo describe la arquitectura físico-electrónica del robot diferencial y su integración con \gls{ROS2} Foxy sobre una Raspberry Pi 4. Se presentan los dominios de potencia y comunicación, el esquema general de conexiones, la integración con \texttt{ros2\_control}, el controlador diferencial y el flujo de datos entre la capa de alto nivel y el firmware del \gls{Arduino}. Los detalles operativos de cableado, reglas \texttt{udev}, QoS y configuración extendida se trasladan al \ref{anx:hardware_ros2}.
+Este capítulo describe la arquitectura físico-electrónica del robot diferencial y su integración con \gls{ROS2} Foxy sobre una Raspberry Pi 4. Se presentan los dominios de potencia y comunicación, el esquema general de conexiones, la integración con \texttt{ros2\_control}, el controlador diferencial y el flujo de datos entre la capa de alto nivel y el firmware del \gls{Arduino}. Los detalles operativos de cableado, reglas \texttt{udev} y configuración extendida se trasladan al \ref{anx:hardware_ros2}.
 
-%------------------------------------------------------------------
 \section{Arquitectura física y de datos}
 
 La plataforma se organiza en dos dominios principales. El dominio de potencia utiliza un bus de 12~V para alimentar los motores DC mediante el driver L298N, y un riel regulado de 5~V para alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
@@ -14,7 +13,6 @@ El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} median
 {Esquema de conexiones eléctricas y de datos del robot diferencial.}
 {fig:esquema_conexiones}
 
-%------------------------------------------------------------------
 \section{Integración con ROS 2}
 
 En hardware real, el archivo \texttt{launch\_robot.launch.py} inicia los nodos necesarios para publicar la descripción del robot, activar \texttt{ros2\_control} y cargar el controlador diferencial. La arquitectura incluye:
@@ -28,27 +26,12 @@ En hardware real, el archivo \texttt{launch\_robot.launch.py} inicia los nodos n
 
 La cadena de transformaciones mantiene la misma convención usada en simulación (Sec.~\ref{sec:tf-convenciones}): \texttt{slam\_toolbox} publica \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
 
-%------------------------------------------------------------------
 \section{Teleoperación y multiplexación de comandos}
 
-El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad antes de enviar comandos al controlador diferencial. La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}), tiene mayor prioridad que la navegación autónoma (prioridad 100 frente a 10) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación del mando. Su salida se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
+El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad resumidas en la Tabla~\ref{tab:twist_mux_resumen}. La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
 
-\begin{table}[H]
-\centering
-\caption{Fuentes de velocidad gestionadas por \texttt{twist\_mux}.}
-\label{tab:twist_mux_resumen}
-\small
-\begin{tabular}{lcc}
-\toprule
-\textbf{Fuente} & \textbf{Tópico} & \textbf{Prioridad} \\
-\midrule
-Navegación autónoma & \texttt{/cmd\_vel} & Baja \\
-Teleoperación & \texttt{/cmd\_vel\_joy} & Alta \\
-\bottomrule
-\end{tabular}
-\end{table}
+La configuración asigna prioridad 100 a la teleoperación y prioridad 10 a la navegación autónoma; la tabla completa se conserva en el \ref{anx:twist_mux_config}, Tabla~\ref{tab:twist_mux_resumen}.
 
-%------------------------------------------------------------------
 \section{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
 
@@ -63,80 +46,48 @@ El controlador diferencial recibe comandos de velocidad lineal y angular, y los 
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
 \midrule
-\texttt{linear.x.max\_velocity} & $\pm$0.13~m/s & Velocidad lineal máxima \\
-\texttt{angular.z.max\_velocity} & $\pm$0.35~rad/s & Velocidad angular máxima \\
-\texttt{update\_rate} & 30~Hz & Frecuencia del controlador ($f_{ctrl}$) \\
+\texttt{linear.x.min/max\_velocity} & $-0.13/0.13$~m/s & Límites de velocidad lineal \\
+\texttt{angular.z.min/max\_velocity} & $-0.35/0.35$~rad/s & Límites de velocidad angular \\
+\texttt{update\_rate} & 30~Hz & Frecuencia nominal del \texttt{controller\_manager} \\
 \texttt{enable\_odom\_tf} & true & Publica \texttt{odom}$\rightarrow$\texttt{base\_link} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} que opera en un ciclo periódico \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} a la frecuencia $f_{ctrl}$ del \texttt{controller\_manager}.
+La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} cuyo ciclo \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} se programa nominalmente con $f_{\mathrm{ctrl}}=30$~Hz mediante \texttt{controller\_manager.update\_rate}.
 
-En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} esperado por el \gls{Arduino} aplicando la misma conversión de la Ec.~\ref{eq:mps_to_ticks}. Expresada en términos de la velocidad angular de rueda $\omega_j^{cmd}$ (con $v_j^{cmd}=r\,\omega_j^{cmd}$), equivale a $m_j^{cmd}[k]=\omega_j^{cmd}[k]\,N_e/(2\pi\,f_{ctrl})$, donde el término $2\pi/N_e$ corresponde a la constante \texttt{rads\_per\_count}.
+En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} mediante la Ec.~\eqref{eq:mps_to_ticks}. La división utiliza el parámetro independiente \texttt{cfg\_.loop\_rate}, denotado $f_{\mathrm{loop}}=30$~Hz. Aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$ coinciden numéricamente, no representan el mismo mecanismo ni comparten una medición temporal.
 
-En \texttt{read()}, los ticks acumulados del encoder se transforman en ángulo y velocidad de rueda, que alimentan la odometría:
+En \texttt{read()}, la transformación desde los conteos acumulados hasta los estados de rueda sigue la cadena:
 
 \begin{equation}
-\phi_j[k] = c_j[k]\,\frac{2\pi}{N_e},
-\qquad
-\hat{\omega}_j[k] = \frac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k},
-\qquad j\in\{R,L\}
+c_j[k]
+\xrightarrow{\text{Ec.~\eqref{eq:posicion_rueda_encoder}}}
+\phi_j[k]
+\xrightarrow[\Delta t_k]{\text{Ec.~\eqref{eq:w_ruedas}}}
+\widehat{\omega}_j[k],
+\qquad j\in\{R,L\}.
 \label{eq:enc_to_state}
 \end{equation}
 
-donde $\phi_j[k]$ es el ángulo acumulado de la rueda $j$ [rad], $c_j[k]$ los ticks acumulados del encoder [ticks], $\hat{\omega}_j[k]$ la velocidad angular de rueda estimada [rad/s] y $\Delta t_k$ el período real medido entre lecturas consecutivas [s]; el resto de variables fueron definidas previamente. El uso de $\Delta t_k$ medido, en lugar del período nominal $1/f_{ctrl}$, evita sesgos cuando el ciclo no se ejecuta exactamente a la frecuencia teórica.
-
-La velocidad $\hat{\omega}_j[k]$ es la misma magnitud que $\omega_j$ (Ec.~\ref{eq:w_ruedas}); difieren solo en la base temporal: $\omega_j$ usa el período nominal $T_s$ y $\hat{\omega}_j$ el período medido $\Delta t_k$.
+El intervalo $\Delta t_k$ se define en la Ec.~\eqref{eq:intervalo_diffdrive}, y su secuencia de inicialización se formaliza en el Alg.~\ref{alg:ros2control_cycle}. El plugin exporta una única estimación de velocidad angular por rueda y no calcula otra con el período nominal de 30~Hz.
 
 Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmware con los valores obtenidos por sintonización PSO y refinamiento experimental (Capítulo~\ref{marco_teorico}), de modo que el plugin solo intercambia referencias de velocidad y lecturas de encoder.
 
-%------------------------------------------------------------------
 \section{Flujo de datos del sistema}
 \label{sec:flujo_datos}
 
 El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se formaliza en el Algoritmo~\ref{alg:ros2control_cycle}. Este comprende la recepción de los comandos de velocidad, su conversión en referencias para cada rueda, la comunicación serial con el \gls{Arduino} y la realimentación de los encoders para calcular la odometría.
 
-\begin{algorithm}[H]
-\caption{Ciclo de control de hardware en \texttt{ros2\_control} (plugin \texttt{DiffDriveArduino})}
-\label{alg:ros2control_cycle}
-\begin{algorithmic}[1]
-\footnotesize
-\Require Comandos de velocidad angular de rueda $\omega_R^{cmd},\omega_L^{cmd}$ [rad/s] (de \texttt{diff\_drive\_controller}); enlace serial al \gls{Arduino}; $N_e$; $f_{ctrl}$; ganancias PID residentes en el firmware.
-\Ensure Estados de rueda $(\phi_j,\hat{\omega}_j)$ para odometría y referencias \textit{ticks/frame} enviadas al firmware.
-\State \textbf{Inicialización} (\texttt{configure}/\texttt{start}):
-\State Abrir puerto serial (\texttt{device}, \texttt{baud\_rate}, \texttt{timeout}); esperar el \textit{bootloader} y vaciar el buffer.
-\State $\textit{rads\_per\_count}\gets 2\pi/N_e$ por rueda; $t_{prev}\gets t_{now}$.
-\State Enviar mensaje vacío de \textit{handshake}; mantener las ganancias PID por defecto del firmware (sintonía PSO).
-\Statex
-\State \textbf{Ejecución principal} (cada período del \texttt{controller\_manager}, a $f_{ctrl}$):
-\While{el controlador está activo}
-\State \textbf{read():}
-\State $\Delta t_k\gets t_{now}-t_{prev}$; \; $t_{prev}\gets t_{now}$
-\If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
-\State $(c_R[k],c_L[k])\gets$ leer encoders
-\For{$j\in\{R,L\}$}
-\State Calcular $\phi_j[k]$ y $\hat{\omega}_j[k]$ mediante la Ec.~\ref{eq:enc_to_state}.
-\EndFor
-\State Exportar $\phi_j[k],\hat{\omega}_j[k]$ como \textit{state interfaces}
-\Statex
-\State \textbf{update():} \texttt{diff\_drive\_controller} integra la odometría y, desde \texttt{cmd\_vel} $(v,\omega)$, calcula $\omega_R^{cmd},\omega_L^{cmd}$
-\Statex
-\State \textbf{write():}
-\If{el \gls{Arduino} no está conectado} \State \Return ERROR \EndIf
-\For{$j\in\{R,L\}$}
-\State Calcular $m_j^{cmd}[k]$ mediante la Ec.~\ref{eq:mps_to_ticks}, usando $v_j^{cmd}=r\,\omega_j^{cmd}$.
-\EndFor
-\State Enviar $m_R^{cmd}[k],m_L^{cmd}[k]$ al \gls{Arduino}
-\EndWhile
-\Statex
-\State \textbf{Salida:} El firmware ejecuta el PID por rueda a $f_{ctrl}$ y aplica el \textit{watchdog} de auto-detención; el controlador publica \texttt{/odom} y la transformación \texttt{odom}$\rightarrow$\texttt{base\_link}.
-\end{algorithmic}
-\end{algorithm}
+En síntesis, \texttt{read()} obtiene los conteos y exporta los estados de
+rueda, \texttt{diff\_drive\_controller} actualiza la odometría y las consignas,
+y \texttt{write()} transmite referencias enteras de \textit{ticks/frame}. El
+orden exacto, las validaciones seriales y la inicialización temporal se
+conservan en el Alg.~\ref{alg:ros2control_cycle} del
+\ref{anx:implementacion_diffdrive}.
 
-El firmware incorpora además una auto-detención de seguridad ante pérdida de comandos, detallada en la Sec.~\ref{sec:bucle_principal}
+El firmware incorpora además una auto-detención de seguridad ante pérdida de comandos, detallada en la Sec.~\ref{sec:bucle_principal}.
 
-%------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
 La arquitectura de hardware integra una capa de control embebido en \gls{Arduino} con una capa de alto nivel en \gls{ROS2}, ejecutada sobre Raspberry Pi 4. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} permite cerrar el ciclo entre comandos de navegación, control PID de ruedas y publicación de odometría, según el ciclo formalizado en el Algoritmo~\ref{alg:ros2control_cycle}. Esta base permite implementar los módulos de SLAM, navegación autónoma y exploración descritos en los capítulos siguientes.

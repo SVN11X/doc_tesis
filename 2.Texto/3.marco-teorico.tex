@@ -1,534 +1,334 @@
 \chapter{MARCO TEÓRICO}
 \label{marco_teorico}
 
-Este capítulo presenta los fundamentos teóricos necesarios para el diseño e implementación del robot móvil diferencial. Se abordan el modelo cinemático y la odometría por encoders, la identificación FODT para sintonización, el control PID discreto, la optimización PSO, el SLAM basado en grafos, la navegación con A\* y DWB, y la exploración autónoma basada en fronteras. Estos conceptos se vinculan directamente con la implementación en \gls{ROS2}, Gazebo y el firmware del \gls{Arduino}.
+Este capítulo presenta los fundamentos empleados en el diseño e implementación del robot móvil diferencial. Se abordan el modelo cinemático y la odometría por encoders, la identificación FODT, el control PID discreto, la optimización PSO, el SLAM basado en grafos, la navegación con A* y DWB, y la exploración autónoma basada en fronteras. Las ecuaciones de implementación se formulan de acuerdo con el firmware, la interfaz de hardware, los scripts de sintonización y las configuraciones ejecutadas.
 
-%------------------------------------------------------------------
 \section{Odometría y modelo cinemático diferencial}
 \label{sec:odometria}
 
-La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{ferreira2023differential}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{corke2023}. En este trabajo, la odometría es publicada por \texttt{diff\_drive\_controller} y utilizada por \texttt{slam\_toolbox} como estimación inicial para el mapeo.
+La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{ferreira2023differential}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{corke2023}. En este trabajo, la interfaz \texttt{DiffDriveArduino} entrega a \texttt{ros2\_control} la posición y velocidad angular de cada rueda; posteriormente, \texttt{diff\_drive\_controller} publica la odometría utilizada por \texttt{slam\_toolbox}.
 
-\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del \emph{robot} [m/s]; con subíndice $j\in\{R,L\}$ ($v_j^{cmd}$, $v_j^{med}$, $v_j^{ref}$, $\hat{v}_j$) denota la velocidad lineal de \emph{rueda}. Análogamente, $\omega$ sin subíndice denota la velocidad angular del \emph{robot} [rad/s]; con subíndice $j$ ($\omega_j$, $\hat{\omega}_j$, $\omega_j^{cmd}$) denota la velocidad angular de \emph{rueda} [rad/s]. La velocidad de partícula del PSO se distingue con mayúscula $V_{i,d}$. El subíndice $L$ denota siempre la rueda izquierda; los retardos $L_d$ (puro) y $L_{ef}$ (efectivo) son variables independientes con subíndice propio. La variable de Laplace $s$ de $G_m(s)$ es distinta de los factores de escala del PSO $s_d,\,s^{\mathrm{ID}},\,s^{\mathrm{PID}}$, que siempre llevan sub/superíndice. El subíndice $d$ denota el índice de dimensión del PSO ($d\in\{1,2,3\}$ en $X_{i,d}$, $V_{i,d}$, $P_d^{*}$, $s_d$, $\theta_{i,d}$); en cambio, en $L_d$ y $n_d$ el subíndice $d$ es parte del nombre fijo del retardo (\emph{dead time}) y no un índice. El conteo del encoder se expresa en \emph{ticks}: un \emph{tick} es una cuenta de encoder en cuadratura (unidad \texttt{ENC\_TICKS\_PER\_REV} del firmware).
+\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del robot [m/s]; con subíndice $j\in\{R,L\}$ denota la velocidad lineal de rueda. $\omega$ sin subíndice denota la velocidad angular del robot [rad/s]; con subíndice $j$ denota la velocidad angular de rueda [rad/s]. El subíndice $R$ corresponde a la rueda derecha y $L$ a la rueda izquierda. La posición angular de rueda se denota $\phi_j$ [rad]. La velocidad de partícula del PSO se distingue mediante $V_{i,d}$. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su representación discreta $n_{d,j}$ [muestras]. El conteo de encoder se expresa en ticks, donde un tick corresponde a una cuenta producida por la decodificación en cuadratura.
 
-Considérese un robot diferencial con ruedas de radio $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad]. Para cada rueda $j\in\{R,L\}$, la velocidad angular se calcula a partir de los ticks de encoder acumulados en el intervalo de muestreo:
+Considérese un robot diferencial con radio de rueda $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad]. La relación cinemática entre las velocidades angulares de rueda y las velocidades del robot es:
+
+\begin{align}
+v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right),
+\label{eq:v_lineal}\\
+\omega[k] &= \frac{r}{b}\left(\omega_R[k]-\omega_L[k]\right).
+\label{eq:v_angular}
+\end{align}
+
+La relación inversa, utilizada conceptualmente para transformar una consigna del robot en consignas de rueda, es:
+
+\begin{align}
+\omega_R^{cmd}[k]
+&=
+\frac{v^{cmd}[k]}{r}
++
+\frac{b}{2r}\,\omega^{cmd}[k],
+\notag\\
+\omega_L^{cmd}[k]
+&=
+\frac{v^{cmd}[k]}{r}
+-
+\frac{b}{2r}\,\omega^{cmd}[k].
+\label{eq:cinematica_inversa}
+\end{align}
+
+\noindent donde $v^{cmd}$ y $\omega^{cmd}$ son las consignas lineal [m/s] y angular [rad/s] del robot, mientras que $\omega_R^{cmd}$ y $\omega_L^{cmd}$ son las consignas angulares de las ruedas [rad/s].
+
+Como referencia conceptual, una discretización de Euler del modelo cinemático puede escribirse como:
+
+\begin{align}
+x_{k+1} &= x_k + T_k\,v[k]\cos\theta_k,
+\label{eq:pose_x}\\
+y_{k+1} &= y_k + T_k\,v[k]\sin\theta_k,
+\label{eq:pose_y}\\
+\theta_{k+1} &= \theta_k + T_k\,\omega[k].
+\label{eq:pose_theta}
+\end{align}
+
+\noindent Estas ecuaciones no se presentan como el integrador interno ejecutado por \texttt{diff\_drive\_controller}; únicamente expresan el modelo cinemático diferencial. La integración odométrica final pertenece al paquete instalado de \texttt{ros2\_controllers}.
+
+\subsection{Lectura de encoders en la interfaz de hardware}
+
+La interfaz \texttt{DiffDriveArduino} recibe los conteos acumulados $c_j[k]$ y calcula la posición angular de cada rueda mediante:
 
 \begin{equation}
-\omega_{j}[k] = \frac{2\pi\, \Delta c_{j}[k]}{N_e\, T_s},
-\qquad j\in\{R,L\}
+\phi_j[k]
+=
+\frac{2\pi}{N_e}\,c_j[k],
+\qquad j\in\{R,L\},
+\label{eq:posicion_rueda_encoder}
+\end{equation}
+
+\noindent donde $N_e$ es la resolución efectiva del encoder [ticks/vuelta]. La velocidad angular exportada por la interfaz no utiliza un período fijo, sino el tiempo real medido entre dos llamadas consecutivas a \texttt{read()}:
+
+\begin{equation}
+\widehat{\omega}_j[k]
+=
+\frac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k},
+\qquad j\in\{R,L\}.
 \label{eq:w_ruedas}
 \end{equation}
 
-\noindent donde $\omega_{j}[k]$ es la velocidad angular de la rueda $j$ [rad/s], $\Delta c_{j}[k]=c_j[k]-c_j[k-1]$ el incremento de ticks del encoder en el intervalo $T_s$ [ticks], $N_e$ la resolución del encoder [ticks/vuelta] y $T_s=1/f_{ctrl}$ el período de muestreo [s].
+\noindent El intervalo temporal utilizado por la interfaz se obtiene del reloj
+real entre llamadas a \texttt{read()}. La primera muestra incluye la espera de
+inicialización serial, mientras que las siguientes corresponden al intervalo
+entre lecturas consecutivas. La secuencia exacta y la definición por casos de
+$\Delta t_k$ se trasladan al \ref{anx:implementacion_diffdrive}, incluida la
+Ec.~\eqref{eq:intervalo_diffdrive}.
 
-\begin{align}
-v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right) \label{eq:v_lineal} \\
-\omega[k] &= \frac{r}{b}\left(\omega_R[k]-\omega_L[k]\right) \label{eq:v_angular}
-\end{align}
+\subsection{Conversión de consignas a ticks por frame}
 
-\noindent Estas relaciones convierten las velocidades angulares de rueda en las velocidades lineal y angular del robot.
- 
-\begin{align}
-x_{k+1} &= x_k + T_s\, v[k]\,\cos\theta_k \label{eq:pose_x} \\
-y_{k+1} &= y_k + T_s\, v[k]\,\sin\theta_k \label{eq:pose_y} \\
-\theta_{k+1} &= \theta_k + T_s\, \omega[k] \label{eq:pose_theta}
-\end{align}
-
-\noindent Las Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta} son la discretización de primer orden (Euler) del modelo cinemático, evaluada con el rumbo al inicio del paso $\theta_k$. Se incluyen \emph{solo como referencia conceptual}: no corresponden al esquema que ejecuta \texttt{diff\_drive\_controller}.
-
-En la implementación, la odometría la integra \texttt{diff\_drive\_controller} en lazo cerrado mediante un esquema \emph{por tramos}. El rumbo se actualiza de forma común mediante la Ec.~\eqref{eq:pose_theta}; se denota $\Delta\theta_k=\theta_{k+1}-\theta_k$ para seleccionar la rama de integración. La regla para $(x_{k+1},y_{k+1})$ depende de $|\Delta\theta_k|$ frente al umbral $\varepsilon\approx10^{-6}$~rad (umbral interno de \texttt{diff\_drive\_controller}, no expuesto por configuración). Para $|\Delta\theta_k|\ge\varepsilon$ se aplica la integración exacta de arco,
-\begin{align}
-x_{k+1} &= x_k + \frac{v[k]}{\omega[k]}\bigl(\sin\theta_{k+1}-\sin\theta_k\bigr), \notag\\
-y_{k+1} &= y_k - \frac{v[k]}{\omega[k]}\bigl(\cos\theta_{k+1}-\cos\theta_k\bigr),
-\label{eq:pose_exacta}
-\end{align}
-y para $|\Delta\theta_k|<\varepsilon$, Runge--Kutta de 2.\textsuperscript{o} orden (RK2) con el rumbo evaluado en el punto medio del paso,
-\begin{align}
-\theta_m   &= \theta_k+\tfrac{1}{2}T_s\,\omega[k], \notag\\
-x_{k+1}    &= x_k + T_s\,v[k]\cos\theta_m, \notag\\
-y_{k+1}    &= y_k + T_s\,v[k]\sin\theta_m.
-\label{eq:pose_rk2}
-\end{align}
-
-\noindent donde $\theta_m$ es el rumbo en el punto medio del paso [rad]; el resto de variables fueron definidas previamente. Ambas ramas comparten la actualización de rumbo \eqref{eq:pose_theta} y coinciden con la forma Euler de referencia (Ec.~\ref{eq:pose_x}--\ref{eq:pose_theta}) a primer orden en $T_s$; difieren únicamente en el rumbo con que se evalúan $x,y$: el punto medio $\theta_m$ (RK2) frente al inicio del paso $\theta_k$ (Euler).
-
-\begin{algorithm}[H]
-\caption{Odometría diferencial por encoders (esquema por tramos de \texttt{diff\_drive\_controller})}
-\label{alg:odometria_diferencial}
-\begin{algorithmic}[1]
-\Require Incremento de ticks por rueda $\Delta c_j[k]$, $j\in\{R,L\}$; constantes $N_e$, $T_s$, $r$, $b$; pose previa $q_k=(x_k,y_k,\theta_k)$; umbral $\varepsilon$.
-\Ensure Pose actualizada $q_{k+1}$ y velocidades del robot $(v[k],\omega[k])$.
-
-\Statex \textbf{Inicialización:}
-\State $q_0 \gets (0,0,0)$
-
-\Statex
-\Statex \textbf{Ejecución principal} (cada período $T_s=1/f_{ctrl}$):
-\While{el controlador está activo}
-    \For{$j\in\{R,L\}$}
-        \State Calcular $\omega_j[k]$ mediante la Ec.~\ref{eq:w_ruedas}
-    \EndFor
-
-    \State Calcular $v[k]$ y $\omega[k]$ mediante las
-    Ecs.~\ref{eq:v_lineal} y~\ref{eq:v_angular}
-
-    \State Actualizar $\theta_{k+1}$ mediante la Ec.~\ref{eq:pose_theta} y definir $\Delta\theta_k\gets\theta_{k+1}-\theta_k$
-
-    \If{$|\Delta\theta_k|\geq\varepsilon$}
-        \State Actualizar $(x_{k+1},y_{k+1})$ mediante la         Ec.~\ref{eq:pose_exacta}
-    \Else
-        \State Actualizar $\theta_m$, $x_{k+1}$ y $y_{k+1}$ mediante la         Ec.~\ref{eq:pose_rk2}
-    \EndIf
-
-    \State Publicar $q_{k+1}$ y la transformación     \texttt{odom}$\rightarrow$\texttt{base\_link}
-\EndWhile
-
-\Statex
-\Statex \textbf{Salida:} pose
-$q_{k+1}=(x_{k+1},y_{k+1},\theta_{k+1})$ y velocidades
-$(v[k],\omega[k])$.
-\end{algorithmic}
-\end{algorithm}
-
-En esta tesis se adoptan $r=0.0335$~m, $b=0.188$~m, $N_e=1980$~ticks/vuelta y $f_{ctrl}=30$~Hz (parámetros consolidados en la Tabla~\ref{tab:parametros_modelo}), de donde $T_s=1/f_{ctrl}\approx0.0333$~s. El \textit{frame} del firmware corresponde a un período $T_s$. Esta frecuencia es común al PID del firmware (\texttt{PID\_RATE}) y al ciclo del \texttt{controller\_manager} de \texttt{ros2\_control} (\texttt{loop\_rate}/\texttt{update\_rate}), que por diseño se configuran iguales; en lo sucesivo se denota $f_{ctrl}$, con $f_{ctrl}=\texttt{PID\_RATE}=\texttt{loop\_rate}=30$~Hz. La referencia interna del controlador se obtiene a partir de la velocidad lineal de rueda comandada $v_j^{cmd}$ mediante el factor de conversión $\kappa$:
+La interfaz de hardware recibe consignas angulares de rueda y las convierte en referencias enteras de ticks por frame antes de enviar el comando serial \texttt{m}. La resolución angular por tick es:
 
 \begin{equation}
-m_j^{cmd}[k] = \kappa\, v_j^{cmd}[k],
-\qquad
-\kappa=\frac{N_e}{2\pi r\, f_{ctrl}},
-\qquad j\in\{R,L\}
+\delta\phi
+=
+\frac{2\pi}{N_e}
+\quad [\mathrm{rad/tick}].
+\label{eq:radianes_por_tick}
+\end{equation}
+
+Con $f_{\mathrm{loop}}=30$~Hz, la referencia enviada por la interfaz es:
+
+\begin{equation}
+m_{j,\mathrm{ROS}}^{cmd}[k]
+=
+\operatorname{trunc}_{0}
+\left(
+\frac{\omega_j^{cmd}[k]}{\delta\phi\,f_{\mathrm{loop}}}
+\right)
+=
+\operatorname{trunc}_{0}
+\left(
+\frac{N_e}{2\pi r f_{\mathrm{loop}}}
+\,v_j^{cmd}[k]
+\right),
 \label{eq:mps_to_ticks}
 \end{equation}
 
-\noindent donde $m_j^{cmd}[k]$ es la referencia de velocidad de rueda enviada al firmware [ticks/frame], $v_j^{cmd}[k]$ la velocidad lineal de rueda comandada [m/s] y $\kappa$ el factor de conversión m/s$\to$ticks/frame (constante \texttt{MPS\_TO\_TICKS\_FACTOR} del firmware), con unidades (ticks/frame)/(m/s); el resto de variables fueron definidas previamente. La conversión inversa ticks/frame$\to$m/s es $1/\kappa$ (constante \texttt{TICKS\_TO\_MPS}).
+\noindent donde $\operatorname{trunc}_{0}(\cdot)$ representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de \texttt{setMotorValues(int,int)}; $m_{j,\mathrm{ROS}}^{cmd}$ se expresa en ticks/frame. La ruta normal de \texttt{ros2\_control} utiliza el comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el firmware también incorpora una conversión directa desde m/s para ese comando.
 
-La forma equivalente en términos de la velocidad angular de rueda comandada $\omega_j^{cmd}$ se obtiene mediante $v_j^{cmd}=r\,\omega_j^{cmd}$ y se aplica en el plugin de hardware (Cap.~\ref{chap:robot_real}).
-
-\begin{equation*}
-\kappa
-= \frac{N_e}{\pi D\, f_{ctrl}}
-= \frac{1980}{2\pi \times 0.0335 \times 30}
-\approx 313.56 \;\frac{\text{ticks/frame}}{\text{m/s}}
-\end{equation*}
-
-\noindent es la evaluación numérica de $\kappa$ (Ec.~\ref{eq:mps_to_ticks}), con $D=2r$ el diámetro de rueda [m] (constante \texttt{WHEEL\_DIAMETER}); el resto de variables fueron definidas previamente.
-
-%------------------------------------------------------------------
+Las frecuencias nominales de \texttt{controller\_manager},
+\texttt{loop\_rate} y \texttt{PID\_RATE} coinciden en 30~Hz, pero pertenecen
+a mecanismos independientes y no comparten reloj ni fase. El firmware programa
+incrementos enteros de 33~ms. El desarrollo temporal y el flujo completo se
+presentan en la Ec.~\eqref{eq:pid_intervalo_real} y el
+Alg.~\ref{alg:odometria_diferencial}, trasladados al
+\ref{anx:implementacion_diffdrive}.
 
 \section{Identificación FODT}
 \label{sec:fodt}
 
-Para sintonizar el controlador PID se identifica un modelo de primer orden con retardo, FODT (\textit{First Order Plus Dead Time}), a partir de la respuesta de cada rueda ante un escalón de PWM \citep{maxim2023fopdt}. Su función de transferencia es:
+Para obtener un modelo destinado a la sintonización se identifica, para cada rueda, una estructura de primer orden con retardo FODT (\textit{First Order Plus Dead Time}) a partir de una respuesta experimental ante un escalón de PWM \citep{maxim2023fopdt}:
 
 \begin{equation}
-G_m(s)=\frac{K_m}{1+\tau s}\,\mathrm{e}^{-L_d s}
+G_j(s)
+=
+\frac{K_{m,j}}{1+\tau_j s}\,
+\mathrm{e}^{-L_{d,j}s},
+\qquad j\in\{R,L\}.
 \label{eq:fodt}
 \end{equation}
-\noindent donde $K_m$ es la ganancia estática [(m/s)/PWM], $\tau$ la constante de tiempo [s], $L_d$ el retardo puro [s] y $\mathrm{e}$ el número de Euler.
 
-La discretización por Euler explícito de la Ec.~\ref{eq:fodt} se utiliza en dos etapas consecutivas, cuyas condiciones operativas se resumen en la Tabla~\ref{tab:fodt_usos}. En la identificación en lazo abierto se emplea la siguiente recurrencia:
+\noindent donde $K_{m,j}$ es la ganancia estática [(m/s)/PWM], $\tau_j$ la constante de tiempo [s] y $s$ la variable de Laplace [s$^{-1}$]; $L_{d,j}$ corresponde al retardo FODT definido previamente.
 
-\noindent\textbf{(a) Identificación (lazo abierto) --- se ejecuta una sola vez por rueda para obtener $(K_m,\tau,L_d)$.} Se aplica un escalón de PWM sin control y se registra la respuesta de velocidad. La entrada $u_j$ es ese escalón y el retardo puro se incluye como un desfase de $n_d$ muestras:
+\subsection{Identificación en lazo abierto}
 
-\begin{equation}
-\begin{aligned}
-\hat{v}_j[k] &=
-\hat{v}_j[k-1]
-+\frac{h}{\tau}
+La prueba de identificación aplica un escalón de PWM $u_j[k]$ y captura la velocidad cada $T_{cap}=0.1$~s. El retardo se cuantiza mediante truncamiento entero:
+
+\begin{align}
+n_{d,j}
+&=
+\left\lfloor\frac{L_{d,j}}{T_{cap}}\right\rfloor,
+\label{eq:retardo_muestras}\\
+u_{j,d}[k]
+&=
+u_j\!\left[\max(k-n_{d,j},0)\right],
+\label{eq:entrada_retrasada}\\
+\widehat{v}_j[k]
+&=
+\widehat{v}_j[k-1]
++
+\frac{T_{cap}}{\tau_j}
 \left(
-K_m\,u_j[k-n_d]-\hat{v}_j[k-1]
-\right), \\[2mm]
-& n_d=\left\lfloor \frac{L_d}{h}\right\rfloor,
-\qquad
-\hat{v}_j[0]=0.
-\end{aligned}
+K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
+\right),
+\qquad \widehat{v}_j[0]=0.
 \label{eq:fodt_discreto}
-\end{equation}
+\end{align}
 
-\noindent donde $\hat{v}_j[k]$ es la velocidad estimada [m/s], $u_j$ la
-entrada PWM, $h$ el paso de integración y $n_d$ el retardo en muestras.
-Los parámetros $(K_m,\tau,L_d)$ se estiman mediante PSO minimizando el MSE
-entre la respuesta experimental y la salida del modelo.
+La señal medida se suaviza antes del ajuste y los parámetros
+$(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático del modelo discreto.
+Durante la sintonización, los scripts emplean una aproximación de la planta y
+del controlador que no reproduce exactamente el retardo, los tipos enteros ni
+las bandas muertas asimétricas del firmware. El filtro, la función de costo, la
+interpolación de la referencia y la cuantización ejecutadas se documentan en el
+\ref{anx:fodt_scripts}, mediante las Ecs.~\eqref{eq:filtro_uniforme}--
+\eqref{eq:medicion_simulada_ticks}.
 
-\noindent\textbf{(b) Simulación del controlador en lazo cerrado.}
-Con los parámetros identificados, el modelo actúa como planta para evaluar
-cada conjunto candidato de ganancias PID:
-
-\begin{equation}
-\begin{aligned}
-\hat{v}_j[k] &=
-\hat{v}_j[k-1]
-+\frac{T_s}{\tau}
-\left(K_m\,u_j[k-1]-\hat{v}_j[k-1]\right), \\[2mm]
-&\hat{v}_j[k]\ge 0,\qquad
-\hat{v}_j[0]=0,\qquad
-j\in\{R,L\}.
-\end{aligned}
-\label{eq:fodt_lazo_cerrado}
-\end{equation}
-
-\noindent donde $\hat{v}_j[k]\geq0$ representa el recorte de no-negatividad. Las diferencias operativas respecto de la identificación se recogen en la Tabla~\ref{tab:fodt_usos}.
-
-\begin{table}[H]
-\centering
-\caption{Uso de la estructura FODT en las dos etapas de sintonización.}
-\label{tab:fodt_usos}
-\small
-\begin{tabular}{lcc}
-\toprule
-\textbf{Aspecto} & \textbf{(a) Identificación} & \textbf{(b) Lazo cerrado} \\
- & (Ec.~\ref{eq:fodt_discreto}) & (Ec.~\ref{eq:fodt_lazo_cerrado}) \\
-\midrule
-Cuándo & 1.\textsuperscript{a} etapa, una vez por rueda & 2.\textsuperscript{a} etapa, por cada candidato PID \\
-Paso $h$ & $T_{cap}=0.1$~s & $T_s=1/f_{ctrl}\approx0.0333$~s \\
-Retardo $L_d$ & presente ($n_d=\lfloor L_d/h\rfloor$) & ausente (absorbido en $K_m,\tau$) \\
-Entrada $u_j$ & escalón PWM (lazo abierto) & salida del PID, $u_j[k-1]$ \\
-Recorte & --- & $\hat{v}_j[k]\ge 0$ \\
-Objetivo & ayudar a estimar $(K_m,\tau,L_d)$ & evaluar ganancias candidatas \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-%------------------------------------------------------------------
 \section{Control PID}
 \label{sec:pid}
 
-El controlador PID se aplica de forma independiente a cada rueda. En su forma continua, se expresa como:
+El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID solo se utiliza como referencia conceptual:
 
 \begin{equation*}
-u_j(t)=K_{p,j}^{\mathrm{cont}}\, e_j(t)+K_{i,j}^{\mathrm{cont}}\int_0^t e_j(\sigma)\,d\sigma+K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt},
-\qquad j\in\{R,L\}
+u_j(t)
+=
+K_{p,j}^{cont}e_j(t)
++
+K_{i,j}^{cont}\int_0^t e_j(\sigma)\,d\sigma
++
+K_{d,j}^{cont}\frac{de_j(t)}{dt}.
 \end{equation*}
 
-\noindent\emph{Forma continua ilustrativa, no cuantificada.} Aquí $u_j(t)$ es la acción de control de la rueda $j$ [PWM] (definida previamente); $e_j(t)$ es el error de velocidad de rueda en tiempo continuo (consigna menos medición) [m/s], versión continua del error discreto $e_j[k]$ [ticks/frame] de la Ec.~\ref{eq:error_pid}, el cambio de unidad entre ambas formas es esperado; y $K_{p,j}^{\mathrm{cont}}$ [$\mathrm{PWM\cdot s/m}$], $K_{i,j}^{\mathrm{cont}}$ [$\mathrm{PWM/m}$], $K_{d,j}^{\mathrm{cont}}$ [$\mathrm{PWM\cdot s^{2}/m}$] son las ganancias continuas (ideales) proporcional, integral y derivativa de la rueda $j$, que \textbf{no se cuantifican}. La implementación emplea las ganancias discretas del firmware $K_{p,j},K_{d,j},K_{i,j}$ (Ec.~\ref{eq:pid_firmware}, Tabla~\ref{tab:ganancias_pid}), escaladas por $K_o$ y expresadas en \textit{ticks/frame}. En la implementación discreta la acción derivativa actúa sobre la medición $m_j$; para una referencia constante $\tfrac{de_j}{dt}=-\tfrac{dm_j}{dt}$, por lo que ambas formas coinciden estructuralmente.
- 
-\begin{equation}
-e_j[k] = m_j^{cmd}[k] - m_j[k],
-\qquad
-m_j[k] = \Delta c_j[k] = c_j[k] - c_j[k-1]
-\label{eq:error_pid}
-\end{equation}
- 
-\noindent donde $e_j[k]$ es el error [ticks/frame], $m_j^{cmd}[k]$ la referencia [ticks/frame] (definida previamente) y $m_j[k]$ la velocidad de rueda medida, igual al incremento de ticks del encoder en un ciclo [ticks/frame].
- 
-\begin{equation}
-u_j[k]=u_j[k-1]+\frac{K_{p,j}\,e_j[k]-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)+I_j[k]}{K_o},
-\qquad j\in\{R,L\}
-\label{eq:pid_firmware}
-\end{equation}
- 
-\noindent donde $u_j[k]$ es la salida de control (PWM) de la rueda $j$, $K_{p,j},K_{d,j}$ las ganancias proporcional y derivativa, $I_j[k]$ el término integral acumulado y $K_o=50$ un factor de escala adimensional. El integrador se actualiza de forma condicional como $I_j[k+1]=I_j[k]+K_{i,j}\,e_j[k]$ solo cuando la salida no está saturada (\textit{anti-windup}), con $K_{i,j}$ la ganancia integral. Se aplica una banda muerta por rueda $e_{db,j}$ sobre $e_j[k]$ ($e_{db,R}=1$, $e_{db,L}=2$ ticks/frame)
+\noindent La implementación real utiliza una ley discreta acumulativa con
+derivada sobre la medición. En forma conceptual, el incremento de control y la
+salida saturada pueden resumirse como:
 
-Estas ganancias $K_{p,j},K_{d,j},K_{i,j}$ son las ganancias de firmware efectivamente implementadas (escala entera interna). En este trabajo se obtienen por sintonización PSO con refinamiento experimental; la sintonía Lambda (Ec.~\ref{eq:lambda_firmware}) entrega, en esa misma escala, una línea base analítica de las mismas magnitudes. La procedencia (PSO o Lambda) se indica en el texto y no se codifica en el símbolo; su contraparte continua ideal se denota $K_{p,j}^{\mathrm{cont}}$.
-%------------------------------------------------------------------
+\begin{align*}
+\Delta u_j[k]
+&\propto
+K_{p,j}e_j[k]
+-
+K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)
++
+I_j[k],\\
+u_j[k]
+&=
+\operatorname{sat}_{[-255,255]}
+\bigl(u_j[k-1]+\Delta u_j[k]\bigr).
+\end{align*}
+
+La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
+bandas muertas distintas por rueda y actualización condicional del integrador.
+Las ecuaciones exactas y sus tipos de datos se conservan en el
+\ref{anx:pid_ecuaciones}, Ecs.~\eqref{eq:medicion_pid_entera}--
+\eqref{eq:integrador_condicional}. Las ganancias definitivas se presentan en
+la Tabla~\ref{tab:ganancias_pid}; el orden de ejecución, los reinicios y la
+saturación se detallan en el Alg.~\ref{alg:pid_firmware}.
+
 \section{Sintonización del controlador PID}
 \label{sec:sintonizacion}
 
-Las ganancias del PID se obtienen mediante un procedimiento híbrido de tres pasos: (i) se identifica el modelo FODT de cada rueda; (ii) se optimizan las ganancias con PSO sobre ese modelo; y (iii) se refinan experimentalmente en el hardware real. Como línea base de comparación se emplea la sintonía Lambda. El motor de optimización es el mismo en los pasos (i) y (ii): el PSO descrito a continuación, que en (i) busca los parámetros del modelo y en (ii) las ganancias del controlador.
+Las ganancias del PID se obtienen mediante un procedimiento híbrido: identificación FODT por rueda, búsqueda de ganancias iniciales mediante PSO y refinamiento experimental posterior sobre el hardware. El PSO utilizado para la identificación y para la sintonización corresponde a la clase \texttt{pso} implementada en \texttt{pyPso.py}.
 
 \subsection{Optimización por enjambre de partículas}
 \label{sec:pso_marco}
 
-\noindent\textbf{Idea general.} El PSO (\textit{Particle Swarm Optimization}) es una metaheurística poblacional: un enjambre de $S$ \emph{partículas} explora el espacio de soluciones y cada partícula representa un candidato \citep{gokcce2021particle}. Aquí cada candidato tiene tres parámetros, por lo que el espacio de búsqueda tiene dimensión $d\in\{1,2,3\}$.
+Cada partícula $i$ posee una posición $X_{i,d}$ y una velocidad $V_{i,d}$, ambas adimensionales, con $d\in\{1,2,3\}$. Las posiciones y velocidades iniciales se generan con \texttt{np.random.rand}, sin fijar una semilla pseudoaleatoria. En consecuencia, distintas ejecuciones pueden producir parámetros diferentes.
 
-\noindent\textbf{Posición normalizada y parámetro físico.} Cada partícula $i$ guarda una \emph{posición de búsqueda} $X_{i,d}$ adimensional, de orden $1$ (se inicializa en $[0,1]$). El candidato físico se obtiene mediante el recorte y escalado definidos en la Ec.~\ref{eq:pso_escala}; el factor $s_d$ aporta las unidades y el rango de cada dimensión.
+La velocidad se actualiza mediante:
 
-Buscar en $X$ normalizada mantiene un espacio homogéneo en las tres dimensiones; el vector de escala traslada cada dimensión a su magnitud física. Los vectores implementados para la identificación FODT y la sintonización PID se especifican en la Tabla~\ref{tab:pso_config}.
-
-\noindent\textbf{Dinámica del enjambre.} En cada generación $g$, la partícula actualiza primero su \emph{velocidad de búsqueda} $V_{i,d}$ y luego su posición. La velocidad combina tres tendencias: mantener su dirección actual (inercia), regresar a su mejor posición propia (componente cognitiva) y acercarse a la mejor posición del enjambre (componente social):
-\begin{align}
-V_{i,d}^{g+1} &=
-\chi\left[
-w_{\mathrm{in}}^{g}\,V_{i,d}^{g}
-+c_1\rho_1\bigl(P_{i,d}-X_{i,d}^{g}\bigr)
-+c_2\rho_2\bigl(P_d^{*}-X_{i,d}^{g}\bigr)
-\right]
-\label{eq:pso_vel_marco_teorico} \\
-X_{i,d}^{g+1} &= \max\bigl(X_{i,d}^{g}+V_{i,d}^{g+1},\;10^{-4}\bigr)
-\label{eq:pso_pos_marco_teorico}
-\end{align}
-\noindent donde:
-\begin{description}
-\item[{$X_{i,d}^{g}$}] posición de búsqueda (adimensional) de la partícula $i$, dimensión $d$, generación $g$.
-\item[{$V_{i,d}^{g}$}] velocidad de búsqueda de esa partícula y dimensión.
-\item[{$P_{i,d}$}] mejor posición visitada por la propia partícula $i$ (memoria individual).
-\item[{$P_d^{*}$}] mejor posición global del enjambre; se actualiza con la posición \emph{actual} $X_{i^{*}}$ de la partícula de menor costo personal, con $i^{*}=\arg\min_i J_i^{best}$ (memoria global).
-\item[{$\chi$}] factor de constricción definido mediante la Ec.~\ref{eq:constriccion}; acota la magnitud de la actualización y estabiliza la convergencia.
-\item[{$w_{\mathrm{in}}^{g}$}] peso de inercia, $w_{\mathrm{in}}^{g}=(g_{\max}-g)/g_{\max}$; favorece la exploración al inicio y la explotación al final.
-\item[{$c_1,c_2$}] coeficientes cognitivo y social.
-\item[{$\rho_1,\rho_2$}] números aleatorios uniformes en $[0,1]$, regenerados por partícula, dimensión e iteración.
-\item[{$g_{\max},S$}] número de generaciones y tamaño del enjambre. Los valores implementados se presentan en la Tabla~\ref{tab:pso_config}.
-\end{description}
-
-
-\noindent\textbf{Escalado y recorte.} Antes de escalar la posición de búsqueda $X_{i,d}$ al parámetro físico $\theta_{i,d}$ (definido previamente), se la recorta al intervalo $[10^{-4},X_{\max}]$:
 \begin{equation}
-\begin{aligned}
-\tilde{X}_{i,d} &=
-\min\!\left(
-\max\left(X_{i,d}^{g},\,10^{-4}\right),
-X_{\max}
-\right), \\[2mm]
-\theta_{i,d} &= s_d\,\tilde{X}_{i,d}, \\[2mm]
-X_{\max} &=
-\begin{cases}
-+\infty, & \text{identificación FODT},\\[2pt]
-1,       & \text{sintonización PID}.
-\end{cases}
-\end{aligned}
-\label{eq:pso_escala}
+V_{i,d}^{g+1}
+=
+\chi
+\left[
+w_{in}^{g}V_{i,d}^{g}
++c_1\rho_{1,i,d}^{g}
+\left(P_{i,d}-X_{i,d}^{g}\right)
++c_2\rho_{2,i,d}^{g}
+\left(G_d^{g}-X_{i,d}^{g}\right)
+\right],
+\label{eq:pso_vel_marco_teorico}
 \end{equation}
 
-\noindent La Ec.~\ref{eq:pso_escala} se lee en dos pasos: (1) \emph{recortar} $X$ al intervalo $[10^{-4},X_{\max}]$ y (2) \emph{escalar} multiplicando por $s_d$. Por ejemplo, en la sintonización del PID una partícula con $X_i=(0.40,\;0.80,\;0.60)$ produce, tras recortar (sin cambios, pues ya está en $[10^{-4},1]$) y escalar por $s^{\mathrm{PID}}=(40,25,0.05)$, el candidato
-\begin{equation*}
-\theta_i=(0.40\times 40,\;\;0.80\times 25,\;\;0.60\times 0.05)=(K_p,K_d,K_i)=(16,\;20,\;0.03),
-\end{equation*}
-que es el conjunto de ganancias que luego se simula y se puntúa.
-
-\noindent Las dos cotas del recorte cumplen papeles distintos:
-\begin{itemize}
-\item \textbf{Cota inferior} $X_{\min}=10^{-4}$: activa \emph{siempre} (también en la actualización de posición, Ec.~\ref{eq:pso_pos_marco_teorico}); evita parámetros nulos o negativos.
-\item \textbf{Cota superior} $X_{\max}$: se aplica \emph{solo} al evaluar el costo. Vale $X_{\max}=1$ en la sintonización del PID (limita las ganancias al rango fijado por $s^{\mathrm{PID}}$: si $X_{i,d}$ supera $1$ durante la búsqueda, el candidato se topa en $s_d$) y $X_{\max}=+\infty$ en la identificación FODT (sin techo, pues los parámetros del modelo $(K_m,\tau,L_d)$ no tienen un máximo natural conocido de antemano).
-\end{itemize}
-
-\noindent Como la búsqueda no aplica techo, $X_{i,d}$ puede superar $1$; el parámetro óptimo final se reporta sin recorte superior, con cada componente $\theta_d^{*}=s_d\,P_d^{*}$. Aquí $\tilde{X}_{i,d}$ es la posición recortada que se usa solo para construir el candidato $\theta_{i,d}$, y $s_d$ porta las unidades físicas.
-
-\noindent\textbf{Factor de constricción.} El valor de $\chi$ se fija con la fórmula de Clerc:
-\begin{equation}
-\chi=\frac{2}{\left|2-\varphi-\sqrt{\varphi^2-4\varphi}\right|},
-\qquad \varphi=c_1+c_2>4
-\label{eq:constriccion}
-\end{equation}
-\noindent donde $\varphi=c_1+c_2=4.1$ (la condición $\varphi>4$ garantiza la convergencia del esquema), de donde $\chi\approx0.7298$. El factor $\chi$ depende solo de $\varphi$; el peso de inercia $w_{\mathrm{in}}^{g}$ modula el balance exploración--explotación de forma independiente.
-
-\noindent\textbf{Función de costo.} En la sintonización del PID, cada candidato de ganancias se evalúa simulando la respuesta del controlador sobre el modelo FODT (Ec.~\ref{eq:fodt_lazo_cerrado}) y combinando el error de seguimiento con una penalización por sobreimpulso:
-\begin{equation}
-\begin{aligned}
-J(\boldsymbol{\theta}_i) &=
-w_{\mathrm{mse}}\cdot
-\mathrm{MSE}\bigl(v_j^{ref}-\hat{v}_j\bigr)
-+w_{\mathrm{OS}}\cdot\Delta_{\mathrm{OS}}^{2}, \\[2mm]
-\Delta_{\mathrm{OS}} &=
-\max\!\left(
-0,\;
-\max_k \hat{v}_j[k]-v_j^{ref}
-\right).
-\end{aligned}
-\label{eq:costo_pso}
-\end{equation}
-\noindent donde:
-\begin{description}
-\item[{$\boldsymbol{\theta}_i=(K_p,K_d,K_i)_i$}] ganancias candidatas de la partícula $i$ (con $\theta_{i,d}=s^{\mathrm{PID}}_d\,\tilde{X}_{i,d}$, Ec.~\ref{eq:pso_escala}).
-\item[{$v_j^{ref}$}] velocidad de consigna estacionaria de la rueda $j$ en la simulación [m/s] (el escalón objetivo).
-\item[{$\hat{v}_j[k]$}] respuesta simulada de la rueda $j$ [m/s].
-\item[{$\mathrm{MSE}(v_j^{ref}-\hat{v}_j)$}] error cuadrático medio de seguimiento [(m/s)$^2$].
-\item[{$\Delta_{\mathrm{OS}}$}] sobreimpulso absoluto [m/s]; vale $0$ si la respuesta no supera la consigna.
-\item[{$w_{\mathrm{mse}},w_{\mathrm{OS}}$}] pesos relativos adimensionales; el mayor peso asignado a $w_{\mathrm{OS}}$ castiga el sobreimpulso. Sus valores se presentan en la Tabla~\ref{tab:pso_config}.
-\end{description}
-En la identificación FODT se usa la misma maquinaria, pero con el costo $\mathrm{MSE}(v_j^{med}-\hat{v}_j)$ entre la velocidad medida en lazo abierto y la del modelo (Sec.~\ref{sec:fodt}). Conviene distinguir tres nociones de error que operan sobre magnitudes distintas:
-
-\begin{description}
-  \item[Error instantáneo.] $e_j[k]=m_j^{cmd}[k]-m_j[k]$ es el error de control
-  de la rueda $j$ en el instante $k$ [ticks/frame]; es la señal que consume el
-  PID del firmware (Ec.~\ref{eq:pid_firmware}).
-  \item[Vector de error de seguimiento.] Sobre la respuesta simulada, se define
-  la secuencia $\mathbf{e}=\bigl(e[1],\dots,e[N]\bigr)$ con
-  $e[k]=v_j^{ref}-\hat{v}_j[k]$ [m/s], usada para \emph{puntuar} un conjunto de
-  ganancias.
-  \item[Norma-2 y MSE.] La magnitud global del vector de error se mide con la
-  norma euclidiana (norma-2) o, equivalentemente, con el error cuadrático medio:
-\end{description}
+\noindent con $c_1=c_2=2.05$, $\chi=0.7298$ y $\rho_1,\rho_2\sim\mathcal{U}[0,1]$. El peso de inercia ejecutado es:
 
 \begin{equation}
-\lVert\mathbf{e}\rVert_2=\sqrt{\sum_{k=1}^{N} e[k]^2},
+w_{in}^{g}
+=
+\frac{g_{\max}-g}{g_{\max}},
 \qquad
-\mathrm{MSE}(\mathbf{e})=\frac{1}{N}\sum_{k=1}^{N} e[k]^2
-=\frac{\lVert\mathbf{e}\rVert_2^{\,2}}{N}.
-\label{eq:norma_mse}
+g=1,\ldots,g_{\max},
+\label{eq:pso_inercia}
 \end{equation}
 
-\noindent De la Ec.~\ref{eq:norma_mse} se desprende que
-$\lVert\mathbf{e}\rVert_2=\sqrt{N\,\mathrm{MSE}(\mathbf{e})}$: el MSE es la
-norma-2 al cuadrado, normalizada por el número de muestras $N$. En este trabajo
-la función de costo del PSO (Ec.~\ref{eq:costo_pso}) usa el MSE por ser
-independiente de $N$ y directamente comparable entre respuestas de distinta
-duración; la norma-2 se reserva como medida de magnitud absoluta del error.
+\noindent por lo que su primer valor es menor que 1 y el último es 0.
 
-\begin{algorithm}[H]
-\caption{Optimización por enjambre de partículas con factor de constricción e inercia decreciente (núcleo reutilizable)}
-\label{alg:pso_nucleo}
-\begin{algorithmic}[1]
-\footnotesize
-\Require Función de costo $J(\cdot)$; vector de escala $s$; hiperparámetros $S$, $g_{\max}$, $c_1$, $c_2$, $\chi$, $X_{\min}$ y $X_{\max}$ definidos previamente.
-\Ensure Mejor posición global $P^{*}$ y parámetros físicos $\theta_d^{*}=s_d\,P_d^{*}$
-\Statex
-\Function{Evaluar}{$X$}
-    \State Construir $\boldsymbol{\theta}$ a partir de $X$ mediante la
-    Ec.~\ref{eq:pso_escala}
-    \State \Return $J(\boldsymbol{\theta})$
-\EndFunction
-\Statex
-\State \textbf{Inicialización:}
-\State Para cada partícula $i$ y dimensión $d$: $X_{i,d}\sim\mathcal{U}[0,1]$,\; $V_{i,d}\sim\mathcal{U}[0,1]$
-\State $J_i^{best}\gets\Call{Evaluar}{X_i}$;\quad $P_i\gets X_i$
-\State $P^{*}\gets X_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$;\quad $g\gets 0$
-\Statex
-\State \textbf{Ejecución principal:}
-\While{$g < g_{\max}$}
-    \State $g\gets g+1$;\quad $w_{\mathrm{in}}^{g}\gets (g_{\max}-g)/g_{\max}$
-    \For{cada partícula $i$, dimensión $d$}
-        \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]$
-    \State Actualizar $V_{i,d}$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico}.
-    \State Actualizar $X_{i,d}$ mediante la Ec.~\eqref{eq:pso_pos_marco_teorico}.
-    \EndFor
-    \For{cada partícula $i$}
-        \State $J_i\gets\Call{Evaluar}{X_i}$
-        \If{$J_i < J_i^{best}$}
-            \State $P_i\gets X_i$;\quad $J_i^{best}\gets J_i$
-        \EndIf
-    \EndFor
-    \If{$\min_i J_i^{best} < J^{*}$}
-        \State $P^{*}\gets X_{\arg\min_i J_i^{best}}$;\quad $J^{*}\gets\min_i J_i^{best}$
-    \EndIf
-\EndWhile
-\Statex
-\State \textbf{Salida:} $\theta_d^{*}=s_d\,P_d^{*}$ (sin recorte superior).
-\end{algorithmic}
-\end{algorithm}
+Después de actualizar la velocidad y la posición, la implementación aplica
+una cota inferior al estado del enjambre. La transformación de cada partícula,
+las escalas utilizadas en identificación y sintonización, la función de costo
+PID y las particularidades de almacenamiento del mejor global dependen del
+código ejecutado.
 
-\subsection{Sintonía Lambda}
+Para mantener en este capítulo la formulación general del método, esos detalles
+se conservan en el \ref{anx:pso_detalle}, Ecs.~
+\eqref{eq:pso_pos_marco_teorico}--\eqref{eq:norma_mse}, junto con el
+Alg.~\ref{alg:pso_nucleo}. En síntesis, la función de costo combina el error
+cuadrático medio de velocidad con una penalización por sobreimpulso, y el
+enjambre se ejecuta sin una semilla pseudoaleatoria fija.
+
+\subsection{Referencia de sintonización Lambda}
 \label{sec:lambda}
 
-La sintonía Lambda se utiliza como línea base analítica para contrastar el
-desempeño de las ganancias obtenidas por PSO. A partir del modelo FODT de la
-Ec.~\ref{eq:fodt}, se aplica un procedimiento en tres etapas: forma serie
-(interactuante), forma paralela estándar y escala interna del firmware. Se
-adopta $\lambda = 3\tau$, criterio robusto que prioriza un bajo sobreimpulso
-frente a la rapidez de respuesta.
+El script \texttt{SintonizacionLambda.py} se utiliza como
+referencia analítica complementaria y vuelve a identificar un modelo FODT antes
+de comparar la sintonía Lambda con las ganancias finales del firmware. Debido a
+las diferencias de escala y de implementación, sus curvas se interpretan solo
+como una simulación comparativa. Las ecuaciones de conversión y las condiciones
+numéricas se trasladan al \ref{anx:lambda_detalle}, Ecs.~
+\eqref{eq:lambda_retardo_efectivo}--\eqref{eq:lambda_conversion}.
 
-La ganancia estática empleada en el diseño no es $K_m$ directamente, sino la
-ganancia referida al punto de operación, $K_{\mathrm{norm}}=K_m\,\mathrm{PWM_{nom}}$,
-de modo que el controlador en forma estándar entrega una señal normalizada en
-$[0,1]$; esa normalización se revierte a PWM en la etapa de firmware mediante el
-mismo $\mathrm{PWM_{nom}}$. Además, para evitar retardos degenerados, se usa un
-retardo efectivo $L_{ef}=\max\!\left(L_d,\,2/f_{ctrl}\right)$. Las reglas de la
-forma serie son:
-
-\begin{equation}
-k_c=\frac{\tau}{K_{\mathrm{norm}}\left(L_{ef}/2+\lambda\right)},
-\qquad
-\tau_I=\tau,
-\qquad
-\tau_D=\frac{L_{ef}}{2}
-\label{eq:lambda_serie}
-\end{equation}
- 
-\noindent donde $k_c$ es la ganancia del controlador en forma serie y $\tau_I,\tau_D$ los tiempos integral y derivativo de la forma serie (interactuante) [s]; $K_{\mathrm{norm}}$ [m/s], $L_{ef}$ [s] y $\lambda$ [s] fueron definidos previamente. Se emplea $\mathrm{PWM_{nom}}=143$.
- 
-\begin{align}
-K_p^{\lambda} &= k_c \,\frac{\tau_I + \tau_D}{\tau_I}, &
-T_i &= \tau_I + \tau_D, &
-T_d &= \frac{\tau_I \, \tau_D}{\tau_I + \tau_D} \notag \\[2pt]
-K_i^{\lambda} &= \frac{K_p^{\lambda}}{T_i}, &
-K_d^{\lambda} &= K_p^{\lambda} \, T_d &&
-\label{eq:lambda_paralelo}
-\end{align}
- 
-\noindent donde $K_p^{\lambda},K_i^{\lambda},K_d^{\lambda}$ son las ganancias Lambda en forma paralela estándar y $T_i,T_d$ los tiempos integral y derivativo equivalentes de la forma paralela [s].
- 
-\begin{equation}
-f_\lambda = \frac{\mathrm{PWM_{nom}}\,K_o}{\kappa} \approx 22.80,
-\qquad
-K_p = K_p^{\lambda}\,f_\lambda,
-\quad
-K_d = K_d^{\lambda}\,f_\lambda,
-\quad
-K_i = K_i^{\lambda}\,f_\lambda\,T_s
-\label{eq:lambda_firmware}
-\end{equation}
- 
-\noindent donde $f_\lambda$ es el factor de escala a la representación interna del firmware (en escala de firmware; véase la nota siguiente), $K_o$ el divisor de normalización (Ec.~\ref{eq:pid_firmware}), $\kappa\approx313.56$ (Ec.~\ref{eq:mps_to_ticks}) y $T_s=1/f_{ctrl}$ [s]. Las ganancias $K_p,K_i,K_d$ aquí obtenidas son la línea base analítica de origen Lambda, contrastada con las ganancias desplegadas por PSO y refinamiento experimental.
-
-El factor $f_\lambda$ no es físicamente adimensional: porta la conversión $\mathrm{PWM}\cdot(\text{m/s})/(\text{ticks/frame})$ que lleva las ganancias analíticas ($K_p^{\lambda}$ [s/m], $K_i^{\lambda}$ [1/m], $K_d^{\lambda}$ [s$^2$/m]) a la escala entera interna del firmware. La etiqueta «esc.\ fw» de $K_{p,j},K_{i,j},K_{d,j}$ designa esa escala de cómputo entera, no ausencia de dimensiones.
-
-\begin{algorithm}[H]
-\caption{Sintonía Lambda de referencia: del modelo FODT a las ganancias de firmware}
-\label{alg:lambda_tuning}
-\begin{algorithmic}[1]
-\Require Modelo FODT por rueda $(K_m,\tau,L_d)$ y parámetros de diseño
-$\lambda_{\mathrm{fac}}$, $\mathrm{PWM_{nom}}$, $K_o$, $f_{ctrl}$ y $\kappa$
-\Ensure Ganancias de firmware $(K_p,K_i,K_d)$ por rueda
-
-\For{$j\in\{R,L\}$}
-\State Calcular $K_{\mathrm{norm}}$, $L_{ef}$ y
-$\lambda=\lambda_{\mathrm{fac}}\tau$
-\State Obtener $(k_c,\tau_I,\tau_D)$ mediante la
-Ec.~\eqref{eq:lambda_serie}
-\State Convertir a $(K_p^{\lambda},K_i^{\lambda},K_d^{\lambda})$
-mediante la Ec.~\eqref{eq:lambda_paralelo}
-\State Convertir las ganancias a la escala del firmware mediante la
-Ec.~\eqref{eq:lambda_firmware}
-\EndFor
-
-\State \textbf{Salida:} $(K_p,K_i,K_d)$ por rueda como línea base analítica.
-\end{algorithmic}
-\end{algorithm}
-%------------------------------------------------------------------
 \section{SLAM basado en grafos}
 \label{sec:slam}
 
-La odometría pura acumula deriva, por lo que se requiere SLAM (definido en la Sec.~\ref{sec:slam_lidar}) para estimar simultáneamente la trayectoria del robot y el mapa del entorno \citep{ngoc2023efficient}.
+La odometría pura acumula deriva, por lo que se requiere SLAM para estimar simultáneamente la trayectoria del robot y el mapa del entorno \citep{ngoc2023efficient}. Este trabajo utiliza \texttt{slam\_toolbox} en modo de mapeo asíncrono.
 
-Este trabajo utiliza \texttt{slam\_toolbox}. El sistema construye un grafo cuyos nodos representan poses del robot y cuyas aristas representan restricciones de odometría y observaciones del \gls{LIDAR}. Al detectar cierre de lazo, el grafo se reoptimiza para corregir la deriva acumulada y mejorar la consistencia del mapa \citep{macenski2021slamtoolbox}. El resultado es un mapa 2D y la transformación $\text{map}\rightarrow\text{odom}$ requerida por Nav2.
+El sistema construye un grafo cuyos nodos representan poses y cuyas aristas representan restricciones obtenidas de la odometría y del ajuste de barridos del LiDAR. La configuración ejecutada selecciona \texttt{solver\_plugins::CeresSolver}, con estrategia \texttt{LEVENBERG\_MARQUARDT}. Cuando se acepta un cierre de lazo, la optimización del grafo corrige la trayectoria estimada y modifica la transformación $\texttt{map}\rightarrow\texttt{odom}$ \citep{macenski2021slamtoolbox}.
 
-%------------------------------------------------------------------
+Las configuraciones real y simulada comparten la estructura general del algoritmo, pero no los mismos valores. En el robot real se utiliza \texttt{base\_link}, resolución 0.05~m/celda, alcance máximo de 10~m, intervalo mínimo de 0.1~s, desplazamiento mínimo de 0.05~m, cambio angular mínimo de 0.05~rad y un buffer de 110 barridos. En simulación se utiliza \texttt{base\_footprint}, alcance máximo de 12~m, intervalo mínimo de 0.5~s, desplazamiento mínimo de 0.1~m, cambio angular mínimo de 0.2~rad y un buffer de 10 barridos. Por tanto, no corresponde describir ambos archivos como equivalentes en sus parámetros numéricos.
+
 \section{Planificación y control local}
 \label{sec:nav_marco}
 
-El planificador global calcula una ruta desde la posición actual hasta la meta sobre un mapa de costos \citep{lavalle2006planning}. En Nav2 se usa NavFn en modo A\* \citep{hart1968astar}, cuya función de evaluación es:
+El planificador global calcula una ruta desde la posición actual hasta una meta sobre el mapa de costos \citep{lavalle2006planning}. La configuración real utiliza \texttt{nav2\_navfn\_planner/NavfnPlanner} con \texttt{use\_astar=true}, \texttt{allow\_unknown=true} y tolerancia de 0.5~m. La función conceptual de evaluación de A* es:
 
 \begin{equation}
-f(n)=g_n(n)+h_{\mathrm{heur}}(n)
+f(n)=g(n)+h(n),
 \label{eq:astar}
 \end{equation}
 
-\noindent donde $g_n(n)$ es el costo acumulado desde el origen hasta el nodo $n$ y $h_{\mathrm{heur}}(n)$ el costo estimado restante hasta la meta. El subíndice $n$ distingue $g_n$ del superíndice $g$ de generación del PSO, y $h_{\mathrm{heur}}$ se distingue del paso de integración $h$ de la Ec.~\ref{eq:fodt_discreto}.
- 
+\noindent donde $g(n)$ es el costo acumulado desde el origen y $h(n)$ la heurística hasta la meta.
+
+El controlador local configurado es \texttt{dwb\_core::DWBLocalPlanner}. DWB genera trayectorias a partir de velocidades candidatas y las evalúa mediante los críticos cargados en el archivo YAML:
+
 \begin{equation}
-J_{\mathrm{DWB}}(v,\omega)=\sum_c w_c\, C_c(v,\omega)
+J_{\mathrm{DWB}}(v,\omega)
+=
+\sum_{c\in\mathcal{C}}
+S_c\,C_c(v,\omega),
 \label{eq:dwb_cost}
 \end{equation}
- 
-\noindent donde $(v,\omega)$ son la velocidad lineal y angular candidatas del robot, $C_c$ cada crítico evaluado y $w_c$ su peso.
- 
-\begin{equation}
-\text{costo}(d_o)=
-\begin{cases}
-254, & d_o = 0 \\[4pt]
-253, & 0 < d_o \leq r_{\mathrm{inscrito}} \\[4pt]
-\left\lfloor 252\cdot \mathrm{e}^{-\beta(d_o-r_{\mathrm{inscrito}})} \right\rfloor, & r_{\mathrm{inscrito}}<d_o\leq r_{\mathrm{inflacion}} \\[4pt]
-0, & d_o>r_{\mathrm{inflacion}}
-\end{cases}
-\label{eq:inflation}
-\end{equation}
- 
-\noindent donde $d_o$ es la distancia al obstáculo [m], $r_{\mathrm{inscrito}}$ el radio inscrito del robot [m] (calculado por Nav2 a partir del \textit{footprint} declarado en \texttt{nav2\_params.yaml}, igual a la distancia del origen \texttt{base\_link} al borde más cercano del \textit{footprint}; para el prototipo $r_{\mathrm{inscrito}}\approx0.08$~m), $r_{\mathrm{inflacion}}=0.15$~m el radio de inflación [m], $\beta=5.0$ el factor de decaimiento (\texttt{cost\_scaling\_factor}) [1/m] y $\mathrm{e}$ el número de Euler (Ec.~\ref{eq:fodt}).
 
-Los niveles $254$, $253$ y $0$ corresponden a las constantes \texttt{LETHAL\_OBSTACLE}, \texttt{INSCRIBED\_INFLATED\_OBSTACLE} y \texttt{FREE\_SPACE} del costmap; el decaimiento exponencial se escala por $\texttt{INSCRIBED\_INFLATED\_OBSTACLE}-1=252$.
- 
-\begin{equation}
-U(F)=w_{\mathrm{pot}}\,\rho_{\mathrm{map}}\,d_{\min}(F)-w_{\mathrm{gain}}\,\rho_{\mathrm{map}}\,|F|
-\label{eq:frontier_cost}
-\end{equation}
+\noindent donde $\mathcal{C}$ contiene \texttt{Oscillation}, \texttt{BaseObstacle}, \texttt{GoalAlign}, \texttt{PathAlign}, \texttt{PathDist} y \texttt{GoalDist}; $S_c$ es la escala configurada de cada crítico. En hardware real, DWB admite candidatos de hasta 0.15~m/s, mientras \texttt{diff\_drive\_controller} limita la velocidad lineal a 0.13~m/s. Por ello, una consigna generada entre 0.13 y 0.15~m/s queda limitada posteriormente por el controlador diferencial.
 
-\noindent donde $U(F)$ es el costo de la frontera $F$, $d_{\min}(F)$ la distancia mínima desde el robot a la frontera [celdas], $|F|$ su tamaño [celdas], $\rho_{\mathrm{map}}$ la resolución del costmap, $w_{\mathrm{pot}}$ el peso asociado a la distancia y $w_{\mathrm{gain}}$ el peso asociado a la ganancia de exploración. Los valores utilizados en la implementación se presentan en la Tabla~\ref{tab:explore_params_ch9}.
+Los mapas de costo del robot real utilizan un \textit{footprint}
+rectangular y una capa de inflación ajustada al tamaño del prototipo. La
+geometría exacta y la función por tramos ejecutada se conservan en el
+\ref{anx:costmap_inflacion}, Ec.~\eqref{eq:inflation}.
 
-%------------------------------------------------------------------
+El árbol de comportamiento ejecutado recalcula la ruta a 4~Hz y utiliza dos niveles de recuperación. Ante fallos de planificación o seguimiento limpia el costmap correspondiente. Si la navegación completa falla, limpia ambos costmaps, retrocede 0.15~m a 0.05~m/s, gira 0.8~rad, vuelve a planificar, intenta seguir la nueva ruta y espera 2~s.
+
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion_marco}
 
-En el enfoque basado en fronteras (Sec.~\ref{sec:exploracion}), el robot selecciona la frontera de menor costo según la Ec.~\ref{eq:frontier_cost} y la envía como meta a Nav2. La implementación del ciclo completo —actualización del mapa, veto de fronteras inalcanzables y tiempo máximo sin progreso— se formaliza en el Algoritmo~\ref{alg:exploracion_fronteras} (Cap.~\ref{chap:app_control_nav}).
-%------------------------------------------------------------------
+El explorador identifica celdas de frontera en el límite entre
+espacio libre conocido y zonas desconocidas, agrupa las celdas contiguas y
+ordena las fronteras mediante un puntaje que combina distancia y tamaño. La
+meta seleccionada se envía a Nav2 y puede incorporarse a una lista negra cuando
+no se observa progreso.
+
+La implementación ejecutada presenta particularidades en el cálculo del punto
+de frontera, el escalamiento de la distancia y la programación del temporizador.
+Para mantener la línea conceptual del capítulo, esos detalles se trasladan al
+\ref{anx:explore_impl}, incluidas las Ecs.~\eqref{eq:centroide_frontera_impl},
+\eqref{eq:frontier_cost} y~\eqref{eq:periodo_explorador_real}.
+
 \section*{Conclusión del capítulo}
 
-Este capítulo presentó los fundamentos mínimos necesarios para la implementación del sistema: odometría diferencial, identificación FODT, control PID, sintonización PSO y Lambda, SLAM basado en grafos, planificación con A\*, control local DWB, mapas de costo y exploración por fronteras. Estos elementos sustentan los capítulos de diseño, firmware, navegación y validación experimental.
+El marco teórico distingue las relaciones cinemáticas generales de las operaciones efectivamente ejecutadas. La interfaz de hardware calcula estados de rueda con el intervalo real de lectura y transmite referencias enteras; el firmware aplica un controlador acumulativo cuantizado; los scripts de identificación y sintonización utilizan aproximaciones numéricas específicas; SLAM, Nav2 y la exploración emplean las configuraciones y secuencias descritas en sus archivos ejecutados.
