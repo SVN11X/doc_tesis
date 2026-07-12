@@ -66,9 +66,7 @@ E_{\theta,360}
 \label{eq:desviacion_angular_360}
 \end{equation}
 
-\noindent donde $\Delta\theta_{\mathrm{obs}}$ es el giro observado:
-medición física en hardware real y giro acumulado de \texttt{/odom} en
-simulación. Los valores simulados no constituyen una verdad de terreno angular
+\noindent donde $E_{\theta,360}$ es la desviación angular normalizada [\%], $\Delta\theta_{360}$ la referencia nominal fija y $\Delta\theta_{\mathrm{obs}}$ el giro observado: medición física en hardware real y giro acumulado de \texttt{/odom} en simulación. Los valores simulados no constituyen una verdad de terreno angular
 independiente; el tratamiento exacto de la orientación se conserva en el
 \ref{anx:odometria_detalle}. En consecuencia, $E_{\theta,360}$ expresa una
 desviación respecto de la referencia nominal de los scripts, no un error
@@ -208,8 +206,7 @@ N_{\mathrm{libre}}\,\rho_M^2,
 \label{eq:area_libre_mapeada}
 \end{equation}
 
-\noindent donde $\rho_M$ es la resolución del mapa [m/celda]. Esta
-magnitud se deriva de la clasificación de la imagen PGM y no constituye una
+\noindent donde $A_{\mathrm{libre}}$ es el área libre mapeada [m$^2$] y $\rho_M$ la resolución del mapa [m/celda]. Esta magnitud se deriva de la clasificación de la imagen PGM y no constituye una
 medición física independiente de la superficie del recinto. Las diferencias
 de lectura y redondeo entre los scripts se documentan en el
 \ref{anx:resultados_metodologia}.

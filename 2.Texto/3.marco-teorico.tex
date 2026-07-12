@@ -10,7 +10,7 @@ La odometría estima la pose del robot a partir del desplazamiento de sus ruedas
 
 \noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del robot [m/s]; con subíndice $j\in\{R,L\}$ denota la velocidad lineal de rueda. $\omega$ sin subíndice denota la velocidad angular del robot [rad/s]; con subíndice $j$ denota la velocidad angular de rueda [rad/s]. El subíndice $R$ corresponde a la rueda derecha y $L$ a la rueda izquierda. La posición angular de rueda se denota $\phi_j$ [rad]. La velocidad de partícula del PSO se distingue mediante $V_{i,d}$. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su representación discreta $n_{d,j}$ [muestras]. El conteo de encoder se expresa en ticks, donde un tick corresponde a una cuenta producida por la decodificación en cuadratura.
 
-Considérese un robot diferencial con radio de rueda $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad]. La relación cinemática entre las velocidades angulares de rueda y las velocidades del robot es:
+Considérese un robot diferencial con radio de rueda $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad], donde $k$ identifica la muestra discreta. La relación cinemática entre las velocidades angulares de rueda y las velocidades del robot es:
 
 \begin{align}
 v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right),
@@ -49,7 +49,7 @@ y_{k+1} &= y_k + T_k\,v[k]\sin\theta_k,
 \label{eq:pose_theta}
 \end{align}
 
-\noindent Estas ecuaciones no se presentan como el integrador interno ejecutado por \texttt{diff\_drive\_controller}; únicamente expresan el modelo cinemático diferencial. La integración odométrica final pertenece al paquete instalado de \texttt{ros2\_controllers}.
+\noindent donde $T_k$ es el intervalo temporal entre las muestras $k$ y $k+1$ [s]. Estas ecuaciones no se presentan como el integrador interno ejecutado por \texttt{diff\_drive\_controller}; únicamente expresan el modelo cinemático diferencial. La integración odométrica final pertenece al paquete instalado de \texttt{ros2\_controllers}.
 
 \subsection{Lectura de encoders en la interfaz de hardware}
 
@@ -73,12 +73,7 @@ La interfaz \texttt{DiffDriveArduino} recibe los conteos acumulados $c_j[k]$ y c
 \label{eq:w_ruedas}
 \end{equation}
 
-\noindent El intervalo temporal utilizado por la interfaz se obtiene del reloj
-real entre llamadas a \texttt{read()}. La primera muestra incluye la espera de
-inicialización serial, mientras que las siguientes corresponden al intervalo
-entre lecturas consecutivas. La secuencia exacta y la definición por casos de
-$\Delta t_k$ se trasladan al \ref{anx:implementacion_diffdrive}, incluida la
-Ec.~\eqref{eq:intervalo_diffdrive}.
+\noindent donde $\widehat{\omega}_j[k]$ es la velocidad angular estimada de la rueda $j$ [rad/s] y $\Delta t_k$ el tiempo real transcurrido entre las lecturas empleadas [s]. Este intervalo se obtiene del reloj real entre llamadas a \texttt{read()}. La primera muestra incluye la espera de inicialización serial, mientras que las siguientes corresponden al intervalo entre lecturas consecutivas. La secuencia exacta y la definición por casos de $\Delta t_k$ se trasladan al \ref{anx:implementacion_diffdrive}, incluida la Ec.~\eqref{eq:intervalo_diffdrive}.
 
 \subsection{Conversión de consignas a ticks por frame}
 
@@ -110,7 +105,7 @@ m_{j,\mathrm{ROS}}^{cmd}[k]
 \label{eq:mps_to_ticks}
 \end{equation}
 
-\noindent donde $\operatorname{trunc}_{0}(\cdot)$ representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de \texttt{setMotorValues(int,int)}; $m_{j,\mathrm{ROS}}^{cmd}$ se expresa en ticks/frame. La ruta normal de \texttt{ros2\_control} utiliza el comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el firmware también incorpora una conversión directa desde m/s para ese comando.
+\noindent donde $\omega_j^{cmd}[k]$ y $v_j^{cmd}[k]$ son las consignas angular [rad/s] y lineal [m/s] de la rueda $j$, respectivamente; $\operatorname{trunc}_{0}(\cdot)$ representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de \texttt{setMotorValues(int,int)}; y $m_{j,\mathrm{ROS}}^{cmd}$ se expresa en ticks/frame. La ruta normal de \texttt{ros2\_control} utiliza el comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el firmware también incorpora una conversión directa desde m/s para ese comando.
 
 Las frecuencias nominales de \texttt{controller\_manager},
 \texttt{loop\_rate} y \texttt{PID\_RATE} coinciden en 30~Hz, pero pertenecen
@@ -134,7 +129,7 @@ G_j(s)
 \label{eq:fodt}
 \end{equation}
 
-\noindent donde $K_{m,j}$ es la ganancia estática [(m/s)/PWM], $\tau_j$ la constante de tiempo [s] y $s$ la variable de Laplace [s$^{-1}$]; $L_{d,j}$ corresponde al retardo FODT definido previamente.
+\noindent donde $G_j(s)$ es la función de transferencia identificada para la rueda $j$, $K_{m,j}$ la ganancia estática [(m/s)/PWM], $\tau_j$ la constante de tiempo [s] y $s$ la variable de Laplace [s$^{-1}$]; $L_{d,j}$ corresponde al retardo FODT definido previamente.
 
 \subsection{Identificación en lazo abierto}
 
@@ -161,6 +156,8 @@ K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
 \label{eq:fodt_discreto}
 \end{align}
 
+\noindent donde $u_{j,d}[k]$ es la entrada PWM retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el modelo para la rueda $j$ [m/s].
+
 La señal medida se suaviza antes del ajuste y los parámetros
 $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático del modelo discreto.
 Durante la sintonización, los scripts emplean una aproximación de la planta y
@@ -185,6 +182,8 @@ K_{i,j}^{cont}\int_0^t e_j(\sigma)\,d\sigma
 K_{d,j}^{cont}\frac{de_j(t)}{dt}.
 \end{equation*}
 
+\noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{cont}$, $K_{i,j}^{cont}$ y $K_{d,j}^{cont}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
+
 \noindent La implementación real utiliza una ley discreta acumulativa con
 derivada sobre la medición. En forma conceptual, el incremento de control y la
 salida saturada pueden resumirse como:
@@ -206,6 +205,8 @@ u_j[k]
 \operatorname{sat}_{[-255,255]}
 \bigl(u_j[k-1]+\Delta u_j[k]\bigr).
 \end{align*}
+
+\noindent donde $e_j[k]$ es el error discreto, $m_j[k]$ la medición de velocidad en la escala interna del firmware, $I_j[k]$ el estado integral, $\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y $K_{o,j}$ el divisor de escalamiento; $\operatorname{sat}_{[-255,255]}(\cdot)$ representa la saturación al intervalo PWM permitido.
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
@@ -241,7 +242,7 @@ w_{in}^{g}V_{i,d}^{g}
 \label{eq:pso_vel_marco_teorico}
 \end{equation}
 
-\noindent con $c_1=c_2=2.05$, $\chi=0.7298$ y $\rho_1,\rho_2\sim\mathcal{U}[0,1]$. El peso de inercia ejecutado es:
+\noindent donde $P_{i,d}$ es la mejor posición personal almacenada, $G_d^{g}$ la componente del mejor global almacenado, $w_{in}^{g}$ el peso de inercia, $c_1$ y $c_2$ los coeficientes cognitivo y social, $\rho_{1,i,d}^{g}$ y $\rho_{2,i,d}^{g}$ números aleatorios uniformes en $[0,1]$, $g$ el índice de generación y $\chi$ el factor de constricción. La implementación utiliza $c_1=c_2=2.05$ y $\chi=0.7298$. El peso de inercia ejecutado es:
 
 \begin{equation}
 w_{in}^{g}
@@ -252,7 +253,7 @@ g=1,\ldots,g_{\max},
 \label{eq:pso_inercia}
 \end{equation}
 
-\noindent por lo que su primer valor es menor que 1 y el último es 0.
+\noindent donde $g_{\max}$ es el número máximo de generaciones; por ello, el primer valor de $w_{in}^{g}$ es menor que 1 y el último es 0.
 
 Después de actualizar la velocidad y la posición, la implementación aplica
 una cota inferior al estado del enjambre. La transformación de cada partícula,
@@ -297,7 +298,7 @@ f(n)=g(n)+h(n),
 \label{eq:astar}
 \end{equation}
 
-\noindent donde $g(n)$ es el costo acumulado desde el origen y $h(n)$ la heurística hasta la meta.
+\noindent donde $n$ es el nodo evaluado, $f(n)$ su costo estimado total, $g(n)$ el costo acumulado desde el origen y $h(n)$ la heurística hasta la meta.
 
 El controlador local configurado es \texttt{dwb\_core::DWBLocalPlanner}. DWB genera trayectorias a partir de velocidades candidatas y las evalúa mediante los críticos cargados en el archivo YAML:
 
@@ -309,7 +310,7 @@ S_c\,C_c(v,\omega),
 \label{eq:dwb_cost}
 \end{equation}
 
-\noindent donde $\mathcal{C}$ contiene \texttt{Oscillation}, \texttt{BaseObstacle}, \texttt{GoalAlign}, \texttt{PathAlign}, \texttt{PathDist} y \texttt{GoalDist}; $S_c$ es la escala configurada de cada crítico. En hardware real, DWB admite candidatos de hasta 0.15~m/s, mientras \texttt{diff\_drive\_controller} limita la velocidad lineal a 0.13~m/s. Por ello, una consigna generada entre 0.13 y 0.15~m/s queda limitada posteriormente por el controlador diferencial.
+\noindent donde $J_{\mathrm{DWB}}(v,\omega)$ es el puntaje total de una trayectoria candidata generada con velocidades lineal $v$ y angular $\omega$; $C_c(v,\omega)$ es el costo asignado por el crítico $c$ y $S_c$ su escala configurada. El conjunto $\mathcal{C}$ contiene \texttt{Oscillation}, \texttt{BaseObstacle}, \texttt{GoalAlign}, \texttt{PathAlign}, \texttt{PathDist} y \texttt{GoalDist}. En hardware real, DWB admite candidatos de hasta 0.15~m/s, mientras \texttt{diff\_drive\_controller} limita la velocidad lineal a 0.13~m/s. Por ello, una consigna generada entre 0.13 y 0.15~m/s queda limitada posteriormente por el controlador diferencial.
 
 Los mapas de costo del robot real utilizan un \textit{footprint}
 rectangular y una capa de inflación ajustada al tamaño del prototipo. La

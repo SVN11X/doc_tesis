@@ -42,7 +42,7 @@ N_e^{\mathrm{teo}} = N_{\mathrm{Hall}} \cdot c_q \cdot N_g
 \label{eq:resolucion_encoder}
 \end{equation}
 
-donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder [ticks/vuelta del eje de salida] y $N_{\mathrm{Hall}}=11$ el número de pulsos por vuelta del eje del motor; $c_q$ y $N_g$ adoptan los valores consolidados en la Tabla~\ref{tab:parametros_modelo}. Al evaluar la Ec.~\ref{eq:resolucion_encoder} se obtiene la resolución teórica indicada en esa tabla. Las mediciones experimentales, detalladas en el Capítulo~\ref{ch:setup_arduino}, sustentan el valor efectivo $N_e$ de la Tabla~\ref{tab:parametros_modelo}, utilizado de forma unificada por el firmware y la odometría.
+donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder [ticks/vuelta del eje de salida], $N_{\mathrm{Hall}}=11$ el número de pulsos por vuelta del eje del motor, $c_q$ el factor de decodificación en cuadratura y $N_g$ la relación de reducción; sus valores se consolidan en la Tabla~\ref{tab:parametros_modelo}. Al evaluar la Ec.~\ref{eq:resolucion_encoder} se obtiene la resolución teórica indicada en esa tabla. Las mediciones experimentales, detalladas en el Capítulo~\ref{ch:setup_arduino}, sustentan el valor efectivo $N_e$ de la Tabla~\ref{tab:parametros_modelo}, utilizado de forma unificada por el firmware y la odometría.
 
 El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer los encoders, calcular el PID de velocidad de cada rueda y enviar señales \gls{PWM} al driver L298N. Este último permite accionar ambos motores, aunque introduce una zona muerta y caída de tensión que deben compensarse mediante la sintonización experimental del controlador.
 
