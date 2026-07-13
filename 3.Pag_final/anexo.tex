@@ -231,13 +231,11 @@ La igualdad numérica de las frecuencias configuradas no implica sincronización
 \begin{equation}
 T_{\mathrm{PID,sched}}
 =
-\left\lfloor\frac{1000}{30}\right\rfloor\mathrm{ms}
-=
 33~\mathrm{ms}.
 \label{eq:pid_intervalo_real}
 \end{equation}
 
-\noindent El firmware actualiza \texttt{nextPID} en incrementos enteros de 33~ms y no comparte reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distinguen $\Delta t_k$ para la lectura de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para la planificación temporal del firmware.
+\noindent El firmware programa la ejecución del PID cada 33~ms mediante incrementos enteros de \texttt{nextPID}. Este intervalo corresponde a la planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
 
 \begin{algorithm}[H]
 \caption{Resumen de la transformación entre encoders, estados y consignas}
@@ -407,25 +405,35 @@ K_{p,j}^{std}T_{d,j}^{std},
 \noindent donde $K_{c,j}'$, $T_{i,j}'$ y $T_{d,j}'$ son los parámetros de la forma serie; $K_{p,j}^{std}$, $K_{i,j}^{std}$ y $K_{d,j}^{std}$ las ganancias de la forma paralela estándar; y $T_{i,j}^{std}$ y $T_{d,j}^{std}$ sus tiempos integral y derivativo equivalentes. Además, $K_{m,j}^{norm}=143K_{m,j}$ es la ganancia de planta normalizada por el PWM nominal. La conversión a la escala denominada de firmware utiliza:
 
 \begin{equation}
-\kappa_{sim}
-=
+\begin{aligned}
+\kappa_{\mathrm{sim}}
+&=
 \frac{N_e}{2\pi r\,(30)},
-\qquad
-T_{sim}=\frac{1}{30}~\mathrm{s},
-\qquad
+&
+T_{\mathrm{sim}}
+&=
+\frac{1}{30}~\mathrm{s},
+\\[2mm]
 f_{\lambda}
-=
-\frac{143K_o}{\kappa_{sim}},
-\qquad
-K_{p,j}^{fw}=f_{\lambda}K_{p,j}^{std},
-\qquad
-K_{d,j}^{fw}=f_{\lambda}K_{d,j}^{std},
-\qquad
-K_{i,j}^{fw}=f_{\lambda}T_{sim}K_{i,j}^{std}.
+&=
+\frac{143K_o}{\kappa_{\mathrm{sim}}},
+\\[2mm]
+K_{p,j}^{\mathrm{fw}}
+&=
+f_{\lambda}K_{p,j}^{\mathrm{std}},
+&
+K_{d,j}^{\mathrm{fw}}
+&=
+f_{\lambda}K_{d,j}^{\mathrm{std}},
+\\[2mm]
+K_{i,j}^{\mathrm{fw}}
+&=
+f_{\lambda}T_{\mathrm{sim}}K_{i,j}^{\mathrm{std}}.
+\end{aligned}
 \label{eq:lambda_conversion}
 \end{equation}
 
-\noindent donde $\kappa_{sim}$ es el factor de conversión desde velocidad lineal a ticks/frame, $T_{sim}$ el período de simulación, $f_{\lambda}$ el factor de escalamiento y $K_{p,j}^{fw}$, $K_{i,j}^{fw}$ y $K_{d,j}^{fw}$ las ganancias expresadas en la escala denominada de firmware por el script.
+\noindent donde $\kappa_{\mathrm{sim}}$ es el factor de conversión desde velocidad lineal a ticks por ciclo, $T_{\mathrm{sim}}$ es el período de simulación, $f_{\lambda}$ es el factor de escalamiento, y $K_{p,j}^{\mathrm{fw}}$, $K_{d,j}^{\mathrm{fw}}$ y $K_{i,j}^{\mathrm{fw}}$ son las ganancias expresadas en la escala de firmware empleada por el script.
 
 La comparación resultante no constituye una equivalencia con el firmware real. El simulador Lambda mantiene estados en punto flotante, no utiliza el retardo FODT durante la respuesta, aplica banda muerta 0 a Lambda, banda muerta 2 a ambas ruedas del conjunto denominado firmware y añade una saturación explícita de $I_j$ que no existe en \texttt{diff\_controller.h}. En consecuencia, sus curvas y métricas corresponden al script comparativo ejecutado, no a una validación directa de dos controladores equivalentes en hardware.
 
@@ -464,7 +472,7 @@ La comunicación entre la Raspberry Pi y el \gls{Arduino} utiliza comandos textu
 \caption{Comandos del protocolo serial implementado en el firmware.}
 \label{tab:protocolo_serial}
 \small
-\begin{tabular}{c p{3.4cm} p{6.2cm} p{2.2cm}}
+\begin{tabular}{c p{2.7cm} p{6.8cm} p{2.2cm}}
 \toprule
 \textbf{Comando} &
 \textbf{Formato} &
@@ -475,7 +483,7 @@ La comunicación entre la Raspberry Pi y el \gls{Arduino} utiliza comandos textu
 \texttt{b} &
 \texttt{b} &
 Consulta la velocidad de comunicación serial configurada en el firmware. &
-Valor de baudrate \\
+Tasa de baudios \\
 
 \texttt{e} &
 \texttt{e} &
@@ -513,7 +521,7 @@ Carga un conjunto común de ganancias PID para ambas ruedas. &
 \texttt{OK} \\
 
 \texttt{z} &
-\texttt{z KpL:KdL:KiL:KoL:KpR:KdR:KiR:KoR} &
+\texttt{z} $\mathbf{K}_L:\mathbf{K}_R$ &
 Carga ganancias PID independientes para las ruedas izquierda y derecha. &
 \texttt{OK} \\
 
@@ -524,6 +532,16 @@ Ocho valores \\
 
 \bottomrule
 \end{tabular}
+\vspace{0.2cm}
+
+\begin{minipage}{0.96\textwidth}
+\footnotesize
+\textit{Nota:} En el comando \texttt{z}, el formato serial completo es:
+
+\begin{center}
+\texttt{z KpL:KdL:KiL:KoL:KpR:KdR:KiR:KoR}
+\end{center}
+\end{minipage}
 \end{table}
 
 \noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \emph{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del firmware; si no se recibe una nueva orden durante el intervalo de auto-detención definido en la Tabla~\ref{tab:anx_trazabilidad_parametros}, los motores se detienen automáticamente. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados, pero permanecen vigentes solo hasta la siguiente llamada a \texttt{resetPID()}.

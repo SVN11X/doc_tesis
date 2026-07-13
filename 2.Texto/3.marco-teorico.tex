@@ -138,7 +138,7 @@ La prueba de identificación aplica un escalón de PWM $u_j[k]$ y captura la vel
 \begin{align}
 n_{d,j}
 &=
-\left\lfloor\frac{L_{d,j}}{T_{cap}}\right\rfloor,
+\operatorname{trunc}\left(\frac{L_{d,j}}{T_{cap}}\right),
 \label{eq:retardo_muestras}\\
 u_{j,d}[k]
 &=
@@ -156,7 +156,9 @@ K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
 \label{eq:fodt_discreto}
 \end{align}
 
-\noindent donde $u_{j,d}[k]$ es la entrada PWM retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el modelo para la rueda $j$ [m/s].
+\noindent donde $u_{j,d}[k]$ es la entrada PWM retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el modelo para la rueda $j$ [m/s]. Para $\operatorname{trunc}()$ conserva únicamente la parte
+entera del resultado. De esta forma, el retardo $L_{d,j}$ se transforma en
+un número entero de muestras.
 
 La señal medida se suaviza antes del ajuste y los parámetros
 $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático del modelo discreto.
@@ -206,7 +208,7 @@ u_j[k]
 \bigl(u_j[k-1]+\Delta u_j[k]\bigr).
 \end{align*}
 
-\noindent donde $e_j[k]$ es el error discreto, $m_j[k]$ la medición de velocidad en la escala interna del firmware, $I_j[k]$ el estado integral, $\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y $K_{o,j}$ el divisor de escalamiento; $\operatorname{sat}_{[-255,255]}(\cdot)$ representa la saturación al intervalo PWM permitido.
+\noindent donde $e_j[k]$ es el error discreto, $m_j[k]$ la medición de velocidad en la escala interna del firmware, $I_j[k]$ el estado integral, $\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y $K_{o,j}$ el divisor de escalamiento; $\operatorname{sat}_{[-255,255]}()$ representa la saturación al intervalo PWM permitido.
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
