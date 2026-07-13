@@ -844,9 +844,9 @@ X_{i,d}^{eval}
 
 La función de costo PID utiliza el máximo de la señal de referencia como
 objetivo y combina el error cuadrático medio con una penalización cuadrática
-por sobreimpulso. Además, el script asigna una penalización fija cuando la
-simulación genera una excepción o cuando la respuesta contiene valores no
-finitos:
+por sobreimpulso, ponderados por $w_{\mathrm{mse}}$ y $w_{\mathrm{OS}}$.
+Además, el script asigna una penalización fija cuando la simulación genera una
+excepción o cuando la respuesta contiene valores no finitos:
 
 \begin{equation}
 J_{\mathrm{PID}}
@@ -856,6 +856,7 @@ J_{\mathrm{PID}}
 & \text{si la simulación no es válida},\\[6pt]
 \begin{aligned}
 &\displaystyle
+w_{\mathrm{mse}}\,
 \frac{1}{N}
 \sum_{k=1}^{N}
 \left(
@@ -863,7 +864,7 @@ v_j^{\mathrm{ref}}-\widehat{v}_j[k]
 \right)^2
 \\[-1pt]
 &\displaystyle\quad+
-3\left[
+w_{\mathrm{OS}}\left[
 \max\left(
 0,
 \max_{1\leq k\leq N}\widehat{v}_j[k]
@@ -877,7 +878,20 @@ v_j^{\mathrm{ref}}
 \label{eq:costo_pso}
 \end{equation}
 
-\noindent donde $J_{\mathrm{PID}}$ es el costo de sintonización asignado al candidato evaluado para la rueda $j$; el valor $10^{6}$ corresponde a la penalización fija aplicada cuando la simulación no entrega una respuesta válida.
+\noindent donde $J_{\mathrm{PID}}$ es el costo de sintonización asignado al
+candidato evaluado para la rueda $j$; $w_{\mathrm{mse}}$ y $w_{\mathrm{OS}}$
+son los pesos del error cuadrático medio y de la penalización por
+sobreimpulso, respectivamente; y el valor $10^{6}$ corresponde a la
+penalización fija aplicada cuando la simulación no entrega una respuesta
+válida. Ambos pesos no se calculan: son constantes de diseño definidas
+localmente en la función \texttt{costFunction\_PID()} de
+\path{arduino_firmware/pid_config/SintonizacionAutomatica.py}, con
+$w_{\mathrm{mse}}=1.0$ actuando como escala identidad del MSE y
+$w_{\mathrm{OS}}=3.0$ triplicando el peso relativo de cualquier excursión
+sobre la referencia, para orientar la búsqueda del enjambre hacia respuestas
+de bajo sobreimpulso. La función no penaliza el tiempo de subida ni el de
+establecimiento; ambos se calculan \emph{post hoc} y se reportan en la
+Tabla~\ref{tab:pid_performance}.
 
 La actualización de los mejores valores sigue la clase
 \texttt{pso} ejecutada. Las particularidades de la posición global y la salida
@@ -899,20 +913,31 @@ El valor $\chi=0.7298$ coincide con la evaluación usual de la expresión de con
 
 \noindent donde $\varphi$ es la suma de los coeficientes cognitivo y social, $c_1+c_2$, utilizada para calcular el factor de constricción $\chi$.
 
-Para distinguir el error del firmware del error utilizado por el optimizador, se define:
+Para distinguir el error del firmware del error utilizado por el optimizador,
+se define:
 
 \begin{equation}
 \varepsilon_j[k]
 =
 v_j^{ref}-\widehat{v}_j[k],
 \qquad
+\lVert\boldsymbol{\varepsilon}_j\rVert_2
+=
+\sqrt{\sum_{k=1}^{N}\varepsilon_j[k]^2},
+\qquad
 \mathrm{MSE}(\boldsymbol{\varepsilon}_j)
 =
-\frac{1}{N}\sum_{k=1}^{N}\varepsilon_j[k]^2.
+\frac{1}{N}\,\lVert\boldsymbol{\varepsilon}_j\rVert_2^{2}.
 \label{eq:norma_mse}
 \end{equation}
 
-\noindent donde $\varepsilon_j[k]$ es el error de velocidad de la rueda $j$ en la muestra $k$ [m/s], $\boldsymbol{\varepsilon}_j$ el vector formado por esos errores y $\mathrm{MSE}(\boldsymbol{\varepsilon}_j)$ su error cuadrático medio [(m/s)$^2$]. Este error no corresponde al error entero $e_j^{long}$ consumido por el firmware.
+\noindent donde $\varepsilon_j[k]$ es el error instantáneo de velocidad de la
+rueda $j$ en la muestra $k$ [m/s]; $\boldsymbol{\varepsilon}_j$ el vector
+formado por esos errores; $\lVert\boldsymbol{\varepsilon}_j\rVert_2$ su
+norma-2 (euclidiana) [m/s]; y $\mathrm{MSE}(\boldsymbol{\varepsilon}_j)$ su
+error cuadrático medio [(m/s)$^2$], igual a la norma-2 al cuadrado dividida
+por el número de muestras. Ninguna de estas cantidades corresponde al error
+entero $e_j^{long}$ consumido por el firmware.
 
 La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que el costo histórico de la partícula. El almacenamiento global presenta una particularidad adicional. El script calcula:
 
@@ -1657,6 +1682,7 @@ $\boldsymbol{\theta}_i^{eval}$ & Vector de parámetros físicos usado para evalu
 $\boldsymbol{\theta}^{out}$ & Vector de parámetros informado al finalizar el PSO, escalado desde la posición global almacenada sin aplicar un nuevo recorte superior & varias \\
 $J$ & Función de costo & varias \\
 $w_{\mathrm{mse}},w_{\mathrm{OS}}$ & Pesos de error cuadrático y de sobreimpulso & adim. \\
+$\lVert\boldsymbol{\varepsilon}_j\rVert_2$ & Norma-2 (euclidiana) del vector de errores instantáneos $\varepsilon_j[k]$; se relaciona con el MSE mediante $\mathrm{MSE}=\lVert\boldsymbol{\varepsilon}_j\rVert_2^{2}/N$ & m/s \\
 $v_j^{ref}$ & Velocidad de consigna estacionaria obtenida como media para $t\geq7$~s & m/s \\
 $r_j^{sim}(t)$ & Referencia consumida por la simulación después de la interpolación lineal de \texttt{np.interp} & m/s \\
 $\operatorname{round}_{even}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & --- \\
@@ -1725,7 +1751,7 @@ en \path{articubot_one/config/}.
 \begingroup
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{longtable}{p{3.6cm} p{4.0cm} p{5.0cm}}
+\begin{longtable}{p{4.5cm} p{4.0cm} p{5.0cm}}
 \caption{Localización y función de los archivos citados en el documento.}
 \label{tab:rutas_software}\\
 \toprule
