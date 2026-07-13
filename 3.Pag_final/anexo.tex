@@ -872,6 +872,8 @@ v_j^{\mathrm{ref}}
 \label{eq:costo_pso}
 \end{equation}
 
+\noindent donde $J_{\mathrm{PID}}$ es el costo de sintonización asignado al candidato evaluado para la rueda $j$; el valor $10^{6}$ corresponde a la penalización fija aplicada cuando la simulación no entrega una respuesta válida.
+
 La actualización de los mejores valores sigue la clase
 \texttt{pso} ejecutada. Las particularidades de la posición global y la salida
 final escalada se desarrollan a continuación.
@@ -890,6 +892,8 @@ El valor $\chi=0.7298$ coincide con la evaluación usual de la expresión de con
 \label{eq:constriccion}
 \end{equation}
 
+\noindent donde $\varphi$ es la suma de los coeficientes cognitivo y social, $c_1+c_2$, utilizada para calcular el factor de constricción $\chi$.
+
 Para distinguir el error del firmware del error utilizado por el optimizador, se define:
 
 \begin{equation}
@@ -903,7 +907,7 @@ v_j^{ref}-\widehat{v}_j[k],
 \label{eq:norma_mse}
 \end{equation}
 
-\noindent $\varepsilon_j$ se expresa en m/s y no corresponde al error entero $e_j^{long}$ consumido por el firmware.
+\noindent donde $\varepsilon_j[k]$ es el error de velocidad de la rueda $j$ en la muestra $k$ [m/s], $\boldsymbol{\varepsilon}_j$ el vector formado por esos errores y $\mathrm{MSE}(\boldsymbol{\varepsilon}_j)$ su error cuadrático medio [(m/s)$^2$]. Este error no corresponde al error entero $e_j^{long}$ consumido por el firmware.
 
 La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que el costo histórico de la partícula. El almacenamiento global presenta una particularidad adicional. El script calcula:
 
@@ -943,7 +947,7 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \label{eq:pso_salida}
 \end{equation}
 
-\noindent En la etapa PID, $\boldsymbol{\theta}^{out}$ puede superar los valores de escala 40, 25 y 0.05, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
+\noindent donde $\boldsymbol{\theta}^{out}$ es el vector de parámetros informado al finalizar el PSO y $G_d^{final}$ es la componente $d$ de la posición global almacenada al término de la última generación. En la etapa PID, $\boldsymbol{\theta}^{out}$ puede superar los valores de escala 40, 25 y 0.05, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
 
 \begin{algorithm}[H]
 \caption{PSO ejecutado por \texttt{pyPso.py} y evaluación utilizada en la sintonización}
@@ -1223,7 +1227,7 @@ La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, cor
 \label{eq:inflation}
 \end{equation}
 
-\noindent donde $d_o$ es la distancia desde la celda evaluada al obstáculo más cercano [m], $r_{inscrito}$ el radio inscrito del \textit{footprint} [m] y $\operatorname{costo}(d_o)$ el valor entero asignado por la capa de inflación. Los valores 254, 253 y 0 corresponden a las categorías letal, inscrita inflada y libre del costmap.
+\noindent donde $d_o$ es la distancia desde la celda evaluada al obstáculo más cercano [m], $r_{inscrito}$ el radio inscrito del \textit{footprint} [m], $r_{inflacion}$ el radio máximo de influencia de la capa [m], $\beta$ el factor de decaimiento configurado mediante \texttt{cost\_scaling\_factor} [m$^{-1}$] y $\operatorname{costo}(d_o)$ el valor entero asignado por la capa de inflación. Los valores 254, 253 y 0 corresponden a las categorías letal, inscrita inflada y libre del costmap.
 
 \subsection{Acciones de recuperación de Nav2}
 \label{anx:recovery_nav2}
@@ -1332,7 +1336,7 @@ p_F^{impl}
 \label{eq:centroide_frontera_impl}
 \end{equation}
 
-\noindent Por tanto, $p_F^{impl}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}. Esta diferencia se mantiene porque corresponde al código ejecutado.
+\noindent donde $p_F^{impl}$ es el punto almacenado por la implementación como centroide de la frontera, $|F_{add}|$ es el número de celdas añadidas después de la celda inicial y $p$ representa el vector de coordenadas de cada celda añadida. Por tanto, $p_F^{impl}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}. Esta diferencia se mantiene porque corresponde al código ejecutado.
 
 La variable \texttt{frontier.min\_distance} se calcula después de convertir las celdas añadidas a coordenadas del mundo, por lo que ya se encuentra en metros. No obstante, la función de costo implementada vuelve a multiplicarla por la resolución del costmap:
 
@@ -1360,7 +1364,7 @@ T_{exp,sched}
 \label{eq:periodo_explorador_real}
 \end{equation}
 
-\noindent donde $T_{exp,sched}$ es el período programado del temporizador de exploración; su valor equivale a aproximadamente 0.30003~Hz. Si la distancia a la misma meta no disminuye durante 10~s, $p_F^{impl}$ se incorpora a la lista negra y se busca otra frontera. Una meta abortada por Nav2 también se añade a esa lista; una meta cancelada no se añade. La comprobación de lista negra utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap. Si todas las fronteras están vetadas, la lista negra se limpia y el ciclo se reintenta.
+\noindent donde $f_{exp}$ es la frecuencia nominal configurada para planificar la exploración [Hz] y $T_{exp,sched}$ el período programado del temporizador correspondiente. El período de 3333~ms equivale a una frecuencia efectiva de aproximadamente 0.30003~Hz. Si la distancia a la misma meta no disminuye durante 10~s, $p_F^{impl}$ se incorpora a la lista negra y se busca otra frontera. Una meta abortada por Nav2 también se añade a esa lista; una meta cancelada no se añade. La comprobación de lista negra utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap. Si todas las fronteras están vetadas, la lista negra se limpia y el ciclo se reintenta.
 
 \section{Costos y comparación económica}
 \label{anx:costos}

@@ -208,7 +208,7 @@ u_j[k]
 \bigl(u_j[k-1]+\Delta u_j[k]\bigr).
 \end{align*}
 
-\noindent donde $e_j[k]$ es el error discreto, $m_j[k]$ la medición de velocidad en la escala interna del firmware, $I_j[k]$ el estado integral, $\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y $K_{o,j}$ el divisor de escalamiento; $\operatorname{sat}_{[-255,255]}()$ representa la saturación al intervalo PWM permitido.
+\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias proporcional, integral y derivativa discretas de la rueda $j$; $e_j[k]$ es el error discreto, $m_j[k]$ la medición de velocidad en la escala interna del firmware, $I_j[k]$ el estado integral asociado a $K_{i,j}$, $\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y $K_{o,j}$ el divisor de escalamiento; $\operatorname{sat}_{[-255,255]}()$ representa la saturación al intervalo PWM permitido.
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
