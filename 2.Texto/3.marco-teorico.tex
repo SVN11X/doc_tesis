@@ -221,7 +221,7 @@ saturación se detallan en el Alg.~\ref{alg:pid_firmware}.
 \section{Sintonización del controlador PID}
 \label{sec:sintonizacion}
 
-Las ganancias del PID se obtienen mediante un procedimiento híbrido: identificación FODT por rueda, búsqueda de ganancias iniciales mediante PSO y refinamiento experimental posterior sobre el hardware. El PSO utilizado para la identificación y para la sintonización corresponde a la clase \texttt{pso} implementada en \texttt{pyPso.py}.
+Las ganancias del PID se obtienen mediante un procedimiento híbrido: identificación FODT por rueda, búsqueda de ganancias iniciales mediante PSO y refinamiento experimental posterior sobre el hardware. El núcleo del optimizador corresponde a la clase \texttt{pso}, implementada en \path{arduino_firmware/pid_config/pyPso.py}; las rutas se expresan respecto de \path{src/}, según la convención del \ref{anx:rutas_software}.
 
 \subsection{Optimización por enjambre de partículas}
 \label{sec:pso_marco}
@@ -273,7 +273,7 @@ enjambre se ejecuta sin una semilla pseudoaleatoria fija.
 \subsection{Referencia de sintonización Lambda}
 \label{sec:lambda}
 
-El script \texttt{SintonizacionLambda.py} se utiliza como
+El script comparativo \path{arduino_firmware/pid_config/SintonizacionLambda.py} se utiliza como
 referencia analítica complementaria y vuelve a identificar un modelo FODT antes
 de comparar la sintonía Lambda con las ganancias finales del firmware. Debido a
 las diferencias de escala y de implementación, sus curvas se interpretan solo

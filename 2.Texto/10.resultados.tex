@@ -17,7 +17,7 @@ El espacio físico disponible permitió validar odometría, control y mapeo; la 
 
 La evaluación rectilínea utiliza una referencia de 2~m. En simulación, la distancia de odometría coincide con la distancia obtenida mediante \texttt{/get\_entity\_state} en los registros disponibles; en hardware real, el error odométrico corresponde a la discrepancia entre la odometría de encoders y la medición física.
 
-Las pruebas angulares utilizan una referencia nominal de $360^\circ$ codificada en los scripts. Tanto \texttt{prueba\_giro.py} como \texttt{prueba\_giro\_sim.py} publican \texttt{VEL\_ANGULAR}$=0.4$~rad/s durante $2\pi/0.4$~s directamente en \texttt{diff\_cont/cmd\_vel\_unstamped}; sin embargo, \texttt{my\_controllers.yaml} limita \texttt{angular.z.max\_velocity} a 0.35~rad/s. Por tanto, $360^\circ$ es la referencia nominal usada por los scripts de análisis, no una consigna angular de $360^\circ$ aplicada sin limitación por el controlador. Bajo el límite ideal constante, el producto $0.35(2\pi/0.4)$ corresponde a $315^\circ$.
+Las pruebas angulares utilizan una referencia nominal de $360^\circ$ codificada en los scripts de ejecución \path{test/prueba_giro/prueba_giro.py} para hardware y \path{test/prueba_giro_sim/prueba_giro_sim.py} para simulación. Ambos publican \texttt{VEL\_ANGULAR}$=0.4$~rad/s durante $2\pi/0.4$~s directamente en \texttt{diff\_cont/cmd\_vel\_unstamped}; sin embargo, la configuración del controlador \path{articubot_one/config/my_controllers.yaml} limita \texttt{angular.z.max\_velocity} a 0.35~rad/s. Por tanto, $360^\circ$ es la referencia nominal usada por los scripts de análisis, no una consigna angular de $360^\circ$ aplicada sin limitación por el controlador. Bajo el límite ideal constante, el producto $0.35(2\pi/0.4)$ corresponde a $315^\circ$.
 
 Para distinguir ambos fenómenos se utilizaron las siguientes métricas:
 
@@ -118,8 +118,8 @@ La desviación angular observada combina el límite de velocidad del controlador
 \section{Evaluación del controlador PID}
 \label{sec:resultados_pid}
 
-La respuesta experimental en lazo cerrado se adquirió mediante
-\texttt{ControlLazoCerrado.py}, con una referencia de 0.13~m/s y un período
+La respuesta experimental en lazo cerrado se adquirió mediante el script de captura
+\path{arduino_firmware/pid_config/ControlLazoCerrado.py}, con una referencia de 0.13~m/s y un período
 nominal de captura de 0.1~s. La lectura serial es asíncrona, por lo que cada
 registro corresponde al último valor disponible informado por el firmware. El
 procedimiento exacto se conserva en el \ref{anx:captura_lazo_cerrado}. La
@@ -132,7 +132,7 @@ no una respuesta simulada del modelo FODT.
 {fig:respuesta_escalon_final}
 
 Los indicadores de la Tabla~\ref{tab:pid_performance} provienen de
-una simulación ejecutada por \texttt{SintonizacionLambda.py} sobre un modelo
+una simulación ejecutada por el script comparativo \path{arduino_firmware/pid_config/SintonizacionLambda.py} sobre un modelo
 FODT reidentificado, no de la figura experimental anterior. Las diferencias
 numéricas respecto del firmware real se documentan en el
 \ref{anx:lambda_detalle}.
@@ -169,7 +169,7 @@ No se utiliza para demostrar superioridad cuantitativa entre métodos.
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-El mapeo se evaluó primero en simulación, teleoperando el robot dentro del mundo \texttt{obstacles.world}. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
+El mapeo se evaluó primero en simulación, teleoperando el robot dentro del mundo de prueba \path{articubot_one/worlds/obstacles.world}. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
 
 La métrica utilizada corresponde al índice de cobertura libre calculado sobre
 la imagen PGM del mapa:
@@ -246,9 +246,9 @@ Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
-El script disponible para una evaluación por escenarios de la navegación autónoma con Nav2 se describe en el \ref{anx:protocolo_nav}. Este procedimiento no fue ejecutado en los datos entregados y, en su forma actual, no conserva identificadores de meta ni garantiza que cada estado observado corresponda unívocamente a la repetición en curso.
+El script de evaluación por escenarios \path{test/navegacion/run_prueba_nav.sh} se describe en el \ref{anx:protocolo_nav}. Este procedimiento no fue ejecutado en los datos entregados y, en su forma actual, no conserva identificadores de meta ni garantiza que cada estado observado corresponda unívocamente a la repetición en curso.
 
-La exploración basada en fronteras se ejecutó en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada} y no corresponde a una medición física independiente del recinto. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico; el campo de intervenciones corresponde únicamente a intervenciones registradas manualmente por el operador mediante el script.
+La exploración basada en fronteras se ejecutó y registró mediante \path{test/exploracion/run_explore.sh} en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada} y no corresponde a una medición física independiente del recinto. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico; el campo de intervenciones corresponde únicamente a intervenciones registradas manualmente por el operador mediante el script.
 
 \begin{table}[H]
 \centering

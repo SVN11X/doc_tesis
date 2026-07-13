@@ -11,9 +11,10 @@
 
 \begin{appendices}
 
-% Numeración de ecuaciones como A1.1, A1.2, A2.1, etc.
 \numberwithin{equation}{section}
 \renewcommand{\theequation}{A\arabic{section}.\arabic{equation}}
+
+\noindent\textbf{Convención de rutas.} Las rutas de código son relativas a \path{src/}; el inventario de archivos, directorios padre y funciones se presenta en el \ref{anx:rutas_software}.
 
 \section{Construcción, componentes y montaje}
 \label{anx:componentes}
@@ -68,7 +69,7 @@ La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de
 \section{Gemelo digital y verificación estructural}
 \label{anx:gemelo_digital}
 
-La organización modular del modelo (\texttt{robot.urdf.xacro}, \texttt{robot\_core.xacro} y \texttt{lidar.xacro}/\texttt{lidar\_sim.xacro}) se describe en la Sec.~\ref{sec:atribucion}. En la ejecución utilizada, \texttt{launch\_sim.launch.py} fija \texttt{use\_ros2\_control=true} y \texttt{sim\_mode=true}; por ello se instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo \texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por ese lanzamiento.
+Los archivos del modelo se encuentran en \path{articubot_one/description/}: \texttt{robot.urdf.xacro}, \texttt{robot\_core.xacro} y \texttt{lidar.xacro}/\texttt{lidar\_sim.xacro}, cuya organización se describe en la Sec.~\ref{sec:atribucion}. El lanzamiento \path{articubot_one/launch/launch_sim.launch.py} fija \texttt{use\_ros2\_control=true} y \texttt{sim\_mode=true}; por ello se instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo \texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por ese lanzamiento.
 
 El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. En simulación, \texttt{slam\_toolbox} y AMCL utilizan \texttt{base\_footprint}, mientras los costmaps mantienen \texttt{base\_link}; en hardware real se utiliza \texttt{base\_link}.
 
@@ -1043,7 +1044,7 @@ v_j^{med}[k]
 \label{eq:vel_lazo_abierto}
 \end{equation}
 
-\noindent donde $\Delta c_j[k]=c_j[k]-c_j[k-1]$ es el incremento de conteo y $v_j^{med}[k]$ la velocidad lineal medida de la rueda $j$ [m/s]. En \texttt{ControlLazoAbierto.py}, $T_{cap}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
+\noindent donde $\Delta c_j[k]=c_j[k]-c_j[k-1]$ es el incremento de conteo y $v_j^{med}[k]$ la velocidad lineal medida de la rueda $j$ [m/s]. En el script de captura \path{arduino_firmware/pid_config/ControlLazoAbierto.py}, $T_{cap}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
 
 \begin{algorithm}[H]
 \caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
@@ -1167,8 +1168,8 @@ $K_i$ & 0.00001 & 0.00001 \\
 \subsection{Captura de la respuesta en lazo cerrado}
 \label{anx:captura_lazo_cerrado}
 
-La respuesta experimental se adquirió mediante
-\texttt{ControlLazoCerrado.py}. El script envía una referencia de 0.13~m/s
+La respuesta experimental se adquirió mediante el script
+\path{arduino_firmware/pid_config/ControlLazoCerrado.py}. El script envía una referencia de 0.13~m/s
 mediante el comando \texttt{k}, consulta la velocidad informada por el
 firmware mediante \texttt{j} y almacena muestras con un período nominal de
 0.1~s. La lectura serial se ejecuta en un hilo asíncrono y, después de solicitar
@@ -1180,7 +1181,7 @@ iteración.
 \section{Configuración complementaria de SLAM, Nav2 y exploración}
 \label{anx:nav2_slam_config}
 
-Las configuraciones de simulación y hardware se mantienen en archivos separados. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}. En hardware real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
+Las configuraciones fuente se mantienen en \path{articubot_one/config/}. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}; en hardware real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
 
 \begin{table}[H]
 \centering
@@ -1397,7 +1398,7 @@ Clearpath Jackal & US\$~18.000 & Plataforma industrial. \\
 
 Este anexo recoge el detalle por repetición de las pruebas resumidas en la Sec.~\ref{sec:resultados_odometria}: trayectoria rectilínea de 2~m (medias en la Tabla~\ref{tab:resumen_odometria}) y protocolo angular con referencia nominal de $360^\circ$ (medias en la Tabla~\ref{tab:resumen_giro}). Se presentan las cinco repeticiones por entorno.
 
-En simulación, la interpretación del error rectilíneo corresponde a la definida en la Sec.~\ref{sec:resultados_odometria}. En el protocolo angular, ambos scripts solicitan 0.4~rad/s durante $2\pi/0.4$~s, pero \texttt{diff\_drive\_controller} limita la velocidad angular a 0.35~rad/s. Además, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$. En consecuencia, las columnas de $360^\circ$ representan la referencia nominal codificada por los scripts; no representan una consigna aplicada sin saturación, y la tabla simulada no contiene una verdad de terreno angular independiente.
+En simulación, la interpretación del error rectilíneo corresponde a la definida en la Sec.~\ref{sec:resultados_odometria}. El protocolo angular utiliza \path{test/prueba_giro/prueba_giro.py} en hardware y \path{test/prueba_giro_sim/prueba_giro_sim.py} en simulación; ambos scripts solicitan 0.4~rad/s durante $2\pi/0.4$~s, pero \texttt{diff\_drive\_controller} limita la velocidad angular a 0.35~rad/s. Además, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$. En consecuencia, las columnas de $360^\circ$ representan la referencia nominal codificada por los scripts; no representan una consigna aplicada sin saturación, y la tabla simulada no contiene una verdad de terreno angular independiente.
 
 \subsection{Trayectoria rectilínea de 2~m}
 
@@ -1512,7 +1513,7 @@ Los estadísticos agregados y la interpretación de los contadores se presentan 
 \subsection{Navegación autónoma con Nav2}
 \label{anx:protocolo_nav}
 
-El script \texttt{run\_prueba\_nav.sh} define tres escenarios y cinco repeticiones por escenario. En simulación envía una meta mediante la acción \texttt{NavigateToPose}; en hardware real solicita al operador que envíe la meta desde RViz. El tiempo se mide con el reloj de pared y se escribe una fila CSV por repetición. El tipo de fallo, la recuperación atribuida y el éxito de esa recuperación se ingresan manualmente por el operador; no se obtienen automáticamente del árbol de comportamiento.
+El script de protocolo \path{test/navegacion/run_prueba_nav.sh} define tres escenarios y cinco repeticiones por escenario. En simulación envía una meta mediante la acción \texttt{NavigateToPose}; en hardware real solicita al operador que envíe la meta desde RViz. El tiempo se mide con el reloj de pared y se escribe una fila CSV por repetición. El tipo de fallo, la recuperación atribuida y el éxito de esa recuperación se ingresan manualmente por el operador; no se obtienen automáticamente del árbol de comportamiento.
 
 La clasificación del resultado utiliza coincidencias del texto producido por \texttt{ros2 action send\_goal} en simulación y mensajes del tópico de estados en hardware real. El script no almacena ni compara el UUID de la meta. En la rama de simulación, la presencia conjunta de \texttt{Goal accepted} y \texttt{Result:} se clasifica como éxito antes de comprobar las cadenas de aborto o cancelación. En la rama real, la lectura y el sondeo del tópico de estados tampoco vinculan el estado observado con la meta enviada en esa repetición. Por ello, el procedimiento actual no garantiza una asociación unívoca entre meta y resultado y no sustenta por sí solo una tasa cuantitativa de éxito.
 
@@ -1523,7 +1524,7 @@ El script define \texttt{TOLERANCIA\_SIM=0.25}~m y \texttt{TOLERANCIA\_REAL=0.22
 
 \subsection{Procedencia de los indicadores de mapeo}
 
-\noindent El script \texttt{analizar\_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_M=0.05$~m/celda y redondea el resultado a dos decimales.
+\noindent El script de análisis \path{test/slam/analizar_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_M=0.05$~m/celda y redondea el resultado a dos decimales.
 
 \subsection{Comparación cualitativa de mapas}
 
@@ -1708,4 +1709,63 @@ $N^{-1}\sum_{k=1}^{N}\varepsilon_j[k]^2$
 & (m/s)$^2$ \\
 \end{longtable}
 }
+
+
+\section{Convención de rutas y localización del software}
+\label{anx:rutas_software}
+
+Las rutas de código citadas en la tesis son relativas al directorio raíz
+\path{src/} del repositorio. En el cuerpo del documento se indica la ruta
+completa en la primera mención relevante y, en las menciones posteriores, se
+conserva solo el nombre del archivo cuando no existe ambigüedad. Las copias
+almacenadas bajo \path{test/sesiones_mapeo/} corresponden a instantáneas de
+cada ensayo; salvo indicación expresa, la configuración fuente es la ubicada
+en \path{articubot_one/config/}.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{p{3.6cm} p{4.0cm} p{5.0cm}}
+\caption{Localización y función de los archivos citados en el documento.}
+\label{tab:rutas_software}\\
+\toprule
+\textbf{Archivo} & \textbf{Directorio padre relativo a \texttt{src/}} & \textbf{Contexto de uso} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Archivo} & \textbf{Directorio padre relativo a \texttt{src/}} & \textbf{Contexto de uso} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\path{robot.urdf.xacro} & \path{articubot_one/description/} & Modelo principal URDF/\texttt{xacro}. \\
+\path{robot_core.xacro} & \path{articubot_one/description/} & Geometría, eslabones y articulaciones. \\
+\path{lidar.xacro}, \path{lidar_sim.xacro} & \path{articubot_one/description/} & Sensor real y modelo simulado del LiDAR. \\
+\path{gazebo_control.xacro} & \path{articubot_one/description/} & Backend alternativo no seleccionado. \\
+\path{launch_robot.launch.py} & \path{articubot_one/launch/} & Arranque del robot físico y controladores. \\
+\path{launch_sim.launch.py} & \path{articubot_one/launch/} & Arranque del gemelo digital en Gazebo. \\
+\path{my_controllers.yaml} & \path{articubot_one/config/} & Geometría y límites del controlador diferencial. \\
+\path{nav2_params.yaml}, \path{nav2_params_sim.yaml} & \path{articubot_one/config/} & Configuración Nav2 real y simulada. \\
+\path{mapper_params_online_async.yaml}, \path{mapper_params_online_async_sim.yaml} & \path{articubot_one/config/} & Configuración de \texttt{slam\_toolbox} real y simulada. \\
+\path{explore.yaml} & \path{articubot_one/config/} & Parámetros del explorador de fronteras. \\
+\path{obstacles.world} & \path{articubot_one/worlds/} & Mundo empleado en las pruebas de mapeo simulado. \\
+\path{ROSArduinoBridge.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Ciclo principal y protocolo serial del firmware. \\
+\path{commands.h} & \path{arduino_firmware/ROSArduinoBridge/} & Identificadores de comandos seriales. \\
+\path{diff_controller.h} & \path{arduino_firmware/ROSArduinoBridge/} & PID discreto y ganancias finales. \\
+\path{encoder_driver.h}, \path{encoder_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Lectura de encoders. \\
+\path{motor_driver.h}, \path{motor_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Accionamiento del L298N. \\
+\path{ControlLazoAbierto.py} & \path{arduino_firmware/pid_config/} & Captura de la respuesta en lazo abierto. \\
+\path{ControlLazoCerrado.py} & \path{arduino_firmware/pid_config/} & Captura experimental en lazo cerrado. \\
+\path{SintonizacionAutomatica.py} & \path{arduino_firmware/pid_config/} & Identificación FODT y búsqueda PSO inicial. \\
+\path{SintonizacionLambda.py} & \path{arduino_firmware/pid_config/} & Comparación simulada con sintonía Lambda. \\
+\path{pyPso.py} & \path{arduino_firmware/pid_config/} & Implementación de la clase PSO. \\
+\path{resultados_pso.tex}, \path{resultados_lambda.tex} & \path{arduino_firmware/pid_config/} & Salidas LaTeX generadas por los scripts de sintonización. \\
+\path{prueba_giro.py} & \path{test/prueba_giro/} & Ejecución de la prueba angular en hardware. \\
+\path{prueba_giro_sim.py} & \path{test/prueba_giro_sim/} & Ejecución de la prueba angular en simulación. \\
+\path{run_explore.sh} & \path{test/exploracion/} & Ejecución y registro de exploración. \\
+\path{run_prueba_nav.sh} & \path{test/navegacion/} & Protocolo por escenarios de navegación. \\
+\path{analizar_slam.py} & \path{test/slam/} & Cálculo de métricas de mapeo. \\
+\end{longtable}
+\endgroup
+
 \end{appendices}

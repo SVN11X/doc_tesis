@@ -3,12 +3,12 @@
 
 Este capítulo describe la implementación del gemelo digital del robot móvil diferencial en \gls{ROS2} Foxy mediante URDF/\texttt{xacro} y Gazebo. Sobre la base del propósito de validación expuesto en la Sec.~\ref{sec:gemelo_digital}, se presentan su estructura, su backend de control y la correspondencia de parámetros con el prototipo físico.
 
-En el código del proyecto, el archivo \texttt{robot.urdf.xacro} actúa como modelo principal del robot e integra los módulos de chasis, ruedas, sensor láser y control. El radio de rueda y la separación entre ruedas de la Tabla~\ref{tab:parametros_modelo} se emplean como referencia geométrica común en el robot físico, el URDF/\texttt{xacro} y \texttt{diff\_drive\_controller}. En cambio, la resolución de encoders y las frecuencias \texttt{loop\_rate}/\texttt{PID\_RATE} pertenecen a la ruta de hardware real: el backend \texttt{GazeboSystem} entrega directamente los estados de las articulaciones y no utiliza la conversión por ticks ni el planificador PID del firmware.
+En el código del proyecto, el modelo principal se encuentra en \path{articubot_one/description/robot.urdf.xacro} e integra los módulos de chasis, ruedas, sensor láser y control. El radio de rueda y la separación entre ruedas de la Tabla~\ref{tab:parametros_modelo} se emplean como referencia geométrica común en el robot físico, el URDF/\texttt{xacro} y \texttt{diff\_drive\_controller}. En cambio, la resolución de encoders y las frecuencias \texttt{loop\_rate}/\texttt{PID\_RATE} pertenecen a la ruta de hardware real: el backend \texttt{GazeboSystem} entrega directamente los estados de las articulaciones y no utiliza la conversión por ticks ni el planificador PID del firmware.
 
 \section{Arquitectura del modelo digital}
 \label{sec:atribucion}
 
-El modelo digital se organiza mediante archivos \texttt{xacro} modulares. El archivo principal \texttt{robot.urdf.xacro} incluye la estructura mecánica del robot, definida en \texttt{robot\_core.xacro}, y selecciona el modelo de sensor según el entorno de ejecución: \texttt{lidar.xacro} para hardware real y \texttt{lidar\_sim.xacro} para simulación.
+El modelo digital se organiza mediante archivos \texttt{xacro} modulares dentro de \path{articubot_one/description/}. Desde \texttt{robot.urdf.xacro} se incluye la estructura mecánica definida en \texttt{robot\_core.xacro} y se selecciona el sensor según el entorno: \texttt{lidar.xacro} para hardware real y \texttt{lidar\_sim.xacro} para simulación. La función y localización de cada archivo se consolidan en el \ref{anx:rutas_software}.
 
 La contribución principal en esta etapa corresponde al diseño del modelo URDF/\texttt{xacro}, la parametrización geométrica del robot, la definición de marcos de referencia y la integración con los sistemas de control, SLAM y navegación. La atribución completa de paquetes propios, adaptados y externos se documenta en el \ref{anx:gemelo_digital}.
 
