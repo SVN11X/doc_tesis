@@ -35,7 +35,7 @@ Estructura & Chasis impreso en 3D & Integrar mecánicamente los componentes del 
 
 La actuación se realiza mediante dos motorreductores JGA25-370 de 12 V, seleccionados por su disponibilidad, bajo costo y torque suficiente para una plataforma diferencial de interiores. Cada motor incorpora un encoder incremental de cuadratura, utilizado para estimar velocidad y desplazamiento de rueda.
 
-La resolución teórica del encoder en el eje de salida se obtiene a partir de la Ec. \ref{eq:resolucion_encoder}. Las mediciones experimentales, detalladas en la Sec.~\ref{sec:cpr_experimental}, sustentan el valor efectivo $N_e$ de la Tabla~\ref{tab:parametros_modelo}, utilizado de forma unificada por el firmware y la odometría.
+La resolución teórica del encoder en el eje de salida se obtiene a partir de la Ec. \ref{eq:resolucion_encoder}. Las mediciones experimentales, detalladas en la Sec.~\ref{sec:serial_firmware}, sustentan el valor efectivo $N_e$ de la Tabla~\ref{tab:parametros_modelo}, utilizado de forma unificada por el firmware y la odometría.
 
 El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer los encoders, calcular el PID de velocidad de cada rueda y enviar señales \gls{PWM} al driver L298N. Este último introduce una zona muerta y caída de tensión que deben compensarse mediante la sintonización experimental del controlador.
 
@@ -205,9 +205,13 @@ El controlador diferencial recibe comandos de velocidad lineal y angular, y los 
 \end{tabular}
 \end{table}
 
-La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} cuyo ciclo \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} se programa nominalmente con $f_{\mathrm{ctrl}}=30$~Hz mediante \texttt{controller\_manager.update\_rate}.
+La comunicación con el firmware se realiza mediante el plugin
+\texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control}
+cuyo ciclo de lectura--actualización--escritura, formalizado en el
+Algoritmo~\ref{alg:ros2control_cycle}, se programa nominalmente con
+$f_{\mathrm{ctrl}}=30$~Hz mediante \texttt{controller\_manager.update\_rate}.
 
-En \texttt{write()}, la velocidad angular de rueda comandada por
+En la fase de escritura del ciclo, la velocidad angular de rueda comandada por
 \texttt{diff\_drive\_controller} se convierte en una referencia entera de
 \textit{ticks/frame} antes de enviar el comando serial \texttt{m}:
 
@@ -229,10 +233,8 @@ m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
 \noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y $v_j^{\mathrm{cmd}}[k]$ son
 las consignas angular [rad/s] y lineal [m/s] de la rueda $j$; $2\pi/N_e$ es
 la resolución angular por tick [rad/tick]; $\operatorname{trunc}_{0}(\cdot)$
-representa el truncamiento hacia cero producido al convertir la expresión en
-punto flotante al argumento entero de \texttt{setMotorValues(int,int)}; y
-$m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división
-utiliza el parámetro independiente \texttt{cfg\_.loop\_rate}, denotado
+representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor Algoritmo~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división
+utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado
 $f_{\mathrm{loop}}=30$~Hz; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$
 coinciden numéricamente, no representan el mismo mecanismo ni comparten una
 medición temporal. La ruta normal de \texttt{ros2\_control} utiliza el
@@ -240,7 +242,7 @@ comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el
 firmware también incorpora una conversión directa desde m/s para ese
 comando.
 
-En \texttt{read()}, la transformación desde los conteos acumulados hasta los estados de rueda sigue la cadena:
+En la fase de lectura, la transformación desde los conteos acumulados hasta los estados de rueda sigue la cadena:
 
 \begin{equation}
 c_j[k]
@@ -280,11 +282,44 @@ referencias se transmiten como valores enteros de \textit{ticks/frame}.
 \end{algorithm}
 
 El orden exacto de ejecución, las validaciones seriales y la inicialización
-temporal se conservan en el Alg.~\ref{alg:ros2control_cycle} del
-\ref{anx:implementacion_diffdrive}. El firmware incorpora además una
-auto-detención de seguridad ante pérdida de comandos, detallada en la
-Sec.~\ref{sec:bucle_principal}.
+temporal se formalizan en el Algoritmo~\ref{alg:ros2control_cycle}; la
+definición por casos del intervalo $\Delta t_k$ se conserva en el
+\ref{anx:implementacion_diffdrive}.
 
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\small
+\Require Comandos de rueda $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$ [rad/s]; enlace serial; $N_e$; frecuencia nominal \texttt{loop\_rate}$=30$.
+\Ensure Interfaces de estado exportadas como $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$ y referencias enteras de ticks/frame enviadas en orden izquierda--derecha.
+\State \textbf{Configuración:} asignar primero \texttt{time\_}$\gets\texttt{system\_clock::now()}$.
+\State Leer nombres de rueda, \texttt{loop\_rate}, dispositivo, baudrate, timeout y \texttt{enc\_counts\_per\_rev}.
+\State Inicializar $\delta\phi=2\pi/N_e$ para ambas ruedas y abrir el puerto serial.
+\State Esperar 3000~ms y vaciar el buffer de entrada; esta espera queda incluida en el primer $\Delta t_k$.
+\State \textbf{Inicio:} enviar un retorno de carro vacío; conservar las ganancias codificadas en \texttt{resetPID()}.
+\While{la interfaz permanece iniciada}
+\State \textbf{read():} medir $\Delta t_k$ con \texttt{system\_clock}.
+\If{el enlace serial no está abierto}
+\State \Return \texttt{ERROR}
+\EndIf
+\State Solicitar \texttt{e}, separar la respuesta en el primer espacio y convertir ambos campos con \texttt{std::atoi}; no se valida que los campos sean numéricos, por lo que un campo no convertible produce cero.
+\State Asignar el primer valor a $c_L[k]$ y el segundo a $c_R[k]$.
+\State Calcular $\phi_j[k]$ y $\widehat{\omega}_j[k]$ para ambas ruedas mediante las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}.
+\State Exportar las interfaces en el orden \texttt{velocidad izquierda}, \texttt{posición izquierda}, \texttt{velocidad derecha}, \texttt{posición derecha}.
+\State \textbf{update():} \texttt{diff\_drive\_controller} actualiza la odometría y las consignas de rueda.
+\State \textbf{write():}
+\If{el enlace serial no está abierto}
+\State \Return \texttt{ERROR}
+\EndIf
+\State Calcular las referencias izquierda y derecha mediante la Ec.~\eqref{eq:mps_to_ticks}, usando \texttt{loop\_rate}$=30$.
+\State Enviar \texttt{m} seguido de $m_{L,\mathrm{ROS}}^{\mathrm{cmd}}$ y $m_{R,\mathrm{ROS}}^{\mathrm{cmd}}$.
+\EndWhile
+\end{algorithmic}
+\caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}}
+\label{alg:ros2control_cycle}
+\end{algorithm}
+
+El firmware incorpora además una auto-detención de seguridad ante pérdida de
+comandos, detallada en la Sec.~\ref{sec:bucle_principal}.
 %=====================================================================
 \section{Firmware de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
@@ -301,9 +336,6 @@ El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución efecti
 \label{sec:serial_firmware}
 
 La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante un protocolo serial textual a 57600~baud. Durante la operación normal, los comandos principales permiten leer los encoders, enviar referencias de velocidad, cargar las ganancias PID y aplicar PWM directo durante las pruebas en lazo abierto. El protocolo completo se presenta en la Tabla~\ref{tab:protocolo_serial}.
-
-\subsubsection{Obtención experimental de ticks por vuelta}
-\label{sec:cpr_experimental}
 
 Los contadores de encoder se midieron durante diez vueltas completas por rueda. Las medias obtenidas fueron 1976~ticks/vuelta para la rueda derecha y 1969~ticks/vuelta para la izquierda; a partir de ellas se adoptó el valor unificado $N_e=1980$~ticks/vuelta, con una diferencia respecto de ambas medias inferior al 0.6\%. Las muestras individuales, el tratamiento de la lectura no atómica de los contadores y el cálculo formal de las medias se conservan en el \ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R} y \eqref{eq:promedio_cuentas_L}.
 
@@ -361,7 +393,60 @@ $K_o$ & 50 & 50 \\
 
 Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del firmware. El código divide por $K_o$ el numerador completo de la Ec.~\ref{eq:pid_incremento} y después asigna el resultado a una variable \texttt{long}. Debido a ese truncamiento y a los estados enteros, la operación ejecutada no debe reemplazarse por tres ganancias predivididas $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$ como si fueran algebraicamente equivalentes. La salida se satura al intervalo PWM $[u_{\min},u_{\max}]=[-255,255]$ (constante \texttt{MAX\_PWM} del firmware). La convención heredada de \texttt{ROSArduinoBridge} ordena los parámetros como $K_p$, $K_d$, $K_i$, $K_o$.
 
-La función \texttt{resetPID()} no se limita a reiniciar estados: también vuelve a cargar las ganancias predeterminadas mostradas en la Tabla~\ref{tab:ganancias_pid}. Se invoca al reiniciar encoders, antes de aplicar PWM directo y cuando ambos comandos de velocidad son exactamente cero. En consecuencia, cualquier ganancia cargada temporalmente mediante \texttt{u} o \texttt{z} se reemplaza por los valores codificados al producirse cualquiera de esos reinicios. La secuencia exacta de lectura, actualización de estados, saturación y aplicación de las salidas se conserva en el Alg.~\ref{alg:pid_firmware} del \ref{anx:firmware_detalle}.
+La rutina de reinicio del controlador no se limita a reiniciar los estados
+internos: también vuelve a cargar las ganancias predeterminadas mostradas en
+la Tabla~\ref{tab:ganancias_pid}. Se invoca al reiniciar los encoders, antes
+de aplicar PWM directo y cuando ambos comandos de velocidad son exactamente
+cero. En consecuencia, cualquier ganancia cargada temporalmente mediante los
+comandos seriales de sintonización (Tabla~\ref{tab:protocolo_serial}) se
+reemplaza por los valores codificados al producirse cualquiera de esos
+reinicios. La secuencia exacta de lectura, actualización de estados,
+saturación y aplicación de las salidas, incluidos los nombres de las
+funciones del firmware involucradas, se formaliza en el
+Algoritmo~\ref{alg:pid_firmware}.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\small
+\Require Conteos acumulados $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; ganancias; $K_o=50$; \texttt{MAX\_PWM}$=255$.
+\Ensure Salidas PWM izquierda y derecha y estados internos actualizados.
+\State \textbf{Inicialización mediante \texttt{resetPID()}:} cargar ganancias por rueda, leer los encoders actuales y fijar \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero.
+\State \textbf{Planificación:} cuando \texttt{millis()>nextPID}, ejecutar \texttt{updatePID()} y luego sumar 33~ms a \texttt{nextPID}.
+\State Leer primero $c_L[k]$ y después $c_R[k]$.
+\If{\texttt{moving==0}}
+\If{algún \texttt{PrevInput} es distinto de cero}
+\State Ejecutar \texttt{resetPID()}.
+\EndIf
+\State \Return
+\EndIf
+\State Ejecutar \Call{doPID}{rueda derecha, banda muerta 1}.
+\State Ejecutar \Call{doPID}{rueda izquierda, banda muerta 2}.
+\State Llamar \texttt{setMotorSpeeds(leftPID.output,rightPID.output)}.
+\State Dentro de \texttt{setMotorSpeeds}, aplicar primero la salida izquierda y después la salida derecha mediante \texttt{setMotorSpeed}.
+\Statex
+\Procedure{doPID}{$p,e_{\mathrm{db}}$}
+\State $m^{\mathrm{int}}\gets\operatorname{int}(p.Encoder-p.PrevEnc)$.
+\State $e^{\mathrm{long}}\gets\operatorname{trunc}_0(p.TargetTicksPerFrame-m^{\mathrm{int}})$.
+\If{$|e^{\mathrm{long}}|\leq e_{\mathrm{db}}$}
+\State $e^{\mathrm{long}}\gets0$.
+\EndIf
+\State $\Delta u^{\mathrm{long}}\gets\operatorname{trunc}_0\!\left[(K_p e^{\mathrm{long}}-K_d(m^{\mathrm{int}}-p.PrevInput)+p.ITerm)/K_o\right]$.
+\State $p.PrevEnc\gets p.Encoder$.
+\State $u^{\mathrm{raw}}\gets p.output+\Delta u^{\mathrm{long}}$.
+\If{$u^{\mathrm{raw}}\geq255$}
+\State $u\gets255$.
+\ElsIf{$u^{\mathrm{raw}}\leq-255$}
+\State $u\gets-255$.
+\Else
+\State $u\gets u^{\mathrm{raw}}$.
+\State $p.ITerm\gets\operatorname{trunc}_0(p.ITerm+K_i e^{\mathrm{long}})$.
+\EndIf
+\State $p.output\gets u$; \quad $p.PrevInput\gets m^{\mathrm{int}}$.
+\EndProcedure
+\end{algorithmic}
+\caption{Secuencia exacta del PID discreto ejecutado por el firmware}
+\label{alg:pid_firmware}
+\end{algorithm}
 
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
@@ -388,20 +473,120 @@ Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en
 \end{algorithmic}
 \end{algorithm}
 
-El núcleo del optimizador corresponde a la clase \texttt{pso}, implementada
-en \path{arduino_firmware/pid_config/pyPso.py}; las posiciones y velocidades
-iniciales se generan mediante \texttt{np.random.rand}, sin fijar una semilla
-pseudoaleatoria, por lo que distintas ejecuciones pueden producir parámetros
-diferentes. Las rutas se expresan respecto de \path{src/}, según la
-convención del \ref{anx:rutas_software}.
+El núcleo del optimizador se implementa en un módulo propio de Python, cuyo
+flujo completo se formaliza en el Algoritmo~\ref{alg:pso_nucleo}; las
+posiciones y velocidades iniciales se generan de forma pseudoaleatoria sin
+fijar una semilla, por lo que distintas ejecuciones pueden producir
+parámetros diferentes. La localización del módulo dentro del repositorio se
+documenta en el \ref{anx:rutas_software}.
 
-El orden $\{L,R\}$ del bucle de sintonización corresponde a la lista
-\texttt{wheels=["IZQUIERDA","DERECHA"]} utilizada por los scripts.
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\small
+\Require Función de costo; número de partículas $N_p$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
+\Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y parámetros escalados $\theta^{\mathrm{out}}$.
+\State Inicializar $\xi_{i,d}\sim\mathcal{U}[0,1]$ y $V_{i,d}\sim\mathcal{U}[0,1]$ sin semilla fija.
+\State Evaluar las posiciones iniciales.
+\State $P_i\gets \xi_i$ y $J_i^{\mathrm{best}}\gets J_i$.
+\State $J^*\gets\min_i J_i$ y $G\gets \xi_{\arg\min_i J_i}$.
+\For{$g=1,\ldots,g_{\max}$}
+\State Calcular $w_{\mathrm{in}}^{g}$ mediante la Ec.~\eqref{eq:pso_inercia}.
+\For{cada partícula $i$}
+\State Generar $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$.
+\State Actualizar $V_i$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico} usando $G$.
+\State $\xi_i\gets \xi_i+V_i$.
+\State $\xi_i\gets\max(\xi_i,10^{-4})$ elemento a elemento.
+\If{modo ID}
+\State $\theta_i^{\mathrm{eval}}\gets(0.01\xi_{i,1},\,2.0\xi_{i,2},\,0.5\xi_{i,3})$.
+\Else
+\State $\xi_{i,d}^{\mathrm{eval}}\gets\min\!\left(1,\max\!\left(\xi_{i,d},10^{-4}\right)\right)$, para $d=1,2,3$.
+\State $\theta_i^{\mathrm{eval}}\gets(40\xi_{i,1}^{\mathrm{eval}},\,25\xi_{i,2}^{\mathrm{eval}},\,0.05\xi_{i,3}^{\mathrm{eval}})$.
+\EndIf
+\State Evaluar $J_i\gets J(\theta_i^{\mathrm{eval}})$.
+\If{$J_i<J_i^{\mathrm{best}}$}
+\State $J_i^{\mathrm{best}}\gets J_i$ y $P_i\gets \xi_i$.
+\EndIf
+\EndFor
+\State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$.
+\If{$J_{\mathrm{new}}^*<J^*$}
+\State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$.
+\State $G\gets \xi_{i^*}$.
+\Comment{Se usa la posición actual, no $P_{i^*}$}
+\State $J^*\gets J_{\mathrm{new}}^*$.
+\EndIf
+\EndFor
+\If{modo ID}
+\State $\theta^{\mathrm{out}}\gets(0.01G_1,\,2.0G_2,\,0.5G_3)$.
+\Else
+\State $\theta^{\mathrm{out}}\gets(40G_1,\,25G_2,\,0.05G_3)$.
+\EndIf
+\State No aplicar un recorte superior final.
+\end{algorithmic}
+\caption{PSO ejecutado por \texttt{pyPso.py} y evaluación utilizada en la sintonización}
+\label{alg:pso_nucleo}
+\end{algorithm}
+
+El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
+scripts recorren las ruedas, formalizado en el Algoritmo~\ref{alg:sintonizacion}.
 
 \subsubsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
 
-La prueba aplica un escalón PWM nominal de 143 y registra los conteos de encoder cada $T_{cap}=0.1$~s durante 10~s. La velocidad se calcula con el período nominal, mientras el tiempo real del ciclo solo determina el remanente de espera. La ecuación y el procedimiento reproducible se trasladan al \ref{anx:protocolos_sintonizacion}, Ec.~\eqref{eq:vel_lazo_abierto} y Alg.~\ref{alg:captura_lazo_abierto}.
+La prueba aplica un escalón PWM nominal de 143 y registra los conteos de
+encoder cada $T_{\mathrm{cap}}=0.1$~s durante 10~s. La velocidad se calcula
+con el período nominal, mientras el tiempo real del ciclo solo determina el
+remanente de espera. El procedimiento reproducible se formaliza en el
+Algoritmo~\ref{alg:captura_lazo_abierto}; la ecuación de conversión de
+conteos a velocidad se conserva en el \ref{anx:protocolos_sintonizacion},
+Ec.~\eqref{eq:vel_lazo_abierto}.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\small
+\Require Enlace serial al \gls{Arduino}; PWM nominal de la Tabla~\ref{tab:pso_config}; período de captura $T_{\mathrm{cap}}=0.1$~s e instantes de muestreo $t_k=k\,T_{\mathrm{cap}}$ [s]; duración $t_f=10$~s; instante de escalón $t_{\mathrm{step}}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
+\Ensure Series por rueda $\bigl(u_j[k],v_j^{\mathrm{med}}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT de la Etapa~1 del Alg.~\ref{alg:sintonizacion}.
+\Statex \textbf{Inicialización:}
+\State Abrir el puerto serial, fijar PWM en cero y esperar la estabilización.
+\State Leer los encoders iniciales $c_j[-1]$, para $j\in\{R,L\}$.
+\If{la respuesta inicial no contiene dos enteros válidos}
+\State Detener el procedimiento, cerrar el puerto y no iniciar el escalón.
+\EndIf
+\State $k\gets 0$
+\Statex
+\Statex \textbf{Ejecución principal:}
+\While{$t_k\leq t_f$}
+\State Registrar el instante real de inicio del ciclo.
+\If{$t_k\geq t_{\mathrm{step}}$}
+\State $u_j[k]\gets \mathrm{PWM}_{\mathrm{nom}}$, para $j\in\{R,L\}$
+\Comment{escalón sin PID}
+\Else
+\State $u_j[k]\gets 0$, para $j\in\{R,L\}$
+\EndIf
+\State Aplicar $u_L[k]$ y $u_R[k]$ a los motores en lazo abierto.
+\State Leer los encoders $c_j[k]$, para $j\in\{R,L\}$.
+\If{la lectura no contiene dos enteros válidos}
+\State Usar $c_j[k]\gets c_j[k-1]$ para ambas ruedas y emitir la advertencia correspondiente.
+\EndIf
+\For{$j\in\{R,L\}$}
+\State Calcular $\Delta c_j[k]\gets c_j[k]-c_j[k-1]$.
+\State Calcular $v_j^{\mathrm{med}}[k]$ mediante la Ec.~\ref{eq:vel_lazo_abierto}.
+\State Registrar $\bigl(u_j[k],v_j^{\mathrm{med}}[k]\bigr)$.
+\State $c_j[k-1]\gets c_j[k]$
+\EndFor
+\State Calcular el tiempo real consumido por el ciclo.
+\If{el tiempo consumido es menor que $T_{\mathrm{cap}}$}
+\State Dormir únicamente el remanente hasta $T_{\mathrm{cap}}$.
+\EndIf
+\State $k\gets k+1$
+\EndWhile
+\Statex
+\Statex \textbf{Salida:}
+\State Detener ambos motores y entregar las series
+$\bigl(u_j[k],v_j^{\mathrm{med}}[k]\bigr)$ para identificar el modelo FODT.
+\end{algorithmic}
+\caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
+\label{alg:captura_lazo_abierto}
+\end{algorithm}
 
 \subsubsection{Identificación y optimización}
 
@@ -417,7 +602,7 @@ La salida de la ejecución utilizada como punto de partida, incluidos los parám
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
 
-El bucle principal atiende el parser serial, programa el PID mediante incrementos enteros de 33~ms y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no llama directamente a \texttt{resetPID()}; en la siguiente actualización programada, esta función solo se ejecuta si alguno de los valores \texttt{PrevInput} es distinto de cero. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
+El bucle principal atiende el parser serial, programa el PID mediante incrementos enteros de 33~ms y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Algoritmo~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
 
 %=====================================================================
 \section{Arquitectura de control y navegación: SLAM, Nav2 y exploración}
@@ -445,16 +630,61 @@ de 0.2~rad y buffer de 10 barridos. La optimización del grafo utiliza
 \subsection{Navegación autónoma con Nav2}
 \label{sec:nav2_ch9}
 
-Nav2 recibe una meta de navegación, calcula una ruta global y genera comandos de velocidad para que el robot la ejecute evitando obstáculos. La cadena funcional implementada es:
+Nav2 recibe una meta de navegación, calcula una ruta global y genera comandos de velocidad para que el robot la ejecute evitando obstáculos. En la Figura~\ref{fig:interaccion_nav} se muestra gráficamente la interacción
+entre los componentes de la navegación autónoma: el mapa y la pose estimados
+por \texttt{slam\_toolbox} alimentan los mapas de costo; el explorador de
+fronteras genera metas que el árbol de comportamiento orquesta mediante el
+planificador global y el controlador local; y los comandos de velocidad
+resultantes se arbitran y ejecutan sobre el controlador diferencial, cuya
+odometría realimenta el mapeo.
 
-\begin{center}
-\small
-\begin{minipage}{\linewidth}
+\begin{figure}[H]
 \centering
-Meta $\rightarrow$ \texttt{bt\_navigator} $\rightarrow$ \texttt{planner\_server} $\rightarrow$ \\[3pt]
-\texttt{controller\_server} $\rightarrow$ \texttt{twist\_mux} $\rightarrow$ \texttt{diff\_drive\_controller}
-\end{minipage}
-\end{center}
+\begin{tikzpicture}[font=\small,
+  nodo/.style={draw, rounded corners=2pt, align=center, fill=gray!10,
+               minimum height=0.85cm, inner sep=4pt},
+  dato/.style={-{Stealth[length=2.5mm]}, thick},
+  bidato/.style={{Stealth[length=2.5mm]}-{Stealth[length=2.5mm]}, thick},
+  etq/.style={font=\scriptsize, fill=white, inner sep=1pt}]
+
+\node[nodo] (lidar)   at (4.2,9.4)  {\gls{LIDAR} 2D};
+\node[nodo] (slam)    at (4.2,7.6)  {\texttt{slam\_toolbox}\\ mapa y pose};
+\node[nodo] (explore) at (8.8,7.6)  {\texttt{explore\_lite}\\ fronteras};
+\node[nodo] (cost)    at (4.2,5.8)  {Mapas de costo\\ global y local};
+\node[nodo] (bt)      at (8.8,5.8)  {\texttt{bt\_navigator}\\ árbol de comportamiento};
+\node[nodo] (plan)    at (2.9,3.9)  {\texttt{planner\_server}\\ NavFn con A$^*$};
+\node[nodo] (ctrl)    at (6.6,3.9)  {\texttt{controller\_server}\\ DWB};
+\node[nodo] (mux)     at (6.6,2.0)  {\texttt{twist\_mux}};
+\node[nodo] (teleop)  at (10.4,2.0) {Teleoperación};
+\node[nodo] (diff)    at (6.6,0.2)  {\texttt{diff\_drive\_controller}};
+\node[nodo] (hw)      at (6.6,-1.6) {Interfaz de hardware\\ y firmware PID};
+
+\draw[dato] (lidar)   -- (slam)    node[etq, midway, right=2pt] {\texttt{/scan}};
+\draw[dato] (slam)    -- (explore) node[etq, midway, above=1pt] {mapa y pose};
+\draw[dato] (slam)    -- (cost)    node[etq, midway, right=2pt] {mapa};
+\draw[dato] (explore) -- (bt)      node[etq, midway, right=2pt] {metas};
+\draw[dato] (bt)      -- (plan);
+\draw[dato] (bt)      -- (ctrl);
+\draw[dato] (cost)    -- (plan);
+\draw[dato] (cost)    -- (ctrl);
+\draw[dato] (plan)    -- (ctrl)    node[etq, midway, above=1pt] {ruta};
+\draw[dato] (ctrl)    -- (mux)     node[etq, midway, right=2pt] {\texttt{/cmd\_vel}};
+\draw[dato] (teleop)  -- (mux);
+\draw[dato] (mux)     -- (diff)    node[etq, midway, right=2pt] {consignas};
+\draw[bidato] (diff)  -- (hw)      node[etq, midway, right=2pt] {referencias y encoders};
+\draw[dato] (diff.west) -- ++(-6.0,0) |- (slam.west)
+            node[etq, pos=0.25, above=1pt] {\texttt{/odom}};
+\end{tikzpicture}
+
+\vspace{4pt}
+
+\caption{Interacción entre los componentes de la navegación autónoma.}
+\label{fig:interaccion_nav}
+
+\vspace{2pt}
+
+{\footnotesize\textit{Fuente: Elaboración propia.}}
+\end{figure}
 
 El planificador global utilizado es NavFn con A$^*$ (Sec.~\ref{sec:nav_marco}),
 mediante el plugin \texttt{nav2\_navfn\_planner/NavfnPlanner} con

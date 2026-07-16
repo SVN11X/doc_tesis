@@ -242,38 +242,6 @@ T_{\mathrm{PID,sched}}
 
 \noindent El firmware programa la ejecución del PID cada 33~ms mediante incrementos enteros de \texttt{nextPID}. Este intervalo corresponde a la planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
 
-\begin{algorithm}[H]
-\caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}}
-\label{alg:ros2control_cycle}
-\begin{algorithmic}[1]
-\footnotesize
-\Require Comandos de rueda $\omega_L^{cmd},\omega_R^{cmd}$ [rad/s]; enlace serial; $N_e$; frecuencia nominal \texttt{loop\_rate}$=30$.
-\Ensure Interfaces de estado exportadas como $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$ y referencias enteras de ticks/frame enviadas en orden izquierda--derecha.
-\State \textbf{Configuración:} asignar primero \texttt{time\_}$\gets\texttt{system\_clock::now()}$.
-\State Leer nombres de rueda, \texttt{loop\_rate}, dispositivo, baudrate, timeout y \texttt{enc\_counts\_per\_rev}.
-\State Inicializar $\delta\phi=2\pi/N_e$ para ambas ruedas y abrir el puerto serial.
-\State Esperar 3000~ms y vaciar el buffer de entrada; esta espera queda incluida en el primer $\Delta t_k$.
-\State \textbf{Inicio:} enviar un retorno de carro vacío; conservar las ganancias codificadas en \texttt{resetPID()}.
-\While{la interfaz permanece iniciada}
-\State \textbf{read():} medir $\Delta t_k$ con \texttt{system\_clock}.
-\If{el enlace serial no está abierto}
-\State \Return \texttt{ERROR}
-\EndIf
-\State Solicitar \texttt{e}, separar la respuesta en el primer espacio y convertir ambos campos con \texttt{std::atoi}; no se valida que los campos sean numéricos, por lo que un campo no convertible produce cero.
-\State Asignar el primer valor a $c_L[k]$ y el segundo a $c_R[k]$.
-\State Calcular $\phi_j[k]$ y $\widehat{\omega}_j[k]$ para ambas ruedas mediante las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}.
-\State Exportar las interfaces en el orden \texttt{velocidad izquierda}, \texttt{posición izquierda}, \texttt{velocidad derecha}, \texttt{posición derecha}.
-\State \textbf{update():} \texttt{diff\_drive\_controller} actualiza la odometría y las consignas de rueda.
-\State \textbf{write():}
-\If{el enlace serial no está abierto}
-\State \Return \texttt{ERROR}
-\EndIf
-\State Calcular las referencias izquierda y derecha mediante la Ec.~\eqref{eq:mps_to_ticks}, usando \texttt{loop\_rate}$=30$.
-\State Enviar \texttt{m} seguido de $m_{L,\mathrm{ROS}}^{cmd}$ y $m_{R,\mathrm{ROS}}^{cmd}$.
-\EndWhile
-\end{algorithmic}
-\end{algorithm}
-
 \section{Firmware, encoders y sintonización PID}
 \label{anx:firmware}
 
@@ -646,52 +614,6 @@ Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
 resume en el Alg.~\ref{alg:pid_firmware}.
 
-\subsection{Detalle ejecutable del controlador PID}
-\label{anx:firmware_detalle}
-
-\begin{algorithm}[H]
-\caption{Secuencia exacta del PID discreto ejecutado por el firmware}
-\label{alg:pid_firmware}
-\begin{algorithmic}[1]
-\footnotesize
-\Require Conteos acumulados $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; ganancias; $K_o=50$; \texttt{MAX\_PWM}$=255$.
-\Ensure Salidas PWM izquierda y derecha y estados internos actualizados.
-\State \textbf{Inicialización mediante \texttt{resetPID()}:} cargar ganancias por rueda, leer los encoders actuales y fijar \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero.
-\State \textbf{Planificación:} cuando \texttt{millis()>nextPID}, ejecutar \texttt{updatePID()} y luego sumar 33~ms a \texttt{nextPID}.
-\State Leer primero $c_L[k]$ y después $c_R[k]$.
-\If{\texttt{moving==0}}
-\If{algún \texttt{PrevInput} es distinto de cero}
-\State Ejecutar \texttt{resetPID()}.
-\EndIf
-\State \Return
-\EndIf
-\State Ejecutar \Call{doPID}{rueda derecha, banda muerta 1}.
-\State Ejecutar \Call{doPID}{rueda izquierda, banda muerta 2}.
-\State Llamar \texttt{setMotorSpeeds(leftPID.output,rightPID.output)}.
-\State Dentro de \texttt{setMotorSpeeds}, aplicar primero la salida izquierda y después la salida derecha mediante \texttt{setMotorSpeed}.
-\Statex
-\Procedure{doPID}{$p,e_{db}$}
-\State $m^{int}\gets\operatorname{int}(p.Encoder-p.PrevEnc)$.
-\State $e^{long}\gets\operatorname{trunc}_0(p.TargetTicksPerFrame-m^{int})$.
-\If{$|e^{long}|\leq e_{db}$}
-\State $e^{long}\gets0$.
-\EndIf
-\State $\Delta u^{long}\gets\operatorname{trunc}_0\!\left[(K_p e^{long}-K_d(m^{int}-p.PrevInput)+p.ITerm)/K_o\right]$.
-\State $p.PrevEnc\gets p.Encoder$.
-\State $u^{raw}\gets p.output+\Delta u^{long}$.
-\If{$u^{raw}\geq255$}
-\State $u\gets255$.
-\ElsIf{$u^{raw}\leq-255$}
-\State $u\gets-255$.
-\Else
-\State $u\gets u^{raw}$.
-\State $p.ITerm\gets\operatorname{trunc}_0(p.ITerm+K_i e^{long})$.
-\EndIf
-\State $p.output\gets u$; \quad $p.PrevInput\gets m^{int}$.
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
-
 \subsection{Procesamiento FODT usado por los scripts}
 \label{anx:fodt_scripts}
 
@@ -961,52 +883,6 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 
 \noindent donde $\boldsymbol{\theta}^{out}$ es el vector de parámetros informado al finalizar el PSO y $G_d^{final}$ es la componente $d$ de la posición global almacenada al término de la última generación. En la etapa PID, $\boldsymbol{\theta}^{out}$ puede superar los valores de escala 40, 25 y 0.05, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
 
-\begin{algorithm}[H]
-\caption{PSO ejecutado por \texttt{pyPso.py} y evaluación utilizada en la sintonización}
-\label{alg:pso_nucleo}
-\begin{algorithmic}[1]
-\small
-\Require Función de costo; número de partículas $N_p$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
-\Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y parámetros escalados $\theta^{\mathrm{out}}$.
-\State Inicializar $\xi_{i,d}\sim\mathcal{U}[0,1]$ y $V_{i,d}\sim\mathcal{U}[0,1]$ sin semilla fija.
-\State Evaluar las posiciones iniciales.
-\State $P_i\gets \xi_i$ y $J_i^{\mathrm{best}}\gets J_i$.
-\State $J^*\gets\min_i J_i$ y $G\gets \xi_{\arg\min_i J_i}$.
-\For{$g=1,\ldots,g_{\max}$}
-\State Calcular $w_{\mathrm{in}}^{g}$ mediante la Ec.~\eqref{eq:pso_inercia}.
-\For{cada partícula $i$}
-\State Generar $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$.
-\State Actualizar $V_i$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico} usando $G$.
-\State $\xi_i\gets \xi_i+V_i$.
-\State $\xi_i\gets\max(\xi_i,10^{-4})$ elemento a elemento.
-\If{modo ID}
-\State $\theta_i^{\mathrm{eval}}\gets(0.01\xi_{i,1},\,2.0\xi_{i,2},\,0.5\xi_{i,3})$.
-\Else
-\State $\xi_{i,d}^{\mathrm{eval}}\gets\min\!\left(1,\max\!\left(\xi_{i,d},10^{-4}\right)\right)$, para $d=1,2,3$.
-\State $\theta_i^{\mathrm{eval}}\gets(40\xi_{i,1}^{\mathrm{eval}},\,25\xi_{i,2}^{\mathrm{eval}},\,0.05\xi_{i,3}^{\mathrm{eval}})$.
-\EndIf
-\State Evaluar $J_i\gets J(\theta_i^{\mathrm{eval}})$.
-\If{$J_i<J_i^{\mathrm{best}}$}
-\State $J_i^{\mathrm{best}}\gets J_i$ y $P_i\gets \xi_i$.
-\EndIf
-\EndFor
-\State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$.
-\If{$J_{\mathrm{new}}^*<J^*$}
-\State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$.
-\State $G\gets \xi_{i^*}$.
-\Comment{Se usa la posición actual, no $P_{i^*}$}
-\State $J^*\gets J_{\mathrm{new}}^*$.
-\EndIf
-\EndFor
-\If{modo ID}
-\State $\theta^{\mathrm{out}}\gets(0.01G_1,\,2.0G_2,\,0.5G_3)$.
-\Else
-\State $\theta^{\mathrm{out}}\gets(40G_1,\,25G_2,\,0.05G_3)$.
-\EndIf
-\State No aplicar un recorte superior final.
-\end{algorithmic}
-\end{algorithm}
-
 \subsection{Protocolos de captura, identificación y sintonización}
 \label{anx:protocolos_sintonizacion}
 
@@ -1052,61 +928,6 @@ v_j^{med}[k]
 \end{equation}
 
 \noindent donde $\Delta c_j[k]=c_j[k]-c_j[k-1]$ es el incremento de conteo y $v_j^{med}[k]$ la velocidad lineal medida de la rueda $j$ [m/s]. En el script de captura \path{arduino_firmware/pid_config/ControlLazoAbierto.py}, $T_{cap}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
-
-\begin{algorithm}[H]
-\caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
-\label{alg:captura_lazo_abierto}
-\small
-\begin{algorithmic}[1]
-\Require Enlace serial al \gls{Arduino}; PWM nominal de la Tabla~\ref{tab:pso_config}; período de captura $T_{cap}=0.1$~s e instantes de muestreo $t_k=k\,T_{cap}$ [s]; duración $t_f=10$~s; instante de escalón $t_{step}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
-\Ensure Series por rueda $\bigl(u_j[k],v_j^{med}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT de la Etapa~1 del Alg.~\ref{alg:sintonizacion}.
-
-\Statex \textbf{Inicialización:}
-\State Abrir el puerto serial, fijar PWM en cero y esperar la estabilización.
-\State Leer los encoders iniciales $c_j[-1]$, para $j\in\{R,L\}$.
-\If{la respuesta inicial no contiene dos enteros válidos}
-\State Detener el procedimiento, cerrar el puerto y no iniciar el escalón.
-\EndIf
-\State $k\gets 0$
-
-\Statex
-\Statex \textbf{Ejecución principal:}
-\While{$t_k\leq t_f$}
-\State Registrar el instante real de inicio del ciclo.
-\If{$t_k\geq t_{step}$}
-\State $u_j[k]\gets \mathrm{PWM_{nom}}$, para $j\in\{R,L\}$
-\Comment{escalón sin PID}
-\Else
-\State $u_j[k]\gets 0$, para $j\in\{R,L\}$
-\EndIf
-
-\State Aplicar $u_L[k]$ y $u_R[k]$ a los motores en lazo abierto.
-\State Leer los encoders $c_j[k]$, para $j\in\{R,L\}$.
-\If{la lectura no contiene dos enteros válidos}
-\State Usar $c_j[k]\gets c_j[k-1]$ para ambas ruedas y emitir la advertencia correspondiente.
-\EndIf
-
-\For{$j\in\{R,L\}$}
-\State Calcular $\Delta c_j[k]\gets c_j[k]-c_j[k-1]$.
-\State Calcular $v_j^{med}[k]$ mediante la
-Ec.~\ref{eq:vel_lazo_abierto}.
-\State Registrar $\bigl(u_j[k],v_j^{med}[k]\bigr)$.
-\State $c_j[k-1]\gets c_j[k]$
-\EndFor
-
-\State Calcular el tiempo real consumido por el ciclo.
-\If{el tiempo consumido es menor que $T_{cap}$}
-\State Dormir únicamente el remanente hasta $T_{cap}$.
-\EndIf
-\State $k\gets k+1$
-\EndWhile
-
-\Statex
-\Statex \textbf{Salida:}
-\State Detener ambos motores y entregar las series
-$\bigl(u_j[k],v_j^{med}[k]\bigr)$ para identificar el modelo FODT.
-\end{algorithmic}
-\end{algorithm}
 
 \subsection{Resultados de la ejecución PSO empleada}
 \label{anx:resultados_pso_ejecucion}
