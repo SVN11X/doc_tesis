@@ -1,4 +1,4 @@
-\chapter{SOLUCIÓN PROPUESTA}
+\chapter{SOLUCIÓN IMPLEMENTADA}
 \label{ch:solucion}
 
 Este capítulo describe, de forma general, la solución diseñada antes de entrar
@@ -31,14 +31,3 @@ construye el mapa y estima la pose, Nav2 planifica y controla la navegación,
 el explorador de fronteras genera metas autónomas y RViz2 permite la
 supervisión.
 \end{description}
-
-El flujo de datos es el siguiente: los encoders realimentan al Arduino, que
-cierra el lazo PID y entrega los conteos acumulados; la interfaz
-\texttt{DiffDriveArduino} convierte esos conteos en estados de rueda y
-\texttt{diff\_drive\_controller} publica \texttt{/odom} y la transformación
-\texttt{odom}$\rightarrow$\texttt{base\_link}. La Raspberry Pi publica además
-los barridos \texttt{/scan}; en la estación de trabajo,
-\texttt{slam\_toolbox} consume \texttt{/scan} y obtiene la pose odométrica
-mediante TF, en lugar de suscribirse directamente a \texttt{/odom}, para
-estimar la trayectoria y construir el mapa, que posteriormente alimenta a
-Nav2 y al explorador de fronteras.
