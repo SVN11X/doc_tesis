@@ -20,14 +20,14 @@ Un robot móvil puede describirse como un conjunto de cuerpos rígidos
 (eslabones) unidos mediante articulaciones, organizados como un árbol
 cinemático cuya raíz es la base del robot \citep{corke2023}. En una
 plataforma diferencial, el árbol se compone del chasis, las dos ruedas
-motrices ---articulaciones de revolución accionadas--- y los elementos
+motrices (articulaciones de revolución accionadas) y los elementos
 pasivos de apoyo, además de los sensores montados sobre el chasis.
 
 Para describir la posición y orientación del robot se asocia un marco de
 referencia a cada cuerpo de interés. La pose de un robot que se desplaza en
 el plano queda definida por el vector $q=(x,y,\theta)$, donde $x$ e $y$ son
-las coordenadas de la base respecto de un marco fijo [m] y $\theta$ la
-orientación [rad]. La relación entre un punto expresado en el marco del robot
+las coordenadas de la base respecto de un marco fijo (m) y $\theta$ la
+orientación (rad). La relación entre un punto expresado en el marco del robot
 y el mismo punto en el marco fijo se obtiene mediante la matriz de rotación
 en el plano:
 
@@ -196,20 +196,20 @@ embebidos por su bajo costo computacional, pero acumula deriva por errores
 de calibración, cuantización de encoders y deslizamiento \citep{corke2023}.
 
 \noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal
-del robot [m/s]; con subíndice $j\in\{R,L\}$ denota la velocidad lineal de
-rueda. $\omega$ sin subíndice denota la velocidad angular del robot [rad/s];
-con subíndice $j$ denota la velocidad angular de rueda [rad/s]. El subíndice
+del robot (m/s); con subíndice $j\in\{R,L\}$ denota la velocidad lineal de
+rueda. $\omega$ sin subíndice denota la velocidad angular del robot (rad/s);
+con subíndice $j$ denota la velocidad angular de rueda (rad/s). El subíndice
 $R$ corresponde a la rueda derecha y $L$ a la izquierda. La posición angular
-de rueda se denota $\phi_j$ [rad]. Las minúsculas $x_k$, $y_k$ se reservan para las coordenadas de pose del
+de rueda se denota $\phi_j$ (rad). Las minúsculas $x_k$, $y_k$ se reservan para las coordenadas de pose del
 robot; la posición de una partícula del algoritmo PSO se denota mediante la
 letra griega $\xi_{i,d}$ y su velocidad mediante $V_{i,d}$, de modo que
 ningún símbolo de pose o velocidad del robot se reutiliza en el optimizador. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su
-representación discreta $n_{d,j}$ [muestras]. El conteo de encoder se
+representación discreta $n_{d,j}$ (muestras). El conteo de encoder se
 expresa en ticks, donde un tick corresponde a una cuenta producida por la
 decodificación en cuadratura.
 
 Considérese un robot diferencial con radio de rueda $r$, separación entre
-ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad], donde $k$ identifica
+ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ (m, m, rad), donde $k$ identifica
 la muestra discreta. La relación entre las velocidades angulares de rueda y
 las velocidades del robot es:
 
@@ -239,9 +239,9 @@ consignas de rueda, es:
 \end{align}
 
 \noindent donde $v^{\mathrm{cmd}}$ y $\omega^{\mathrm{cmd}}$ son las
-consignas lineal [m/s] y angular [rad/s] del robot, mientras que
+consignas lineal (m/s) y angular (rad/s) del robot, mientras que
 $\omega_R^{\mathrm{cmd}}$ y $\omega_L^{\mathrm{cmd}}$ son las consignas
-angulares de las ruedas [rad/s].
+angulares de las ruedas (rad/s).
 
 Una discretización de Euler del modelo cinemático permite propagar la pose
 entre muestras:
@@ -287,7 +287,7 @@ consecutivas:
 \end{equation}
 
 \noindent donde $\widehat{\omega}_j[k]$ es la velocidad angular estimada de
-la rueda $j$ [rad/s] y $\Delta t_k$ el tiempo real transcurrido entre las
+la rueda $j$ (rad/s) y $\Delta t_k$ el tiempo real transcurrido entre las
 lecturas empleadas [s]. La definición por casos de $\Delta t_k$ y la
 secuencia de lectura ejecutada por la interfaz de hardware se desarrollan en
 el Capítulo~\ref{ch:implementacion} y en el
@@ -311,8 +311,8 @@ G_j(s)
 \end{equation}
 
 \noindent donde $G_j(s)$ es la función de transferencia identificada para la
-rueda $j$, $K_{m,j}$ la ganancia estática [(m/s)/PWM], $\tau_j$ la constante
-de tiempo [s] y $s$ la variable de Laplace [s$^{-1}$]; $L_{d,j}$ corresponde
+rueda $j$, $K_{m,j}$ la ganancia estática, $\tau_j$ la constante
+de tiempo (s) y $s$ la variable de Laplace (s$^{-1}$); $L_{d,j}$ corresponde
 al retardo definido en la convención inicial.
 
 Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$
@@ -342,7 +342,7 @@ K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
 
 \noindent donde $u_j[k]$ es la entrada \gls{PWM} aplicada, $u_{j,d}[k]$ la
 entrada retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el
-modelo para la rueda $j$ [m/s]; $\operatorname{trunc}(\cdot)$ conserva
+modelo para la rueda $j$ (m/s); $\operatorname{trunc}(\cdot)$ conserva
 únicamente la parte entera del resultado. Los parámetros
 $(K_{m},\tau,L_{d})$ se estiman minimizando el error cuadrático entre la
 respuesta medida y la del modelo discreto. El protocolo experimental de

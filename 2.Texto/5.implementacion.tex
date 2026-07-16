@@ -69,6 +69,7 @@ La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos y temporale
 \midrule
 $r$ & Radio de rueda & 0.0335 m & Modelo cinemático y odometría \\
 $b$ & Separación entre ruedas & 0.188 m & Modelo cinemático diferencial \\
+$N_{\mathrm{Hall}}$ & Pulsos por vuelta del eje del motor & 11 & Cálculo teórico del encoder \\
 $N_g$ & Relación de reducción & 46 (nominal $46{:}1$) & Cálculo teórico del encoder \\
 $N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & 2024 ticks/vuelta & Cálculo teórico \\
 $N_e$ & Resolución efectiva del encoder & 1980 ticks/vuelta & Firmware y odometría \\
@@ -258,7 +259,31 @@ Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmwa
 \subsection{Flujo de datos del sistema}
 \label{sec:flujo_datos}
 
-El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se formaliza en el Algoritmo~\ref{alg:ros2control_cycle}: \texttt{read()} obtiene los conteos y exporta los estados de rueda, \texttt{diff\_drive\_controller} actualiza la odometría y las consignas, y \texttt{write()} transmite referencias enteras de \textit{ticks/frame}. El orden exacto, las validaciones seriales y la inicialización temporal se conservan en el Alg.~\ref{alg:ros2control_cycle} del \ref{anx:implementacion_diffdrive}. El firmware incorpora además una auto-detención de seguridad ante pérdida de comandos, detallada en la Sec.~\ref{sec:bucle_principal}.
+El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se
+resume, a nivel macro, en el Algoritmo~\ref{alg:odometria_diferencial}: se
+obtienen los conteos de encoder y se exportan los estados de rueda, el
+controlador diferencial actualiza la odometría y las consignas, y las
+referencias se transmiten como valores enteros de \textit{ticks/frame}.
+
+\begin{algorithm}[H]
+\caption{Resumen de la transformación entre encoders, estados y consignas}
+\label{alg:odometria_diferencial}
+\begin{algorithmic}[1]
+\Require Conteos acumulados $c_L,c_R$; resolución $N_e$; consignas $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$; $f_{\mathrm{loop}}$.
+\Ensure Estados angulares de rueda y referencias enteras de ticks/frame.
+\For{$j\in\{L,R\}$}
+\State Obtener $\phi_j[k]$ y $\widehat{\omega}_j[k]$ mediante las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}.
+\EndFor
+\State Exportar los estados de rueda a \texttt{ros2\_control}.
+\State Convertir las consignas mediante la Ec.~\eqref{eq:mps_to_ticks} y transmitirlas al firmware.
+\end{algorithmic}
+\end{algorithm}
+
+El orden exacto de ejecución, las validaciones seriales y la inicialización
+temporal se conservan en el Alg.~\ref{alg:ros2control_cycle} del
+\ref{anx:implementacion_diffdrive}. El firmware incorpora además una
+auto-detención de seguridad ante pérdida de comandos, detallada en la
+Sec.~\ref{sec:bucle_principal}.
 
 %=====================================================================
 \section{Firmware de bajo nivel en Arduino Nano}
@@ -287,7 +312,35 @@ Los contadores de encoder se midieron durante diez vueltas completas por rueda. 
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con la medición entera $m_j^{int}[k]$ en ticks/frame.
 
-La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap.~\ref{marco_teorico}. El firmware incluye anti-windup condicional, zona muerta para reducir ciclos límite por cuantización y saturación de la salida PWM. Las ganancias definitivas son:
+La ley implementada corresponde a la forma incremental con derivada sobre la
+medición definida en el Cap.~\ref{marco_teorico}. Cada ciclo de control sigue
+la estructura macro del Algoritmo~\ref{alg:pid_macro}.
+
+\begin{algorithm}[H]
+\caption{Estructura macro del ciclo de control PID por rueda en el firmware}
+\label{alg:pid_macro}
+\begin{algorithmic}[1]
+\Require Referencia de rueda en ticks/frame; conteos de encoder; ganancias $(K_{p,j},K_{d,j},K_{i,j},K_{o,j})$.
+\Ensure Salida PWM aplicada a cada motor.
+\For{cada rueda $j\in\{L,R\}$, cada 33~ms}
+\State Calcular la medición de velocidad en ticks/frame a partir del conteo de encoder.
+\State Calcular el error respecto de la referencia según la Ec.~\eqref{eq:error_pid}.
+\If{el error está dentro de la zona muerta}
+\State Anular el error para evitar ciclos límite por cuantización.
+\EndIf
+\State Calcular el incremento de control con la ley incremental de la Ec.~\eqref{eq:pid_incremento}.
+\State Acumular la salida y saturarla al intervalo PWM $[-255,255]$.
+\If{la salida no quedó saturada}
+\State Actualizar el estado integral (anti-windup condicional).
+\EndIf
+\State Aplicar la salida PWM al driver de potencia.
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+El firmware incluye anti-windup condicional, zona muerta para reducir ciclos
+límite por cuantización y saturación de la salida PWM. Las ganancias
+definitivas son:
 
 \begin{table}[H]
 \centering
@@ -313,7 +366,27 @@ La función \texttt{resetPID()} no se limita a reiniciar estados: también vuelv
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
 
-Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental, formalizado en el Alg.~\ref{alg:sintonizacion}. La identificación y la sintonización utilizan enjambres de 50 partículas durante 150 generaciones. Las variables, escalas, cotas y funciones de costo se conservan en la Tabla~\ref{tab:pso_config} del \ref{anx:protocolos_sintonizacion}.
+Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental, formalizado en el Alg.~\ref{alg:sintonizacion}. La identificación y la sintonización utilizan enjambres de $N_p=50$ partículas durante $g_{\max}=150$ generaciones. Las variables, escalas, cotas y funciones de costo se conservan en la Tabla~\ref{tab:pso_config} del \ref{anx:protocolos_sintonizacion}.
+
+\begin{algorithm}[H]
+\caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
+\label{alg:sintonizacion}
+\begin{algorithmic}[1]
+\Require Respuesta al escalón en lazo abierto por rueda; período de captura $T_{cap}=0.1$~s; configuración PSO de la Tabla~\ref{tab:pso_config}.
+\Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
+\State \textbf{Inicialización:} cargar los datos de lazo abierto y suavizar la velocidad medida.
+\For{$j \in \{L,R\}$}
+\State \textbf{Etapa 1 --- Identificación FODT por PSO:} definir la función de costo de la Ec.~\eqref{eq:costo_identificacion}, con la respuesta del modelo obtenida mediante la discretización de la Ec.~\eqref{eq:fodt_discreto}, penalizando parámetros o respuestas inválidas.
+\State $(K_m,\tau,L_d)_j \gets \Call{PSO}{J_{\mathrm{ID}}}$
+\Comment{Alg.~\ref{alg:pso_nucleo}}
+\State \textbf{Etapa 2 --- Optimización de ganancias PID por PSO:} definir la función de costo de la Ec.~\eqref{eq:costo_pso}, simulando el lazo cerrado del controlador sobre el modelo FODT identificado; las aproximaciones numéricas de esa simulación se documentan en el \ref{anx:fodt_scripts}.
+\State $(K_p,K_d,K_i)_j \gets \Call{PSO}{J}$
+\Comment{Alg.~\ref{alg:pso_nucleo}}
+\EndFor
+\State \textbf{Etapa 3 --- Refinamiento experimental:} ajustar las ganancias sobre el hardware real y registrar los valores finales en el firmware.
+\State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$.
+\end{algorithmic}
+\end{algorithm}
 
 El núcleo del optimizador corresponde a la clase \texttt{pso}, implementada
 en \path{arduino_firmware/pid_config/pyPso.py}; las posiciones y velocidades
@@ -436,7 +509,31 @@ Tabla~\ref{tab:recovery_ch9}.
 
 Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}); su nodo \texttt{explore\_server} identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 
-El explorador utiliza el costmap global, reevalúa las fronteras con una frecuencia configurada de 0.3~Hz y aplica un tiempo máximo sin progreso de 10~s. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo reproducible de detección, selección, envío de metas y gestión de la lista negra se traslada al Alg.~\ref{alg:exploracion_fronteras} del mismo anexo.
+El explorador utiliza el costmap global, reevalúa las fronteras con una frecuencia configurada de 0.3~Hz y aplica un tiempo máximo sin progreso de 10~s. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo de detección, selección, envío de metas y gestión de la lista negra se resume en el Algoritmo~\ref{alg:exploracion_fronteras}.
+
+\begin{algorithm}[H]
+\caption{Integración operativa de \texttt{explore\_lite} con Nav2}
+\label{alg:exploracion_fronteras}
+\begin{algorithmic}[1]
+\Require Costmap global $C$; pose del robot; parámetros de la Tabla~\ref{tab:explore_params_ch9}; lista negra $B$.
+\Ensure Metas \texttt{NavigateToPose} seleccionadas a partir de las fronteras disponibles.
+\State Ejecutar una planificación inmediata y programar las siguientes con el período de la Ec.~\eqref{eq:periodo_explorador_real}.
+\State Obtener la pose del robot y detectar las fronteras mediante el procedimiento de la Sec.~\ref{sec:exploracion_marco}.
+\State Calcular para cada frontera el punto $p_F^{impl}$ y el costo $U(F)$ de las Ecs.~\eqref{eq:centroide_frontera_impl} y~\eqref{eq:frontier_cost}.
+\State Descartar las fronteras menores que \texttt{min\_frontier\_size} y ordenar las restantes por costo ascendente.
+\If{no existen fronteras seleccionables}
+\State Cancelar las metas activas y detener el ciclo de exploración.
+\State \Return
+\EndIf
+\State Elegir la primera frontera que no pertenezca a $B$; si todas están vetadas, vaciar $B$ y reintentar en el siguiente ciclo.
+\If{la meta permanece sin progreso durante \texttt{progress\_timeout}}
+\State Añadirla a $B$ y volver a planificar.
+\State \Return
+\EndIf
+\State Enviar $p_F^{impl}$ a \texttt{NavigateToPose} con orientación identidad.
+\State Ante \texttt{SUCCEEDED}, volver a planificar; ante \texttt{ABORTED}, añadir la meta a $B$; ante \texttt{CANCELED}, conservar $B$.
+\end{algorithmic}
+\end{algorithm}
 
 Las particularidades de la implementación ejecutada ---el cálculo del punto
 representativo de cada frontera, el escalamiento de la distancia en el
