@@ -1,16 +1,208 @@
 \chapter{MARCO TEÓRICO}
 \label{marco_teorico}
 
-Este capítulo presenta los fundamentos empleados en el diseño e implementación del robot móvil diferencial. Se abordan el modelo cinemático y la odometría por encoders, la identificación FODT, el control PID discreto, la optimización PSO, el SLAM basado en grafos, la navegación con A* y DWB, y la exploración autónoma basada en fronteras. Las ecuaciones de implementación se formulan de acuerdo con el firmware, la interfaz de hardware, los scripts de sintonización y las configuraciones ejecutadas.
+Este capítulo presenta los fundamentos generales empleados en el diseño del
+robot móvil diferencial. Se define primero el robot como sistema físico
+---estructura, marcos de referencia y rotaciones--- junto con su descripción
+mediante URDF y la simulación en Gazebo. Luego se explica \gls{ROS2} y su
+mecanismo de comunicación, el principio de funcionamiento de los sensores y
+actuadores utilizados (\gls{LIDAR} 2D, encoders, motores DC con driver), el
+modelo cinemático diferencial y la odometría, la identificación FODT, el
+controlador PID y su sintonización mediante PSO, el SLAM basado en grafos con
+SLAM Toolbox, la planificación de rutas con A*, el control local por ventana
+dinámica y la exploración autónoma basada en fronteras. La materialización de
+estos fundamentos ---algoritmos, parámetros y configuraciones ejecutadas---
+se desarrolla en el Capítulo~\ref{ch:implementacion} y en los anexos.
 
-\section{Odometría y modelo cinemático diferencial}
+\section{El robot móvil: estructura, marcos de referencia y rotaciones}
+\label{sec:robot_definicion}
+
+Un robot móvil puede describirse como un conjunto de cuerpos rígidos
+(eslabones) unidos mediante articulaciones, organizados como un árbol
+cinemático cuya raíz es la base del robot \citep{corke2023}. En una
+plataforma diferencial, el árbol se compone del chasis, las dos ruedas
+motrices ---articulaciones de revolución accionadas--- y los elementos
+pasivos de apoyo, además de los sensores montados sobre el chasis.
+
+Para describir la posición y orientación del robot se asocia un marco de
+referencia a cada cuerpo de interés. La pose de un robot que se desplaza en
+el plano queda definida por el vector $q=(x,y,\theta)$, donde $x$ e $y$ son
+las coordenadas de la base respecto de un marco fijo [m] y $\theta$ la
+orientación [rad]. La relación entre un punto expresado en el marco del robot
+y el mismo punto en el marco fijo se obtiene mediante la matriz de rotación
+en el plano:
+
+\begin{equation}
+R(\theta)
+=
+\begin{bmatrix}
+\cos\theta & -\sin\theta\\
+\sin\theta & \cos\theta
+\end{bmatrix},
+\label{eq:rotacion_plana}
+\end{equation}
+
+\noindent que, combinada con la traslación $(x,y)$, forma una transformación
+homogénea. Encadenando transformaciones se relaciona cualquier par de marcos
+del robot; por ejemplo, la pose del sensor láser respecto del marco global se
+obtiene componiendo la transformación del mapa a la base del robot con la
+transformación fija de la base al sensor \citep{corke2023}. En robótica móvil
+es habitual organizar estos marcos en una jerarquía que separa el marco
+global del mapa, el marco odométrico ---continuo pero con deriva--- y el
+marco de la base del robot; las convenciones de orientación de ejes (eje $x$
+hacia adelante, $y$ hacia la izquierda, $z$ hacia arriba) y de organización
+de marcos siguen las recomendaciones REP-103 y REP-105
+\citep{rep103,rep105}.
+
+\subsection{Descripción del modelo mediante URDF}
+\label{sec:urdf_marco}
+
+El formato URDF (\textit{Unified Robot Description Format}) permite describir
+un robot como un árbol de eslabones y articulaciones mediante un documento
+estructurado. Para cada eslabón se declaran su geometría visual, su geometría
+de colisión y sus propiedades inerciales (masa, centro de masa y tensor de
+inercia); para cada articulación, su tipo (fija, de revolución o continua),
+sus límites y los marcos que conecta. Sobre esta descripción pueden
+declararse además sensores y extensiones de simulación. La misma descripción
+es utilizada por las herramientas de visualización, por el sistema de
+publicación de transformaciones entre marcos y por los simuladores, lo que
+garantiza que el robot real y su modelo digital compartan una única
+definición geométrica. La descripción puede organizarse de forma modular y
+parametrizada, de modo que dimensiones como el radio de rueda o la
+separación entre ruedas se definan una sola vez y se reutilicen en todo el
+modelo; la estructura concreta del modelo desarrollado se presenta en el
+Capítulo~\ref{ch:implementacion}.
+
+\subsection{Simulación robótica y Gazebo}
+\label{sec:simuladores_marco}
+
+Un simulador robótico integra un motor de física ---que resuelve dinámica de
+cuerpos rígidos, contactos y fricción---, la simulación de sensores (láser,
+cámaras, unidades inerciales) y un entorno tridimensional configurable. Esto
+permite verificar la geometría, la cinemática y la lógica de control de un
+robot antes de operar el hardware, reduciendo riesgos y tiempos de puesta en
+marcha. Gazebo, el simulador empleado en este trabajo, se integra de forma
+nativa con \gls{ROS2}: el modelo URDF se carga en el mundo simulado, los
+sensores publican datos con las mismas interfaces que sus contrapartes
+físicas y el control puede ejercerse mediante la misma infraestructura usada
+en el robot real \citep{koenig2004gazebo,openrobotics2024gazebo}. La
+comparación entre simuladores y la justificación de esta elección se
+presentan en la Sec.~\ref{sec:gemelo_digital}; la brecha
+simulación--realidad (fricción, zonas muertas, ruido sensorial y latencias)
+se considera al interpretar los resultados del Capítulo~\ref{ch:resultados}.
+
+\section{ROS 2: nodos, tópicos y comunicación}
+\label{sec:ros2_marco}
+
+\gls{ROS2} es un conjunto de bibliotecas y herramientas de código abierto
+para construir sistemas robóticos de forma modular y distribuida
+\citep{macenski2022ros2}. La unidad básica de cómputo es el \emph{nodo}: un
+proceso que encapsula una función específica, como adquirir un sensor,
+estimar la odometría o planificar una ruta. Los nodos se comunican
+principalmente mediante \emph{tópicos}, canales con nombre sobre los cuales
+un nodo \emph{publica} mensajes con una estructura de datos definida y otros
+nodos se \emph{suscriben} para recibirlos. Este esquema de
+publicación--suscripción es anónimo y de muchos a muchos: cada nodo conoce
+solo el nombre y el tipo del tópico, lo que permite reemplazar un componente
+sin modificar el resto del sistema.
+
+La capa de transporte de \gls{ROS2} se basa en el estándar DDS (\textit{Data
+Distribution Service}), un middleware descentralizado que descubre
+automáticamente los nodos presentes en la red y negocia políticas de calidad
+de servicio, como fiabilidad de entrega y profundidad de historial
+\citep{macenski2022ros2}. Gracias a ello, los nodos pueden distribuirse entre
+varios computadores de una red local ---como ocurre en este trabajo entre la
+Raspberry Pi~4 y la estación de trabajo--- sin un maestro central.
+Complementariamente a los tópicos, \gls{ROS2} ofrece \emph{servicios}
+(interacciones de solicitud--respuesta) y \emph{acciones} (tareas de larga
+duración con retroalimentación y posibilidad de cancelación), utilizadas por
+ejemplo para enviar metas de navegación. Un mecanismo transversal adicional
+es el árbol de transformaciones, que mantiene las relaciones espaciales
+entre los marcos de referencia descritos en la
+Sec.~\ref{sec:robot_definicion}.
+
+\section{Principio de funcionamiento de sensores y actuadores}
+\label{sec:sensores_actuadores}
+
+\subsection{Sensor láser LIDAR 2D}
+\label{sec:lidar_marco}
+
+Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo la
+señal reflejada por los objetos del entorno, ya sea por tiempo de vuelo o por
+triangulación óptica \citep{ismail2022eslam}. En un \gls{LIDAR} 2D, el
+emisor--receptor gira sobre un eje vertical y entrega, en cada revolución, un
+barrido de pares ángulo--distancia contenidos en un plano horizontal. Cada
+barrido constituye una muestra geométrica del entorno que permite detectar
+paredes y obstáculos, alimentar los algoritmos de SLAM y actualizar los mapas
+de costo de navegación. Sus limitaciones principales son la incapacidad de
+detectar objetos fuera del plano de barrido y la degradación ante
+superficies muy absorbentes o reflectantes. El sensor empleado en este
+trabajo, RPLidar A1, opera por triangulación con un alcance nominal de
+12~m y cobertura de 360$^\circ$ \citep{SlamtecA1Datasheet}; su selección se
+justifica en la Sec.~\ref{sec:sensores}.
+
+\subsection{Encoders incrementales de cuadratura}
+\label{sec:encoders_marco}
+
+Un encoder incremental convierte la rotación de un eje en una secuencia de
+pulsos eléctricos. En los encoders magnéticos de efecto Hall, un imán
+multipolar solidario al eje del motor induce pulsos en dos sensores
+desfasados, generando dos canales en cuadratura (desfasados 90$^\circ$). El
+orden de los flancos entre ambos canales indica el sentido de giro, y contar
+los flancos de ambos canales cuadruplica la resolución básica del sensor
+(decodificación~$\times$4). Cuando el encoder está montado en el eje del
+motor y este acciona la rueda a través de una caja reductora, la resolución
+en el eje de salida se multiplica por la relación de reducción. El conteo
+acumulado de pulsos (ticks) permite estimar la posición y la velocidad
+angular de cada rueda, base de la odometría desarrollada en la
+Sec.~\ref{sec:odometria}; los valores numéricos del prototipo se consolidan
+en el Capítulo~\ref{ch:implementacion}.
+
+\subsection{Motores DC y driver de potencia}
+\label{sec:motores_marco}
+
+Un motor DC de imanes permanentes gira con velocidad aproximadamente
+proporcional a la tensión media aplicada y entrega un torque proporcional a
+la corriente. Como un microcontrolador no puede suministrar la potencia
+requerida, se interpone un \emph{driver} de potencia basado en un puente H:
+cuatro interruptores de estado sólido que permiten aplicar la tensión de la
+batería al motor en ambas polaridades, invirtiendo así el sentido de giro.
+La magnitud de la velocidad se regula mediante \gls{PWM}: conmutando los
+interruptores a frecuencia fija y variando el ciclo de trabajo se controla
+la tensión media efectiva sobre el motor. Los drivers reales introducen
+efectos no ideales relevantes para el control: una caída de tensión interna
+en los transistores y una zona muerta a bajos ciclos de trabajo, en la cual
+el motor no vence la fricción estática y no gira. Estos efectos, presentes
+en el driver L298N utilizado, justifican el uso de control realimentado de
+velocidad y su sintonización experimental (Secs.~\ref{sec:pid}
+y~\ref{sec:sintonizacion}).
+
+\section{Cinemática diferencial y odometría}
 \label{sec:odometria}
 
-La odometría estima la pose del robot a partir del desplazamiento de sus ruedas \citep{ferreira2023differential}. Aunque es adecuada para sistemas embebidos por su bajo costo computacional, acumula deriva por errores de calibración, cuantización de encoders y deslizamiento \citep{corke2023}. En este trabajo, la interfaz \texttt{DiffDriveArduino} entrega a \texttt{ros2\_control} la posición y velocidad angular de cada rueda; posteriormente, \texttt{diff\_drive\_controller} publica la odometría utilizada por \texttt{slam\_toolbox}.
+La odometría estima la pose del robot integrando el desplazamiento medido de
+sus ruedas \citep{ferreira2023differential}. Es adecuada para sistemas
+embebidos por su bajo costo computacional, pero acumula deriva por errores
+de calibración, cuantización de encoders y deslizamiento \citep{corke2023}.
 
-\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal del robot [m/s]; con subíndice $j\in\{R,L\}$ denota la velocidad lineal de rueda. $\omega$ sin subíndice denota la velocidad angular del robot [rad/s]; con subíndice $j$ denota la velocidad angular de rueda [rad/s]. El subíndice $R$ corresponde a la rueda derecha y $L$ a la rueda izquierda. La posición angular de rueda se denota $\phi_j$ [rad]. La velocidad de partícula del PSO se distingue mediante $V_{i,d}$. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su representación discreta $n_{d,j}$ [muestras]. El conteo de encoder se expresa en ticks, donde un tick corresponde a una cuenta producida por la decodificación en cuadratura.
+\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal
+del robot [m/s]; con subíndice $j\in\{R,L\}$ denota la velocidad lineal de
+rueda. $\omega$ sin subíndice denota la velocidad angular del robot [rad/s];
+con subíndice $j$ denota la velocidad angular de rueda [rad/s]. El subíndice
+$R$ corresponde a la rueda derecha y $L$ a la izquierda. La posición angular
+de rueda se denota $\phi_j$ [rad]. Las minúsculas $x_k$, $y_k$ se reservan
+para las coordenadas de pose del robot; la mayúscula $X_{i,d}$ denota la
+posición de una partícula del algoritmo PSO y $V_{i,d}$ su velocidad, de
+modo que ningún símbolo de pose o velocidad del robot se reutiliza en el
+optimizador. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su
+representación discreta $n_{d,j}$ [muestras]. El conteo de encoder se
+expresa en ticks, donde un tick corresponde a una cuenta producida por la
+decodificación en cuadratura.
 
-Considérese un robot diferencial con radio de rueda $r$, separación entre ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad], donde $k$ identifica la muestra discreta. La relación cinemática entre las velocidades angulares de rueda y las velocidades del robot es:
+Considérese un robot diferencial con radio de rueda $r$, separación entre
+ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ [m, m, rad], donde $k$ identifica
+la muestra discreta. La relación entre las velocidades angulares de rueda y
+las velocidades del robot es:
 
 \begin{align}
 v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right),
@@ -19,26 +211,31 @@ v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right),
 \label{eq:v_angular}
 \end{align}
 
-La relación inversa, utilizada conceptualmente para transformar una consigna del robot en consignas de rueda, es:
+La relación inversa, utilizada para transformar una consigna del robot en
+consignas de rueda, es:
 
 \begin{align}
-\omega_R^{cmd}[k]
+\omega_R^{\mathrm{cmd}}[k]
 &=
-\frac{v^{cmd}[k]}{r}
+\frac{v^{\mathrm{cmd}}[k]}{r}
 +
-\frac{b}{2r}\,\omega^{cmd}[k],
+\frac{b}{2r}\,\omega^{\mathrm{cmd}}[k],
 \notag\\
-\omega_L^{cmd}[k]
+\omega_L^{\mathrm{cmd}}[k]
 &=
-\frac{v^{cmd}[k]}{r}
+\frac{v^{\mathrm{cmd}}[k]}{r}
 -
-\frac{b}{2r}\,\omega^{cmd}[k].
+\frac{b}{2r}\,\omega^{\mathrm{cmd}}[k].
 \label{eq:cinematica_inversa}
 \end{align}
 
-\noindent donde $v^{cmd}$ y $\omega^{cmd}$ son las consignas lineal [m/s] y angular [rad/s] del robot, mientras que $\omega_R^{cmd}$ y $\omega_L^{cmd}$ son las consignas angulares de las ruedas [rad/s].
+\noindent donde $v^{\mathrm{cmd}}$ y $\omega^{\mathrm{cmd}}$ son las
+consignas lineal [m/s] y angular [rad/s] del robot, mientras que
+$\omega_R^{\mathrm{cmd}}$ y $\omega_L^{\mathrm{cmd}}$ son las consignas
+angulares de las ruedas [rad/s].
 
-Como referencia conceptual, una discretización de Euler del modelo cinemático puede escribirse como:
+Una discretización de Euler del modelo cinemático permite propagar la pose
+entre muestras:
 
 \begin{align}
 x_{k+1} &= x_k + T_k\,v[k]\cos\theta_k,
@@ -49,11 +246,16 @@ y_{k+1} &= y_k + T_k\,v[k]\sin\theta_k,
 \label{eq:pose_theta}
 \end{align}
 
-\noindent donde $T_k$ es el intervalo temporal entre las muestras $k$ y $k+1$ [s]. Estas ecuaciones no se presentan como el integrador interno ejecutado por \texttt{diff\_drive\_controller}; únicamente expresan el modelo cinemático diferencial. La integración odométrica final pertenece al paquete instalado de \texttt{ros2\_controllers}.
+\noindent donde $T_k$ es el intervalo temporal entre las muestras $k$ y
+$k+1$ [s]. Estas ecuaciones expresan el modelo cinemático diferencial
+general; el integrador odométrico efectivamente ejecutado pertenece a la
+capa de control descrita en el Capítulo~\ref{ch:implementacion}.
 
-\subsection{Lectura de encoders en la interfaz de hardware}
+\subsection{Estimación de estados de rueda a partir de encoders}
+\label{sec:estados_rueda}
 
-La interfaz \texttt{DiffDriveArduino} recibe los conteos acumulados $c_j[k]$ y calcula la posición angular de cada rueda mediante:
+A partir del conteo acumulado de encoder $c_j[k]$ [ticks], la posición
+angular de cada rueda se obtiene mediante:
 
 \begin{equation}
 \phi_j[k]
@@ -63,7 +265,9 @@ La interfaz \texttt{DiffDriveArduino} recibe los conteos acumulados $c_j[k]$ y c
 \label{eq:posicion_rueda_encoder}
 \end{equation}
 
-\noindent donde $N_e$ es la resolución efectiva del encoder [ticks/vuelta]. La velocidad angular exportada por la interfaz no utiliza un período fijo, sino el tiempo real medido entre dos llamadas consecutivas a \texttt{read()}:
+\noindent donde $N_e$ es la resolución efectiva del encoder [ticks/vuelta].
+La velocidad angular se estima por diferencias finitas entre dos lecturas
+consecutivas:
 
 \begin{equation}
 \widehat{\omega}_j[k]
@@ -73,52 +277,20 @@ La interfaz \texttt{DiffDriveArduino} recibe los conteos acumulados $c_j[k]$ y c
 \label{eq:w_ruedas}
 \end{equation}
 
-\noindent donde $\widehat{\omega}_j[k]$ es la velocidad angular estimada de la rueda $j$ [rad/s] y $\Delta t_k$ el tiempo real transcurrido entre las lecturas empleadas [s]. Este intervalo se obtiene del reloj real entre llamadas a \texttt{read()}. La primera muestra incluye la espera de inicialización serial, mientras que las siguientes corresponden al intervalo entre lecturas consecutivas. La secuencia exacta y la definición por casos de $\Delta t_k$ se trasladan al \ref{anx:implementacion_diffdrive}, incluida la Ec.~\eqref{eq:intervalo_diffdrive}.
-
-\subsection{Conversión de consignas a ticks por frame}
-
-La interfaz de hardware recibe consignas angulares de rueda y las convierte en referencias enteras de ticks por frame antes de enviar el comando serial \texttt{m}. La resolución angular por tick es:
-
-\begin{equation}
-\delta\phi
-=
-\frac{2\pi}{N_e}
-\quad [\mathrm{rad/tick}].
-\label{eq:radianes_por_tick}
-\end{equation}
-
-Con $f_{\mathrm{loop}}=30$~Hz, la referencia enviada por la interfaz es:
-
-\begin{equation}
-m_{j,\mathrm{ROS}}^{cmd}[k]
-=
-\operatorname{trunc}_{0}
-\left(
-\frac{\omega_j^{cmd}[k]}{\delta\phi\,f_{\mathrm{loop}}}
-\right)
-=
-\operatorname{trunc}_{0}
-\left(
-\frac{N_e}{2\pi r f_{\mathrm{loop}}}
-\,v_j^{cmd}[k]
-\right),
-\label{eq:mps_to_ticks}
-\end{equation}
-
-\noindent donde $\omega_j^{cmd}[k]$ y $v_j^{cmd}[k]$ son las consignas angular [rad/s] y lineal [m/s] de la rueda $j$, respectivamente; $\operatorname{trunc}_{0}(\cdot)$ representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de \texttt{setMotorValues(int,int)}; y $m_{j,\mathrm{ROS}}^{cmd}$ se expresa en ticks/frame. La ruta normal de \texttt{ros2\_control} utiliza el comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el firmware también incorpora una conversión directa desde m/s para ese comando.
-
-Las frecuencias nominales de \texttt{controller\_manager},
-\texttt{loop\_rate} y \texttt{PID\_RATE} coinciden en 30~Hz, pero pertenecen
-a mecanismos independientes y no comparten reloj ni fase. El firmware programa
-incrementos enteros de 33~ms. El desarrollo temporal y el flujo completo se
-presentan en la Ec.~\eqref{eq:pid_intervalo_real} y el
-Alg.~\ref{alg:odometria_diferencial}, trasladados al
+\noindent donde $\widehat{\omega}_j[k]$ es la velocidad angular estimada de
+la rueda $j$ [rad/s] y $\Delta t_k$ el tiempo real transcurrido entre las
+lecturas empleadas [s]. La definición por casos de $\Delta t_k$ y la
+secuencia de lectura ejecutada por la interfaz de hardware se desarrollan en
+el Capítulo~\ref{ch:implementacion} y en el
 \ref{anx:implementacion_diffdrive}.
 
 \section{Identificación FODT}
 \label{sec:fodt}
 
-Para obtener un modelo destinado a la sintonización se identifica, para cada rueda, una estructura de primer orden con retardo FODT (\textit{First Order Plus Dead Time}) a partir de una respuesta experimental ante un escalón de PWM \citep{maxim2023fopdt}:
+Para obtener un modelo destinado a la sintonización del controlador se
+identifica, para cada rueda, una estructura de primer orden con retardo FODT
+(\textit{First Order Plus Dead Time}) a partir de la respuesta experimental
+ante un escalón de \gls{PWM} \citep{maxim2023fopdt}:
 
 \begin{equation}
 G_j(s)
@@ -129,16 +301,19 @@ G_j(s)
 \label{eq:fodt}
 \end{equation}
 
-\noindent donde $G_j(s)$ es la función de transferencia identificada para la rueda $j$, $K_{m,j}$ la ganancia estática [(m/s)/PWM], $\tau_j$ la constante de tiempo [s] y $s$ la variable de Laplace [s$^{-1}$]; $L_{d,j}$ corresponde al retardo FODT definido previamente.
+\noindent donde $G_j(s)$ es la función de transferencia identificada para la
+rueda $j$, $K_{m,j}$ la ganancia estática [(m/s)/PWM], $\tau_j$ la constante
+de tiempo [s] y $s$ la variable de Laplace [s$^{-1}$]; $L_{d,j}$ corresponde
+al retardo definido en la convención inicial.
 
-\subsection{Identificación en lazo abierto}
-
-La prueba de identificación aplica un escalón de PWM $u_j[k]$ y captura la velocidad cada $T_{cap}=0.1$~s. El retardo se cuantiza mediante truncamiento entero:
+Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$
+segundos, el retardo se cuantiza a un número entero de muestras y el sistema
+de primer orden se discretiza mediante el método de Euler:
 
 \begin{align}
 n_{d,j}
 &=
-\operatorname{trunc}\left(\frac{L_{d,j}}{T_{cap}}\right),
+\operatorname{trunc}\left(\frac{L_{d,j}}{T_{\mathrm{cap}}}\right),
 \label{eq:retardo_muestras}\\
 u_{j,d}[k]
 &=
@@ -148,7 +323,7 @@ u_j\!\left[\max(k-n_{d,j},0)\right],
 &=
 \widehat{v}_j[k-1]
 +
-\frac{T_{cap}}{\tau_j}
+\frac{T_{\mathrm{cap}}}{\tau_j}
 \left(
 K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
 \right),
@@ -156,39 +331,43 @@ K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
 \label{eq:fodt_discreto}
 \end{align}
 
-\noindent donde $u_{j,d}[k]$ es la entrada PWM retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el modelo para la rueda $j$ [m/s]. Para $\operatorname{trunc}()$ conserva únicamente la parte
-entera del resultado. De esta forma, el retardo $L_{d,j}$ se transforma en
-un número entero de muestras.
-
-La señal medida se suaviza antes del ajuste y los parámetros
-$(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático del modelo discreto.
-Durante la sintonización, los scripts emplean una aproximación de la planta y
-del controlador que no reproduce exactamente el retardo, los tipos enteros ni
-las bandas muertas asimétricas del firmware. El filtro, la función de costo, la
-interpolación de la referencia y la cuantización ejecutadas se documentan en el
-\ref{anx:fodt_scripts}, mediante las Ecs.~\eqref{eq:filtro_uniforme}--
-\eqref{eq:medicion_simulada_ticks}.
+\noindent donde $u_j[k]$ es la entrada \gls{PWM} aplicada, $u_{j,d}[k]$ la
+entrada retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el
+modelo para la rueda $j$ [m/s]; $\operatorname{trunc}(\cdot)$ conserva
+únicamente la parte entera del resultado. Los parámetros
+$(K_{m},\tau,L_{d})$ se estiman minimizando el error cuadrático entre la
+respuesta medida y la del modelo discreto. El protocolo experimental de
+captura y las aproximaciones numéricas del procedimiento aplicado se
+presentan en el Capítulo~\ref{ch:implementacion}.
 
 \section{Control PID}
 \label{sec:pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID solo se utiliza como referencia conceptual:
+El controlador PID genera la acción de control combinando tres términos
+sobre el error entre la referencia y la medición: uno proporcional al error
+presente, uno proporcional a su integral acumulada ---que elimina el error
+estacionario--- y uno proporcional a su derivada, que anticipa la tendencia.
+En tiempo continuo:
 
 \begin{equation*}
 u_j(t)
 =
-K_{p,j}^{cont}e_j(t)
+K_{p,j}^{\mathrm{cont}}e_j(t)
 +
-K_{i,j}^{cont}\int_0^t e_j(\sigma)\,d\sigma
+K_{i,j}^{\mathrm{cont}}\int_0^t e_j(\sigma)\,d\sigma
 +
-K_{d,j}^{cont}\frac{de_j(t)}{dt}.
+K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
 \end{equation*}
 
-\noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{cont}$, $K_{i,j}^{cont}$ y $K_{d,j}^{cont}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
+\noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control,
+$e_j(t)$ el error de velocidad y $K_{p,j}^{\mathrm{cont}}$,
+$K_{i,j}^{\mathrm{cont}}$, $K_{d,j}^{\mathrm{cont}}$ las ganancias
+proporcional, integral y derivativa de la forma continua; $\sigma$ es la
+variable de integración.
 
-\noindent La implementación real utiliza una ley discreta acumulativa con
-derivada sobre la medición. En forma conceptual, el incremento de control y la
-salida saturada pueden resumirse como:
+En un sistema embebido el controlador se ejecuta en tiempo discreto. Una
+forma habitual es la ley incremental con derivada sobre la medición, que
+reduce los saltos de la salida ante cambios bruscos de la referencia:
 
 \begin{align*}
 \Delta u_j[k]
@@ -208,34 +387,51 @@ u_j[k]
 \bigl(u_j[k-1]+\Delta u_j[k]\bigr).
 \end{align*}
 
-\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias proporcional, integral y derivativa discretas de la rueda $j$; $e_j[k]$ es el error discreto, $m_j[k]$ la medición de velocidad en la escala interna del firmware, $I_j[k]$ el estado integral asociado a $K_{i,j}$, $\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y $K_{o,j}$ el divisor de escalamiento; $\operatorname{sat}_{[-255,255]}()$ representa la saturación al intervalo PWM permitido.
+\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias discretas
+de la rueda $j$; $e_j[k]$ es el error discreto, $m_j[k]$ la medición de
+velocidad, $I_j[k]$ el estado integral asociado a $K_{i,j}$,
+$\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y
+$K_{o,j}$ un divisor de escalamiento que permite trabajar con ganancias
+enteras; $\operatorname{sat}_{[-255,255]}(\cdot)$ representa la saturación
+al intervalo \gls{PWM} permitido. Dos técnicas complementarias son
+habituales en controladores embebidos y se emplean en este trabajo: el
+\emph{anti-windup}, que limita la acumulación del integrador cuando la
+salida está saturada, y una \emph{zona muerta} sobre el error, que evita
+ciclos límite producidos por la cuantización de la medición. La ley
+efectivamente ejecutada, sus estados enteros, el orden de operaciones y las
+ganancias definitivas por rueda se presentan en el
+Capítulo~\ref{ch:implementacion} y en el \ref{anx:pid_ecuaciones}.
 
-La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
-bandas muertas distintas por rueda y actualización condicional del integrador.
-Las ecuaciones exactas y sus tipos de datos se conservan en el
-\ref{anx:pid_ecuaciones}, Ecs.~\eqref{eq:medicion_pid_entera}--
-\eqref{eq:integrador_condicional}. Las ganancias definitivas se presentan en
-la Tabla~\ref{tab:ganancias_pid}; el orden de ejecución, los reinicios y la
-saturación se detallan en el Alg.~\ref{alg:pid_firmware}.
-
-\section{Sintonización del controlador PID}
+\section{Sintonización del controlador PID mediante PSO}
 \label{sec:sintonizacion}
 
-Las ganancias del PID se obtienen mediante un procedimiento híbrido: identificación FODT por rueda, búsqueda de ganancias iniciales mediante PSO y refinamiento experimental posterior sobre el hardware. El núcleo del optimizador corresponde a la clase \texttt{pso}, implementada en \path{arduino_firmware/pid_config/pyPso.py}; las rutas se expresan respecto de \path{src/}, según la convención del \ref{anx:rutas_software}.
+Las ganancias del PID se obtienen mediante un procedimiento híbrido:
+identificación FODT por rueda (Sec.~\ref{sec:fodt}), búsqueda de ganancias
+iniciales mediante optimización por enjambre de partículas y refinamiento
+experimental posterior sobre el hardware. Como referencia analítica
+complementaria se emplea además la sintonía Lambda, cuyo desarrollo y
+condiciones de comparación se documentan en el \ref{anx:lambda_detalle}.
 
 \subsection{Optimización por enjambre de partículas}
 \label{sec:pso_marco}
 
-Cada partícula $i$ posee una posición $X_{i,d}$ y una velocidad $V_{i,d}$, ambas adimensionales, con $d\in\{1,2,3\}$. Las posiciones y velocidades iniciales se generan con \texttt{np.random.rand}, sin fijar una semilla pseudoaleatoria. En consecuencia, distintas ejecuciones pueden producir parámetros diferentes.
-
-La velocidad se actualiza mediante:
+PSO (\textit{Particle Swarm Optimization}) es una metaheurística
+poblacional inspirada en el comportamiento colectivo de enjambres, aplicada
+con éxito a la sintonización de controladores en robótica móvil
+\citep{gokcce2021particle}. Cada partícula $i$ representa un candidato de
+solución ---en este caso, un conjunto de ganancias PID--- mediante una
+posición $X_{i,d}$ y una velocidad $V_{i,d}$, ambas adimensionales, con
+$d\in\{1,2,3\}$ asociado a las tres ganancias. En cada generación $g$, la
+velocidad de cada partícula se actualiza combinando su inercia, la atracción
+hacia su mejor posición personal y la atracción hacia la mejor posición
+global del enjambre:
 
 \begin{equation}
 V_{i,d}^{g+1}
 =
 \chi
 \left[
-w_{in}^{g}V_{i,d}^{g}
+w_{\mathrm{in}}^{g}V_{i,d}^{g}
 +c_1\rho_{1,i,d}^{g}
 \left(P_{i,d}-X_{i,d}^{g}\right)
 +c_2\rho_{2,i,d}^{g}
@@ -244,10 +440,16 @@ w_{in}^{g}V_{i,d}^{g}
 \label{eq:pso_vel_marco_teorico}
 \end{equation}
 
-\noindent donde $P_{i,d}$ es la mejor posición personal almacenada, $G_d^{g}$ la componente del mejor global almacenado, $w_{in}^{g}$ el peso de inercia, $c_1$ y $c_2$ los coeficientes cognitivo y social, $\rho_{1,i,d}^{g}$ y $\rho_{2,i,d}^{g}$ números aleatorios uniformes en $[0,1]$, $g$ el índice de generación y $\chi$ el factor de constricción. La implementación utiliza $c_1=c_2=2.05$ y $\chi=0.7298$. El peso de inercia ejecutado es:
+\noindent donde $P_{i,d}$ es la mejor posición personal almacenada,
+$G_d^{g}$ la componente del mejor global, $w_{\mathrm{in}}^{g}$ el peso de
+inercia, $c_1$ y $c_2$ los coeficientes cognitivo y social,
+$\rho_{1,i,d}^{g}$ y $\rho_{2,i,d}^{g}$ números aleatorios uniformes en
+$[0,1]$ y $\chi$ el factor de constricción, que garantiza la convergencia
+del enjambre. En este trabajo se utilizan $c_1=c_2=2.05$ y $\chi=0.7298$. El
+peso de inercia decrece linealmente con las generaciones:
 
 \begin{equation}
-w_{in}^{g}
+w_{\mathrm{in}}^{g}
 =
 \frac{g_{\max}-g}{g_{\max}},
 \qquad
@@ -255,54 +457,72 @@ g=1,\ldots,g_{\max},
 \label{eq:pso_inercia}
 \end{equation}
 
-\noindent donde $g_{\max}$ es el número máximo de generaciones; por ello, el primer valor de $w_{in}^{g}$ es menor que 1 y el último es 0.
+\noindent donde $g_{\max}$ es el número máximo de generaciones; de esta
+forma el enjambre privilegia la exploración al inicio y la explotación al
+final. La función de costo empleada para la sintonización combina el error
+cuadrático medio de la velocidad respecto de la referencia con una
+penalización por sobreimpulso, favoreciendo respuestas rápidas pero
+amortiguadas. Las escalas de búsqueda, las cotas, la configuración del
+enjambre y las particularidades numéricas de la ejecución se presentan en el
+Capítulo~\ref{ch:implementacion} y en el \ref{anx:pso_detalle}.
 
-Después de actualizar la velocidad y la posición, la implementación aplica
-una cota inferior al estado del enjambre. La transformación de cada partícula,
-las escalas utilizadas en identificación y sintonización, la función de costo
-PID y las particularidades de almacenamiento del mejor global dependen del
-código ejecutado.
-
-Para mantener en este capítulo la formulación general del método, esos detalles
-se conservan en el \ref{anx:pso_detalle}, Ecs.~
-\eqref{eq:pso_pos_marco_teorico}--\eqref{eq:norma_mse}, junto con el
-Alg.~\ref{alg:pso_nucleo}. En síntesis, la función de costo combina el error
-cuadrático medio de velocidad con una penalización por sobreimpulso, y el
-enjambre se ejecuta sin una semilla pseudoaleatoria fija.
-
-\subsection{Referencia de sintonización Lambda}
-\label{sec:lambda}
-
-El script comparativo \path{arduino_firmware/pid_config/SintonizacionLambda.py} se utiliza como
-referencia analítica complementaria y vuelve a identificar un modelo FODT antes
-de comparar la sintonía Lambda con las ganancias finales del firmware. Debido a
-las diferencias de escala y de implementación, sus curvas se interpretan solo
-como una simulación comparativa. Las ecuaciones de conversión y las condiciones
-numéricas se trasladan al \ref{anx:lambda_detalle}, Ecs.~
-\eqref{eq:lambda_retardo_efectivo}--\eqref{eq:lambda_conversion}.
-
-\section{SLAM basado en grafos}
+\section{SLAM basado en grafos: SLAM Toolbox}
 \label{sec:slam}
 
-La odometría pura acumula deriva, por lo que se requiere SLAM para estimar simultáneamente la trayectoria del robot y el mapa del entorno \citep{ngoc2023efficient}. Este trabajo utiliza \texttt{slam\_toolbox} en modo de mapeo asíncrono.
+La odometría pura acumula deriva, por lo que se requiere SLAM para estimar
+simultáneamente la trayectoria del robot y el mapa del entorno
+\citep{thrun2005probabilistic,ngoc2023efficient}. En el enfoque basado en
+grafos, cada nodo del grafo representa una pose del robot y cada arista una
+restricción relativa entre dos poses, obtenida de la odometría o del ajuste
+de barridos láser (\textit{scan matching}), que alinea geométricamente dos
+barridos consecutivos para estimar el desplazamiento entre ellos. Cuando el
+robot vuelve a observar una zona ya visitada se agrega una restricción de
+\emph{cierre de lazo}, y la optimización del grafo ---un problema de mínimos
+cuadrados no lineales--- redistribuye el error acumulado a lo largo de toda
+la trayectoria, corrigiendo el mapa y la transformación entre el marco del
+mapa y el marco odométrico.
 
-El sistema construye un grafo cuyos nodos representan poses y cuyas aristas representan restricciones obtenidas de la odometría y del ajuste de barridos del LiDAR. La configuración ejecutada selecciona \texttt{solver\_plugins::CeresSolver}, con estrategia \texttt{LEVENBERG\_MARQUARDT}. Cuando se acepta un cierre de lazo, la optimización del grafo corrige la trayectoria estimada y modifica la transformación $\texttt{map}\rightarrow\texttt{odom}$ \citep{macenski2021slamtoolbox}.
+La técnica específica utilizada en este trabajo es SLAM Toolbox
+\citep{macenski2021slamtoolbox}, un sistema de SLAM 2D por grafos de poses
+diseñado para \gls{ROS2}. Procesa los barridos de forma asíncrona ---lo que
+evita bloquear el sistema cuando la carga computacional crece---, incorpora
+detección de cierre de lazo y mantiene un consumo compatible con
+computadores embebidos, razón por la cual resulta adecuado para la
+arquitectura distribuida de este prototipo. La comparación con técnicas
+alternativas se presenta en la Sec.~\ref{sec:slam_lidar}; los parámetros
+configurados se detallan en el Capítulo~\ref{ch:implementacion}.
 
-Las configuraciones real y simulada comparten la estructura general del algoritmo, pero no los mismos valores. En el robot real se utiliza \texttt{base\_link}, resolución 0.05~m/celda, alcance máximo de 10~m, intervalo mínimo de 0.1~s, desplazamiento mínimo de 0.05~m, cambio angular mínimo de 0.05~rad y un buffer de 110 barridos. En simulación se utiliza \texttt{base\_footprint}, alcance máximo de 12~m, intervalo mínimo de 0.5~s, desplazamiento mínimo de 0.1~m, cambio angular mínimo de 0.2~rad y un buffer de 10 barridos. Por tanto, no corresponde describir ambos archivos como equivalentes en sus parámetros numéricos.
-
-\section{Planificación y control local}
+\section{Planificación de rutas y control local}
 \label{sec:nav_marco}
 
-El planificador global calcula una ruta desde la posición actual hasta una meta sobre el mapa de costos \citep{lavalle2006planning}. La configuración real utiliza \texttt{nav2\_navfn\_planner/NavfnPlanner} con \texttt{use\_astar=true}, \texttt{allow\_unknown=true} y tolerancia de 0.5~m. La función conceptual de evaluación de A* es:
+La navegación autónoma opera sobre una representación del entorno en forma
+de rejilla de ocupación, donde cada celda clasifica el espacio como libre,
+ocupado o desconocido, y sobre mapas de costo que agregan a los obstáculos
+una zona de inflación que penaliza transitar cerca de ellos
+\citep{lavalle2006planning}.
+
+El planificador global calcula una ruta desde la posición actual hasta la
+meta. El algoritmo A* \citep{hart1968astar} explora la rejilla expandiendo
+en cada paso el nodo más prometedor según la función de evaluación:
 
 \begin{equation}
 f(n)=g(n)+h(n),
 \label{eq:astar}
 \end{equation}
 
-\noindent donde $n$ es el nodo evaluado, $f(n)$ su costo estimado total, $g(n)$ el costo acumulado desde el origen y $h(n)$ la heurística hasta la meta.
+\noindent donde $n$ es el nodo evaluado, $g(n)$ el costo acumulado desde el
+origen hasta $n$ y $h(n)$ una heurística que estima el costo restante hasta
+la meta; $f(n)$ es el costo total estimado de la ruta que pasa por $n$. Si
+la heurística nunca sobreestima el costo real (heurística admisible), A*
+encuentra la ruta de costo mínimo expandiendo menos nodos que una búsqueda
+sin información, lo que lo hace adecuado para replanificar periódicamente
+sobre mapas de costo.
 
-El controlador local configurado es \texttt{dwb\_core::DWBLocalPlanner}. DWB genera trayectorias a partir de velocidades candidatas y las evalúa mediante los críticos cargados en el archivo YAML:
+El control local convierte la ruta global en comandos de velocidad
+ejecutables. El enfoque de ventana dinámica considera únicamente las
+velocidades $(v,\omega)$ alcanzables desde el estado actual dado el límite
+de aceleración del robot, simula hacia adelante las trayectorias asociadas a
+cada candidato y las evalúa mediante una suma ponderada de criterios:
 
 \begin{equation}
 J_{\mathrm{DWB}}(v,\omega)
@@ -312,30 +532,47 @@ S_c\,C_c(v,\omega),
 \label{eq:dwb_cost}
 \end{equation}
 
-\noindent donde $J_{\mathrm{DWB}}(v,\omega)$ es el puntaje total de una trayectoria candidata generada con velocidades lineal $v$ y angular $\omega$; $C_c(v,\omega)$ es el costo asignado por el crítico $c$ y $S_c$ su escala configurada. El conjunto $\mathcal{C}$ contiene \texttt{Oscillation}, \texttt{BaseObstacle}, \texttt{GoalAlign}, \texttt{PathAlign}, \texttt{PathDist} y \texttt{GoalDist}. En hardware real, DWB admite candidatos de hasta 0.15~m/s, mientras \texttt{diff\_drive\_controller} limita la velocidad lineal a 0.13~m/s. Por ello, una consigna generada entre 0.13 y 0.15~m/s queda limitada posteriormente por el controlador diferencial.
-
-Los mapas de costo del robot real utilizan un \textit{footprint}
-rectangular y una capa de inflación ajustada al tamaño del prototipo. La
-geometría exacta y la función por tramos ejecutada se conservan en el
-\ref{anx:costmap_inflacion}, Ec.~\eqref{eq:inflation}.
-
-El árbol de comportamiento ejecutado recalcula la ruta a 4~Hz y utiliza dos niveles de recuperación. Ante fallos de planificación o seguimiento limpia el costmap correspondiente. Si la navegación completa falla, limpia ambos costmaps, retrocede 0.15~m a 0.05~m/s, gira 0.8~rad, vuelve a planificar, intenta seguir la nueva ruta y espera 2~s.
+\noindent donde $J_{\mathrm{DWB}}(v,\omega)$ es el puntaje total de una
+trayectoria candidata con velocidades lineal $v$ y angular $\omega$;
+$\mathcal{C}$ es el conjunto de criterios de evaluación ---tales como
+proximidad a obstáculos, alineación con la ruta y avance hacia la meta---,
+$C_c(v,\omega)$ el costo asignado por el criterio $c$ y $S_c$ su peso. Se
+selecciona el candidato de menor puntaje, lo que permite seguir la ruta
+global mientras se reacciona ante obstáculos cercanos. La navegación de alto
+nivel se orquesta mediante un árbol de comportamiento: una estructura
+modular que encadena la planificación y el seguimiento, y que ante fallos
+activa acciones de recuperación de complejidad creciente sin modificar la
+lógica del resto del sistema. Los componentes concretos, sus criterios
+configurados y las acciones de recuperación se presentan en el
+Capítulo~\ref{ch:implementacion}.
 
 \section{Exploración autónoma basada en fronteras}
 \label{sec:exploracion_marco}
 
-El explorador identifica celdas de frontera en el límite entre
-espacio libre conocido y zonas desconocidas, agrupa las celdas contiguas y
-ordena las fronteras mediante un puntaje que combina distancia y tamaño. La
-meta seleccionada se envía a Nav2 y puede incorporarse a una lista negra cuando
-no se observa progreso.
-
-La implementación ejecutada presenta particularidades en el cálculo del punto
-de frontera, el escalamiento de la distancia y la programación del temporizador.
-Para mantener la línea conceptual del capítulo, esos detalles se trasladan al
-\ref{anx:explore_impl}, incluidas las Ecs.~\eqref{eq:centroide_frontera_impl},
-\eqref{eq:frontier_cost} y~\eqref{eq:periodo_explorador_real}.
+La exploración autónoma permite que el robot seleccione sus propias metas
+mientras construye el mapa. En el enfoque basado en fronteras
+\citep{liu2025frontier}, una \emph{celda de frontera} es una celda
+desconocida adyacente a espacio libre conocido; las celdas de frontera
+contiguas se agrupan en fronteras, y cada frontera se caracteriza por un
+punto representativo, su tamaño y su distancia al robot. Las fronteras se
+ordenan mediante un puntaje que combina la distancia ---privilegiando metas
+cercanas--- y el tamaño ---privilegiando zonas que aportan más información---,
+y la mejor frontera se envía como meta al sistema de navegación. Cuando una
+meta no muestra progreso dentro de un tiempo límite, se incorpora a una
+lista negra para evitar reintentos improductivos, y el proceso se repite
+hasta que no quedan fronteras alcanzables, momento en que el mapa se
+considera completo. Los parámetros y particularidades de la implementación
+utilizada se presentan en el Capítulo~\ref{ch:implementacion} y en el
+\ref{anx:explore_impl}.
 
 \section*{Conclusión del capítulo}
 
-El marco teórico distingue las relaciones cinemáticas generales de las operaciones efectivamente ejecutadas. La interfaz de hardware calcula estados de rueda con el intervalo real de lectura y transmite referencias enteras; el firmware aplica un controlador acumulativo cuantizado; los scripts de identificación y sintonización utilizan aproximaciones numéricas específicas; SLAM, Nav2 y la exploración emplean las configuraciones y secuencias descritas en sus archivos ejecutados.
+El capítulo estableció los fundamentos del sistema en un nivel general: la
+descripción del robot mediante marcos de referencia y URDF, la simulación en
+Gazebo, el modelo de comunicación de \gls{ROS2}, el principio de operación
+de los sensores y actuadores, la cinemática diferencial y la odometría, la
+identificación FODT, el control PID y su sintonización mediante PSO, el SLAM
+por grafos con SLAM Toolbox, la planificación con A*, el control local por
+ventana dinámica y la exploración por fronteras. Sobre estos fundamentos, el
+Capítulo~\ref{ch:implementacion} desarrolla los algoritmos, parámetros y
+configuraciones con que cada elemento se materializa en el prototipo.

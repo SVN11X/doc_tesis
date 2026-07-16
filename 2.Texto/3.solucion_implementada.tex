@@ -9,12 +9,13 @@ estación de trabajo, comunicados mediante \gls{ROS2}. El objetivo es que el
 sistema sea capaz de mapear, navegar y explorar entornos interiores de forma
 autónoma.
 
+La Fig.~\ref{fig:arquitectura_alto_nivel} presenta el diagrama de bloques simplificado del sistema, organizado en cuatro dominios funcionales identificados por color.
+
 \utemFigurePropia{2.Texto/Imag/arquitectura_alto_nivel.png}{1.0\textwidth}
-{Diagrama de bloques de la solución propuesta.}
+{Diagrama de bloques simplificado de la solución implementada.}
 {fig:arquitectura_alto_nivel}
 
-La Fig.~\ref{fig:arquitectura_alto_nivel} organiza la solución en cuatro
-dominios funcionales, identificados por color:
+La función general de cada dominio es la siguiente:
 
 \begin{description}
 \item[Sensado.] Los \emph{encoders} de cuadratura miden el giro de cada rueda
@@ -31,3 +32,11 @@ construye el mapa y estima la pose, Nav2 planifica y controla la navegación,
 el explorador de fronteras genera metas autónomas y RViz2 permite la
 supervisión.
 \end{description}
+
+El sistema descrito se implementó en su totalidad sobre \gls{ROS2}, que
+provee la infraestructura de comunicación entre los bloques anteriores tanto
+en simulación como en hardware real. Este capítulo se mantiene deliberadamente
+a nivel general: los fundamentos de cada bloque se presentan en el Marco
+Teórico, y el detalle técnico de su construcción, configuración y validación
+se desarrolla en los capítulos posteriores al Marco Teórico
+(Caps.~\ref{ch:implementacion} y~\ref{ch:resultados}).

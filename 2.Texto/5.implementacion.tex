@@ -213,7 +213,38 @@ El controlador diferencial recibe comandos de velocidad lineal y angular, y los 
 
 La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} cuyo ciclo \texttt{read()} $\rightarrow$ \texttt{update()} $\rightarrow$ \texttt{write()} se programa nominalmente con $f_{\mathrm{ctrl}}=30$~Hz mediante \texttt{controller\_manager.update\_rate}.
 
-En \texttt{write()}, la velocidad angular de rueda comandada por \texttt{diff\_drive\_controller} se traduce al formato de \textit{ticks/frame} mediante la Ec.~\eqref{eq:mps_to_ticks}. La división utiliza el parámetro independiente \texttt{cfg\_.loop\_rate}, denotado $f_{\mathrm{loop}}=30$~Hz. Aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$ coinciden numéricamente, no representan el mismo mecanismo ni comparten una medición temporal.
+En \texttt{write()}, la velocidad angular de rueda comandada por
+\texttt{diff\_drive\_controller} se convierte en una referencia entera de
+\textit{ticks/frame} antes de enviar el comando serial \texttt{m}:
+
+\begin{equation}
+m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
+=
+\operatorname{trunc}_{0}
+\left(
+\frac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}[k]
+\right)
+=
+\operatorname{trunc}_{0}
+\left(
+\frac{N_e}{2\pi r f_{\mathrm{loop}}}\,v_j^{\mathrm{cmd}}[k]
+\right),
+\label{eq:mps_to_ticks}
+\end{equation}
+
+\noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y $v_j^{\mathrm{cmd}}[k]$ son
+las consignas angular [rad/s] y lineal [m/s] de la rueda $j$; $2\pi/N_e$ es
+la resolución angular por tick [rad/tick]; $\operatorname{trunc}_{0}(\cdot)$
+representa el truncamiento hacia cero producido al convertir la expresión en
+punto flotante al argumento entero de \texttt{setMotorValues(int,int)}; y
+$m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división
+utiliza el parámetro independiente \texttt{cfg\_.loop\_rate}, denotado
+$f_{\mathrm{loop}}=30$~Hz; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$
+coinciden numéricamente, no representan el mismo mecanismo ni comparten una
+medición temporal. La ruta normal de \texttt{ros2\_control} utiliza el
+comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el
+firmware también incorpora una conversión directa desde m/s para ese
+comando.
 
 En \texttt{read()}, la transformación desde los conteos acumulados hasta los estados de rueda sigue la cadena:
 
@@ -291,6 +322,13 @@ La función \texttt{resetPID()} no se limita a reiniciar estados: también vuelv
 
 Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental, formalizado en el Alg.~\ref{alg:sintonizacion}. La identificación y la sintonización utilizan enjambres de 50 partículas durante 150 generaciones. Las variables, escalas, cotas y funciones de costo se conservan en la Tabla~\ref{tab:pso_config} del \ref{anx:protocolos_sintonizacion}.
 
+El núcleo del optimizador corresponde a la clase \texttt{pso}, implementada
+en \path{arduino_firmware/pid_config/pyPso.py}; las posiciones y velocidades
+iniciales se generan mediante \texttt{np.random.rand}, sin fijar una semilla
+pseudoaleatoria, por lo que distintas ejecuciones pueden producir parámetros
+diferentes. Las rutas se expresan respecto de \path{src/}, según la
+convención del \ref{anx:rutas_software}.
+
 \subsubsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
 
@@ -298,7 +336,7 @@ La prueba aplica un escalón PWM nominal de 143 y registra los conteos de encode
 
 \subsubsection{Identificación y optimización}
 
-La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Las diferencias entre ambas etapas —paso de integración, tratamiento del retardo, referencia y tipos numéricos— se detallan en la Sec.~\ref{sec:fodt}.
+La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Durante la identificación, la señal medida se suaviza antes del ajuste y los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático del modelo discreto. Los scripts de sintonización emplean una aproximación de la planta y del controlador que no reproduce exactamente el retardo, los tipos enteros ni las bandas muertas asimétricas del firmware; el filtro, la función de costo, la interpolación de la referencia y la cuantización ejecutadas se documentan en el \ref{anx:fodt_scripts}, Ecs.~\eqref{eq:filtro_uniforme}--\eqref{eq:medicion_simulada_ticks}.
 
 \subsubsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
@@ -325,6 +363,16 @@ El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamen
 
 La configuración real utiliza Ceres, los marcos \texttt{map}/\texttt{odom}/\texttt{base\_link}, el tópico \texttt{/scan} y cierre de lazo. Los valores completos se trasladan a la Tabla~\ref{tab:slam_params_ch9} del \ref{anx:nav2_slam_config}.
 
+Las configuraciones real y simulada comparten la estructura del algoritmo,
+pero no sus valores numéricos. En hardware real se emplean el marco
+\texttt{base\_link}, un alcance máximo de 10~m, intervalo mínimo de 0.1~s,
+desplazamiento mínimo de 0.05~m, cambio angular mínimo de 0.05~rad y un
+buffer de 110 barridos; en simulación, el marco \texttt{base\_footprint},
+alcance de 12~m, intervalo de 0.5~s, desplazamiento de 0.1~m, cambio angular
+de 0.2~rad y buffer de 10 barridos. La optimización del grafo utiliza
+\texttt{solver\_plugins::CeresSolver} con estrategia
+\texttt{LEVENBERG\_MARQUARDT}.
+
 \subsection{Navegación autónoma con Nav2}
 \label{sec:nav2_ch9}
 
@@ -339,7 +387,18 @@ Meta $\rightarrow$ \texttt{bt\_navigator} $\rightarrow$ \texttt{planner\_server}
 \end{minipage}
 \end{center}
 
-El planificador global utilizado es NavFn con A$^*$ (Sec.~\ref{sec:nav_marco}), activado mediante \texttt{use\_astar} sobre el \texttt{global\_costmap}. Para el seguimiento local se emplea DWB, que evalúa trayectorias candidatas y selecciona comandos de velocidad compatibles con las restricciones cinemáticas del robot.
+El planificador global utilizado es NavFn con A$^*$ (Sec.~\ref{sec:nav_marco}),
+mediante el plugin \texttt{nav2\_navfn\_planner/NavfnPlanner} con
+\texttt{use\_astar=true}, \texttt{allow\_unknown=true} y tolerancia de
+0.5~m sobre el \texttt{global\_costmap}. Para el seguimiento local se emplea
+\texttt{dwb\_core::DWBLocalPlanner}, que evalúa trayectorias candidatas
+mediante la Ec.~\eqref{eq:dwb_cost} con los críticos cargados en la
+configuración: \texttt{Oscillation}, \texttt{BaseObstacle},
+\texttt{GoalAlign}, \texttt{PathAlign}, \texttt{PathDist} y
+\texttt{GoalDist}. En hardware real, DWB admite candidatos de hasta
+0.15~m/s, mientras \texttt{diff\_drive\_controller} limita la velocidad
+lineal a 0.13~m/s; por ello, una consigna generada entre 0.13 y 0.15~m/s
+queda limitada posteriormente por el controlador diferencial.
 
 \begin{table}[H]
 \centering
@@ -371,7 +430,13 @@ En hardware real, las capas de inflación de \texttt{global\_costmap} y \texttt{
 
 La navegación de alto nivel se organiza mediante un árbol de comportamiento. La rama principal calcula la ruta global y ejecuta el seguimiento local; si ocurre un fallo, se activan acciones de recuperación, lo que permite reintentos ante bloqueos sin modificar la lógica completa del sistema.
 
-Las acciones configuradas (Tabla~\ref{tab:recovery_ch9}) siguen un principio de escalada: primero acciones de bajo costo computacional (limpieza de costmaps) y luego maniobras físicas (retroceso, giro y espera), con replanificación entre reintentos. El detalle de cada acción se conserva en el \ref{anx:recovery_nav2}, Tabla~\ref{tab:recovery_ch9}.
+El árbol ejecutado recalcula la ruta a 4~Hz y aplica un principio de
+escalada en dos niveles: ante fallos de planificación o seguimiento limpia
+el costmap correspondiente; si la navegación completa falla, limpia ambos
+costmaps, retrocede 0.15~m a 0.05~m/s, gira 0.8~rad, vuelve a planificar,
+intenta seguir la nueva ruta y espera 2~s entre reintentos. El detalle de
+cada acción configurada se conserva en el \ref{anx:recovery_nav2},
+Tabla~\ref{tab:recovery_ch9}.
 
 \subsection{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
@@ -379,6 +444,12 @@ Las acciones configuradas (Tabla~\ref{tab:recovery_ch9}) siguen un principio de 
 Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}); su nodo \texttt{explore\_server} identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 
 El explorador utiliza el costmap global, reevalúa las fronteras con una frecuencia configurada de 0.3~Hz y aplica un tiempo máximo sin progreso de 10~s. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo reproducible de detección, selección, envío de metas y gestión de la lista negra se traslada al Alg.~\ref{alg:exploracion_fronteras} del mismo anexo.
+
+Las particularidades de la implementación ejecutada ---el cálculo del punto
+representativo de cada frontera, el escalamiento de la distancia en el
+puntaje y la programación del temporizador--- se documentan en el
+\ref{anx:explore_impl}, Ecs.~\eqref{eq:centroide_frontera_impl},
+\eqref{eq:frontier_cost} y~\eqref{eq:periodo_explorador_real}.
 
 \subsection{Integración del ciclo autónomo y transferencia simulación--hardware}
 \label{sec:integracion_ciclo}
