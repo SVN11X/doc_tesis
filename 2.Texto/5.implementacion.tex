@@ -35,14 +35,7 @@ Estructura & Chasis impreso en 3D & Integrar mecánicamente los componentes del 
 
 La actuación se realiza mediante dos motorreductores JGA25-370 de 12 V, seleccionados por su disponibilidad, bajo costo y torque suficiente para una plataforma diferencial de interiores. Cada motor incorpora un encoder incremental de cuadratura, utilizado para estimar velocidad y desplazamiento de rueda.
 
-La resolución teórica del encoder en el eje de salida se obtiene a partir de la resolución del sensor Hall en el eje del motor, la decodificación en cuadratura y la relación de reducción:
-
-\begin{equation}
-N_e^{\mathrm{teo}} = N_{\mathrm{Hall}} \cdot c_q \cdot N_g
-\label{eq:resolucion_encoder}
-\end{equation}
-
-donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder [ticks/vuelta del eje de salida], $N_{\mathrm{Hall}}=11$ el número de pulsos por vuelta del eje del motor, $c_q$ el factor de decodificación en cuadratura y $N_g$ la relación de reducción; sus valores se consolidan en la Tabla~\ref{tab:parametros_modelo}. Las mediciones experimentales, detalladas en la Sec.~\ref{sec:cpr_experimental}, sustentan el valor efectivo $N_e$ de la Tabla~\ref{tab:parametros_modelo}, utilizado de forma unificada por el firmware y la odometría.
+La resolución teórica del encoder en el eje de salida se obtiene a partir de la Ec. \ref{eq:resolucion_encoder}. Las mediciones experimentales, detalladas en la Sec.~\ref{sec:cpr_experimental}, sustentan el valor efectivo $N_e$ de la Tabla~\ref{tab:parametros_modelo}, utilizado de forma unificada por el firmware y la odometría.
 
 El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer los encoders, calcular el PID de velocidad de cada rueda y enviar señales \gls{PWM} al driver L298N. Este último introduce una zona muerta y caída de tensión que deben compensarse mediante la sintonización experimental del controlador.
 
@@ -168,7 +161,7 @@ La plataforma se organiza en dos dominios principales. El dominio de potencia ut
 
 El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} mediante enlace serial USB (puerto fijado por regla \texttt{udev} en \texttt{/dev/motor\_controller}, a 57600~baudios), utilizado para enviar referencias de velocidad y recibir datos de encoders. El sensor RPLidar A1 entrega barridos láser publicados en \texttt{/scan}, empleados por \texttt{slam\_toolbox} y por los mapas de costo de Nav2. La Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de datos del prototipo.
 
-\utemFigurePropia{2.Texto/Imag/circuit_diagram.png}{0.90\textwidth}
+\utemFigurePropia{2.Texto/Imag/circuit_diagram.png}{0.99\textwidth}
 {Esquema de conexiones eléctricas y de datos del robot diferencial.}
 {fig:esquema_conexiones}
 

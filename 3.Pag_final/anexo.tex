@@ -811,36 +811,36 @@ La simulación cuantiza únicamente la medición que ingresa al PID:
 Después de sumar la velocidad, el núcleo solo aplica una cota inferior:
 
 \begin{equation}
-X_{i,d}^{g+1}
+\xi_{i,d}^{g+1}
 =
 \max
 \left(
-X_{i,d}^{g}+V_{i,d}^{g+1},
+\xi_{i,d}^{g}+V_{i,d}^{g+1},
 10^{-4}
 \right).
 \label{eq:pso_pos_marco_teorico}
 \end{equation}
 
-\noindent No se aplica una cota superior al estado almacenado $X_{i,d}$. La transformación utilizada para evaluar cada partícula depende de la etapa:
+\noindent No se aplica una cota superior al estado almacenado $\xi_{i,d}$. La transformación utilizada para evaluar cada partícula depende de la etapa:
 
 \begin{equation}
 \begin{aligned}
-X_{i,d}^{eval}
+\xi_{i,d}^{\mathrm{eval}}
 &=
-\min\!\left(1,\max\!\left(X_{i,d},10^{-4}\right)\right),\\[2pt]
-\boldsymbol{\theta}_i^{eval}
+\min\!\left(1,\max\!\left(\xi_{i,d},10^{-4}\right)\right),\\[2pt]
+\boldsymbol{\theta}_i^{\mathrm{eval}}
 &=
 \begin{cases}
-\left(0.01X_{i,1},\,2.0X_{i,2},\,0.5X_{i,3}\right),
+\left(0.01\xi_{i,1},\,2.0\xi_{i,2},\,0.5\xi_{i,3}\right),
 & \text{identificación FODT},\\[2pt]
-\left(40X_{i,1}^{eval},\,25X_{i,2}^{eval},\,0.05X_{i,3}^{eval}\right),
+\left(40\xi_{i,1}^{\mathrm{eval}},\,25\xi_{i,2}^{\mathrm{eval}},\,0.05\xi_{i,3}^{\mathrm{eval}}\right),
 & \text{sintonización PID}.
 \end{cases}
 \end{aligned}
 \label{eq:pso_escala}
 \end{equation}
 
-\noindent donde $X_{i,d}^{eval}$ es la copia recortada de la componente evaluada y $\boldsymbol{\theta}_i^{eval}$ el vector de parámetros físicos asociado a la partícula $i$. En la identificación, $\boldsymbol{\theta}^{eval}=(K_m,\tau,L_d)$; en la sintonización, $\boldsymbol{\theta}^{eval}=(K_p,K_d,K_i)$. El recorte superior a 1 existe solo dentro de la función de costo PID.
+\noindent donde $\xi_{i,d}^{\mathrm{eval}}$ es la copia recortada de la componente evaluada y $\boldsymbol{\theta}_i^{\mathrm{eval}}$ el vector de parámetros físicos asociado a la partícula $i$. En la identificación, $\boldsymbol{\theta}^{\mathrm{eval}}=(K_m,\tau,L_d)$; en la sintonización, $\boldsymbol{\theta}^{\mathrm{eval}}=(K_p,K_d,K_i)$. El recorte superior a 1 existe solo dentro de la función de costo PID.
 
 La función de costo PID utiliza el máximo de la señal de referencia como
 objetivo y combina el error cuadrático medio con una penalización cuadrática
@@ -957,7 +957,7 @@ global mediante:
 \begin{equation}
 G^{g+1}
 =
-X_{i^*}^{g+1}.
+\xi_{i^*}^{g+1}.
 \label{eq:pso_globalp_real}
 \end{equation}
 
@@ -985,41 +985,41 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \begin{algorithmic}[1]
 \small
 \Require Función de costo; tamaño $S$; dimensiones $D$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
-\Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y parámetros escalados $\theta^{out}$.
-\State Inicializar $X_{i,d}\sim\mathcal{U}[0,1]$ y $V_{i,d}\sim\mathcal{U}[0,1]$ sin semilla fija.
+\Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y parámetros escalados $\theta^{\mathrm{out}}$.
+\State Inicializar $\xi_{i,d}\sim\mathcal{U}[0,1]$ y $V_{i,d}\sim\mathcal{U}[0,1]$ sin semilla fija.
 \State Evaluar las posiciones iniciales.
-\State $P_i\gets X_i$ y $J_i^{best}\gets J_i$.
-\State $J^*\gets\min_i J_i$ y $G\gets X_{\arg\min_i J_i}$.
+\State $P_i\gets \xi_i$ y $J_i^{\mathrm{best}}\gets J_i$.
+\State $J^*\gets\min_i J_i$ y $G\gets \xi_{\arg\min_i J_i}$.
 \For{$g=1,\ldots,g_{\max}$}
-\State Calcular $w_{in}^{g}$ mediante la Ec.~\eqref{eq:pso_inercia}.
+\State Calcular $w_{\mathrm{in}}^{g}$ mediante la Ec.~\eqref{eq:pso_inercia}.
 \For{cada partícula $i$}
 \State Generar $\rho_1,\rho_2\sim\mathcal{U}[0,1]^D$.
 \State Actualizar $V_i$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico} usando $G$.
-\State $X_i\gets X_i+V_i$.
-\State $X_i\gets\max(X_i,10^{-4})$ elemento a elemento.
+\State $\xi_i\gets \xi_i+V_i$.
+\State $\xi_i\gets\max(\xi_i,10^{-4})$ elemento a elemento.
 \If{modo ID}
-\State $\theta_i^{eval}\gets(0.01X_{i,1},\,2.0X_{i,2},\,0.5X_{i,3})$.
+\State $\theta_i^{\mathrm{eval}}\gets(0.01\xi_{i,1},\,2.0\xi_{i,2},\,0.5\xi_{i,3})$.
 \Else
-\State $X_{i,d}^{eval}\gets\min\!\left(1,\max\!\left(X_{i,d},10^{-4}\right)\right)$, para $d=1,\ldots,D$.
-\State $\theta_i^{eval}\gets(40X_{i,1}^{eval},\,25X_{i,2}^{eval},\,0.05X_{i,3}^{eval})$.
+\State $\xi_{i,d}^{\mathrm{eval}}\gets\min\!\left(1,\max\!\left(\xi_{i,d},10^{-4}\right)\right)$, para $d=1,\ldots,D$.
+\State $\theta_i^{\mathrm{eval}}\gets(40\xi_{i,1}^{\mathrm{eval}},\,25\xi_{i,2}^{\mathrm{eval}},\,0.05\xi_{i,3}^{\mathrm{eval}})$.
 \EndIf
-\State Evaluar $J_i\gets J(\theta_i^{eval})$.
-\If{$J_i<J_i^{best}$}
-\State $J_i^{best}\gets J_i$ y $P_i\gets X_i$.
+\State Evaluar $J_i\gets J(\theta_i^{\mathrm{eval}})$.
+\If{$J_i<J_i^{\mathrm{best}}$}
+\State $J_i^{\mathrm{best}}\gets J_i$ y $P_i\gets \xi_i$.
 \EndIf
 \EndFor
-\State $J_{new}^*\gets\min_i J_i^{best}$.
-\If{$J_{new}^*<J^*$}
-\State $i^*\gets\arg\min_i J_i^{best}$.
-\State $G\gets X_{i^*}$.
+\State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$.
+\If{$J_{\mathrm{new}}^*<J^*$}
+\State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$.
+\State $G\gets \xi_{i^*}$.
 \Comment{Se usa la posición actual, no $P_{i^*}$}
-\State $J^*\gets J_{new}^*$.
+\State $J^*\gets J_{\mathrm{new}}^*$.
 \EndIf
 \EndFor
 \If{modo ID}
-\State $\theta^{out}\gets(0.01G_1,\,2.0G_2,\,0.5G_3)$.
+\State $\theta^{\mathrm{out}}\gets(0.01G_1,\,2.0G_2,\,0.5G_3)$.
 \Else
-\State $\theta^{out}\gets(40G_1,\,25G_2,\,0.05G_3)$.
+\State $\theta^{\mathrm{out}}\gets(40G_1,\,25G_2,\,0.05G_3)$.
 \EndIf
 \State No aplicar un recorte superior final.
 \end{algorithmic}
@@ -1041,8 +1041,8 @@ Variables optimizadas & $(K_m,\tau,L_d)$ & $(K_p,K_d,K_i)$ \\
 Dimensión del espacio & 3 & 3 \\
 Función de costo & Ec.~\eqref{eq:costo_identificacion} & Ec.~\eqref{eq:costo_pso} \\
 Vector de escala $s$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
-Cota superior del estado $X$ & No aplicada & No aplicada \\
-Recorte superior durante la evaluación & No aplicado & $X_{i,d}^{eval}=\min\!\left(1,\max\!\left(X_{i,d},10^{-4}\right)\right)$ \\
+Cota superior del estado $\xi$ & No aplicada & No aplicada \\
+Recorte superior durante la evaluación & No aplicado & $\xi_{i,d}^{\mathrm{eval}}=\min\!\left(1,\max\!\left(\xi_{i,d},10^{-4}\right)\right)$ \\
 \midrule
 \multicolumn{3}{l}{\textit{Hiperparámetros comunes del enjambre}} \\
 Tamaño del enjambre $S$ & \multicolumn{2}{c}{50} \\

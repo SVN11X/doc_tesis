@@ -2,8 +2,7 @@
 \label{marco_teorico}
 
 Este capítulo presenta los fundamentos generales empleados en el diseño del
-robot móvil diferencial. Se define primero el robot como sistema físico
----estructura, marcos de referencia y rotaciones--- junto con su descripción
+robot móvil diferencial. Se define primero el robot como sistema físico (estructura, marcos de referencia y rotaciones junto con su descripción
 mediante URDF y la simulación en Gazebo. Luego se explica \gls{ROS2} y su
 mecanismo de comunicación, el principio de funcionamiento de los sensores y
 actuadores utilizados (\gls{LIDAR} 2D, encoders, motores DC con driver), el
@@ -11,7 +10,7 @@ modelo cinemático diferencial y la odometría, la identificación FODT, el
 controlador PID y su sintonización mediante PSO, el SLAM basado en grafos con
 SLAM Toolbox, la planificación de rutas con A*, el control local por ventana
 dinámica y la exploración autónoma basada en fronteras. La materialización de
-estos fundamentos ---algoritmos, parámetros y configuraciones ejecutadas---
+estos fundamentos (algoritmos, parámetros y configuraciones ejecutadas)
 se desarrolla en el Capítulo~\ref{ch:implementacion} y en los anexos.
 
 \section{El robot móvil: estructura, marcos de referencia y rotaciones}
@@ -48,7 +47,7 @@ del robot; por ejemplo, la pose del sensor láser respecto del marco global se
 obtiene componiendo la transformación del mapa a la base del robot con la
 transformación fija de la base al sensor \citep{corke2023}. En robótica móvil
 es habitual organizar estos marcos en una jerarquía que separa el marco
-global del mapa, el marco odométrico ---continuo pero con deriva--- y el
+global del mapa, el marco odométrico (continuo pero con deriva) y el
 marco de la base del robot; las convenciones de orientación de ejes (eje $x$
 hacia adelante, $y$ hacia la izquierda, $z$ hacia arriba) y de organización
 de marcos siguen las recomendaciones REP-103 y REP-105
@@ -111,8 +110,8 @@ Distribution Service}), un middleware descentralizado que descubre
 automáticamente los nodos presentes en la red y negocia políticas de calidad
 de servicio, como fiabilidad de entrega y profundidad de historial
 \citep{macenski2022ros2}. Gracias a ello, los nodos pueden distribuirse entre
-varios computadores de una red local ---como ocurre en este trabajo entre la
-Raspberry Pi~4 y la estación de trabajo--- sin un maestro central.
+varios computadores de una red local (como ocurre en este trabajo entre la
+Raspberry Pi~4 y la estación de trabajo) sin un maestro central.
 Complementariamente a los tópicos, \gls{ROS2} ofrece \emph{servicios}
 (interacciones de solicitud--respuesta) y \emph{acciones} (tareas de larga
 duración con retroalimentación y posibilidad de cancelación), utilizadas por
@@ -151,12 +150,26 @@ desfasados, generando dos canales en cuadratura (desfasados 90$^\circ$). El
 orden de los flancos entre ambos canales indica el sentido de giro, y contar
 los flancos de ambos canales cuadruplica la resolución básica del sensor
 (decodificación~$\times$4). Cuando el encoder está montado en el eje del
-motor y este acciona la rueda a través de una caja reductora, la resolución
-en el eje de salida se multiplica por la relación de reducción. El conteo
-acumulado de pulsos (ticks) permite estimar la posición y la velocidad
-angular de cada rueda, base de la odometría desarrollada en la
-Sec.~\ref{sec:odometria}; los valores numéricos del prototipo se consolidan
-en el Capítulo~\ref{ch:implementacion}.
+motor y este acciona la rueda a través de una caja reductora, cada vuelta de
+la rueda corresponde a $N_g$ vueltas del motor, por lo que la resolución
+teórica en el eje de salida es:
+
+\begin{equation}
+N_e^{\mathrm{teo}} = N_{\mathrm{Hall}} \cdot c_q \cdot N_g,
+\label{eq:resolucion_encoder}
+\end{equation}
+
+\noindent donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder
+[ticks/vuelta del eje de salida], $N_{\mathrm{Hall}}$ el número de pulsos
+por vuelta del eje del motor, $c_q\in\{1,2,4\}$ el factor de decodificación
+en cuadratura y $N_g$ la relación de reducción. En la práctica, tolerancias
+mecánicas y pérdidas de conteo hacen que la resolución efectiva $N_e$ pueda
+diferir del valor teórico, por lo que es habitual determinarla
+experimentalmente. Esta resolución es la que relaciona el conteo acumulado
+de ticks con la posición y la velocidad angular de cada rueda mediante las
+Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}, base de la
+odometría desarrollada en la Sec.~\ref{sec:odometria}; los valores numéricos
+del prototipo se consolidan en el Capítulo~\ref{ch:implementacion}.
 
 \subsection{Motores DC y driver de potencia}
 \label{sec:motores_marco}
@@ -172,10 +185,7 @@ interruptores a frecuencia fija y variando el ciclo de trabajo se controla
 la tensión media efectiva sobre el motor. Los drivers reales introducen
 efectos no ideales relevantes para el control: una caída de tensión interna
 en los transistores y una zona muerta a bajos ciclos de trabajo, en la cual
-el motor no vence la fricción estática y no gira. Estos efectos, presentes
-en el driver L298N utilizado, justifican el uso de control realimentado de
-velocidad y su sintonización experimental (Secs.~\ref{sec:pid}
-y~\ref{sec:sintonizacion}).
+el motor no vence la fricción estática y no gira. 
 
 \section{Cinemática diferencial y odometría}
 \label{sec:odometria}
@@ -190,11 +200,10 @@ del robot [m/s]; con subíndice $j\in\{R,L\}$ denota la velocidad lineal de
 rueda. $\omega$ sin subíndice denota la velocidad angular del robot [rad/s];
 con subíndice $j$ denota la velocidad angular de rueda [rad/s]. El subíndice
 $R$ corresponde a la rueda derecha y $L$ a la izquierda. La posición angular
-de rueda se denota $\phi_j$ [rad]. Las minúsculas $x_k$, $y_k$ se reservan
-para las coordenadas de pose del robot; la mayúscula $X_{i,d}$ denota la
-posición de una partícula del algoritmo PSO y $V_{i,d}$ su velocidad, de
-modo que ningún símbolo de pose o velocidad del robot se reutiliza en el
-optimizador. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su
+de rueda se denota $\phi_j$ [rad]. Las minúsculas $x_k$, $y_k$ se reservan para las coordenadas de pose del
+robot; la posición de una partícula del algoritmo PSO se denota mediante la
+letra griega $\xi_{i,d}$ y su velocidad mediante $V_{i,d}$, de modo que
+ningún símbolo de pose o velocidad del robot se reutiliza en el optimizador. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su
 representación discreta $n_{d,j}$ [muestras]. El conteo de encoder se
 expresa en ticks, donde un tick corresponde a una cuenta producida por la
 decodificación en cuadratura.
@@ -418,10 +427,10 @@ condiciones de comparación se documentan en el \ref{anx:lambda_detalle}.
 PSO (\textit{Particle Swarm Optimization}) es una metaheurística
 poblacional inspirada en el comportamiento colectivo de enjambres, aplicada
 con éxito a la sintonización de controladores en robótica móvil
-\citep{gokcce2021particle}. Cada partícula $i$ representa un candidato de
-solución ---en este caso, un conjunto de ganancias PID--- mediante una
-posición $X_{i,d}$ y una velocidad $V_{i,d}$, ambas adimensionales, con
-$d\in\{1,2,3\}$ asociado a las tres ganancias. En cada generación $g$, la
+\citep{gokcce2021particle}. Cada partícula $i$ representa un candidato de solución, en este caso, un
+conjunto de ganancias PID, mediante una posición $\xi_{i,d}$ y una
+velocidad $V_{i,d}$, ambas adimensionales, con $d\in\{1,2,3\}$ asociado a
+las tres ganancias. En cada generación $g$, la
 velocidad de cada partícula se actualiza combinando su inercia, la atracción
 hacia su mejor posición personal y la atracción hacia la mejor posición
 global del enjambre:
@@ -433,9 +442,9 @@ V_{i,d}^{g+1}
 \left[
 w_{\mathrm{in}}^{g}V_{i,d}^{g}
 +c_1\rho_{1,i,d}^{g}
-\left(P_{i,d}-X_{i,d}^{g}\right)
+\left(P_{i,d}-\xi_{i,d}^{g}\right)
 +c_2\rho_{2,i,d}^{g}
-\left(G_d^{g}-X_{i,d}^{g}\right)
+\left(G_d^{g}-\xi_{i,d}^{g}\right)
 \right],
 \label{eq:pso_vel_marco_teorico}
 \end{equation}
