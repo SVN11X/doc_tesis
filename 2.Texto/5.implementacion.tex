@@ -47,7 +47,8 @@ El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 36
 
 \subsection{Alimentación y fabricación}
 
-El sistema se alimenta desde una batería Li-ion de 12 V; la organización de los dominios de potencia y lógica se detalla en la Sec.~\ref{chap:robot_real}. El chasis y las cubiertas fueron fabricados mediante impresión 3D FDM en PLA+, tomando como referencia una plataforma diferencial comercial \citep{BECChassisLong}. El diseño considera espacio para la Raspberry Pi, el \gls{Arduino}, el driver de motores, el regulador de tensión, la batería y el sensor RPLidar A1.
+El sistema se alimenta desde una batería Li-ion de 12 V; la organización de los dominios de potencia y lógica se detalla en la Sec.~\ref{chap:robot_real}. El chasis y las cubiertas fueron fabricados mediante impresión 3D FDM en PLA+, tomando como referencia una plataforma diferencial comercial \citep{BECChassisLong}. El diseño considera espacio para la Raspberry Pi, el \gls{Arduino}, el driver de motores, el regulador de tensión, la batería y el sensor RPLidar A1. En la Figura~\ref{fig:prototipo} se muestra una vista lateral del prototipo
+construido.
 
 \utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.55\linewidth}
 {Vista lateral del prototipo construido.}
@@ -213,7 +214,7 @@ resumen en la Tabla~\ref{tab:diff_drive_params}.
 La comunicación con el firmware se realiza mediante el plugin
 \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control}
 cuyo ciclo de lectura--actualización--escritura, formalizado en el
-Algoritmo~\ref{alg:ros2control_cycle}, se programa nominalmente con
+Alg.~\ref{alg:ros2control_cycle}, se programa nominalmente con
 $f_{\mathrm{ctrl}}=30$~Hz mediante \texttt{controller\_manager.update\_rate}.
 
 En la fase de escritura del ciclo, la velocidad angular de rueda comandada por
@@ -238,7 +239,7 @@ m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
 \noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y $v_j^{\mathrm{cmd}}[k]$ son
 las consignas angular [rad/s] y lineal [m/s] de la rueda $j$; $2\pi/N_e$ es
 la resolución angular por tick [rad/tick]; $\operatorname{trunc}_{0}(\cdot)$
-representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor Algoritmo~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división
+representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división
 utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado
 $f_{\mathrm{loop}}=30$~Hz; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$
 coinciden numéricamente, no representan el mismo mecanismo ni comparten una
@@ -267,7 +268,7 @@ Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmwa
 \label{sec:flujo_datos}
 
 El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se
-resume, a nivel macro, en el Algoritmo~\ref{alg:odometria_diferencial}: se
+resume, a nivel macro, en el Alg.~\ref{alg:odometria_diferencial}: se
 obtienen los conteos de encoder y se exportan los estados de rueda, el
 controlador diferencial actualiza la odometría y las consignas, y las
 referencias se transmiten como valores enteros de \textit{ticks/frame}.
@@ -291,7 +292,7 @@ referencias se transmiten como valores enteros de \textit{ticks/frame}.
 \end{algorithm}
 
 El orden exacto de ejecución, las validaciones seriales y la inicialización
-temporal se formalizan en el Algoritmo~\ref{alg:ros2control_cycle}; la
+temporal se formalizan en el Alg.~\ref{alg:ros2control_cycle}; la
 definición por casos del intervalo $\Delta t_k$ se conserva en el
 \ref{anx:implementacion_diffdrive}.
 
@@ -363,7 +364,7 @@ El controlador de velocidad se ejecuta de forma independiente para cada rueda. L
 
 La ley implementada corresponde a la forma incremental con derivada sobre la
 medición definida en el Cap.~\ref{marco_teorico}. Cada ciclo de control sigue
-la estructura macro del Algoritmo~\ref{alg:pid_macro}.
+la estructura macro del Alg.~\ref{alg:pid_macro}.
 
 \begin{algorithm}[H]
 \caption{Estructura macro del control PID de velocidad por rueda}
@@ -421,11 +422,13 @@ comandos seriales de sintonización (Tabla~\ref{tab:protocolo_serial}) se
 reemplaza por los valores codificados al producirse cualquiera de esos
 reinicios. La secuencia exacta de lectura, actualización de estados,
 saturación y aplicación de las salidas, incluidos los nombres de las
-funciones del firmware involucradas, se formaliza en el
-Algoritmo~\ref{alg:pid_firmware}.
+funciones del firmware involucradas, se formaliza en los
+Algoritmos~\ref{alg:pid_firmware} y~\ref{alg:pid_firmware_ley}: el primero
+describe el ciclo de actualización y la lógica de reinicio, y el segundo,
+la ley de control discreta aplicada a cada rueda.
 
 \begin{algorithm}[H]
-\caption{Secuencia exacta del PID discreto ejecutado por el firmware}
+\caption{Ciclo de actualización del PID discreto ejecutado por el firmware}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
 \Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; ganancias; $K_o=50$; \texttt{MAX\_PWM}$=255$.
@@ -446,11 +449,26 @@ Algoritmo~\ref{alg:pid_firmware}.
         \EndIf
         \State \Return
     \EndIf
-    \State \Call{doPID}{PID derecho,$1$}
+    \State \Call{doPID}{PID derecho,$1$} \Comment{Alg.~\ref{alg:pid_firmware_ley}}
     \State \Call{doPID}{PID izquierdo,$2$}
     \State \Call{setMotorSpeeds}{\texttt{leftPID.output},\texttt{rightPID.output}}
 \EndProcedure
 \Statex
+\While{el firmware esté activo}
+    \If{\texttt{millis()}$>$\texttt{nextPID}}
+        \State \Call{updatePID}{}
+        \State \texttt{nextPID}$\gets$\texttt{nextPID}$+33$~ms
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Ley de control PID discreta por rueda ejecutada por el firmware}
+\label{alg:pid_firmware_ley}
+\begin{algorithmic}[1]
+\Require Estructura $p$ de la rueda; zona muerta $e_{db}$; ganancias $K_p,K_i,K_d$; $K_o$; \texttt{MAX\_PWM}$=255$.
+\Ensure $p.output$ saturado en $[-255,255]$ y estados $p.ITerm$, $p.PrevInput$, $p.PrevEnc$ actualizados.
 \Procedure{doPID}{$p,e_{db}$}
     \State $m\gets\operatorname{int}(p.Encoder-p.PrevEnc)$
     \State $e\gets\operatorname{trunc}_{0}(p.TargetTicksPerFrame-m)$
@@ -471,15 +489,9 @@ Algoritmo~\ref{alg:pid_firmware}.
     \State $p.output\gets u$
     \State $p.PrevInput\gets m$
 \EndProcedure
-\Statex
-\While{el firmware esté activo}
-    \If{\texttt{millis()}$>$\texttt{nextPID}}
-        \State \Call{updatePID}{}
-        \State \texttt{nextPID}$\gets$\texttt{nextPID}$+33$~ms
-    \EndIf
-\EndWhile
 \end{algorithmic}
 \end{algorithm}
+
 
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
@@ -507,18 +519,20 @@ Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en
 \end{algorithm}
 
 El núcleo del optimizador se implementa en un módulo propio de Python, cuyo
-flujo completo se formaliza en el Algoritmo~\ref{alg:pso_nucleo}; las
+flujo completo se formaliza en los Alg.~\ref{alg:pso_nucleo}
+y~\ref{alg:pso_bucle}: el primero inicializa el enjambre y el mejor global,
+y el segundo ejecuta el bucle de optimización y el escalado de salida; las
 posiciones y velocidades iniciales se generan de forma pseudoaleatoria sin
 fijar una semilla, por lo que distintas ejecuciones pueden producir
 parámetros diferentes. La localización del módulo dentro del repositorio se
 documenta en el \ref{anx:rutas_software}.
 
 \begin{algorithm}[H]
-\caption{PSO ejecutado por \texttt{pyPso.py}}
+\caption{Inicialización del enjambre del PSO ejecutado por \texttt{pyPso.py}}
 \label{alg:pso_nucleo}
 \begin{algorithmic}[1]
-\Require Función de costo $J$; partículas $N_p$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
-\Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
+\Require Función de costo $J$; partículas $N_p$; modo ID o PID.
+\Ensure Enjambre inicial $(\xi_i,V_i,P_i,J_i^{\mathrm{best}})$ y mejor global $(J^*,G)$.
 \For{$i=1,\ldots,N_p$}
     \State $\xi_i\sim\mathcal{U}[0,1]^3$
     \State $V_i\sim\mathcal{U}[0,1]^3$
@@ -530,6 +544,15 @@ documenta en el \ref{anx:rutas_software}.
 \State $i^*\gets\arg\min_i J_i$
 \State $J^*\gets J_{i^*}$
 \State $G\gets\xi_{i^*}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Bucle de optimización y escalado de salida del PSO}
+\label{alg:pso_bucle}
+\begin{algorithmic}[1]
+\Require Enjambre y mejor global inicializados (Algoritmo~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
+\Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
 \For{$g=1,\ldots,g_{\max}$}
     \State $w_{\mathrm{in}}^{g}\gets\dfrac{g_{\max}-g}{g_{\max}}$
     \For{$i=1,\ldots,N_p$}
@@ -564,9 +587,8 @@ documenta en el \ref{anx:rutas_software}.
 \end{algorithmic}
 \end{algorithm}
 
-
 El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
-scripts recorren las ruedas, formalizado en el Algoritmo~\ref{alg:sintonizacion}.
+scripts recorren las ruedas, formalizado en el Alg.~\ref{alg:sintonizacion}.
 
 \subsubsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -575,7 +597,7 @@ La prueba aplica un escalón PWM nominal de 143 y registra los conteos de
 encoder cada $T_{\mathrm{cap}}=0.1$~s durante 10~s. La velocidad se calcula
 con el período nominal, mientras el tiempo real del ciclo solo determina el
 remanente de espera. El procedimiento reproducible se formaliza en el
-Algoritmo~\ref{alg:captura_lazo_abierto}; la ecuación de conversión de
+Alg.~\ref{alg:captura_lazo_abierto}; la ecuación de conversión de
 conteos a velocidad se conserva en el \ref{anx:protocolos_sintonizacion},
 Ec.~\eqref{eq:vel_lazo_abierto}.
 
@@ -678,7 +700,7 @@ La salida de la ejecución utilizada como punto de partida, incluidos los parám
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
 
-El bucle principal atiende el parser serial, programa el PID mediante incrementos enteros de 33~ms y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Algoritmo~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
+El bucle principal atiende el parser serial, programa el PID mediante incrementos enteros de 33~ms y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Alg.~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
 
 %=====================================================================
 \section{Arquitectura de control y navegación: SLAM, Nav2 y exploración}
@@ -818,7 +840,7 @@ Tabla~\ref{tab:recovery_ch9}.
 
 Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}); su nodo \texttt{explore\_server} identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 
-El explorador utiliza el costmap global, reevalúa las fronteras con una frecuencia configurada de 0.3~Hz y aplica un tiempo máximo sin progreso de 10~s. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo de detección, selección, envío de metas y gestión de la lista negra se resume en el Algoritmo~\ref{alg:exploracion_fronteras}.
+El explorador utiliza el costmap global, reevalúa las fronteras con una frecuencia configurada de 0.3~Hz y aplica un tiempo máximo sin progreso de 10~s. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo de detección, selección, envío de metas y gestión de la lista negra se resume en el Alg.~\ref{alg:exploracion_fronteras}.
 
 
 \begin{algorithm}[H]
@@ -833,8 +855,7 @@ El explorador utiliza el costmap global, reevalúa las fronteras con una frecuen
     \State $q\gets\Call{ObtenerPoseRobot}{}$
     \State $\mathcal{F}\gets\Call{DetectarFronteras}{C,q}$
     \For{cada frontera $F\in\mathcal{F}$}
-        \State Calcular $p_F^{\mathrm{impl}}$ mediante la Ec.~\eqref{eq:centroide_frontera_impl}.
-        \State Calcular $U(F)$ mediante la Ec.~\eqref{eq:frontier_cost}.
+    \State Calcular $p_F^{\mathrm{impl}}$ y $U(F)$ mediante las Ecs.~\eqref{eq:centroide_frontera_impl} y~\eqref{eq:frontier_cost}.
     \EndFor
     \State Eliminar las fronteras menores que \texttt{min\_frontier\_size}.
     \State Ordenar $\mathcal{F}$ por costo ascendente.

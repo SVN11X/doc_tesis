@@ -160,12 +160,13 @@
 % - Las negritas de las palabras clave y de los textos marcados con \textbf.
 %
 % Solo se neutralizan cursivas y énfasis.
-\AtBeginEnvironment{algorithmic}{%
-  \normalsize
-  \normalfont
-  \upshape
-  \let\textit\textnormal
-  \let\emph\textnormal
+\AtBeginEnvironment{algorithmic}{
+\normalsize
+\normalfont
+\upshape
+\singlespacing
+\let\textit\textnormal
+\let\emph\textnormal
 }
 
 % -----------------------------------------------------------------------------

@@ -33,11 +33,59 @@ el explorador de fronteras genera metas autónomas y RViz2 permite la
 supervisión.
 \end{description}
 
-Como cierre de esta visión general, cabe señalar que el sistema completo se
-implementó sobre \gls{ROS2}: los cuatro dominios descritos se materializan
-como nodos que intercambian información mediante tópicos dentro de una red
-local, tanto en el robot como en la estación de trabajo. Este capítulo se
-mantiene deliberadamente en un nivel general; los fundamentos de cada
-elemento se presentan en el Marco Teórico, y el detalle técnico de la
-solución ---algoritmos, parámetros y configuraciones--- se desarrolla en los
-capítulos posteriores al Marco Teórico.
+%------------------------------------------------------------------
+\section{Trabajos relacionados y brecha abordada}
+\label{sec:trabajos_relacionados}
+
+Los trabajos recientes sobre robots móviles de bajo costo muestran una
+tendencia hacia la integración de sensores láser y computadores embebidos. Sin embargo, parte importante de estos estudios utiliza
+plataformas comerciales o concentra su evaluación en simulación, sin
+documentar completamente el control de bajo nivel y la integración del
+hardware construido.
+
+\begin{table}[H]
+\centering
+\caption{Trabajos relacionados con el prototipo desarrollado.}
+\label{tab:trabajos_relacionados}
+\scriptsize
+\begin{tabular}{P{2.1cm} c P{2.8cm} P{2.7cm} P{4.1cm}}
+\toprule
+\textbf{Referencia} &
+\textbf{Año} &
+\textbf{Plataforma} &
+\textbf{Tecnologías principales} &
+\textbf{Aporte principal} \\
+\midrule
+
+\citep{ngoc2023efficient} &
+2023 &
+Robot diferencial simulado &
+SLAM 2D y navegación &
+Comparación de algoritmos de mapeo en Gazebo \\
+
+\addlinespace
+
+\citep{amadi2024introduction} &
+2024 &
+Robot con Raspberry Pi 4 &
+RPLidar, \texttt{slam\_toolbox}, Nav2 y EKF &
+Integración de una plataforma móvil de bajo costo \\
+
+\addlinespace
+
+\citep{gokcce2021particle} &
+2021 &
+Robot móvil \textit{skid-steer} &
+Control PID y PSO &
+Aplicación de PSO para sintonización de controladores \\
+
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+La contribución de este trabajo no corresponde a la creación de un nuevo
+algoritmo de SLAM o navegación. La brecha abordada consiste en integrar y
+documentar una plataforma diferencial construida con componentes accesibles,
+incluyendo el control de los motores, la comunicación con \gls{ROS2}, la
+sintonización PID, el gemelo digital, el mapeo y la exploración autónoma.
