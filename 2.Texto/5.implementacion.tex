@@ -268,16 +268,20 @@ controlador diferencial actualiza la odometría y las consignas, y las
 referencias se transmiten como valores enteros de \textit{ticks/frame}.
 
 \begin{algorithm}[H]
-\caption{Resumen de la transformación entre encoders, estados y consignas}
+\caption{Transformación entre encoders, estados y consignas}
 \label{alg:odometria_diferencial}
 \begin{algorithmic}[1]
-\Require Conteos acumulados $c_L,c_R$; resolución $N_e$; consignas $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$; $f_{\mathrm{loop}}$.
-\Ensure Estados angulares de rueda y referencias enteras de ticks/frame.
+\Require Conteos $c_L[k],c_R[k]$; estados previos $\phi_L[k-1],\phi_R[k-1]$; resolución $N_e$; intervalo $\Delta t_k$; consignas $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$; frecuencia $f_{\mathrm{loop}}$.
+\Ensure Estados de rueda y referencias enteras en ticks/frame.
 \For{$j\in\{L,R\}$}
-\State Obtener $\phi_j[k]$ y $\widehat{\omega}_j[k]$ mediante las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}.
+    \State $\phi_j[k]\gets \dfrac{2\pi}{N_e}\,c_j[k]$
+    \State $\widehat{\omega}_j[k]\gets \dfrac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k}$
 \EndFor
-\State Exportar los estados de rueda a \texttt{ros2\_control}.
-\State Convertir las consignas mediante la Ec.~\eqref{eq:mps_to_ticks} y transmitirlas al firmware.
+\State Exportar $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$ a \texttt{ros2\_control}.
+\For{$j\in\{L,R\}$}
+    \State $m_j^{\mathrm{cmd}}\gets \operatorname{trunc}_{0}\!\left(\dfrac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}\right)$
+\EndFor
+\State \Call{EnviarComando}{\texttt{m},$m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$}
 \end{algorithmic}
 \end{algorithm}
 
@@ -287,35 +291,43 @@ definición por casos del intervalo $\Delta t_k$ se conserva en el
 \ref{anx:implementacion_diffdrive}.
 
 \begin{algorithm}[H]
-\begin{algorithmic}[1]
-\small
-\Require Comandos de rueda $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$ [rad/s]; enlace serial; $N_e$; frecuencia nominal \texttt{loop\_rate}$=30$.
-\Ensure Interfaces de estado exportadas como $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$ y referencias enteras de ticks/frame enviadas en orden izquierda--derecha.
-\State \textbf{Configuración:} asignar primero \texttt{time\_}$\gets\texttt{system\_clock::now()}$.
-\State Leer nombres de rueda, \texttt{loop\_rate}, dispositivo, baudrate, timeout y \texttt{enc\_counts\_per\_rev}.
-\State Inicializar $\delta\phi=2\pi/N_e$ para ambas ruedas y abrir el puerto serial.
-\State Esperar 3000~ms y vaciar el buffer de entrada; esta espera queda incluida en el primer $\Delta t_k$.
-\State \textbf{Inicio:} enviar un retorno de carro vacío; conservar las ganancias codificadas en \texttt{resetPID()}.
-\While{la interfaz permanece iniciada}
-\State \textbf{read():} medir $\Delta t_k$ con \texttt{system\_clock}.
-\If{el enlace serial no está abierto}
-\State \Return \texttt{ERROR}
-\EndIf
-\State Solicitar \texttt{e}, separar la respuesta en el primer espacio y convertir ambos campos con \texttt{std::atoi}; no se valida que los campos sean numéricos, por lo que un campo no convertible produce cero.
-\State Asignar el primer valor a $c_L[k]$ y el segundo a $c_R[k]$.
-\State Calcular $\phi_j[k]$ y $\widehat{\omega}_j[k]$ para ambas ruedas mediante las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}.
-\State Exportar las interfaces en el orden \texttt{velocidad izquierda}, \texttt{posición izquierda}, \texttt{velocidad derecha}, \texttt{posición derecha}.
-\State \textbf{update():} \texttt{diff\_drive\_controller} actualiza la odometría y las consignas de rueda.
-\State \textbf{write():}
-\If{el enlace serial no está abierto}
-\State \Return \texttt{ERROR}
-\EndIf
-\State Calcular las referencias izquierda y derecha mediante la Ec.~\eqref{eq:mps_to_ticks}, usando \texttt{loop\_rate}$=30$.
-\State Enviar \texttt{m} seguido de $m_{L,\mathrm{ROS}}^{\mathrm{cmd}}$ y $m_{R,\mathrm{ROS}}^{\mathrm{cmd}}$.
-\EndWhile
-\end{algorithmic}
 \caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}}
 \label{alg:ros2control_cycle}
+\begin{algorithmic}[1]
+\Require Comandos $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$; enlace serial; resolución $N_e$; frecuencia $f_{\mathrm{loop}}$.
+\Ensure Estados de rueda exportados y referencias enviadas al firmware.
+\State $t_{\mathrm{prev}}\gets\Call{TiempoActual}{}$
+\State Leer parámetros de ruedas y comunicación.
+\State $\delta\phi\gets 2\pi/N_e$
+\State Abrir el puerto serial.
+\State Esperar $3000$~ms y vaciar el búfer de entrada.
+\State Enviar un retorno de carro vacío.
+\While{la interfaz esté iniciada}
+    \If{el puerto serial está cerrado}
+        \State \Return \texttt{ERROR}
+    \EndIf
+    \Statex
+    \State $t_k\gets\Call{TiempoActual}{}$
+    \State $\Delta t_k\gets t_k-t_{\mathrm{prev}}$
+    \State $t_{\mathrm{prev}}\gets t_k$
+    \State $s\gets\Call{SolicitarSerial}{\texttt{e}}$
+    \State $(c_L[k],c_R[k])\gets\Call{ConvertirEnteros}{s}$
+    \For{$j\in\{L,R\}$}
+        \State $\phi_j[k]\gets\delta\phi\,c_j[k]$
+        \State $\widehat{\omega}_j[k]\gets\dfrac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k}$
+    \EndFor
+    \State Exportar $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$.
+    \State \Call{ActualizarControladorDiferencial}{}
+    \Statex
+    \If{el puerto serial está cerrado}
+        \State \Return \texttt{ERROR}
+    \EndIf
+    \For{$j\in\{L,R\}$}
+        \State $m_j^{\mathrm{cmd}}\gets\operatorname{trunc}_{0}\!\left(\dfrac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}\right)$
+    \EndFor
+    \State \Call{EnviarComando}{\texttt{m},$m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$}
+\EndWhile
+\end{algorithmic}
 \end{algorithm}
 
 El firmware incorpora además una auto-detención de seguridad ante pérdida de
@@ -349,23 +361,24 @@ medición definida en el Cap.~\ref{marco_teorico}. Cada ciclo de control sigue
 la estructura macro del Algoritmo~\ref{alg:pid_macro}.
 
 \begin{algorithm}[H]
-\caption{Estructura macro del ciclo de control PID por rueda en el firmware}
+\caption{Estructura macro del control PID de velocidad por rueda}
 \label{alg:pid_macro}
 \begin{algorithmic}[1]
-\Require Referencia de rueda en ticks/frame; conteos de encoder; ganancias $(K_{p,j},K_{d,j},K_{i,j},K_{o,j})$.
-\Ensure Salida PWM aplicada a cada motor.
-\For{cada rueda $j\in\{L,R\}$, cada 33~ms}
-\State Calcular la medición de velocidad en ticks/frame a partir del conteo de encoder.
-\State Calcular el error respecto de la referencia según la Ec.~\eqref{eq:error_pid}.
-\If{el error está dentro de la zona muerta}
-\State Anular el error para evitar ciclos límite por cuantización.
-\EndIf
-\State Calcular el incremento de control con la ley incremental de la Ec.~\eqref{eq:pid_incremento}.
-\State Acumular la salida y saturarla al intervalo PWM $[-255,255]$.
-\If{la salida no quedó saturada}
-\State Actualizar el estado integral (anti-windup condicional).
-\EndIf
-\State Aplicar la salida PWM al driver de potencia.
+\Require Referencias $m_j^{\mathrm{cmd}}$; conteos $c_j$; ganancias $(K_{p,j},K_{d,j},K_{i,j},K_o)$; bandas muertas $e_{db,j}$.
+\Ensure Salidas PWM $u_L,u_R$.
+\For{$j\in\{R,L\}$, cada $33$~ms}
+    \State $m_j[k]\gets c_j[k]-c_j[k-1]$
+    \State $e_j[k]\gets m_j^{\mathrm{cmd}}[k]-m_j[k]$
+    \If{$|e_j[k]|\leq e_{db,j}$}
+        \State $e_j[k]\gets0$
+    \EndIf
+    \State Calcular $\Delta u_j[k]$ mediante la Ec.~\eqref{eq:pid_incremento}.
+    \State $u_j^{\mathrm{raw}}[k]\gets u_j[k-1]+\Delta u_j[k]$
+    \State $u_j[k]\gets\operatorname{sat}_{[-255,255]}\!\left(u_j^{\mathrm{raw}}[k]\right)$
+    \If{$-255<u_j^{\mathrm{raw}}[k]<255$}
+        \State Actualizar el estado integral $I_j[k]$.
+    \EndIf
+    \State Aplicar $u_j[k]$ al motor correspondiente.
 \EndFor
 \end{algorithmic}
 \end{algorithm}
@@ -406,46 +419,60 @@ funciones del firmware involucradas, se formaliza en el
 Algoritmo~\ref{alg:pid_firmware}.
 
 \begin{algorithm}[H]
-\begin{algorithmic}[1]
-\small
-\Require Conteos acumulados $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; ganancias; $K_o=50$; \texttt{MAX\_PWM}$=255$.
-\Ensure Salidas PWM izquierda y derecha y estados internos actualizados.
-\State \textbf{Inicialización mediante \texttt{resetPID()}:} cargar ganancias por rueda, leer los encoders actuales y fijar \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero.
-\State \textbf{Planificación:} cuando \texttt{millis()>nextPID}, ejecutar \texttt{updatePID()} y luego sumar 33~ms a \texttt{nextPID}.
-\State Leer primero $c_L[k]$ y después $c_R[k]$.
-\If{\texttt{moving==0}}
-\If{algún \texttt{PrevInput} es distinto de cero}
-\State Ejecutar \texttt{resetPID()}.
-\EndIf
-\State \Return
-\EndIf
-\State Ejecutar \Call{doPID}{rueda derecha, banda muerta 1}.
-\State Ejecutar \Call{doPID}{rueda izquierda, banda muerta 2}.
-\State Llamar \texttt{setMotorSpeeds(leftPID.output,rightPID.output)}.
-\State Dentro de \texttt{setMotorSpeeds}, aplicar primero la salida izquierda y después la salida derecha mediante \texttt{setMotorSpeed}.
-\Statex
-\Procedure{doPID}{$p,e_{\mathrm{db}}$}
-\State $m^{\mathrm{int}}\gets\operatorname{int}(p.Encoder-p.PrevEnc)$.
-\State $e^{\mathrm{long}}\gets\operatorname{trunc}_0(p.TargetTicksPerFrame-m^{\mathrm{int}})$.
-\If{$|e^{\mathrm{long}}|\leq e_{\mathrm{db}}$}
-\State $e^{\mathrm{long}}\gets0$.
-\EndIf
-\State $\Delta u^{\mathrm{long}}\gets\operatorname{trunc}_0\!\left[(K_p e^{\mathrm{long}}-K_d(m^{\mathrm{int}}-p.PrevInput)+p.ITerm)/K_o\right]$.
-\State $p.PrevEnc\gets p.Encoder$.
-\State $u^{\mathrm{raw}}\gets p.output+\Delta u^{\mathrm{long}}$.
-\If{$u^{\mathrm{raw}}\geq255$}
-\State $u\gets255$.
-\ElsIf{$u^{\mathrm{raw}}\leq-255$}
-\State $u\gets-255$.
-\Else
-\State $u\gets u^{\mathrm{raw}}$.
-\State $p.ITerm\gets\operatorname{trunc}_0(p.ITerm+K_i e^{\mathrm{long}})$.
-\EndIf
-\State $p.output\gets u$; \quad $p.PrevInput\gets m^{\mathrm{int}}$.
-\EndProcedure
-\end{algorithmic}
 \caption{Secuencia exacta del PID discreto ejecutado por el firmware}
 \label{alg:pid_firmware}
+\begin{algorithmic}[1]
+\Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; ganancias; $K_o=50$; \texttt{MAX\_PWM}$=255$.
+\Ensure Salidas PWM y estados internos actualizados.
+\State \Call{resetPID}{}
+\Statex
+\Procedure{resetPID}{}
+    \State Cargar las ganancias predeterminadas de ambas ruedas.
+    \State Leer los conteos actuales de los encoders.
+    \State Inicializar \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero.
+\EndProcedure
+\Statex
+\Procedure{updatePID}{}
+    \State Leer $c_L[k]$ y luego $c_R[k]$.
+    \If{\texttt{moving}$=0$}
+        \If{algún \texttt{PrevInput} es distinto de cero}
+            \State \Call{resetPID}{}
+        \EndIf
+        \State \Return
+    \EndIf
+    \State \Call{doPID}{PID derecho,$1$}
+    \State \Call{doPID}{PID izquierdo,$2$}
+    \State \Call{setMotorSpeeds}{\texttt{leftPID.output},\texttt{rightPID.output}}
+\EndProcedure
+\Statex
+\Procedure{doPID}{$p,e_{db}$}
+    \State $m\gets\operatorname{int}(p.Encoder-p.PrevEnc)$
+    \State $e\gets\operatorname{trunc}_{0}(p.TargetTicksPerFrame-m)$
+    \If{$|e|\leq e_{db}$}
+        \State $e\gets0$
+    \EndIf
+    \State $\Delta u\gets\operatorname{trunc}_{0}\!\left(\dfrac{K_p e-K_d(m-p.PrevInput)+p.ITerm}{K_o}\right)$
+    \State $p.PrevEnc\gets p.Encoder$
+    \State $u^{\mathrm{raw}}\gets p.output+\Delta u$
+    \If{$u^{\mathrm{raw}}\geq255$}
+        \State $u\gets255$
+    \ElsIf{$u^{\mathrm{raw}}\leq-255$}
+        \State $u\gets-255$
+    \Else
+        \State $u\gets u^{\mathrm{raw}}$
+        \State $p.ITerm\gets\operatorname{trunc}_{0}(p.ITerm+K_i e)$
+    \EndIf
+    \State $p.output\gets u$
+    \State $p.PrevInput\gets m$
+\EndProcedure
+\Statex
+\While{el firmware esté activo}
+    \If{\texttt{millis()}$>$\texttt{nextPID}}
+        \State \Call{updatePID}{}
+        \State \texttt{nextPID}$\gets$\texttt{nextPID}$+33$~ms
+    \EndIf
+\EndWhile
+\end{algorithmic}
 \end{algorithm}
 
 \subsection{Sintonización del controlador PID asistida por PSO}
@@ -454,22 +481,22 @@ Algoritmo~\ref{alg:pid_firmware}.
 Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental, formalizado en el Alg.~\ref{alg:sintonizacion}. La identificación y la sintonización utilizan enjambres de $N_p=50$ partículas durante $g_{\max}=150$ generaciones. Las variables, escalas, cotas y funciones de costo se conservan en la Tabla~\ref{tab:pso_config} del \ref{anx:protocolos_sintonizacion}.
 
 \begin{algorithm}[H]
-\caption{Sintonización híbrida del PID: identificación FODT y optimización de ganancias por PSO}
+\caption{Sintonización híbrida del PID mediante identificación FODT y PSO}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
-\Require Respuesta al escalón en lazo abierto por rueda; período de captura $T_{cap}=0.1$~s; configuración PSO de la Tabla~\ref{tab:pso_config}.
-\Ensure Ganancias $(K_{p,j},K_{d,j},K_{i,j})$ por rueda.
-\State \textbf{Inicialización:} cargar los datos de lazo abierto y suavizar la velocidad medida.
-\For{$j \in \{L,R\}$}
-\State \textbf{Etapa 1 --- Identificación FODT por PSO:} definir la función de costo de la Ec.~\eqref{eq:costo_identificacion}, con la respuesta del modelo obtenida mediante la discretización de la Ec.~\eqref{eq:fodt_discreto}, penalizando parámetros o respuestas inválidas.
-\State $(K_m,\tau,L_d)_j \gets \Call{PSO}{J_{\mathrm{ID}}}$
-\Comment{Alg.~\ref{alg:pso_nucleo}}
-\State \textbf{Etapa 2 --- Optimización de ganancias PID por PSO:} definir la función de costo de la Ec.~\eqref{eq:costo_pso}, simulando el lazo cerrado del controlador sobre el modelo FODT identificado; las aproximaciones numéricas de esa simulación se documentan en el \ref{anx:fodt_scripts}.
-\State $(K_p,K_d,K_i)_j \gets \Call{PSO}{J}$
-\Comment{Alg.~\ref{alg:pso_nucleo}}
+\Require Datos de lazo abierto por rueda; período $T_{\mathrm{cap}}$; configuración del PSO.
+\Ensure Ganancias PID definitivas por rueda.
+\State Cargar las señales de entrada, velocidad y tiempo.
+\For{$j\in\{L,R\}$}
+    \State $v_j^{\mathrm{filt}}\gets\Call{FiltrarVelocidad}{v_j^{\mathrm{med}}}$
+    \State Definir $J_{\mathrm{ID}}$ mediante la Ec.~\eqref{eq:costo_identificacion}.
+    \State $(K_{m,j},\tau_j,L_{d,j})\gets\Call{PSO}{J_{\mathrm{ID}}}$
+    \State Definir $J_{\mathrm{PID}}$ mediante la Ec.~\eqref{eq:costo_pso}.
+    \State $(K_{p,j},K_{d,j},K_{i,j})\gets\Call{PSO}{J_{\mathrm{PID}}}$
 \EndFor
-\State \textbf{Etapa 3 --- Refinamiento experimental:} ajustar las ganancias sobre el hardware real y registrar los valores finales en el firmware.
-\State \Return $(K_{p,j},K_{d,j},K_{i,j})$, $j\in\{R,L\}$.
+\State Refinar las ganancias sobre el robot real.
+\State Registrar las ganancias definitivas en el firmware.
+\State \Return $(K_{p,j},K_{d,j},K_{i,j})$, para $j\in\{L,R\}$.
 \end{algorithmic}
 \end{algorithm}
 
@@ -481,50 +508,56 @@ parámetros diferentes. La localización del módulo dentro del repositorio se
 documenta en el \ref{anx:rutas_software}.
 
 \begin{algorithm}[H]
-\begin{algorithmic}[1]
-\small
-\Require Función de costo; número de partículas $N_p$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
-\Ensure Costo global almacenado $J^*$, posición global almacenada $G$ y parámetros escalados $\theta^{\mathrm{out}}$.
-\State Inicializar $\xi_{i,d}\sim\mathcal{U}[0,1]$ y $V_{i,d}\sim\mathcal{U}[0,1]$ sin semilla fija.
-\State Evaluar las posiciones iniciales.
-\State $P_i\gets \xi_i$ y $J_i^{\mathrm{best}}\gets J_i$.
-\State $J^*\gets\min_i J_i$ y $G\gets \xi_{\arg\min_i J_i}$.
-\For{$g=1,\ldots,g_{\max}$}
-\State Calcular $w_{\mathrm{in}}^{g}$ mediante la Ec.~\eqref{eq:pso_inercia}.
-\For{cada partícula $i$}
-\State Generar $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$.
-\State Actualizar $V_i$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico} usando $G$.
-\State $\xi_i\gets \xi_i+V_i$.
-\State $\xi_i\gets\max(\xi_i,10^{-4})$ elemento a elemento.
-\If{modo ID}
-\State $\theta_i^{\mathrm{eval}}\gets(0.01\xi_{i,1},\,2.0\xi_{i,2},\,0.5\xi_{i,3})$.
-\Else
-\State $\xi_{i,d}^{\mathrm{eval}}\gets\min\!\left(1,\max\!\left(\xi_{i,d},10^{-4}\right)\right)$, para $d=1,2,3$.
-\State $\theta_i^{\mathrm{eval}}\gets(40\xi_{i,1}^{\mathrm{eval}},\,25\xi_{i,2}^{\mathrm{eval}},\,0.05\xi_{i,3}^{\mathrm{eval}})$.
-\EndIf
-\State Evaluar $J_i\gets J(\theta_i^{\mathrm{eval}})$.
-\If{$J_i<J_i^{\mathrm{best}}$}
-\State $J_i^{\mathrm{best}}\gets J_i$ y $P_i\gets \xi_i$.
-\EndIf
-\EndFor
-\State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$.
-\If{$J_{\mathrm{new}}^*<J^*$}
-\State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$.
-\State $G\gets \xi_{i^*}$.
-\Comment{Se usa la posición actual, no $P_{i^*}$}
-\State $J^*\gets J_{\mathrm{new}}^*$.
-\EndIf
-\EndFor
-\If{modo ID}
-\State $\theta^{\mathrm{out}}\gets(0.01G_1,\,2.0G_2,\,0.5G_3)$.
-\Else
-\State $\theta^{\mathrm{out}}\gets(40G_1,\,25G_2,\,0.05G_3)$.
-\EndIf
-\State No aplicar un recorte superior final.
-\end{algorithmic}
-\caption{PSO ejecutado por \texttt{pyPso.py} y evaluación utilizada en la sintonización}
+\caption{PSO ejecutado por \texttt{pyPso.py}}
 \label{alg:pso_nucleo}
+\begin{algorithmic}[1]
+\Require Función de costo $J$; partículas $N_p$; generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
+\Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
+\For{$i=1,\ldots,N_p$}
+    \State $\xi_i\sim\mathcal{U}[0,1]^3$
+    \State $V_i\sim\mathcal{U}[0,1]^3$
+    \State $\theta_i^{\mathrm{eval}}\gets\Call{Escalar}{\xi_i,\mathrm{modo}}$
+    \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+    \State $P_i\gets\xi_i$
+    \State $J_i^{\mathrm{best}}\gets J_i$
+\EndFor
+\State $i^*\gets\arg\min_i J_i$
+\State $J^*\gets J_{i^*}$
+\State $G\gets\xi_{i^*}$
+\For{$g=1,\ldots,g_{\max}$}
+    \State $w_{\mathrm{in}}^{g}\gets\dfrac{g_{\max}-g}{g_{\max}}$
+    \For{$i=1,\ldots,N_p$}
+        \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$
+        \State Actualizar $V_i$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico}.
+        \State $\xi_i\gets\max(\xi_i+V_i,10^{-4})$
+        \If{modo ID}
+            \State $\theta_i^{\mathrm{eval}}\gets(0.01\xi_{i,1},2\xi_{i,2},0.5\xi_{i,3})$
+        \Else
+            \State $\xi_i^{\mathrm{eval}}\gets\min(1,\max(\xi_i,10^{-4}))$
+            \State $\theta_i^{\mathrm{eval}}\gets(40\xi_{i,1}^{\mathrm{eval}},25\xi_{i,2}^{\mathrm{eval}},0.05\xi_{i,3}^{\mathrm{eval}})$
+        \EndIf
+        \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+        \If{$J_i<J_i^{\mathrm{best}}$}
+            \State $J_i^{\mathrm{best}}\gets J_i$
+            \State $P_i\gets\xi_i$
+        \EndIf
+    \EndFor
+    \State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$
+    \If{$J_{\mathrm{new}}^*<J^*$}
+        \State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$
+        \State $G\gets\xi_{i^*}$
+        \State $J^*\gets J_{\mathrm{new}}^*$
+    \EndIf
+\EndFor
+\If{modo ID}
+    \State $\theta^{\mathrm{out}}\gets(0.01G_1,2G_2,0.5G_3)$
+\Else
+    \State $\theta^{\mathrm{out}}\gets(40G_1,25G_2,0.05G_3)$
+\EndIf
+\State \Return $(J^*,G,\theta^{\mathrm{out}})$
+\end{algorithmic}
 \end{algorithm}
+
 
 El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
 scripts recorren las ruedas, formalizado en el Algoritmo~\ref{alg:sintonizacion}.
@@ -541,51 +574,88 @@ conteos a velocidad se conserva en el \ref{anx:protocolos_sintonizacion},
 Ec.~\eqref{eq:vel_lazo_abierto}.
 
 \begin{algorithm}[H]
-\begin{algorithmic}[1]
-\small
-\Require Enlace serial al \gls{Arduino}; PWM nominal de la Tabla~\ref{tab:pso_config}; período de captura $T_{\mathrm{cap}}=0.1$~s e instantes de muestreo $t_k=k\,T_{\mathrm{cap}}$ [s]; duración $t_f=10$~s; instante de escalón $t_{\mathrm{step}}=1.0$~s; resolución del encoder $N_e$; radio de rueda $r$.
-\Ensure Series por rueda $\bigl(u_j[k],v_j^{\mathrm{med}}[k]\bigr)$, $j\in\{R,L\}$, para la identificación FODT de la Etapa~1 del Alg.~\ref{alg:sintonizacion}.
-\Statex \textbf{Inicialización:}
-\State Abrir el puerto serial, fijar PWM en cero y esperar la estabilización.
-\State Leer los encoders iniciales $c_j[-1]$, para $j\in\{R,L\}$.
-\If{la respuesta inicial no contiene dos enteros válidos}
-\State Detener el procedimiento, cerrar el puerto y no iniciar el escalón.
-\EndIf
-\State $k\gets 0$
-\Statex
-\Statex \textbf{Ejecución principal:}
-\While{$t_k\leq t_f$}
-\State Registrar el instante real de inicio del ciclo.
-\If{$t_k\geq t_{\mathrm{step}}$}
-\State $u_j[k]\gets \mathrm{PWM}_{\mathrm{nom}}$, para $j\in\{R,L\}$
-\Comment{escalón sin PID}
-\Else
-\State $u_j[k]\gets 0$, para $j\in\{R,L\}$
-\EndIf
-\State Aplicar $u_L[k]$ y $u_R[k]$ a los motores en lazo abierto.
-\State Leer los encoders $c_j[k]$, para $j\in\{R,L\}$.
-\If{la lectura no contiene dos enteros válidos}
-\State Usar $c_j[k]\gets c_j[k-1]$ para ambas ruedas y emitir la advertencia correspondiente.
-\EndIf
-\For{$j\in\{R,L\}$}
-\State Calcular $\Delta c_j[k]\gets c_j[k]-c_j[k-1]$.
-\State Calcular $v_j^{\mathrm{med}}[k]$ mediante la Ec.~\ref{eq:vel_lazo_abierto}.
-\State Registrar $\bigl(u_j[k],v_j^{\mathrm{med}}[k]\bigr)$.
-\State $c_j[k-1]\gets c_j[k]$
-\EndFor
-\State Calcular el tiempo real consumido por el ciclo.
-\If{el tiempo consumido es menor que $T_{\mathrm{cap}}$}
-\State Dormir únicamente el remanente hasta $T_{\mathrm{cap}}$.
-\EndIf
-\State $k\gets k+1$
-\EndWhile
-\Statex
-\Statex \textbf{Salida:}
-\State Detener ambos motores y entregar las series
-$\bigl(u_j[k],v_j^{\mathrm{med}}[k]\bigr)$ para identificar el modelo FODT.
-\end{algorithmic}
-\caption{Captura de respuesta al escalón en lazo abierto y cálculo de velocidad de rueda}
+\caption{Captura de la respuesta al escalón en lazo abierto}
 \label{alg:captura_lazo_abierto}
+\begin{algorithmic}[1]
+
+\Require Enlace serial; PWM $u_{\mathrm{step}}$; período
+$T_{\mathrm{cap}}$; duración $t_f$; instante
+$t_{\mathrm{step}}$; resolución $N_e$; radio $r$.
+
+\Ensure Series $(u_j[k],v_j^{\mathrm{med}}[k])$,
+para $j\in\{R,L\}$.
+
+\State Abrir el puerto serial.
+\State Aplicar PWM cero y esperar la estabilización.
+
+\State $(c_L[-1],c_R[-1])
+\gets\Call{LeerEncoders}{}$
+
+\If{la lectura inicial es inválida}
+    \State Detener los motores y cerrar el puerto.
+    \State \Return \texttt{ERROR}
+\EndIf
+
+\State $k\gets0$
+
+\While{$t_k=kT_{\mathrm{cap}}\leq t_f$}
+
+    \State $t_{\mathrm{ini}}
+    \gets\Call{TiempoActual}{}$
+
+    \If{$t_k\geq t_{\mathrm{step}}$}
+        \State $u_L[k],u_R[k]\gets u_{\mathrm{step}}$
+    \Else
+        \State $u_L[k],u_R[k]\gets0$
+    \EndIf
+
+    \State \Call{AplicarPWM}{$u_L[k],u_R[k]$}
+
+    \State $(c_L[k],c_R[k])
+    \gets\Call{LeerEncoders}{}$
+
+    \If{la lectura es inválida}
+        \State $(c_L[k],c_R[k])
+        \gets(c_L[k-1],c_R[k-1])$
+        \State Registrar una advertencia.
+    \EndIf
+
+    \For{$j\in\{R,L\}$}
+
+        \State $\Delta c_j[k]
+        \gets c_j[k]-c_j[k-1]$
+
+        \State Calcular $v_j^{\mathrm{med}}[k]$
+        mediante la Ec.~\eqref{eq:vel_lazo_abierto}.
+
+        \State Registrar
+        $(u_j[k],v_j^{\mathrm{med}}[k])$.
+
+        \State $c_j[k-1]\gets c_j[k]$
+
+    \EndFor
+
+    \State $t_{\mathrm{uso}}
+    \gets\Call{TiempoActual}{}-t_{\mathrm{ini}}$
+
+    \If{$t_{\mathrm{uso}}<T_{\mathrm{cap}}$}
+
+        \State \Call{Esperar}
+        {$T_{\mathrm{cap}}-t_{\mathrm{uso}}$}
+
+    \EndIf
+
+    \State $k\gets k+1$
+
+\EndWhile
+
+\State \Call{AplicarPWM}{0,0}
+
+\State \Return
+$(u_j[k],v_j^{\mathrm{med}}[k])$,
+para $j\in\{R,L\}$.
+
+\end{algorithmic}
 \end{algorithm}
 
 \subsubsection{Identificación y optimización}
@@ -744,29 +814,53 @@ Para mapear entornos desconocidos sin intervención manual continua, se integra 
 
 El explorador utiliza el costmap global, reevalúa las fronteras con una frecuencia configurada de 0.3~Hz y aplica un tiempo máximo sin progreso de 10~s. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo de detección, selección, envío de metas y gestión de la lista negra se resume en el Algoritmo~\ref{alg:exploracion_fronteras}.
 
+
 \begin{algorithm}[H]
 \caption{Integración operativa de \texttt{explore\_lite} con Nav2}
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
-\Require Costmap global $C$; pose del robot; parámetros de la Tabla~\ref{tab:explore_params_ch9}; lista negra $B$.
-\Ensure Metas \texttt{NavigateToPose} seleccionadas a partir de las fronteras disponibles.
-\State Ejecutar una planificación inmediata y programar las siguientes con el período de la Ec.~\eqref{eq:periodo_explorador_real}.
-\State Obtener la pose del robot y detectar las fronteras mediante el procedimiento de la Sec.~\ref{sec:exploracion_marco}.
-\State Calcular para cada frontera el punto $p_F^{impl}$ y el costo $U(F)$ de las Ecs.~\eqref{eq:centroide_frontera_impl} y~\eqref{eq:frontier_cost}.
-\State Descartar las fronteras menores que \texttt{min\_frontier\_size} y ordenar las restantes por costo ascendente.
-\If{no existen fronteras seleccionables}
-\State Cancelar las metas activas y detener el ciclo de exploración.
-\State \Return
-\EndIf
-\State Elegir la primera frontera que no pertenezca a $B$; si todas están vetadas, vaciar $B$ y reintentar en el siguiente ciclo.
-\If{la meta permanece sin progreso durante \texttt{progress\_timeout}}
-\State Añadirla a $B$ y volver a planificar.
-\State \Return
-\EndIf
-\State Enviar $p_F^{impl}$ a \texttt{NavigateToPose} con orientación identidad.
-\State Ante \texttt{SUCCEEDED}, volver a planificar; ante \texttt{ABORTED}, añadir la meta a $B$; ante \texttt{CANCELED}, conservar $B$.
+\Require Costmap global $C$; lista negra $B$; tamaño mínimo de frontera; tiempo máximo sin progreso.
+\Ensure Metas \texttt{NavigateToPose} seleccionadas desde fronteras alcanzables.
+\State Ejecutar una planificación inicial.
+\State Programar las planificaciones periódicas.
+\While{la exploración esté activa}
+    \State $q\gets\Call{ObtenerPoseRobot}{}$
+    \State $\mathcal{F}\gets\Call{DetectarFronteras}{C,q}$
+    \For{cada frontera $F\in\mathcal{F}$}
+        \State Calcular $p_F^{\mathrm{impl}}$ mediante la Ec.~\eqref{eq:centroide_frontera_impl}.
+        \State Calcular $U(F)$ mediante la Ec.~\eqref{eq:frontier_cost}.
+    \EndFor
+    \State Eliminar las fronteras menores que \texttt{min\_frontier\_size}.
+    \State Ordenar $\mathcal{F}$ por costo ascendente.
+    \If{$\mathcal{F}=\varnothing$}
+        \State Cancelar la meta activa.
+        \State Detener la exploración.
+        \State \Return
+    \EndIf
+    \State $F^*\gets$ primera frontera de $\mathcal{F}$ cuyo punto no pertenezca a $B$.
+    \If{no existe $F^*$}
+        \State $B\gets\varnothing$
+    \Else
+        \State $p^*\gets p_{F^*}^{\mathrm{impl}}$
+        \If{la meta no presenta progreso durante \texttt{progress\_timeout}}
+            \State $B\gets B\cup\{p^*\}$
+            \State Cancelar la meta activa.
+        \Else
+            \State Enviar $p^*$ a \texttt{NavigateToPose} con orientación identidad.
+            \State $s\gets\Call{ObtenerEstadoMeta}{}$
+            \If{$s=\texttt{SUCCEEDED}$}
+                \State Programar una nueva planificación.
+            \ElsIf{$s=\texttt{ABORTED}$}
+                \State $B\gets B\cup\{p^*\}$
+            \ElsIf{$s=\texttt{CANCELED}$}
+                \State Conservar $B$ sin cambios.
+            \EndIf
+        \EndIf
+    \EndIf
+\EndWhile
 \end{algorithmic}
 \end{algorithm}
+
 
 Las particularidades de la implementación ejecutada ---el cálculo del punto
 representativo de cada frontera, el escalamiento de la distancia en el
