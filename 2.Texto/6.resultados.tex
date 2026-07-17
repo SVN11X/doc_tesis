@@ -71,7 +71,8 @@ independiente; el tratamiento exacto de la orientación se conserva en el
 \ref{anx:odometria_detalle}. En consecuencia, $E_{\theta,360}$ expresa una
 desviación respecto de la referencia nominal de los scripts, no un error
 odométrico angular ni el seguimiento de una consigna efectiva de
-$360^\circ$.
+$360^\circ$. La Tabla~\ref{tab:resumen_odometria} consolida las métricas diferenciadas
+obtenidas en la trayectoria rectilínea de 2~m.
 
 \begin{table}[H]
 \centering
@@ -207,9 +208,7 @@ N_{\mathrm{libre}}\,\rho_M^2,
 \end{equation}
 
 \noindent donde $A_{\mathrm{libre}}$ es el área libre mapeada [m$^2$] y $\rho_M$ la resolución del mapa [m/celda]. Esta magnitud se deriva de la clasificación de la imagen PGM y no constituye una
-medición física independiente de la superficie del recinto. Las diferencias
-de lectura y redondeo entre los scripts se documentan en el
-\ref{anx:resultados_metodologia}.
+medición física independiente de la superficie del recinto. Las diferencias de lectura y redondeo entre los scripts se documentan en el \ref{anx:resultados_metodologia}. La Tabla~\ref{tab:slam_sim_indicadores} resume los indicadores del mapeo obtenidos en simulación.
 
 \begin{table}[H]
 \centering
@@ -295,7 +294,7 @@ de la navegación, aunque los contadores actuales no permiten atribuir de forma
 cuantitativa cada cancelación o aborto a esa causa. Por tanto, se verifica la
 integración funcional del ciclo y se cuantifica la cobertura, mientras que la
 tasa de éxito de navegación dirigida queda indeterminada con el procedimiento
-de registro utilizado.
+de registro utilizado. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de validación alcanzado por cada subsistema.
 
 \begin{table}[H]
 \centering

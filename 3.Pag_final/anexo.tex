@@ -13,6 +13,10 @@
 
 \numberwithin{equation}{section}
 \renewcommand{\theequation}{A\arabic{section}.\arabic{equation}}
+\numberwithin{table}{section}
+\renewcommand{\thetable}{A\arabic{section}.\arabic{table}}
+\numberwithin{figure}{section}
+\renewcommand{\thefigure}{A\arabic{section}.\arabic{figure}}
 
 \noindent\textbf{Convención de rutas.} Las rutas de código son relativas a \path{src/}; el inventario de archivos, directorios padre y funciones se presenta en el \ref{anx:rutas_software}.
 
@@ -217,14 +221,14 @@ Teleoperación & \texttt{/cmd\_vel\_joy} & 100 (alta) \\
 \subsection{Temporalidad y ciclo de la interfaz \texttt{DiffDriveArduino}}
 \label{anx:implementacion_diffdrive}
 
-\noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el buffer de entrada. Si $t_{cfg}$ es ese instante y $t_{read,k}$ el instante medido al comenzar la llamada $k$ a \texttt{read()}, el denominador ejecutado es:
+\noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el buffer de entrada. Si $t_{\mathrm{cfg}}$ es ese instante y $t_{\mathrm{read},k}$ el instante medido al comenzar la llamada $k$ a \texttt{read()}, el denominador ejecutado es:
 
 \begin{equation}
 \Delta t_k
 =
 \begin{cases}
-t_{read,0}-t_{cfg}, & k=0,\\
-t_{read,k}-t_{read,k-1}, & k\geq1.
+t_{\mathrm{read},0}-t_{\mathrm{cfg}}, & k=0,\\
+t_{\mathrm{read},k}-t_{\mathrm{read},k-1}, & k\geq1.
 \end{cases}
 \label{eq:intervalo_diffdrive}
 \end{equation}
@@ -623,11 +627,11 @@ La velocidad medida se procesa fuera de línea mediante \texttt{scipy.ndimage.un
 v_j^{filt}[k]
 =
 \frac{1}{5}
-\sum_{q=-2}^{2}v_j^{med}[k+q],
+\sum_{q=-2}^{2}v_j^{\mathrm{med}}[k+q],
 \label{eq:filtro_uniforme}
 \end{equation}
 
-\noindent donde $v_j^{med}[k]$ es la velocidad medida, $v_j^{filt}[k]$ la velocidad filtrada de la rueda $j$ y $q$ el desplazamiento entero respecto de la muestra central. En los extremos la señal se prolonga mediante reflexión. No corresponde a un promedio móvil causal, porque utiliza muestras anteriores y posteriores al índice procesado.
+\noindent donde $v_j^{\mathrm{med}}[k]$ es la velocidad medida, $v_j^{filt}[k]$ la velocidad filtrada de la rueda $j$ y $q$ el desplazamiento entero respecto de la muestra central. En los extremos la señal se prolonga mediante reflexión. No corresponde a un promedio móvil causal, porque utiliza muestras anteriores y posteriores al índice procesado.
 
 La función de costo de identificación ejecutada por el script es:
 
@@ -660,7 +664,7 @@ Con los parámetros identificados, el script utiliza una planta discreta sin apl
 0,
 \widehat{v}_j[k-1]
 +
-\frac{T_{sim}}{\tau_j}
+\frac{T_{\mathrm{sim}}}{\tau_j}
 \left(
 K_{m,j}u_j[k-1]-\widehat{v}_j[k-1]
 \right)
@@ -671,24 +675,24 @@ K_{m,j}u_j[k-1]-\widehat{v}_j[k-1]
 La consigna de cada rueda no se fija directamente en 0.13~m/s. Se calcula a partir de la respuesta experimental en lazo abierto:
 
 \begin{equation}
-v_j^{ref}
+v_j^{\mathrm{ref}}
 =
 \operatorname{mean}
 \left\{
-v_j^{med}[k]\,\middle|\,t_k\geq7~\mathrm{s}
+v_j^{\mathrm{med}}[k]\,\middle|\,t_k\geq7~\mathrm{s}
 \right\},
 \label{eq:referencia_pso}
 \end{equation}
 
-\noindent donde $v_j^{ref}$ es la referencia de velocidad de la rueda $j$ y $t_k$ el instante asociado a la muestra $k$ [s]. En los datos de entrada del script, muestreados cada 0.1~s, la referencia vale cero para $t<1$~s y $v_j^{ref}$ para $t\geq1$~s. Sin embargo, la recurrencia del PID se evalúa cada $T_{sim}$, definido en la Ec.~\eqref{eq:lambda_conversion}, y obtiene la referencia mediante interpolación lineal con \texttt{np.interp}. Por ello, la señal efectivamente consumida por la simulación es:
+\noindent donde $v_j^{\mathrm{ref}}$ es la referencia de velocidad de la rueda $j$ y $t_k$ el instante asociado a la muestra $k$ [s]. En los datos de entrada del script, muestreados cada 0.1~s, la referencia vale cero para $t<1$~s y $v_j^{\mathrm{ref}}$ para $t\geq1$~s. Sin embargo, la recurrencia del PID se evalúa cada $T_{\mathrm{sim}}$, definido en la Ec.~\eqref{eq:lambda_conversion}, y obtiene la referencia mediante interpolación lineal con \texttt{np.interp}. Por ello, la señal efectivamente consumida por la simulación es:
 
 \begin{equation}
 r_j^{sim}(t)
 =
 \begin{cases}
 0, & t\leq0.9~\mathrm{s},\\[2pt]
-10\,v_j^{ref}(t-0.9~\mathrm{s}), & 0.9~\mathrm{s}<t<1.0~\mathrm{s},\\[2pt]
-v_j^{ref}, & t\geq1.0~\mathrm{s}.
+10\,v_j^{\mathrm{ref}}(t-0.9~\mathrm{s}), & 0.9~\mathrm{s}<t<1.0~\mathrm{s},\\[2pt]
+v_j^{\mathrm{ref}}, & t\geq1.0~\mathrm{s}.
 \end{cases}
 \label{eq:referencia_interpolada_pid}
 \end{equation}
@@ -702,15 +706,15 @@ La simulación cuantiza únicamente la medición que ingresa al PID:
 =
 \operatorname{int}
 \left(
-\operatorname{round}_{even}
+\operatorname{round}_{\mathrm{even}}
 \left(
-\kappa_{sim}\widehat{v}_j[k]
+\kappa_{\mathrm{sim}}\widehat{v}_j[k]
 \right)
 \right).
 \label{eq:medicion_simulada_ticks}
 \end{equation}
 
-\noindent donde $\widetilde{m}_j[k]$ es la medición cuantizada en ticks/frame, $\kappa_{sim}$ se define en la Ec.~\eqref{eq:lambda_conversion} y $\operatorname{round}_{even}(\cdot)$ representa el redondeo al entero más próximo con desempate al entero par, correspondiente a \texttt{round()} de Python. Los estados \texttt{Perror}, \texttt{output} e \texttt{ITerm} de esta simulación permanecen en punto flotante. Además, durante la optimización se utiliza una banda muerta común de 2~ticks/frame para ambas ruedas, a diferencia del firmware final, que utiliza 1~tick/frame para la derecha y 2~ticks/frame para la izquierda. Por ello, esta simulación conserva la estructura acumulativa del controlador, pero no replica exactamente sus tipos de datos ni todas sus condiciones por rueda.
+\noindent donde $\widetilde{m}_j[k]$ es la medición cuantizada en ticks/frame, $\kappa_{\mathrm{sim}}$ se define en la Ec.~\eqref{eq:lambda_conversion} y $\operatorname{round}_{\mathrm{even}}(\cdot)$ representa el redondeo al entero más próximo con desempate al entero par, correspondiente a \texttt{round()} de Python. Los estados \texttt{Perror}, \texttt{output} e \texttt{ITerm} de esta simulación permanecen en punto flotante. Además, durante la optimización se utiliza una banda muerta común de 2~ticks/frame para ambas ruedas, a diferencia del firmware final, que utiliza 1~tick/frame para la derecha y 2~ticks/frame para la izquierda. Por ello, esta simulación conserva la estructura acumulativa del controlador, pero no replica exactamente sus tipos de datos ni todas sus condiciones por rueda.
 
 \subsection{Particularidades de la implementación PSO}
 \label{anx:pso_detalle}
@@ -823,7 +827,7 @@ se define:
 \begin{equation}
 \varepsilon_j[k]
 =
-v_j^{ref}-\widehat{v}_j[k],
+v_j^{\mathrm{ref}}-\widehat{v}_j[k],
 \qquad
 \lVert\boldsymbol{\varepsilon}_j\rVert_2
 =
@@ -909,25 +913,25 @@ Coeficientes $c_1=c_2$ & \multicolumn{2}{c}{2.05} \\
 Factor de constricción $\chi$ & \multicolumn{2}{c}{0.7298} \\
 Cota inferior $X_{\min}$ & \multicolumn{2}{c}{$10^{-4}$} \\
 Tratamiento del costo & MSE con penalización $10^{6}$ si $\tau<0.01$~s o la respuesta contiene valores no finitos & MSE y sobreimpulso con $(w_{\mathrm{mse}},w_{\mathrm{OS}})=(1.0,3.0)$; penalización $10^{6}$ si la simulación genera una excepción o la respuesta contiene valores no finitos \\
-Entrada o referencia & Escalón PWM $=143$ & $v_j^{ref}=\operatorname{mean}\{v_j^{med}[k]\mid t_k\geq7~\mathrm{s}\}$; señal tabulada a 0.1~s e interpolada linealmente a $T_{sim}$ \\
+Entrada o referencia & Escalón PWM $=143$ & $v_j^{\mathrm{ref}}=\operatorname{mean}\{v_j^{\mathrm{med}}[k]\mid t_k\geq7~\mathrm{s}\}$; señal tabulada a 0.1~s e interpolada linealmente a $T_{\mathrm{sim}}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 La velocidad lineal medida de cada rueda se obtiene a partir de la
-Ec.~\ref{eq:w_ruedas}, usando $v_j^{med}=r\,\omega_j$ y reemplazando el período
-de control por el período de captura $T_{cap}$:
+Ec.~\ref{eq:w_ruedas}, usando $v_j^{\mathrm{med}}=r\,\omega_j$ y reemplazando el período
+de control por el período de captura $T_{\mathrm{cap}}$:
 
 \begin{equation}
-v_j^{med}[k]
+v_j^{\mathrm{med}}[k]
 =
 \frac{\Delta c_j[k]}{N_e}
-\frac{2\pi r}{T_{cap}},
+\frac{2\pi r}{T_{\mathrm{cap}}},
 \qquad j\in\{R,L\}.
 \label{eq:vel_lazo_abierto}
 \end{equation}
 
-\noindent donde $\Delta c_j[k]=c_j[k]-c_j[k-1]$ es el incremento de conteo y $v_j^{med}[k]$ la velocidad lineal medida de la rueda $j$ [m/s]. En el script de captura \path{arduino_firmware/pid_config/ControlLazoAbierto.py}, $T_{cap}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
+\noindent donde $\Delta c_j[k]=c_j[k]-c_j[k-1]$ es el incremento de conteo y $v_j^{\mathrm{med}}[k]$ la velocidad lineal medida de la rueda $j$ [m/s]. En el script de captura \path{arduino_firmware/pid_config/ControlLazoAbierto.py}, $T_{\mathrm{cap}}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
 
 \subsection{Resultados de la ejecución PSO empleada}
 \label{anx:resultados_pso_ejecucion}
@@ -956,7 +960,7 @@ $K_i$ & 0.00001 & 0.00001 \\
 \parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales (tras refinamiento experimental) se reportan en la Tabla~\ref{tab:ganancias_pid}; el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.}
 \end{table}
 
-\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{cap}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{cap}$ y producen, en ambos casos, $n_{d,j}=\lfloor L_{d,j}/T_{cap}\rfloor=0$ muestras. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
+\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, $n_{d,j}=\lfloor L_{d,j}/T_{\mathrm{cap}}\rfloor=0$ muestras. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
 
 \subsection{Captura de la respuesta en lazo cerrado}
 \label{anx:captura_lazo_cerrado}
@@ -1005,7 +1009,7 @@ Los mapas de costo real utilizan el siguiente \textit{footprint} rectangular, ex
 \left[(0.20,0.13),(-0.08,0.13),(-0.08,-0.13),(0.20,-0.13)\right]\ \mathrm{m}.
 \end{equation*}
 
-La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, correspondiente al borde posterior. Con $r_{inflacion}=0.15$~m y $\beta=5.0$~m$^{-1}$, la función de costo se representa como:
+La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, correspondiente al borde posterior. Con $r_{\mathrm{inflacion}}=0.15$~m y $\beta=5.0$~m$^{-1}$, la función de costo se representa como:
 
 \begin{equation}
 \operatorname{costo}(d_o)
@@ -1014,18 +1018,18 @@ La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, cor
 254,
 & d_o=0,\\[4pt]
 253,
-& 0<d_o\leq r_{inscrito},\\[4pt]
+& 0<d_o\leq r_{\mathrm{inscrito}},\\[4pt]
 \left\lfloor
-252\,\mathrm{e}^{-\beta(d_o-r_{inscrito})}
+252\,\mathrm{e}^{-\beta(d_o-r_{\mathrm{inscrito}})}
 \right\rfloor,
-& r_{inscrito}<d_o\leq r_{inflacion},\\[4pt]
+& r_{\mathrm{inscrito}}<d_o\leq r_{\mathrm{inflacion}},\\[4pt]
 0,
-& d_o>r_{inflacion}.
+& d_o>r_{\mathrm{inflacion}}.
 \end{cases}
 \label{eq:inflation}
 \end{equation}
 
-\noindent donde $d_o$ es la distancia desde la celda evaluada al obstáculo más cercano [m], $r_{inscrito}$ el radio inscrito del \textit{footprint} [m], $r_{inflacion}$ el radio máximo de influencia de la capa [m], $\beta$ el factor de decaimiento configurado mediante \texttt{cost\_scaling\_factor} [m$^{-1}$] y $\operatorname{costo}(d_o)$ el valor entero asignado por la capa de inflación. Los valores 254, 253 y 0 corresponden a las categorías letal, inscrita inflada y libre del costmap.
+\noindent donde $d_o$ es la distancia desde la celda evaluada al obstáculo más cercano [m], $r_{\mathrm{inscrito}}$ el radio inscrito del \textit{footprint} [m], $r_{\mathrm{inflacion}}$ el radio máximo de influencia de la capa [m], $\beta$ el factor de decaimiento configurado mediante \texttt{cost\_scaling\_factor} [m$^{-1}$] y $\operatorname{costo}(d_o)$ el valor entero asignado por la capa de inflación. Los valores 254, 253 y 0 corresponden a las categorías letal, inscrita inflada y libre del costmap.
 
 \subsection{Acciones de recuperación de Nav2}
 \label{anx:recovery_nav2}
@@ -1100,45 +1104,45 @@ La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, cor
 
 El detector inicia la búsqueda desde una celda libre próxima al robot. Al expandir una celda de la BFS, el código incorpora un vecino de cuatro conexiones únicamente cuando todavía no fue visitado y se cumple \texttt{map\_[nbr] <= map\_[idx]}; si esa condición no se cumple, evalúa el vecino como posible celda de frontera. Una celda desconocida constituye una celda de frontera cuando posee al menos un vecino de cuatro conexiones clasificado como espacio libre. Las celdas de frontera contiguas mediante ocho conexiones se agrupan en una misma frontera.
 
-La construcción implementada inicializa el tamaño de la frontera en uno para representar la celda inicial, pero esa celda no se incorpora a la suma empleada para calcular el punto denominado \texttt{centroid}. Si $p_0$ es la celda inicial y $F_{add}$ el conjunto de celdas añadidas posteriormente, el punto enviado como centroide se obtiene como:
+La construcción implementada inicializa el tamaño de la frontera en uno para representar la celda inicial, pero esa celda no se incorpora a la suma empleada para calcular el punto denominado \texttt{centroid}. Si $p_0$ es la celda inicial y $F_{\mathrm{add}}$ el conjunto de celdas añadidas posteriormente, el punto enviado como centroide se obtiene como:
 
 \begin{equation}
-p_F^{impl}
+p_F^{\mathrm{impl}}
 =
-\frac{1}{1+|F_{add}|}
-\sum_{p\in F_{add}}p.
+\frac{1}{1+|F_{\mathrm{add}}|}
+\sum_{p\in F_{\mathrm{add}}}p.
 \label{eq:centroide_frontera_impl}
 \end{equation}
 
-\noindent donde $p_F^{impl}$ es el punto almacenado por la implementación como centroide de la frontera, $|F_{add}|$ es el número de celdas añadidas después de la celda inicial y $p$ representa el vector de coordenadas de cada celda añadida. Por tanto, $p_F^{impl}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}. Esta diferencia se mantiene porque corresponde al código ejecutado.
+\noindent donde $p_F^{\mathrm{impl}}$ es el punto almacenado por la implementación como centroide de la frontera, $|F_{\mathrm{add}}|$ es el número de celdas añadidas después de la celda inicial y $p$ representa el vector de coordenadas de cada celda añadida. Por tanto, $p_F^{\mathrm{impl}}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}. Esta diferencia se mantiene porque corresponde al código ejecutado.
 
 La variable \texttt{frontier.min\_distance} se calcula después de convertir las celdas añadidas a coordenadas del mundo, por lo que ya se encuentra en metros. No obstante, la función de costo implementada vuelve a multiplicarla por la resolución del costmap:
 
 \begin{equation}
 U(F)
 =
-w_{pot}\,d_{min}^{world}(F)\,\rho_{map}
+w_{\mathrm{pot}}\,d_{\mathrm{min}}^{\mathrm{world}}(F)\,\rho_{\mathrm{map}}
 -
-w_{gain}\,|F|\,\rho_{map}.
+w_{\mathrm{gain}}\,|F|\,\rho_{\mathrm{map}}.
 \label{eq:frontier_cost}
 \end{equation}
 
-\noindent donde $U(F)$ es el puntaje asignado a la frontera $F$, $d_{min}^{world}(F)$ la distancia mínima euclidiana entre la posición de referencia y una celda de la frontera [m], $|F|$ el número de celdas almacenado, $\rho_{map}$ la resolución [m/celda], y $w_{pot}$ y $w_{gain}$ los pesos de distancia y ganancia. La implementación utiliza $w_{pot}=3.0$, $w_{gain}=1.0$ y tamaño mínimo de frontera 0.05~m. A diferencia de una formulación que convertiría una distancia en celdas a metros, aquí la multiplicación por $\rho_{map}$ se aplica a una distancia ya métrica. En consecuencia, el primer término queda escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
+\noindent donde $U(F)$ es el puntaje asignado a la frontera $F$, $d_{\mathrm{min}}^{\mathrm{world}}(F)$ la distancia mínima euclidiana entre la posición de referencia y una celda de la frontera [m], $|F|$ el número de celdas almacenado, $\rho_{\mathrm{map}}$ la resolución [m/celda], y $w_{\mathrm{pot}}$ y $w_{\mathrm{gain}}$ los pesos de distancia y ganancia. La implementación utiliza $w_{\mathrm{pot}}=3.0$, $w_{\mathrm{gain}}=1.0$ y tamaño mínimo de frontera 0.05~m. A diferencia de una formulación que convertiría una distancia en celdas a metros, aquí la multiplicación por $\rho_{\mathrm{map}}$ se aplica a una distancia ya métrica. En consecuencia, el primer término queda escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
 
-Las fronteras se ordenan por costo ascendente y se selecciona la primera que no se encuentre en la lista negra. Con resolución 0.05~m/celda y \texttt{min\_frontier\_size}=0.05~m, el criterio $|F|\rho_{map}\geq0.05$ admite desde un tamaño almacenado de una celda. Si una frontera no incorpora vecinos después de la celda inicial, conserva $|F|=1$, $p_F^{impl}=(0,0)$ y $d_{min}^{world}=\infty$, porque la celda inicial no se suma ni se utiliza para actualizar la distancia. Por tanto, su costo es infinito; aun así, puede permanecer como candidata si no existe otra frontera seleccionable. El objetivo enviado a Nav2 es $p_F^{impl}$, con orientación identidad. Dos objetivos se consideran iguales cuando su distancia euclidiana es inferior a 0.01~m.
+Las fronteras se ordenan por costo ascendente y se selecciona la primera que no se encuentre en la lista negra. Con resolución 0.05~m/celda y \texttt{min\_frontier\_size}=0.05~m, el criterio $|F|\rho_{\mathrm{map}}\geq0.05$ admite desde un tamaño almacenado de una celda. Si una frontera no incorpora vecinos después de la celda inicial, conserva $|F|=1$, $p_F^{\mathrm{impl}}=(0,0)$ y $d_{\mathrm{min}}^{\mathrm{world}}=\infty$, porque la celda inicial no se suma ni se utiliza para actualizar la distancia. Por tanto, su costo es infinito; aun así, puede permanecer como candidata si no existe otra frontera seleccionable. El objetivo enviado a Nav2 es $p_F^{\mathrm{impl}}$, con orientación identidad. Dos objetivos se consideran iguales cuando su distancia euclidiana es inferior a 0.01~m.
 
-El parámetro configurado es $f_{exp}=0.3$~Hz, pero el temporizador se construye mediante una conversión a milisegundos enteros sin redondeo:
+El parámetro configurado es $f_{\mathrm{exp}}=0.3$~Hz, pero el temporizador se construye mediante una conversión a milisegundos enteros sin redondeo:
 
 \begin{equation}
-T_{exp,sched}
+T_{\mathrm{exp,sched}}
 =
-\operatorname{trunc}_0\!\left(\frac{1000}{f_{exp}}\right)\mathrm{ms}
+\operatorname{trunc}_0\!\left(\frac{1000}{f_{\mathrm{exp}}}\right)\mathrm{ms}
 =
 3333~\mathrm{ms},
 \label{eq:periodo_explorador_real}
 \end{equation}
 
-\noindent donde $f_{exp}$ es la frecuencia nominal configurada para planificar la exploración [Hz] y $T_{exp,sched}$ el período programado del temporizador correspondiente. El período de 3333~ms equivale a una frecuencia efectiva de aproximadamente 0.30003~Hz. Si la distancia a la misma meta no disminuye durante 10~s, $p_F^{impl}$ se incorpora a la lista negra y se busca otra frontera. Una meta abortada por Nav2 también se añade a esa lista; una meta cancelada no se añade. La comprobación de lista negra utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap. Si todas las fronteras están vetadas, la lista negra se limpia y el ciclo se reintenta.
+\noindent donde $f_{\mathrm{exp}}$ es la frecuencia nominal configurada para planificar la exploración [Hz] y $T_{\mathrm{exp,sched}}$ el período programado del temporizador correspondiente. El período de 3333~ms equivale a una frecuencia efectiva de aproximadamente 0.30003~Hz. Si la distancia a la misma meta no disminuye durante 10~s, $p_F^{\mathrm{impl}}$ se incorpora a la lista negra y se busca otra frontera. Una meta abortada por Nav2 también se añade a esa lista; una meta cancelada no se añade. La comprobación de lista negra utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap. Si todas las fronteras están vetadas, la lista negra se limpia y el ciclo se reintenta.
 
 \section{Costos y comparación económica}
 \label{anx:costos}
@@ -1368,7 +1372,7 @@ $f_{\mathrm{ctrl}}$ & Frecuencia nominal del ciclo \texttt{read()}--\texttt{upda
 $f_{\mathrm{loop}}$ & Frecuencia nominal usada por \texttt{DiffDriveArduino} en la conversión de rad/s a ticks/frame, configurada mediante \texttt{loop\_rate} & Hz \\
 $f_{\mathrm{PID,nom}}$ & Frecuencia nominal declarada por \texttt{PID\_RATE} en el firmware & Hz \\
 $T_{\mathrm{PID,sched}}$ & Incremento del programador del firmware, igual a 33~ms por división entera & s \\
-$T_{cap}$ & Período de captura en lazo abierto & s \\
+$T_{\mathrm{cap}}$ & Período de captura en lazo abierto & s \\
 $\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lectura se mide desde la asignación de \texttt{time\_} al inicio de \texttt{configure()}, antes de la espera serial de 3000~ms; desde la segunda, entre llamadas consecutivas a \texttt{read()} & s \\
 \midrule
 \multicolumn{3}{l}{\textit{Conversión y control de firmware}}\\
@@ -1403,7 +1407,7 @@ $u_{j,d}[k]$ & Entrada PWM retardada utilizada en el modelo discreto &
 PWM \\
 $\hat{v}_j[k]$ & Velocidad lineal estimada por el modelo de la rueda $j$ &
 m/s \\
-$v_j^{med}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto &
+$v_j^{\mathrm{med}}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto &
 m/s \\
 $\mathrm{e}$ & Número de Euler & --- \\
 \midrule
@@ -1427,9 +1431,9 @@ $\boldsymbol{\theta}^{\mathrm{out}}$ & Vector de parámetros informado al finali
 $J$ & Función de costo & varias \\
 $w_{\mathrm{mse}},w_{\mathrm{OS}}$ & Pesos de error cuadrático y de sobreimpulso & adim. \\
 $\lVert\boldsymbol{\varepsilon}_j\rVert_2$ & Norma-2 (euclidiana) del vector de errores instantáneos $\varepsilon_j[k]$; se relaciona con el MSE mediante $\mathrm{MSE}=\lVert\boldsymbol{\varepsilon}_j\rVert_2^{2}/N$ & m/s \\
-$v_j^{ref}$ & Velocidad de consigna estacionaria obtenida como media para $t\geq7$~s & m/s \\
+$v_j^{\mathrm{ref}}$ & Velocidad de consigna estacionaria obtenida como media para $t\geq7$~s & m/s \\
 $r_j^{sim}(t)$ & Referencia consumida por la simulación después de la interpolación lineal de \texttt{np.interp} & m/s \\
-$\operatorname{round}_{even}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & --- \\
+$\operatorname{round}_{\mathrm{even}}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & --- \\
 \midrule
 \multicolumn{3}{l}{\textit{Validación experimental y cobertura}}\\
 $d_{\mathrm{ref}}$ & Distancia comandada en la prueba rectilínea & m \\
@@ -1470,7 +1474,7 @@ $f_{\mathrm{exp}}$ & Frecuencia configurada de reevaluación del explorador (\te
 $T_{\mathrm{exp,sched}}$ & Período entero del temporizador del explorador; para 0.3~Hz vale 3333~ms & s \\
 $t_{\mathrm{prog}}$ & Tiempo máximo sin progreso del explorador (\texttt{progress\_timeout}) & s \\
 $\varepsilon_j[k]$ & Error de seguimiento del modelo para la rueda $j$,
-$v_j^{ref}-\hat{v}_j[k]$ & m/s \\
+$v_j^{\mathrm{ref}}-\hat{v}_j[k]$ & m/s \\
 $\boldsymbol{\varepsilon}_j$ & Vector de errores de seguimiento de la rueda $j$ & m/s \\
 $N$ & Número de muestras de $\boldsymbol{\varepsilon}_j$ & --- \\
 $\mathrm{MSE}(\boldsymbol{\varepsilon}_j)$ &
