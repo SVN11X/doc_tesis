@@ -32,3 +32,12 @@ construye el mapa y estima la pose, Nav2 planifica y controla la navegación,
 el explorador de fronteras genera metas autónomas y RViz2 permite la
 supervisión.
 \end{description}
+
+Como cierre de esta visión general, cabe señalar que el sistema completo se
+implementó sobre \gls{ROS2}: los cuatro dominios descritos se materializan
+como nodos que intercambian información mediante tópicos dentro de una red
+local, tanto en el robot como en la estación de trabajo. Este capítulo se
+mantiene deliberadamente en un nivel general; los fundamentos de cada
+elemento se presentan en el Marco Teórico, y el detalle técnico de la
+solución ---algoritmos, parámetros y configuraciones--- se desarrolla en los
+capítulos posteriores al Marco Teórico.

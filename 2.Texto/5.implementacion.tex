@@ -108,6 +108,9 @@ Se adoptan las convenciones REP-103 y REP-105: eje \texttt{x} hacia adelante, ej
 
 \noindent con la rama fija y coincidente \texttt{base\_link}$\rightarrow$\texttt{base\_footprint}.
 
+La Tabla~\ref{tab:topics_frames} resume los marcos y tópicos principales del
+modelo digital.
+
 \begin{table}[H]
 \centering
 \caption{Marcos y tópicos principales del modelo digital.}
@@ -127,7 +130,8 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 \subsection{Selección del backend de control}
 \label{sec:backend}
 
-El modelo permite seleccionar el backend mediante los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada mantiene \texttt{use\_ros2\_control=true} en ambos entornos: el robot real carga \texttt{diffdrive\_arduino/DiffDriveArduino} y Gazebo carga \texttt{gazebo\_ros2\_control/GazeboSystem}. La trazabilidad del backend alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}.
+El modelo permite seleccionar el backend mediante los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada mantiene \texttt{use\_ros2\_control=true} en ambos entornos: el robot real carga \texttt{diffdrive\_arduino/DiffDriveArduino} y Gazebo carga \texttt{gazebo\_ros2\_control/GazeboSystem}. La trazabilidad del backend alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}. La Tabla~\ref{tab:xacro_args_backend} resume el backend de control cargado en
+cada entorno de ejecución.
 
 \begin{table}[H]
 \centering
@@ -186,7 +190,8 @@ El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad resumidas en la Tab
 \subsection{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
 
-El controlador diferencial recibe comandos de velocidad lineal y angular, y los convierte en velocidades de rueda mediante el modelo cinemático descrito en el Capítulo~\ref{marco_teorico}. Sus parámetros geométricos (\texttt{wheel\_radius} = $r$ y \texttt{wheel\_separation} = $b$) coinciden con el modelo físico y el gemelo digital, según los valores consolidados en la Tabla~\ref{tab:parametros_modelo}.
+El controlador diferencial recibe comandos de velocidad lineal y angular, y los convierte en velocidades de rueda mediante el modelo cinemático descrito en el Capítulo~\ref{marco_teorico}. Sus parámetros geométricos (\texttt{wheel\_radius} = $r$ y \texttt{wheel\_separation} = $b$) coinciden con el modelo físico y el gemelo digital, según los valores consolidados en la Tabla~\ref{tab:parametros_modelo}. Los parámetros principales configurados en el controlador diferencial se
+resumen en la Tabla~\ref{tab:diff_drive_params}.
 
 \begin{table}[H]
 \centering
@@ -385,7 +390,8 @@ la estructura macro del Algoritmo~\ref{alg:pid_macro}.
 
 El firmware incluye anti-windup condicional, zona muerta para reducir ciclos
 límite por cuantización y saturación de la salida PWM. Las ganancias
-definitivas son:
+definitivas codificadas en el firmware se consolidan en la
+Tabla~\ref{tab:ganancias_pid}.
 
 \begin{table}[H]
 \centering
@@ -667,7 +673,7 @@ La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al es
 
 Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El código final solo conserva las ganancias resultantes por rueda; no registra de forma automática qué modificación experimental se asocia a cada fenómeno mecánico.
 
-La salida de la ejecución utilizada como punto de partida, incluidos los parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en la Tabla~\ref{tab:pso_resultados} del \ref{anx:resultados_pso_ejecucion}. Al no fijarse una semilla pseudoaleatoria, los valores pueden variar entre ejecuciones. Además, con $T_{cap}=0.1$~s, los retardos obtenidos en esa ejecución son inferiores a un período de captura y no producen un desplazamiento temporal efectivo en el modelo discreto.
+La salida de la ejecución utilizada como punto de partida, incluidos los parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en la Tabla~\ref{tab:pso_resultados} del \ref{anx:resultados_pso_ejecucion}. Al no fijarse una semilla pseudoaleatoria, los valores pueden variar entre ejecuciones. Además, con $T_{\mathrm{cap}}=0.1$~s, los retardos obtenidos en esa ejecución son inferiores a un período de captura y no producen un desplazamiento temporal efectivo en el modelo discreto.
 
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
@@ -767,7 +773,7 @@ configuración: \texttt{Oscillation}, \texttt{BaseObstacle},
 \texttt{GoalDist}. En hardware real, DWB admite candidatos de hasta
 0.15~m/s, mientras \texttt{diff\_drive\_controller} limita la velocidad
 lineal a 0.13~m/s; por ello, una consigna generada entre 0.13 y 0.15~m/s
-queda limitada posteriormente por el controlador diferencial.
+queda limitada posteriormente por el controlador diferencial. La Tabla~\ref{tab:nav2_componentes_ch9} resume los componentes de Nav2 utilizados y la función de cada uno.
 
 \begin{table}[H]
 \centering
