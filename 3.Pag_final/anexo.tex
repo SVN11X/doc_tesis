@@ -397,13 +397,12 @@ f_{\lambda}T_{\mathrm{sim}}K_{i,j}^{\mathrm{std}}.
 
 \noindent donde $\kappa_{\mathrm{sim}}$ es el factor de conversión desde velocidad lineal a ticks por ciclo, $T_{\mathrm{sim}}$ es el período de simulación, $f_{\lambda}$ es el factor de escalamiento, y $K_{p,j}^{\mathrm{fw}}$, $K_{d,j}^{\mathrm{fw}}$ y $K_{i,j}^{\mathrm{fw}}$ son las ganancias expresadas en la escala de firmware empleada por el script.
 
-La comparación resultante no constituye una equivalencia con el firmware real. El simulador Lambda mantiene estados en punto flotante, no utiliza el retardo FODT durante la respuesta, aplica banda muerta 0 a Lambda, banda muerta 2 a ambas ruedas del conjunto denominado firmware y añade una saturación explícita de $I_j$ que no existe en \texttt{diff\_controller.h}. En consecuencia, sus curvas y métricas corresponden al script comparativo ejecutado, no a una validación directa de dos controladores equivalentes en hardware.
+La comparación resultante no constituye una equivalencia con el firmware real: a las aproximaciones ya señaladas se agrega que el simulador aplica banda muerta 0 al controlador Lambda. En consecuencia, sus curvas y métricas corresponden al script comparativo ejecutado, no a una validación directa de dos controladores equivalentes en hardware.
 
 La Fig.~\ref{fig:comparacion_pso_vs_lambda} se conserva como salida del script
 comparativo. La formulación Lambda y la aproximación denominada firmware no
-son controladores algebraicamente equivalentes; además, el script introduce
-condiciones numéricas distintas de las ejecutadas en el Arduino. Por ello, la
-figura no se utiliza para demostrar superioridad cuantitativa entre métodos.
+son controladores algebraicamente equivalentes; por ello, la figura no se
+utiliza para demostrar superioridad cuantitativa entre métodos.
 
 \begin{figure}[H]
 \centering
@@ -420,9 +419,6 @@ figura no se utiliza para demostrar superioridad cuantitativa entre métodos.
 \vspace{6pt}
 {\footnotesize\textit{Fuente: Elaboración propia.}}
 \end{figure}
-
-Las curvas corresponden al script comparativo ejecutado y no a una validación
-directa de dos controladores equivalentes sobre el hardware.
 
 \subsection{Protocolo de comunicación serial}
 \label{anx:protocolo_serial}
@@ -1281,7 +1277,7 @@ Se ejecutaron seis iteraciones; la iteración~02 se abortó durante la inicializ
 \end{tabular}
 \end{table}
 
-Los estadísticos agregados y la interpretación de los contadores se presentan en la Tabla~\ref{tab:resumen_exploracion} y en la Sec.~\ref{sec:resultados_nav2}. La tabla anterior conserva únicamente los registros por iteración; sus columnas de estados son diagnósticas y no representan metas únicas. El campo de intervenciones del resumen corresponde al registro manual del operador.
+Los estadísticos agregados y la interpretación de los contadores se presentan en la Tabla~\ref{tab:resumen_exploracion} y en la Sec.~\ref{sec:resultados_nav2}. El campo de intervenciones del resumen corresponde al registro manual del operador.
 
 \subsection{Navegación autónoma con Nav2}
 \label{anx:protocolo_nav}

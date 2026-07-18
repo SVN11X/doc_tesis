@@ -57,7 +57,7 @@ construido.
 \subsection{Parámetros físicos del modelo}
 \label{sec:parametros_modelo}
 
-La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos y temporales configurados para el modelo cinemático, la odometría, el gemelo digital y el firmware. Existen tres parámetros nominales de 30~Hz que coinciden numéricamente, pero pertenecen a mecanismos independientes: \texttt{update\_rate} del \texttt{controller\_manager}, \texttt{loop\_rate} de \texttt{DiffDriveArduino} y \texttt{PID\_RATE} del firmware. En el Arduino, la división entera \texttt{1000/30} programa incrementos de 33~ms, según la Ec.~\eqref{eq:pid_intervalo_real}.
+La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos y temporales configurados para el modelo cinemático, la odometría, el gemelo digital y el firmware. Existen tres parámetros nominales de 30~Hz que coinciden numéricamente, pero pertenecen a mecanismos independientes: \texttt{update\_rate} del \texttt{controller\_manager}, \texttt{loop\_rate} de \texttt{DiffDriveArduino} y \texttt{PID\_RATE} del firmware.
 
 \begin{table}[H]
 \centering
@@ -165,7 +165,7 @@ Esta sección describe la arquitectura físico-electrónica del robot y su integ
 
 La plataforma se organiza en dos dominios principales. El dominio de potencia utiliza un bus de 12~V para alimentar los motores DC mediante el driver L298N, y un riel regulado de 5~V para alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
 
-El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} mediante enlace serial USB (puerto fijado por regla \texttt{udev} en \texttt{/dev/motor\_controller}, a 57600~baudios), utilizado para enviar referencias de velocidad y recibir datos de encoders. El sensor RPLidar A1 entrega barridos láser publicados en \texttt{/scan}, empleados por \texttt{slam\_toolbox} y por los mapas de costo de Nav2. La Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de datos del prototipo.
+El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} mediante enlace serial USB (puerto fijado por regla \texttt{udev} en \texttt{/dev/motor\_controller}, a 57600~baudios), utilizado para enviar referencias de velocidad y recibir datos de encoders. El sensor RPLidar A1 entrega barridos láser publicados en \texttt{/scan}. La Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de datos del prototipo.
 
 \utemFigurePropia{2.Texto/Imag/circuit_diagram.png}{0.99\textwidth}
 {Esquema de conexiones eléctricas y de datos del robot diferencial.}
@@ -186,7 +186,7 @@ La cadena de transformaciones mantiene la misma convención usada en simulación
 
 \subsection{Teleoperación y multiplexación de comandos}
 
-El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad resumidas en la Tabla~\ref{tab:twist_mux_resumen}. La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial. La configuración asigna prioridad 100 a la teleoperación y prioridad 10 a la navegación autónoma; la tabla completa se conserva en el \ref{anx:twist_mux_config}, Tabla~\ref{tab:twist_mux_resumen}.
+El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad resumidas en la Tabla~\ref{tab:twist_mux_resumen}. La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial. La configuración asigna prioridad 100 a la teleoperación y prioridad 10 a la navegación autónoma (\ref{anx:twist_mux_config}).
 
 \subsection{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
@@ -205,7 +205,6 @@ resumen en la Tabla~\ref{tab:diff_drive_params}.
 \midrule
 \texttt{linear.x.min/max\_velocity} & $-0.13/0.13$~m/s & Límites de velocidad lineal \\
 \texttt{angular.z.min/max\_velocity} & $-0.35/0.35$~rad/s & Límites de velocidad angular \\
-\texttt{update\_rate} & 30~Hz & Frecuencia nominal del \texttt{controller\_manager} \\
 \texttt{enable\_odom\_tf} & true & Publica \texttt{odom}$\rightarrow$\texttt{base\_link} \\
 \bottomrule
 \end{tabular}
@@ -348,7 +347,7 @@ El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto ho
 
 Los módulos del firmware se encuentran en \path{arduino_firmware/ROSArduinoBridge/}. \texttt{ROSArduinoBridge.ino} coordina la comunicación serial y el ciclo principal; \texttt{commands.h} define los comandos; \texttt{encoder\_driver.h}/\texttt{encoder\_driver.ino} realizan la lectura de encoders; \texttt{motor\_driver.h}/\texttt{motor\_driver.ino} accionan el L298N; y \texttt{diff\_controller.h} implementa el controlador PID. El inventario de rutas se conserva en el \ref{anx:rutas_software}.
 
-El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución efectiva $N_e$ compartidos con la ruta de hardware real (Tabla~\ref{tab:parametros_modelo}), parametrizados como \texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos. El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
+El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución efectiva $N_e$ compartidos con la ruta de hardware real (Tabla~\ref{tab:parametros_modelo}), parametrizados como \texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
 
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
@@ -713,7 +712,7 @@ Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron d
 
 El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}), en modo \texttt{online\_async}, que procesa los barridos de forma asíncrona. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot. La optimización del grafo permite corregir la deriva acumulada durante el recorrido.
 
-La configuración real utiliza Ceres, los marcos \texttt{map}/\texttt{odom}/\texttt{base\_link}, el tópico \texttt{/scan} y cierre de lazo. Los valores completos se trasladan a la Tabla~\ref{tab:slam_params_ch9} del \ref{anx:nav2_slam_config}.
+La configuración real utiliza el solver Ceres (\texttt{solver\_plugins::CeresSolver}, estrategia \texttt{LEVENBERG\_MARQUARDT}), los marcos \texttt{map}/\texttt{odom}/\texttt{base\_link}, el tópico \texttt{/scan} y cierre de lazo. Los valores completos se trasladan a la Tabla~\ref{tab:slam_params_ch9} del \ref{anx:nav2_slam_config}.
 
 Las configuraciones real y simulada comparten la estructura del algoritmo,
 pero no sus valores numéricos. En hardware real se emplean el marco
@@ -721,9 +720,7 @@ pero no sus valores numéricos. En hardware real se emplean el marco
 desplazamiento mínimo de 0.05~m, cambio angular mínimo de 0.05~rad y un
 buffer de 110 barridos; en simulación, el marco \texttt{base\_footprint},
 alcance de 12~m, intervalo de 0.5~s, desplazamiento de 0.1~m, cambio angular
-de 0.2~rad y buffer de 10 barridos. La optimización del grafo utiliza
-\texttt{solver\_plugins::CeresSolver} con estrategia
-\texttt{LEVENBERG\_MARQUARDT}.
+de 0.2~rad y buffer de 10 barridos.
 
 \subsection{Navegación autónoma con Nav2}
 \label{sec:nav2_ch9}

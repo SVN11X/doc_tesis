@@ -67,11 +67,9 @@ E_{\theta,360}
 \end{equation}
 
 \noindent donde $E_{\theta,360}$ es la desviación angular normalizada [\%], $\Delta\theta_{360}$ la referencia nominal fija y $\Delta\theta_{\mathrm{obs}}$ el giro observado: medición física en hardware real y giro acumulado de \texttt{/odom} en simulación. Los valores simulados no constituyen una verdad de terreno angular
-independiente; el tratamiento exacto de la orientación se conserva en el
-\ref{anx:odometria_detalle}. En consecuencia, $E_{\theta,360}$ expresa una
-desviación respecto de la referencia nominal de los scripts, no un error
-odométrico angular ni el seguimiento de una consigna efectiva de
-$360^\circ$. La Tabla~\ref{tab:resumen_odometria} consolida las métricas diferenciadas
+independiente, por lo que $E_{\theta,360}$ tampoco representa un error
+odométrico angular; el tratamiento exacto de la orientación se conserva en el
+\ref{anx:odometria_detalle}. La Tabla~\ref{tab:resumen_odometria} consolida las métricas diferenciadas
 obtenidas en la trayectoria rectilínea de 2~m.
 
 \begin{table}[H]
