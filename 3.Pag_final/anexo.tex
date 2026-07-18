@@ -68,7 +68,7 @@ Omnidireccional & Muy alta & Alta & Media \\
 \end{tabular}
 \end{table}
 
-La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación, soporte en \gls{ROS2} y calidad de odometría para interiores. El prototipo desarrollado se ubica cerca de plataformas educativas como TurtleBot, pero incorpora firmware adaptado, integración de hardware y parametrización propios.
+La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación, soporte en \gls{ROS2} y calidad de odometría para interiores. El prototipo desarrollado se ubica cerca de plataformas educativas como TurtleBot; el alcance del aporte propio sobre las bases adaptadas se describe en la Justificación de la Introducción.
 
 \section{Gemelo digital y verificación estructural}
 \label{anx:gemelo_digital}
@@ -313,15 +313,9 @@ A partir del factor $2\pi/N_e$ de la Ec.~\eqref{eq:posicion_rueda_encoder}, la c
 \label{anx:comparacion_pso_lambda}
 \label{anx:lambda_detalle}
 
-Los indicadores de la Tabla~\ref{tab:pid_performance} no se calculan sobre la
-figura anterior. Sus valores provienen de \texttt{resultados\_lambda.tex},
-generado por \texttt{SintonizacionLambda.py}. Ese script vuelve a identificar
-un modelo FODT mediante un PSO sin semilla fija y simula las ganancias finales
-del firmware con una referencia definida, para cada rueda, como la media de la
-velocidad de la prueba en lazo abierto para $t\geq7$~s. La referencia tabulada cada 0.1~s se interpola linealmente en la malla de $1/30$~s, de modo que la transición efectiva ocurre entre 0.9 y 1.0~s. La simulación conserva estados en punto flotante, cuantiza la medición mediante redondeo al entero más próximo con desempate al entero par, no aplica el retardo FODT en la recurrencia y utiliza banda muerta 2 para ambas ruedas. Además, \texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm(255\cdot50)=\pm12750$, límite que no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
+Ese script vuelve a identificar un modelo FODT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del firmware reutilizando la misma rutina de planta, referencia interpolada y cuantización formalizada en las Ecs.~\eqref{eq:fodt_lazo_cerrado}--\eqref{eq:medicion_simulada_ticks}, con banda muerta 2 para ambas ruedas. Además,\texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm(255\cdot50)=\pm12750$, límite que no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
 
-El script \texttt{SintonizacionLambda.py} implementa una referencia analítica Lambda a partir de una nueva identificación FODT. Como el PSO no fija semilla, los parámetros identificados en esta ejecución pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}.
-
+La referencia analítica Lambda se calcula a partir de esa nueva identificación.
 El retardo utilizado por el cálculo Lambda se reemplaza por:
 
 \begin{equation}
@@ -1089,7 +1083,7 @@ La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, cor
 \midrule
 \texttt{robot\_base\_frame} & \texttt{base\_link} & Marco base del robot \\
 \texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & Costmap usado para detectar fronteras \\
-\texttt{planner\_frequency} & 0.3~Hz & Valor configurado; el temporizador trunca $1000/0.3$ a 3333~ms \\
+\texttt{planner\_frequency} & 0.3~Hz & Valor configurado; período efectivo según la Ec.~\ref{eq:periodo_explorador_real} \\
 \texttt{progress\_timeout} & 10.0~s & Tiempo máximo sin progreso \\
 \texttt{gain\_scale} & 1.0 & Peso de ganancia de información (Ec.~\ref{eq:frontier_cost}) \\
 \texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera (Ec.~\ref{eq:frontier_cost}) \\
@@ -1129,7 +1123,7 @@ w_{\mathrm{gain}}\,|F|\,\rho_{\mathrm{map}}.
 \label{eq:frontier_cost}
 \end{equation}
 
-\noindent donde $U(F)$ es el puntaje asignado a la frontera $F$, $d_{\mathrm{min}}^{\mathrm{world}}(F)$ la distancia mínima euclidiana entre la posición de referencia y una celda de la frontera [m], $|F|$ el número de celdas almacenado, $\rho_{\mathrm{map}}$ la resolución [m/celda], y $w_{\mathrm{pot}}$ y $w_{\mathrm{gain}}$ los pesos de distancia y ganancia. La implementación utiliza $w_{\mathrm{pot}}=3.0$, $w_{\mathrm{gain}}=1.0$ y tamaño mínimo de frontera 0.05~m. A diferencia de una formulación que convertiría una distancia en celdas a metros, aquí la multiplicación por $\rho_{\mathrm{map}}$ se aplica a una distancia ya métrica. En consecuencia, el primer término queda escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
+\noindent donde $U(F)$ es el puntaje asignado a la frontera $F$, $d_{\mathrm{min}}^{\mathrm{world}}(F)$ la distancia mínima euclidiana entre la posición de referencia y una celda de la frontera [m], $|F|$ el número de celdas almacenado, $\rho_{\mathrm{map}}$ la resolución [m/celda], y $w_{\mathrm{pot}}$ y $w_{\mathrm{gain}}$ los pesos de distancia y ganancia. Los valores configurados de ambos pesos y del tamaño mínimo de frontera corresponden a la Tabla~\ref{tab:explore_params_ch9}. A diferencia de una formulación que convertiría una distancia en celdas a metros, aquí la multiplicación por $\rho_{\mathrm{map}}$ se aplica a una distancia ya métrica. En consecuencia, el primer término queda escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
 
 Las fronteras se ordenan por costo ascendente y se selecciona la primera que no se encuentre en la lista negra. Con resolución 0.05~m/celda y \texttt{min\_frontier\_size}=0.05~m, el criterio $|F|\rho_{\mathrm{map}}\geq0.05$ admite desde un tamaño almacenado de una celda. Si una frontera no incorpora vecinos después de la celda inicial, conserva $|F|=1$, $p_F^{\mathrm{impl}}=(0,0)$ y $d_{\mathrm{min}}^{\mathrm{world}}=\infty$, porque la celda inicial no se suma ni se utiliza para actualizar la distancia. Por tanto, su costo es infinito; aun así, puede permanecer como candidata si no existe otra frontera seleccionable. El objetivo enviado a Nav2 es $p_F^{\mathrm{impl}}$, con orientación identidad. Dos objetivos se consideran iguales cuando su distancia euclidiana es inferior a 0.01~m.
 

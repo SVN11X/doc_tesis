@@ -101,7 +101,7 @@ La contribución principal en esta etapa corresponde al diseño del modelo URDF/
 
 El modelo se organiza como un árbol de eslabones y articulaciones cuyo marco principal es \texttt{base\_link}. En simulación, \texttt{slam\_toolbox} y AMCL utilizan \texttt{base\_footprint}, mientras que en hardware real se utiliza \texttt{base\_link}. La relación exacta entre ambos marcos y la verificación estructural del árbol se documentan en el \ref{anx:gemelo_digital}.
 
-Se adoptan las convenciones REP-103 y REP-105: eje \texttt{x} hacia adelante, eje \texttt{y} hacia la izquierda y eje \texttt{z} hacia arriba \citep{rep103,rep105}. La cadena de transformaciones principal es:
+Se adoptan las convenciones REP-103 y REP-105 descritas en la Sec.~\ref{sec:robot_definicion} \citep{rep103,rep105}. La cadena de transformaciones principal es:
 
 \begin{center}
 \texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame},
@@ -323,7 +323,7 @@ El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución efecti
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
 
-La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante un protocolo serial textual a 57600~baud. Durante la operación normal, los comandos principales permiten leer los encoders, enviar referencias de velocidad, cargar las ganancias PID y aplicar PWM directo durante las pruebas en lazo abierto. El protocolo completo se presenta en la Tabla~\ref{tab:protocolo_serial}.
+La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. Durante la operación normal, los comandos principales permiten leer los encoders, enviar referencias de velocidad, cargar las ganancias PID y aplicar PWM directo durante las pruebas en lazo abierto. El protocolo completo se presenta en la Tabla~\ref{tab:protocolo_serial}.
 
 Los contadores de encoder se midieron durante diez vueltas completas por rueda. Las medias obtenidas fueron 1976~ticks/vuelta para la rueda derecha y 1969~ticks/vuelta para la izquierda; a partir de ellas se adoptó el valor unificado $N_e=1980$~ticks/vuelta, con una diferencia respecto de ambas medias inferior al 0.6\%. Las muestras individuales, el tratamiento de la lectura no atómica de los contadores y el cálculo formal de las medias se conservan en el \ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R} y \eqref{eq:promedio_cuentas_L}.
 
@@ -607,7 +607,7 @@ La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al es
 
 Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El código final solo conserva las ganancias resultantes por rueda; no registra de forma automática qué modificación experimental se asocia a cada fenómeno mecánico.
 
-La salida de la ejecución utilizada como punto de partida, incluidos los parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en la Tabla~\ref{tab:pso_resultados} del \ref{anx:resultados_pso_ejecucion}. Al no fijarse una semilla pseudoaleatoria, los valores pueden variar entre ejecuciones. Además, con $T_{\mathrm{cap}}=0.1$~s, los retardos obtenidos en esa ejecución son inferiores a un período de captura y no producen un desplazamiento temporal efectivo en el modelo discreto.
+La salida de la ejecución utilizada como punto de partida, incluidos los parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en la Tabla~\ref{tab:pso_resultados} del \ref{anx:resultados_pso_ejecucion}, junto con sus particularidades numéricas (ausencia de semilla y retardos inferiores al período de captura).
 
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
