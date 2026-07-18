@@ -276,21 +276,37 @@ referencias se transmiten como valores enteros de \textit{ticks/frame}.
 \caption{Transformación entre encoders, estados y consignas}
 \label{alg:odometria_diferencial}
 \begin{algorithmic}[1]
-\Require Conteos $c_L[k],c_R[k]$; estados previos $\phi_L[k-1],\phi_R[k-1]$; resolución $N_e$; intervalo $\Delta t_k$; consignas $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$; frecuencia $f_{\mathrm{loop}}$.
+\Require Conteos $c_L[k],c_R[k]$; estados previos
+$\phi_L[k-1],\phi_R[k-1]$; resolución $N_e$; intervalo
+$\Delta t_k$; consignas $\omega_L^{\mathrm{cmd}},
+\omega_R^{\mathrm{cmd}}$; frecuencia $f_{\mathrm{loop}}$.
 \Ensure Estados de rueda y referencias enteras en ticks/frame.
+
 \For{$j\in\{L,R\}$}
-    \State $\phi_j[k]\gets \dfrac{2\pi}{N_e}\,c_j[k]$
-    \State $\widehat{\omega}_j[k]\gets \dfrac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k}$
+\State $(\phi_j[k],\widehat{\omega}_j[k])
+\gets
+\Call{EstimarEstadoRueda}
+{c_j[k],\phi_j[k-1],N_e,\Delta t_k}$
 \EndFor
-\State Exportar $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$ a \texttt{ros2\_control}.
+
+\State \Call{ExportarEstados}
+{$\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R$}
+
 \For{$j\in\{L,R\}$}
-    \State $m_j^{\mathrm{cmd}}\gets \operatorname{trunc}_{0}\!\left(\dfrac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}\right)$
+\State $m_j^{\mathrm{cmd}}
+\gets
+\Call{ConvertirConsigna}
+{\omega_j^{\mathrm{cmd}},N_e,f_{\mathrm{loop}}}$
 \EndFor
-\State \Call{EnviarComando}{\texttt{m},$m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$}
+
+\State \Call{EnviarComando}
+{\texttt{m},$m_L^{\mathrm{cmd}}$,$m_R^{\mathrm{cmd}}$}
 \end{algorithmic}
 \end{algorithm}
 
-El orden exacto de ejecución, las validaciones seriales y la inicialización
+La operación \Call{EstimarEstadoRueda} corresponde a las
+Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}, mientras que
+\Call{ConvertirConsigna} implementa la Ec.~\eqref{eq:mps_to_ticks}. El orden exacto de ejecución, las validaciones seriales y la inicialización
 temporal se formalizan en el Alg.~\ref{alg:ros2control_cycle}; la
 definición por casos del intervalo $\Delta t_k$ se conserva en el
 \ref{anx:implementacion_diffdrive}.
@@ -369,24 +385,19 @@ la estructura macro del Alg.~\ref{alg:pid_macro}.
 \caption{Estructura macro del control PID de velocidad por rueda}
 \label{alg:pid_macro}
 \begin{algorithmic}[1]
-\Require Referencias $m_j^{\mathrm{cmd}}$; conteos $c_j$; ganancias $(K_{p,j},K_{d,j},K_{i,j},K_o)$; bandas muertas $e_{db,j}$.
+\Require Referencias $m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$;
+estructuras PID $p_L,p_R$.
 \Ensure Salidas PWM $u_L,u_R$.
-\For{$j\in\{R,L\}$, cada $33$~ms}
-    \State $m_j[k]\gets c_j[k]-c_j[k-1]$
-    \State $e_j[k]\gets m_j^{\mathrm{cmd}}[k]-m_j[k]$
-    \If{$|e_j[k]|\leq e_{db,j}$}
-        \State $e_j[k]\gets0$
-    \EndIf
-    \State Calcular $\Delta u_j[k]$ mediante la Ec.~\eqref{eq:pid_incremento}.
-    \State $u_j^{\mathrm{raw}}[k]\gets u_j[k-1]+\Delta u_j[k]$
-    \State $u_j[k]\gets\operatorname{sat}_{[-255,255]}\!\left(u_j^{\mathrm{raw}}[k]\right)$
-    \If{$-255<u_j^{\mathrm{raw}}[k]<255$}
-        \State Actualizar el estado integral $I_j[k]$.
-    \EndIf
-    \State Aplicar $u_j[k]$ al motor correspondiente.
-\EndFor
+
+\State $(c_L[k],c_R[k])\gets\Call{LeerEncoders}{}$
+\State $p_R\gets\Call{doPID}{p_R,1}$
+\State $p_L\gets\Call{doPID}{p_L,2}$
+\State \Call{setMotorSpeeds}{$p_L.output,p_R.output$}
 \end{algorithmic}
 \end{algorithm}
+
+La implementación interna de \Call{doPID} se presenta en el
+Alg.~\ref{alg:pid_firmware_ley}.
 
 El firmware incluye anti-windup condicional, zona muerta para reducir ciclos
 límite por cuantización y saturación de la salida PWM. Las ganancias
@@ -556,7 +567,10 @@ documenta en el \ref{anx:rutas_software}.
     \State $w_{\mathrm{in}}^{g}\gets\dfrac{g_{\max}-g}{g_{\max}}$
     \For{$i=1,\ldots,N_p$}
         \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$
-        \State Actualizar $V_i$ mediante la Ec.~\eqref{eq:pso_vel_marco_teorico}.
+        \State $V_i\gets
+        \Call{ActualizarVelocidadPSO}
+        {V_i,\xi_i,P_i,G,w_{\mathrm{in}}^{g},
+        c_1,c_2,\chi,\rho_1,\rho_2}$
         \State $\xi_i\gets\max(\xi_i+V_i,10^{-4})$
         \If{modo ID}
             \State $\theta_i^{\mathrm{eval}}\gets(0.01\xi_{i,1},2\xi_{i,2},0.5\xi_{i,3})$
@@ -586,7 +600,8 @@ documenta en el \ref{anx:rutas_software}.
 \end{algorithmic}
 \end{algorithm}
 
-El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
+La operación \Call{ActualizarVelocidadPSO} implementa la
+Ec.~\eqref{eq:pso_vel_marco_teorico}. El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
 scripts recorren las ruedas, formalizado en el Alg.~\ref{alg:sintonizacion}.
 
 \subsubsection{Captura de respuesta en lazo abierto}

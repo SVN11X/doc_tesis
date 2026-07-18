@@ -73,7 +73,13 @@ La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de
 \section{Gemelo digital y verificación estructural}
 \label{anx:gemelo_digital}
 
-Los archivos del modelo se encuentran en \path{articubot_one/description/}: \texttt{robot.urdf.xacro}, \texttt{robot\_core.xacro} y \texttt{lidar.xacro}/\texttt{lidar\_sim.xacro}, cuya organización se describe en la Sec.~\ref{sec:atribucion}. El lanzamiento \path{articubot_one/launch/launch_sim.launch.py} fija \texttt{use\_ros2\_control=true} y \texttt{sim\_mode=true}; por ello se instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo \texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por ese lanzamiento.
+La organización de los archivos del modelo se describe en la
+Sec.~\ref{sec:atribucion}. Como trazabilidad adicional, el lanzamiento
+\path{articubot_one/launch/launch_sim.launch.py} fija
+\texttt{use\_ros2\_control=true} y \texttt{sim\_mode=true}; por ello,
+instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo
+\texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por
+ese lanzamiento.
 
 El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. En simulación, \texttt{slam\_toolbox} y AMCL utilizan \texttt{base\_footprint}, mientras los costmaps mantienen \texttt{base\_link}; en hardware real se utiliza \texttt{base\_link}.
 
@@ -397,12 +403,12 @@ f_{\lambda}T_{\mathrm{sim}}K_{i,j}^{\mathrm{std}}.
 
 \noindent donde $\kappa_{\mathrm{sim}}$ es el factor de conversión desde velocidad lineal a ticks por ciclo, $T_{\mathrm{sim}}$ es el período de simulación, $f_{\lambda}$ es el factor de escalamiento, y $K_{p,j}^{\mathrm{fw}}$, $K_{d,j}^{\mathrm{fw}}$ y $K_{i,j}^{\mathrm{fw}}$ son las ganancias expresadas en la escala de firmware empleada por el script.
 
-La comparación resultante no constituye una equivalencia con el firmware real: a las aproximaciones ya señaladas se agrega que el simulador aplica banda muerta 0 al controlador Lambda. En consecuencia, sus curvas y métricas corresponden al script comparativo ejecutado, no a una validación directa de dos controladores equivalentes en hardware.
-
-La Fig.~\ref{fig:comparacion_pso_vs_lambda} se conserva como salida del script
-comparativo. La formulación Lambda y la aproximación denominada firmware no
-son controladores algebraicamente equivalentes; por ello, la figura no se
-utiliza para demostrar superioridad cuantitativa entre métodos.
+La comparación es únicamente ilustrativa: además de las aproximaciones
+señaladas, el simulador aplica banda muerta cero al controlador Lambda. Por
+ello, las curvas y métricas corresponden al script comparativo ejecutado y no
+a una validación de controladores equivalentes en hardware. En consecuencia,
+la Fig.~\ref{fig:comparacion_pso_vs_lambda} no se utiliza para demostrar
+superioridad cuantitativa entre métodos.
 
 \begin{figure}[H]
 \centering

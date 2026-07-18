@@ -256,14 +256,14 @@ y_{k+1} &= y_k + T_k\,v[k]\sin\theta_k,
 \end{align}
 
 \noindent donde $T_k$ es el intervalo temporal entre las muestras $k$ y
-$k+1$ [s]. Estas ecuaciones expresan el modelo cinemático diferencial
+$k+1$ (s). Estas ecuaciones expresan el modelo cinemático diferencial
 general; el integrador odométrico efectivamente ejecutado pertenece a la
 capa de control descrita en el Capítulo~\ref{ch:implementacion}.
 
 \subsection{Estimación de estados de rueda a partir de encoders}
 \label{sec:estados_rueda}
 
-A partir del conteo acumulado de encoder $c_j[k]$ [ticks], la posición
+A partir del conteo acumulado de encoder $c_j[k]$ (ticks), la posición
 angular de cada rueda se obtiene mediante:
 
 \begin{equation}
@@ -274,7 +274,7 @@ angular de cada rueda se obtiene mediante:
 \label{eq:posicion_rueda_encoder}
 \end{equation}
 
-\noindent donde $N_e$ es la resolución efectiva del encoder [ticks/vuelta].
+\noindent donde $N_e$ es la resolución efectiva del encoder (ticks/vuelta).
 La velocidad angular se estima por diferencias finitas entre dos lecturas
 consecutivas:
 
@@ -342,7 +342,7 @@ K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
 
 \noindent donde $u_j[k]$ es la entrada \gls{PWM} aplicada, $u_{j,d}[k]$ la
 entrada retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el
-modelo para la rueda $j$ (m/s); $\operatorname{trunc}(\cdot)$ conserva
+modelo para la rueda $j$ (m/s); $\operatorname{trunc}()$ conserva
 únicamente la parte entera del resultado. Los parámetros
 $(K_{m},\tau,L_{d})$ se estiman minimizando el error cuadrático entre la
 respuesta medida y la del modelo discreto. El protocolo experimental de
@@ -354,8 +354,7 @@ presentan en el Capítulo~\ref{ch:implementacion}.
 
 El controlador PID genera la acción de control combinando tres términos
 sobre el error entre la referencia y la medición: uno proporcional al error
-presente, uno proporcional a su integral acumulada ---que elimina el error
-estacionario--- y uno proporcional a su derivada, que anticipa la tendencia.
+presente, uno proporcional a su integral acumulada, que elimina el error estacionario, y uno proporcional a su derivada, que anticipa la tendencia.
 En tiempo continuo:
 
 \begin{equation*}
@@ -493,13 +492,11 @@ mapa y el marco odométrico.
 
 La técnica específica utilizada en este trabajo es SLAM Toolbox
 \citep{macenski2021slamtoolbox}, un sistema de SLAM 2D por grafos de poses
-diseñado para \gls{ROS2}. Procesa los barridos de forma asíncrona ---lo que
-evita bloquear el sistema cuando la carga computacional crece---, incorpora
+diseñado para \gls{ROS2}. Procesa los barridos de forma asíncrona, lo que
+evita bloquear el sistema cuando la carga computacional crece, incorpora
 detección de cierre de lazo y mantiene un consumo compatible con
 computadores embebidos, razón por la cual resulta adecuado para la
-arquitectura distribuida de este prototipo. La comparación con técnicas
-alternativas se presenta en la Sec.~\ref{sec:slam_lidar}; los parámetros
-configurados se detallan en el Capítulo~\ref{ch:implementacion}.
+arquitectura distribuida de este prototipo.
 
 \section{Planificación de rutas y control local}
 \label{sec:nav_marco}
