@@ -914,9 +914,10 @@ Entrada o referencia & Escalón PWM $=143$ & $v_j^{\mathrm{ref}}=\operatorname{m
 \end{tabular}
 \end{table}
 
-La velocidad lineal medida de cada rueda se obtiene a partir de la
-Ec.~\ref{eq:w_ruedas}, usando $v_j^{\mathrm{med}}=r\,\omega_j$ y reemplazando el período
-de control por el período de captura $T_{\mathrm{cap}}$:
+Al combinar las Ecs.~\eqref{eq:posicion_rueda_encoder}
+y~\eqref{eq:w_ruedas}, y considerar el período nominal de captura
+$T_{\mathrm{cap}}$, el script calcula directamente la velocidad lineal de
+cada rueda mediante la siguiente forma operativa:
 
 \begin{equation}
 v_j^{\mathrm{med}}[k]

@@ -186,7 +186,7 @@ La cadena de transformaciones mantiene la misma convención usada en simulación
 
 \subsection{Teleoperación y multiplexación de comandos}
 
-El nodo \texttt{twist\_mux} arbitra las fuentes de velocidad resumidas en la Tabla~\ref{tab:twist_mux_resumen}. La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial. La configuración asigna prioridad 100 a la teleoperación y prioridad 10 a la navegación autónoma (\ref{anx:twist_mux_config}).
+La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial. La configuración asigna prioridad 100 a la teleoperación y prioridad 10 a la navegación autónoma (\ref{anx:twist_mux_config}).
 
 \subsection{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
@@ -233,23 +233,16 @@ m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
 
 \noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y $v_j^{\mathrm{cmd}}[k]$ son
 las consignas angular [rad/s] y lineal [m/s] de la rueda $j$; $2\pi/N_e$ es
-la resolución angular por tick [rad/tick]; $\operatorname{trunc}_{0}(\cdot)$
-representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado $f_{\mathrm{loop}}$; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$ coinciden numéricamente según la Tabla~\ref{tab:parametros_modelo}, no representan el mismo mecanismo ni comparten una medición temporal. La ruta normal de \texttt{ros2\_control} utiliza el
+la resolución angular por tick (rad/tick); $\operatorname{trunc}_{0}()$
+representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor (Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado $f_{\mathrm{loop}}$; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$ coinciden numéricamente según la Tabla~\ref{tab:parametros_modelo}, no representan el mismo mecanismo ni comparten una medición temporal. La ruta normal de \texttt{ros2\_control} utiliza el
 comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el
 firmware también incorpora una conversión directa desde m/s para ese
 comando.
 
-En la fase de lectura, la transformación desde los conteos acumulados hasta los estados de rueda sigue la cadena:
-
-\begin{equation}
-c_j[k]
-\xrightarrow{\text{Ec.~\eqref{eq:posicion_rueda_encoder}}}
-\phi_j[k]
-\xrightarrow[\Delta t_k]{\text{Ec.~\eqref{eq:w_ruedas}}}
-\widehat{\omega}_j[k],
-\qquad j\in\{R,L\}.
-\label{eq:enc_to_state}
-\end{equation}
+En la fase de lectura, los conteos acumulados $c_j[k]$ se convierten en
+posición angular mediante la Ec.~\eqref{eq:posicion_rueda_encoder} y en
+velocidad angular mediante la Ec.~\eqref{eq:w_ruedas}, para
+$j\in\{R,L\}$.
 
 El intervalo $\Delta t_k$ se define en la Ec.~\eqref{eq:intervalo_diffdrive}, y su secuencia de inicialización se formaliza en el Alg.~\ref{alg:ros2control_cycle}. El plugin exporta una única estimación de velocidad angular por rueda y no calcula otra con el período nominal de 30~Hz.
 
@@ -316,7 +309,7 @@ El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto ho
 
 \subsection{Arquitectura modular y constantes físicas}
 
-Los módulos del firmware se encuentran en \path{arduino_firmware/ROSArduinoBridge/}. \texttt{ROSArduinoBridge.ino} coordina la comunicación serial y el ciclo principal; \texttt{commands.h} define los comandos; \texttt{encoder\_driver.h}/\texttt{encoder\_driver.ino} realizan la lectura de encoders; \texttt{motor\_driver.h}/\texttt{motor\_driver.ino} accionan el L298N; y \texttt{diff\_controller.h} implementa el controlador PID. El inventario de rutas se conserva en el \ref{anx:rutas_software}.
+Los módulos del firmware se encuentran en \path{arduino_firmware/ROSArduinoBridge/}. En \texttt{ROSArduinoBridge.ino} se coordina la comunicación serial y el ciclo principal; \texttt{commands.h} define los comandos; \texttt{encoder\_driver.h}/\texttt{encoder\_driver.ino} realizan la lectura de encoders; \texttt{motor\_driver.h}/\texttt{motor\_driver.ino} accionan el L298N; y \texttt{diff\_controller.h} implementa el controlador PID. El inventario de rutas se conserva en el \ref{anx:rutas_software}.
 
 El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución efectiva $N_e$ compartidos con la ruta de hardware real (Tabla~\ref{tab:parametros_modelo}), parametrizados como \texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
 
@@ -330,7 +323,7 @@ Los contadores de encoder se midieron durante diez vueltas completas por rueda. 
 \subsection{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con la medición entera $m_j^{int}[k]$ en ticks/frame.
+El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en ticks/frame. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con la medición entera $m_j^{int}[k]$ en ticks/frame.
 
 La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap.~\ref{marco_teorico}. La secuencia de actualización se presenta en el Alg.~\ref{alg:pid_firmware}, mientras que las operaciones internas por rueda se formalizan en las Ecs.~\ref{eq:medicion_pid_entera}--\ref{eq:integrador_condicional}.
 
@@ -802,4 +795,4 @@ La transferencia al hardware se realiza manteniendo la estructura de tópicos y 
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_ch9}
 
-La implementación integra componentes accesibles —plataforma diferencial, encoders, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1— con una arquitectura de software basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permitió validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el hardware real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PID de ruedas —sintonizado mediante PSO y refinamiento experimental— y publicación de odometría, con auto-detención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en hardware real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.
+La implementación integra componentes accesibles; plataforma diferencial, encoders, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1, con una arquitectura de software basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permitió validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el hardware real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PID de ruedas —sintonizado mediante PSO y refinamiento experimental— y publicación de odometría, con auto-detención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en hardware real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.

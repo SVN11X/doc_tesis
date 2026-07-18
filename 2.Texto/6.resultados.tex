@@ -3,15 +3,6 @@
 
 Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. Los resultados complementarios de exploración y mapeo en hardware real se presentan en el \ref{anx:protocolo_resultados}.
 
-\section{Entorno experimental}
-\label{sec:entorno_experimental}
-
-Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04. Se mantuvo la arquitectura de tópicos y marcos del robot real, pero se cargaron archivos YAML específicos para simulación, con diferencias numéricas en SLAM, Nav2, mapas de costo y tiempo simulado (transferencia sim--hardware detallada en la Sec.~\ref{sec:integracion_ciclo}).
-
-En hardware real, las pruebas se realizaron en un espacio interior con suelo de alfombra. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. El despliegue siguió la arquitectura distribuida planteada en el Objetivo general, con RViz2 en la estación de trabajo para supervisión.
-
-El espacio físico disponible permitió validar odometría, control y mapeo; la navegación autónoma y la exploración se evalúan en la Sec.~\ref{sec:resultados_nav2}.
-
 \section{Validación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
@@ -40,11 +31,10 @@ d_{\mathrm{real}}
 \label{eq:error_odometrico}
 \end{align}
 
-\noindent donde $d_{\mathrm{ref}}$ es la distancia comandada [m],
-$d_{\mathrm{real}}$ la distancia física medida o verdad de terreno [m],
-$d_{\mathrm{odom}}$ la distancia calculada mediante odometría [m],
-$E_{\mathrm{seg}}$ el error de seguimiento [\%] y
-$E_{\mathrm{odom}}$ el error odométrico [\%].
+\noindent donde $d_{\mathrm{ref}}$ es la distancia comandada (m), $d_{\mathrm{real}}$ la distancia física medida o verdad de terreno (m),
+$d_{\mathrm{odom}}$ la distancia calculada mediante odometría (m),
+$E_{\mathrm{seg}}$ el error de seguimiento (\%) y
+$E_{\mathrm{odom}}$ el error odométrico (\%).
 
 Para conservar las métricas generadas por los scripts, la desviación angular normalizada se expresa respecto de su referencia nominal fija:
 
@@ -156,9 +146,7 @@ Error estacionario & 0.00488 m/s & 0.00192 m/s \\
 
 En esa ejecución simulada, la rueda izquierda no permanece dentro de la banda
 del 2\% durante el horizonte de 10~s, mientras que la derecha sí alcanza el
-criterio de establecimiento dentro del horizonte evaluado. Estos indicadores
-caracterizan la simulación del script y no constituyen métricas medidas
-directamente sobre el hardware.
+criterio de establecimiento dentro del horizonte evaluado.
 
 La comparación completa entre la aproximación denominada
 firmware y la referencia Lambda se conserva en la
@@ -275,22 +263,20 @@ estándar, calculadas a partir de las cinco iteraciones válidas.
 \end{minipage}
 \end{table}
 
-Los contadores de metas, éxito y fallo no identifican objetivos únicos y
-pueden repetir estados de una misma acción. Por ello, se mantienen únicamente
-como diagnóstico del script y no permiten calcular una tasa de éxito. La
-mecánica exacta del registro se conserva en el
-\ref{anx:resultados_metodologia}.
-
 La métrica cuantitativa sustentada por los archivos existentes es el índice de
 cobertura libre; la mejor iteración alcanzó 82.9\%. Esta cobertura demuestra
-acumulación de observaciones durante la ejecución, pero no
-demuestra por sí sola llegada efectiva a las fronteras. La configuración de
-inflación de 0.15~m en un recinto reducido constituye una limitación plausible
-de la navegación, aunque los contadores actuales no permiten atribuir de forma
-cuantitativa cada cancelación o aborto a esa causa. Por tanto, se verifica la
-integración funcional del ciclo y se cuantifica la cobertura, mientras que la
-tasa de éxito de navegación dirigida queda indeterminada con el procedimiento
-de registro utilizado. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de validación alcanzado por cada subsistema.
+acumulación de observaciones durante la ejecución, pero no demuestra por sí
+sola la llegada efectiva a las fronteras. Los contadores de metas, éxito y
+fallo no identifican objetivos únicos y pueden repetir estados de una misma
+acción, por lo que no permiten calcular una tasa de éxito; la mecánica exacta
+del registro se conserva en el \ref{anx:resultados_metodologia}. La
+configuración de inflación de 0.15~m en un recinto reducido constituye una
+limitación plausible de la navegación, aunque los registros actuales no
+permiten atribuir cuantitativamente cada cancelación o aborto a esa causa. En
+consecuencia, se verifica la integración funcional del ciclo y se cuantifica
+la cobertura, mientras que la tasa de éxito de navegación dirigida queda
+indeterminada. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de
+validación alcanzado por cada subsistema.
 
 \begin{table}[H]
 \centering
