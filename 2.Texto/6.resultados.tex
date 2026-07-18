@@ -6,7 +6,7 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 \section{Entorno experimental}
 \label{sec:entorno_experimental}
 
-Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04. Se mantuvo la arquitectura de tópicos y marcos del robot real, pero se cargaron archivos YAML específicos para simulación, con diferencias numéricas en SLAM, Nav2, mapas de costo y tiempo simulado (transferencia sim--hardware detallada en la Sec.~\ref{sec:verificacion_ch9}).
+Las pruebas en simulación se realizaron en Gazebo 11 sobre Ubuntu 20.04. Se mantuvo la arquitectura de tópicos y marcos del robot real, pero se cargaron archivos YAML específicos para simulación, con diferencias numéricas en SLAM, Nav2, mapas de costo y tiempo simulado (transferencia sim--hardware detallada en la Sec.~\ref{sec:integracion_ciclo}).
 
 En hardware real, las pruebas se realizaron en un espacio interior con suelo de alfombra. La comunicación se estableció mediante un \textit{travel router} con direcciones IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. El despliegue siguió la arquitectura distribuida planteada en el Objetivo general, con RViz2 en la estación de trabajo para supervisión.
 

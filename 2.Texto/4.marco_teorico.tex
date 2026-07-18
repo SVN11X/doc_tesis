@@ -75,8 +75,8 @@ Capítulo~\ref{ch:implementacion}.
 \subsection{Simulación robótica y Gazebo}
 \label{sec:simuladores_marco}
 
-Un simulador robótico integra un motor de física ---que resuelve dinámica de
-cuerpos rígidos, contactos y fricción---, la simulación de sensores (láser,
+Un simulador robótico integra un motor de física, que resuelve dinámica de
+cuerpos rígidos, contactos y fricción, la simulación de sensores (láser,
 cámaras, unidades inerciales) y un entorno tridimensional configurable. Esto
 permite verificar la geometría, la cinemática y la lógica de control de un
 robot antes de operar el hardware, reduciendo riesgos y tiempos de puesta en
@@ -485,8 +485,8 @@ restricción relativa entre dos poses, obtenida de la odometría o del ajuste
 de barridos láser (\textit{scan matching}), que alinea geométricamente dos
 barridos consecutivos para estimar el desplazamiento entre ellos. Cuando el
 robot vuelve a observar una zona ya visitada se agrega una restricción de
-\emph{cierre de lazo}, y la optimización del grafo ---un problema de mínimos
-cuadrados no lineales--- redistribuye el error acumulado a lo largo de toda
+\emph{cierre de lazo}, y la optimización del grafo, un problema de mínimos
+cuadrados no lineales, redistribuye el error acumulado a lo largo de toda
 la trayectoria, corrigiendo el mapa y la transformación entre el marco del
 mapa y el marco odométrico.
 
@@ -540,8 +540,8 @@ S_c\,C_c(v,\omega),
 
 \noindent donde $J_{\mathrm{DWB}}(v,\omega)$ es el puntaje total de una
 trayectoria candidata con velocidades lineal $v$ y angular $\omega$;
-$\mathcal{C}$ es el conjunto de criterios de evaluación ---tales como
-proximidad a obstáculos, alineación con la ruta y avance hacia la meta---,
+$\mathcal{C}$ es el conjunto de criterios de evaluación, tales como
+proximidad a obstáculos, alineación con la ruta y avance hacia la meta,
 $C_c(v,\omega)$ el costo asignado por el criterio $c$ y $S_c$ su peso. Se
 selecciona el candidato de menor puntaje, lo que permite seguir la ruta
 global mientras se reacciona ante obstáculos cercanos. La navegación de alto
@@ -561,8 +561,8 @@ mientras construye el mapa. En el enfoque basado en fronteras
 desconocida adyacente a espacio libre conocido; las celdas de frontera
 contiguas se agrupan en fronteras, y cada frontera se caracteriza por un
 punto representativo, su tamaño y su distancia al robot. Las fronteras se
-ordenan mediante un puntaje que combina la distancia ---privilegiando metas
-cercanas--- y el tamaño ---privilegiando zonas que aportan más información---,
+ordenan mediante un puntaje que combina la distancia, privilegiando metas
+cercanas, y el tamaño, privilegiando zonas que aportan más información,
 y la mejor frontera se envía como meta al sistema de navegación. Cuando una
 meta no muestra progreso dentro de un tiempo límite, se incorpora a una
 lista negra para evitar reintentos improductivos, y el proceso se repite

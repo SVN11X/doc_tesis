@@ -210,11 +210,7 @@ resumen en la Tabla~\ref{tab:diff_drive_params}.
 \end{tabular}
 \end{table}
 
-La comunicación con el firmware se realiza mediante el plugin
-\texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control}
-cuyo ciclo de lectura--actualización--escritura, formalizado en el
-Alg.~\ref{alg:ros2control_cycle}, se programa nominalmente con
-$f_{\mathrm{ctrl}}=30$~Hz mediante \texttt{controller\_manager.update\_rate}.
+La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} cuyo ciclo de lectura--actualización--escritura, formalizado en el Alg.~\ref{alg:ros2control_cycle}, se programa con la frecuencia $f_{\mathrm{ctrl}}$ indicada en la Tabla~\ref{tab:parametros_modelo}, mediante \texttt{controller\_manager.update\_rate}.
 
 En la fase de escritura del ciclo, la velocidad angular de rueda comandada por
 \texttt{diff\_drive\_controller} se convierte en una referencia entera de
@@ -238,11 +234,7 @@ m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
 \noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y $v_j^{\mathrm{cmd}}[k]$ son
 las consignas angular [rad/s] y lineal [m/s] de la rueda $j$; $2\pi/N_e$ es
 la resolución angular por tick [rad/tick]; $\operatorname{trunc}_{0}(\cdot)$
-representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división
-utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado
-$f_{\mathrm{loop}}=30$~Hz; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$
-coinciden numéricamente, no representan el mismo mecanismo ni comparten una
-medición temporal. La ruta normal de \texttt{ros2\_control} utiliza el
+representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado $f_{\mathrm{loop}}$; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$ coinciden numéricamente según la Tabla~\ref{tab:parametros_modelo}, no representan el mismo mecanismo ni comparten una medición temporal. La ruta normal de \texttt{ros2\_control} utiliza el
 comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el
 firmware también incorpora una conversión directa desde m/s para ese
 comando.
@@ -266,47 +258,7 @@ Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmwa
 \subsection{Flujo de datos del sistema}
 \label{sec:flujo_datos}
 
-El flujo de control entre \gls{ROS2}, el plugin de hardware y el firmware se
-resume, a nivel macro, en el Alg.~\ref{alg:odometria_diferencial}: se
-obtienen los conteos de encoder y se exportan los estados de rueda, el
-controlador diferencial actualiza la odometría y las consignas, y las
-referencias se transmiten como valores enteros de \textit{ticks/frame}.
-
-\begin{algorithm}[H]
-\caption{Transformación entre encoders, estados y consignas}
-\label{alg:odometria_diferencial}
-\begin{algorithmic}[1]
-\Require Conteos $c_L[k],c_R[k]$; estados previos
-$\phi_L[k-1],\phi_R[k-1]$; resolución $N_e$; intervalo
-$\Delta t_k$; consignas $\omega_L^{\mathrm{cmd}},
-\omega_R^{\mathrm{cmd}}$; frecuencia $f_{\mathrm{loop}}$.
-\Ensure Estados de rueda y referencias enteras en ticks/frame.
-
-\For{$j\in\{L,R\}$}
-\State $(\phi_j[k],\widehat{\omega}_j[k])
-\gets
-\Call{EstimarEstadoRueda}
-{c_j[k],\phi_j[k-1],N_e,\Delta t_k}$
-\EndFor
-
-\State \Call{ExportarEstados}
-{$\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R$}
-
-\For{$j\in\{L,R\}$}
-\State $m_j^{\mathrm{cmd}}
-\gets
-\Call{ConvertirConsigna}
-{\omega_j^{\mathrm{cmd}},N_e,f_{\mathrm{loop}}}$
-\EndFor
-
-\State \Call{EnviarComando}
-{\texttt{m},$m_L^{\mathrm{cmd}}$,$m_R^{\mathrm{cmd}}$}
-\end{algorithmic}
-\end{algorithm}
-
-La operación \Call{EstimarEstadoRueda} corresponde a las
-Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}, mientras que
-\Call{ConvertirConsigna} implementa la Ec.~\eqref{eq:mps_to_ticks}. El orden exacto de ejecución, las validaciones seriales y la inicialización
+El flujo completo entre \gls{ROS2}, la interfaz de hardware y el firmware se formaliza en el Alg.~\ref{alg:ros2control_cycle}. Las conversiones de estado y consigna corresponden a las Ecs.~\eqref{eq:posicion_rueda_encoder}, \eqref{eq:w_ruedas} y~\eqref{eq:mps_to_ticks}; la definición por casos de $\Delta t_k$ se conserva en el \ref{anx:implementacion_diffdrive}. El orden exacto de ejecución, las validaciones seriales y la inicialización
 temporal se formalizan en el Alg.~\ref{alg:ros2control_cycle}; la
 definición por casos del intervalo $\Delta t_k$ se conserva en el
 \ref{anx:implementacion_diffdrive}.
@@ -377,27 +329,7 @@ Los contadores de encoder se midieron durante diez vueltas completas por rueda. 
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda. La referencia y la medición se expresan en \textit{ticks/frame}. El error por rueda se define según la Ec.~\ref{eq:error_pid}, con la medición entera $m_j^{int}[k]$ en ticks/frame.
 
-La ley implementada corresponde a la forma incremental con derivada sobre la
-medición definida en el Cap.~\ref{marco_teorico}. Cada ciclo de control sigue
-la estructura macro del Alg.~\ref{alg:pid_macro}.
-
-\begin{algorithm}[H]
-\caption{Estructura macro del control PID de velocidad por rueda}
-\label{alg:pid_macro}
-\begin{algorithmic}[1]
-\Require Referencias $m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$;
-estructuras PID $p_L,p_R$.
-\Ensure Salidas PWM $u_L,u_R$.
-
-\State $(c_L[k],c_R[k])\gets\Call{LeerEncoders}{}$
-\State $p_R\gets\Call{doPID}{p_R,1}$
-\State $p_L\gets\Call{doPID}{p_L,2}$
-\State \Call{setMotorSpeeds}{$p_L.output,p_R.output$}
-\end{algorithmic}
-\end{algorithm}
-
-La implementación interna de \Call{doPID} se presenta en el
-Alg.~\ref{alg:pid_firmware_ley}.
+La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap.~\ref{marco_teorico}. La secuencia de actualización se presenta en el Alg.~\ref{alg:pid_firmware}, mientras que las operaciones internas por rueda se formalizan en las Ecs.~\ref{eq:medicion_pid_entera}--\ref{eq:integrador_condicional}.
 
 El firmware incluye anti-windup condicional, zona muerta para reducir ciclos
 límite por cuantización y saturación de la salida PWM. Las ganancias
@@ -432,10 +364,8 @@ comandos seriales de sintonización (Tabla~\ref{tab:protocolo_serial}) se
 reemplaza por los valores codificados al producirse cualquiera de esos
 reinicios. La secuencia exacta de lectura, actualización de estados,
 saturación y aplicación de las salidas, incluidos los nombres de las
-funciones del firmware involucradas, se formaliza en los
-Algoritmos~\ref{alg:pid_firmware} y~\ref{alg:pid_firmware_ley}: el primero
-describe el ciclo de actualización y la lógica de reinicio, y el segundo,
-la ley de control discreta aplicada a cada rueda.
+funciones del firmware involucradas, se formaliza en el
+Alg.~\ref{alg:pid_firmware}, este describe el ciclo de actualización y la lógica de reinicio
 
 \begin{algorithm}[H]
 \caption{Ciclo de actualización del PID discreto ejecutado por el firmware}
@@ -459,7 +389,7 @@ la ley de control discreta aplicada a cada rueda.
         \EndIf
         \State \Return
     \EndIf
-    \State \Call{doPID}{PID derecho,$1$} \Comment{Alg.~\ref{alg:pid_firmware_ley}}
+    \State \Call{doPID}{PID derecho,$1$}
     \State \Call{doPID}{PID izquierdo,$2$}
     \State \Call{setMotorSpeeds}{\texttt{leftPID.output},\texttt{rightPID.output}}
 \EndProcedure
@@ -473,34 +403,7 @@ la ley de control discreta aplicada a cada rueda.
 \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[H]
-\caption{Ley de control PID discreta por rueda ejecutada por el firmware}
-\label{alg:pid_firmware_ley}
-\begin{algorithmic}[1]
-\Require Estructura $p$ de la rueda; zona muerta $e_{db}$; ganancias $K_p,K_i,K_d$; $K_o$; \texttt{MAX\_PWM}$=255$.
-\Ensure $p.output$ saturado en $[-255,255]$ y estados $p.ITerm$, $p.PrevInput$, $p.PrevEnc$ actualizados.
-\Procedure{doPID}{$p,e_{db}$}
-    \State $m\gets\operatorname{int}(p.Encoder-p.PrevEnc)$
-    \State $e\gets\operatorname{trunc}_{0}(p.TargetTicksPerFrame-m)$
-    \If{$|e|\leq e_{db}$}
-        \State $e\gets0$
-    \EndIf
-    \State $\Delta u\gets\operatorname{trunc}_{0}\!\left(\dfrac{K_p e-K_d(m-p.PrevInput)+p.ITerm}{K_o}\right)$
-    \State $p.PrevEnc\gets p.Encoder$
-    \State $u^{\mathrm{raw}}\gets p.output+\Delta u$
-    \If{$u^{\mathrm{raw}}\geq255$}
-        \State $u\gets255$
-    \ElsIf{$u^{\mathrm{raw}}\leq-255$}
-        \State $u\gets-255$
-    \Else
-        \State $u\gets u^{\mathrm{raw}}$
-        \State $p.ITerm\gets\operatorname{trunc}_{0}(p.ITerm+K_i e)$
-    \EndIf
-    \State $p.output\gets u$
-    \State $p.PrevInput\gets m$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
+La secuencia exacta de lectura, actualización de estados, saturación y aplicación de las salidas se formaliza en el Alg.~\ref{alg:pid_firmware}; la ley discreta ejecutada por cada llamada a \texttt{doPID()} se detalla en las Ecs.~\eqref{eq:medicion_pid_entera}--\eqref{eq:integrador_condicional}.
 
 
 \subsection{Sintonización del controlador PID asistida por PSO}
@@ -702,7 +605,7 @@ para $j\in\{R,L\}$.
 
 \subsubsection{Identificación y optimización}
 
-La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Durante la identificación, la señal medida se suaviza antes del ajuste y los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error cuadrático del modelo discreto. Los scripts de sintonización emplean una aproximación de la planta y del controlador que no reproduce exactamente el retardo, los tipos enteros ni las bandas muertas asimétricas del firmware; el filtro, la función de costo, la interpolación de la referencia y la cuantización ejecutadas se documentan en el \ref{anx:fodt_scripts}, Ecs.~\eqref{eq:filtro_uniforme}--\eqref{eq:medicion_simulada_ticks}.
+La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Durante la identificación, la señal medida se suaviza antes del ajuste. Los scripts de sintonización emplean una aproximación de la planta y del controlador que no reproduce exactamente el retardo, los tipos enteros ni las bandas muertas asimétricas del firmware; el filtro, la función de costo, la interpolación de la referencia y la cuantización ejecutadas se documentan en el \ref{anx:fodt_scripts}, Ecs.~\eqref{eq:filtro_uniforme}--\eqref{eq:medicion_simulada_ticks}.
 
 \subsubsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
@@ -795,38 +698,24 @@ odometría realimenta el mapeo.
 
 {\footnotesize\textit{Fuente: Elaboración propia.}}
 \end{figure}
+El planificador global utilizado es NavFn con A$^*$ (Sec.~\ref{sec:nav_marco}), mediante el plugin \texttt{nav2\_navfn\_planner/NavfnPlanner}. Para el seguimiento local se emplea \texttt{dwb\_core::DWBLocalPlanner}, que evalúa las trayectorias candidatas mediante la Ec.~\eqref{eq:dwb_cost}. La configuración concreta de ambos componentes se resume en la Tabla~\ref{tab:nav2_componentes_ch9}. 
 
-El planificador global utilizado es NavFn con A$^*$ (Sec.~\ref{sec:nav_marco}),
-mediante el plugin \texttt{nav2\_navfn\_planner/NavfnPlanner} con
-\texttt{use\_astar=true}, \texttt{allow\_unknown=true} y tolerancia de
-0.5~m sobre el \texttt{global\_costmap}. Para el seguimiento local se emplea
-\texttt{dwb\_core::DWBLocalPlanner}, que evalúa trayectorias candidatas
-mediante la Ec.~\eqref{eq:dwb_cost} con los críticos cargados en la
-configuración: \texttt{Oscillation}, \texttt{BaseObstacle},
-\texttt{GoalAlign}, \texttt{PathAlign}, \texttt{PathDist} y
-\texttt{GoalDist}. En hardware real, DWB admite candidatos de hasta
-0.15~m/s, mientras \texttt{diff\_drive\_controller} limita la velocidad
-lineal a 0.13~m/s; por ello, una consigna generada entre 0.13 y 0.15~m/s
-queda limitada posteriormente por el controlador diferencial. La Tabla~\ref{tab:nav2_componentes_ch9} resume los componentes de Nav2 utilizados y la función de cada uno.
+\begin{table}[H] 
+\centering 
+\caption{Configuración de los planificadores global y local utilizados.} 
+\label{tab:nav2_componentes_ch9} 
+\small 
+\begin{tabular}{p{3.0cm} p{4.8cm} p{5.4cm}} 
+\toprule 
+\textbf{Componente} & \textbf{Plugin} & \textbf{Configuración principal} \\ 
+\midrule 
+Planificador global & \texttt{nav2\_navfn\_planner/NavfnPlanner} & A$^*$ habilitado, espacio desconocido permitido y tolerancia de 0.5~m \\ 
+Controlador local & \texttt{dwb\_core::DWBLocalPlanner} & Críticos de obstáculos, oscilación, alineación y distancia respecto de la ruta y de la meta \\ 
+\bottomrule 
+\end{tabular} 
+\end{table} 
 
-\begin{table}[H]
-\centering
-\caption{Componentes principales de Nav2 utilizados.}
-\label{tab:nav2_componentes_ch9}
-\small
-\begin{tabular}{llp{6.5cm}}
-\toprule
-\textbf{Componente} & \textbf{Implementación} & \textbf{Función} \\
-\midrule
-Planificador global & NavFn con A$^*$ & Generar ruta global \\
-Controlador local & DWB & Seguir ruta y evitar obstáculos \\
-Costmaps & Global y local & Representar obstáculos y zonas transitables \\
-Árbol de comportamiento & \texttt{bt\_navigator} & Orquestar navegación y recuperación \\
-Multiplexor & \texttt{twist\_mux} & Priorizar navegación o teleoperación \\
-\bottomrule
-\end{tabular}
-\end{table}
-
+En hardware real, DWB admite candidatos de hasta 0.15~m/s, mientras que \texttt{diff\_drive\_controller} limita la velocidad lineal a 0.13~m/s; por ello, las consignas superiores a este último valor se limitan posteriormente.
 \subsection{Mapas de costos}
 \label{sec:costmaps_ch9}
 
@@ -901,18 +790,17 @@ El explorador utiliza el costmap global, reevalúa las fronteras con una frecuen
 \end{algorithm}
 
 
-Las particularidades de la implementación ejecutada ---el cálculo del punto
+Las particularidades de la implementación ejecutada, el cálculo del punto
 representativo de cada frontera, el escalamiento de la distancia en el
-puntaje y la programación del temporizador--- se documentan en el
+puntaje y la programación del temporizador, se documentan en el
 \ref{anx:explore_impl}, Ecs.~\eqref{eq:centroide_frontera_impl},
 \eqref{eq:frontier_cost} y~\eqref{eq:periodo_explorador_real}.
 
 \subsection{Integración del ciclo autónomo y transferencia simulación--hardware}
 \label{sec:integracion_ciclo}
 
-Los subsistemas operan de forma encadenada: \texttt{slam\_toolbox} construye el mapa y publica la transformación \texttt{map}$\rightarrow$\texttt{odom}; Nav2 utiliza ese mapa para planificar y controlar el movimiento; \texttt{twist\_mux} envía los comandos al controlador diferencial; y \texttt{explore\_server} genera nuevas metas hacia fronteras no exploradas. Esta integración permite que el robot pase desde teleoperación y mapeo inicial hacia navegación autónoma y exploración de zonas desconocidas.
+La arquitectura de la Fig.~\ref{fig:interaccion_nav} permite que el robot pase desde la teleoperación y el mapeo inicial hacia la navegación autónoma y la exploración de zonas desconocidas.
 
-\label{sec:verificacion_ch9}
 La transferencia al hardware se realiza manteniendo la estructura de tópicos y marcos, pero seleccionando archivos de configuración específicos para el entorno real; la asignación de \texttt{use\_sim\_time} y los archivos YAML equivalentes de simulación y hardware se detallan en el \ref{anx:nav2_slam_config}. Además, se ajustan límites cinemáticos, frecuencias, tolerancias e inflación de costmaps según las capacidades del prototipo físico.
 
 %=====================================================================
