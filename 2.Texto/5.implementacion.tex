@@ -7,7 +7,7 @@ Este capítulo consolida la implementación del sistema de navegación autónoma
 \section{Componentes y parámetros del prototipo}
 \label{ch:componentes}
 
-El prototipo corresponde a una plataforma diferencial de bajo costo para interiores: controla el desplazamiento mediante la diferencia de velocidad entre las ruedas motrices izquierda y derecha, lo que facilita la implementación del modelo cinemático desarrollado en el Capítulo~\ref{marco_teorico}. La Tabla~\ref{tab:componentes_principales} resume los componentes empleados y su función dentro del sistema.
+El prototipo corresponde a una plataforma diferencial de bajo costo para interiores: controla el desplazamiento mediante la diferencia de velocidad entre las ruedas motrices izquierda y derecha. La Tabla~\ref{tab:componentes_principales} resume los componentes empleados y su función dentro del sistema.
 
 \begin{table}[H]
 \centering
@@ -43,11 +43,11 @@ El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer 
 
 La Raspberry Pi 4 ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, actuando como computador principal del robot. Su función es coordinar la comunicación con el \gls{Arduino}, adquirir y publicar los datos del sensor láser, y ejecutar la interfaz de hardware \texttt{DiffDriveArduino} y el controlador diferencial \texttt{diff\_drive\_controller}; el PID de bajo nivel permanece en el \gls{Arduino}, mientras que SLAM, Nav2 y exploración se ejecutan en la estación de trabajo.
 
-El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 360 grados que publica barridos utilizados por SLAM y por los mapas de costo de Nav2. Su selección y limitaciones se justifican en la Sec.~\ref{sec:sensores}.
+El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 360 grados que publica barridos utilizados por SLAM y por los mapas de costo de Nav2.
 
 \subsection{Alimentación y fabricación}
 
-El sistema se alimenta desde una batería Li-ion de 12 V; la organización de los dominios de potencia y lógica se detalla en la Sec.~\ref{chap:robot_real}. El chasis y las cubiertas fueron fabricados mediante impresión 3D FDM en PLA+, tomando como referencia una plataforma diferencial comercial \citep{BECChassisLong}. El diseño considera espacio para la Raspberry Pi, el \gls{Arduino}, el driver de motores, el regulador de tensión, la batería y el sensor RPLidar A1. En la Figura~\ref{fig:prototipo} se muestra una vista lateral del prototipo
+El sistema se alimenta desde una batería Li-ion de 12 V; la organización de los dominios de potencia y lógica se detalla en la Sec.~\ref{chap:robot_real}. El chasis y las cubiertas fueron fabricados mediante impresión 3D FDM en PLA+, tomando como referencia una plataforma diferencial open-source \citep{marcuslanzoni2020vacuum}. El diseño considera espacio para la Raspberry Pi, el \gls{Arduino}, el driver de motores, el regulador de tensión, la batería y el sensor RPLidar A1. En la Figura~\ref{fig:prototipo} se muestra una vista lateral del prototipo
 construido.
 
 \utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.55\linewidth}
@@ -258,10 +258,11 @@ Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmwa
 \subsection{Flujo de datos del sistema}
 \label{sec:flujo_datos}
 
-El flujo completo entre \gls{ROS2}, la interfaz de hardware y el firmware se formaliza en el Alg.~\ref{alg:ros2control_cycle}. Las conversiones de estado y consigna corresponden a las Ecs.~\eqref{eq:posicion_rueda_encoder}, \eqref{eq:w_ruedas} y~\eqref{eq:mps_to_ticks}; la definición por casos de $\Delta t_k$ se conserva en el \ref{anx:implementacion_diffdrive}. El orden exacto de ejecución, las validaciones seriales y la inicialización
-temporal se formalizan en el Alg.~\ref{alg:ros2control_cycle}; la
-definición por casos del intervalo $\Delta t_k$ se conserva en el
-\ref{anx:implementacion_diffdrive}.
+El flujo completo entre \gls{ROS2}, la interfaz de hardware y el firmware se
+formaliza en el Alg.~\ref{alg:ros2control_cycle}. Las conversiones de estado
+y consigna corresponden a las Ecs.~\eqref{eq:posicion_rueda_encoder},
+\eqref{eq:w_ruedas} y~\eqref{eq:mps_to_ticks}; la definición por casos de
+$\Delta t_k$ se conserva en el \ref{anx:implementacion_diffdrive}.
 
 \begin{algorithm}[H]
 \caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}}
@@ -286,8 +287,8 @@ definición por casos del intervalo $\Delta t_k$ se conserva en el
     \State $s\gets\Call{SolicitarSerial}{\texttt{e}}$
     \State $(c_L[k],c_R[k])\gets\Call{ConvertirEnteros}{s}$
     \For{$j\in\{L,R\}$}
-        \State $\phi_j[k]\gets\delta\phi\,c_j[k]$
-        \State $\widehat{\omega}_j[k]\gets\dfrac{\phi_j[k]-\phi_j[k-1]}{\Delta t_k}$
+    \State $(\phi_j[k],\widehat{\omega}_j[k])
+    \gets\Call{ActualizarEstadoRueda}{c_j[k],\Delta t_k}$
     \EndFor
     \State Exportar $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$.
     \State \Call{ActualizarControladorDiferencial}{}
@@ -296,7 +297,9 @@ definición por casos del intervalo $\Delta t_k$ se conserva en el
         \State \Return \texttt{ERROR}
     \EndIf
     \For{$j\in\{L,R\}$}
-        \State $m_j^{\mathrm{cmd}}\gets\operatorname{trunc}_{0}\!\left(\dfrac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}\right)$
+    \State $m_j^{\mathrm{cmd}}
+    \gets\Call{ConvertirATicksFrame}
+    {\omega_j^{\mathrm{cmd}},N_e,f_{\mathrm{loop}}}$
     \EndFor
     \State \Call{EnviarComando}{\texttt{m},$m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$}
 \EndWhile
@@ -362,10 +365,8 @@ de aplicar PWM directo y cuando ambos comandos de velocidad son exactamente
 cero. En consecuencia, cualquier ganancia cargada temporalmente mediante los
 comandos seriales de sintonización (Tabla~\ref{tab:protocolo_serial}) se
 reemplaza por los valores codificados al producirse cualquiera de esos
-reinicios. La secuencia exacta de lectura, actualización de estados,
-saturación y aplicación de las salidas, incluidos los nombres de las
-funciones del firmware involucradas, se formaliza en el
-Alg.~\ref{alg:pid_firmware}, este describe el ciclo de actualización y la lógica de reinicio
+reinicios. La secuencia de reinicio y actualización ejecutada por el firmware se
+formaliza en el Alg.~\ref{alg:pid_firmware}.
 
 \begin{algorithm}[H]
 \caption{Ciclo de actualización del PID discreto ejecutado por el firmware}
@@ -402,9 +403,6 @@ Alg.~\ref{alg:pid_firmware}, este describe el ciclo de actualización y la lógi
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
-
-La secuencia exacta de lectura, actualización de estados, saturación y aplicación de las salidas se formaliza en el Alg.~\ref{alg:pid_firmware}; la ley discreta ejecutada por cada llamada a \texttt{doPID()} se detalla en las Ecs.~\eqref{eq:medicion_pid_entera}--\eqref{eq:integrador_condicional}.
-
 
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
@@ -467,20 +465,17 @@ documenta en el \ref{anx:rutas_software}.
 \Require Enjambre y mejor global inicializados (Algoritmo~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
 \Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
 \For{$g=1,\ldots,g_{\max}$}
-    \State $w_{\mathrm{in}}^{g}\gets\dfrac{g_{\max}-g}{g_{\max}}$
+    \State $w_{\mathrm{in}}^{g}
+    \gets\Call{CalcularInercia}{g,g_{\max}}$
     \For{$i=1,\ldots,N_p$}
         \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$
         \State $V_i\gets
         \Call{ActualizarVelocidadPSO}
         {V_i,\xi_i,P_i,G,w_{\mathrm{in}}^{g},
         c_1,c_2,\chi,\rho_1,\rho_2}$
-        \State $\xi_i\gets\max(\xi_i+V_i,10^{-4})$
-        \If{modo ID}
-            \State $\theta_i^{\mathrm{eval}}\gets(0.01\xi_{i,1},2\xi_{i,2},0.5\xi_{i,3})$
-        \Else
-            \State $\xi_i^{\mathrm{eval}}\gets\min(1,\max(\xi_i,10^{-4}))$
-            \State $\theta_i^{\mathrm{eval}}\gets(40\xi_{i,1}^{\mathrm{eval}},25\xi_{i,2}^{\mathrm{eval}},0.05\xi_{i,3}^{\mathrm{eval}})$
-        \EndIf
+        \State $\xi_i\gets\Call{ActualizarPosicion}{\xi_i,V_i}$
+        \State $\theta_i^{\mathrm{eval}}
+        \gets\Call{EscalarCandidato}{\xi_i,\mathrm{modo}}$
         \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
         \If{$J_i<J_i^{\mathrm{best}}$}
             \State $J_i^{\mathrm{best}}\gets J_i$
@@ -494,17 +489,17 @@ documenta en el \ref{anx:rutas_software}.
         \State $J^*\gets J_{\mathrm{new}}^*$
     \EndIf
 \EndFor
-\If{modo ID}
-    \State $\theta^{\mathrm{out}}\gets(0.01G_1,2G_2,0.5G_3)$
-\Else
-    \State $\theta^{\mathrm{out}}\gets(40G_1,25G_2,0.05G_3)$
-\EndIf
+\State $\theta^{\mathrm{out}}
+\gets\Call{EscalarSalida}{G,\mathrm{modo}}$
 \State \Return $(J^*,G,\theta^{\mathrm{out}})$
 \end{algorithmic}
 \end{algorithm}
 
-La operación \Call{ActualizarVelocidadPSO} implementa la
-Ec.~\eqref{eq:pso_vel_marco_teorico}. El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
+Las operaciones \Call{ActualizarVelocidadPSO}, \Call{CalcularInercia},
+\Call{ActualizarPosicion}, \Call{EscalarCandidato} y \Call{EscalarSalida}
+corresponden a las Ecs.~\eqref{eq:pso_vel_marco_teorico},
+\eqref{eq:pso_inercia}, \eqref{eq:pso_pos_marco_teorico},
+\eqref{eq:pso_escala} y~\eqref{eq:pso_salida}, respectivamente. El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
 scripts recorren las ruedas, formalizado en el Alg.~\ref{alg:sintonizacion}.
 
 \subsubsection{Captura de respuesta en lazo abierto}
