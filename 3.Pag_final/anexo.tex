@@ -1140,7 +1140,7 @@ T_{\mathrm{exp,sched}}
 \label{eq:periodo_explorador_real}
 \end{equation}
 
-\noindent donde $f_{\mathrm{exp}}$ es la frecuencia nominal configurada para planificar la exploración [Hz] y $T_{\mathrm{exp,sched}}$ el período programado del temporizador correspondiente. El período de 3333~ms equivale a una frecuencia efectiva de aproximadamente 0.30003~Hz. Si la distancia a la misma meta no disminuye durante 10~s, $p_F^{\mathrm{impl}}$ se incorpora a la lista negra y se busca otra frontera. Una meta abortada por Nav2 también se añade a esa lista; una meta cancelada no se añade. La comprobación de lista negra utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap. Si todas las fronteras están vetadas, la lista negra se limpia y el ciclo se reintenta.
+\noindent donde $f_{\mathrm{exp}}$ es la frecuencia nominal configurada para planificar la exploración [Hz] y $T_{\mathrm{exp,sched}}$ el período programado del temporizador correspondiente. El período de 3333~ms equivale a una frecuencia efectiva de aproximadamente 0.30003~Hz. La gestión de la lista negra (meta sin progreso durante \texttt{progress\_timeout}, metas abortadas, conservación ante cancelación y limpieza al agotarse las fronteras seleccionables) se formaliza en el Alg.~\ref{alg:exploracion_fronteras}; como particularidad de la implementación, la comprobación de pertenencia utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap.
 
 \section{Costos y comparación económica}
 \label{anx:costos}
@@ -1169,7 +1169,7 @@ Clearpath Jackal & US\$~18.000 & Plataforma industrial. \\
 
 Este anexo recoge el detalle por repetición de las pruebas resumidas en la Sec.~\ref{sec:resultados_odometria}: trayectoria rectilínea de 2~m (medias en la Tabla~\ref{tab:resumen_odometria}) y protocolo angular con referencia nominal de $360^\circ$ (medias en la Tabla~\ref{tab:resumen_giro}). Se presentan las cinco repeticiones por entorno.
 
-En simulación, la interpretación del error rectilíneo corresponde a la definida en la Sec.~\ref{sec:resultados_odometria}. El protocolo angular utiliza \path{test/prueba_giro/prueba_giro.py} en hardware y \path{test/prueba_giro_sim/prueba_giro_sim.py} en simulación; ambos scripts solicitan 0.4~rad/s durante $2\pi/0.4$~s, pero \texttt{diff\_drive\_controller} limita la velocidad angular a 0.35~rad/s. Además, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$. En consecuencia, las columnas de $360^\circ$ representan la referencia nominal codificada por los scripts; no representan una consigna aplicada sin saturación, y la tabla simulada no contiene una verdad de terreno angular independiente.
+En simulación, la interpretación del error rectilíneo y la condición del protocolo angular (referencia nominal de $360^\circ$ bajo el límite de 0.35~rad/s del controlador) corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
 
 \subsection{Trayectoria rectilínea de 2~m}
 

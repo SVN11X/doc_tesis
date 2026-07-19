@@ -12,34 +12,7 @@ verificación se incluyen en los anexos correspondientes.
 \section{Componentes y parámetros del prototipo}
 \label{ch:componentes}
 
-El prototipo corresponde a una plataforma diferencial de bajo costo para interiores: controla el desplazamiento mediante la diferencia de velocidad entre las ruedas motrices izquierda y derecha. La Tabla~\ref{tab:componentes_principales} resume los componentes empleados y su función dentro del sistema.
-
-\begin{table}[H]
-\centering
-\caption{Componentes principales del prototipo.}
-\label{tab:componentes_principales}
-\small
-\begin{tabular}{p{3.2cm} p{4.5cm} p{5.2cm}}
-\toprule
-\textbf{Subsistema} & \textbf{Componente} & \textbf{Función principal} \\
-\midrule
-Locomoción & Motores DC JGA25-370 con ruedas de goma & Generar el movimiento diferencial del robot. \\
-Odometría & Encoders de cuadratura Hall & Medir el desplazamiento de cada rueda. \\
-Potencia de motores & Driver L298N & Accionar los motores mediante señales \gls{PWM}. \\
-Control de bajo nivel & \gls{Arduino} Nano & Ejecutar lectura de encoders y control PID de velocidad. \\
-Cómputo embebido & Raspberry Pi 4 & Ejecutar la interfaz de hardware, adquirir el \gls{LIDAR} y comunicarse con el \gls{Arduino} y la estación de trabajo. \\
-Cómputo de alto nivel & Estación de trabajo & Ejecutar \texttt{slam\_toolbox}, Nav2, exploración autónoma y RViz2. \\
-Percepción & RPLidar A1 & Obtener barridos láser 2D para mapeo y evasión de obstáculos. \\
-Alimentación principal & Batería Li-ion de 12 V &
-Suministrar energía al sistema y alimentar el driver de los motores. \\
-
-Regulación de tensión & DC-DC Power Module de 25 W &
-Reducir y regular la tensión de la batería a 5 V para alimentar la electrónica
-de control y los sensores. \\
-Estructura & Chasis impreso en 3D & Integrar mecánicamente los componentes del robot. \\
-\bottomrule
-\end{tabular}
-\end{table}
+El prototipo corresponde a una plataforma diferencial de bajo costo para interiores: controla el desplazamiento mediante la diferencia de velocidad entre las ruedas motrices izquierda y derecha.
 
 \subsection{Configuración general del prototipo}
 
@@ -70,7 +43,7 @@ plataforma diferencial de código abierto
 \citep{marcuslanzoni2020vacuum}. La distribución eléctrica y de datos se
 detalla en la Sec.~\ref{chap:robot_real}.
 
-\utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.55\linewidth}
+\utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.5\linewidth}
 {Vista lateral del prototipo construido.}
 {fig:prototipo}
 
@@ -361,11 +334,9 @@ efectiva ya calibrada $N_e=1980$~ticks/vuelta
 
 La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. Durante la operación normal, los comandos principales permiten leer los encoders, enviar referencias de velocidad, cargar las ganancias PID y aplicar PWM directo durante las pruebas en lazo abierto. El protocolo completo se presenta en la Tabla~\ref{tab:protocolo_serial}.
 
-La resolución efectiva $N_e=1980$~ticks/vuelta, obtenida mediante la
-calibración experimental descrita al inicio del capítulo, se utiliza para
-interpretar los conteos recibidos por el enlace serial. Las muestras
-individuales, el tratamiento de la lectura no atómica de los contadores y el
-cálculo formal de los promedios se conservan en el
+Los conteos recibidos por el enlace serial se interpretan mediante la
+resolución efectiva $N_e$ (Tabla~\ref{tab:parametros_modelo}). El
+tratamiento de la lectura no atómica de los contadores se conserva en el
 \ref{anx:pid_data}.
 
 \subsection{Control PID en el firmware}
