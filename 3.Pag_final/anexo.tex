@@ -81,7 +81,7 @@ instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo
 \texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por
 ese lanzamiento.
 
-El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. En simulación, \texttt{slam\_toolbox} utiliza \texttt{base\_footprint}; AMCL emplea el mismo marco cuando se activa la localización sobre un mapa almacenado, mientras los costmaps mantienen \texttt{base\_link}. En hardware real, las configuraciones de \texttt{slam\_toolbox} y AMCL utilizan \texttt{base\_link}.
+El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. La asignación de marcos por entorno es la indicada en la Sec.~\ref{sec:tf-convenciones}; adicionalmente, los costmaps mantienen \texttt{base\_link} en ambos entornos.
 
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
@@ -183,47 +183,6 @@ Encoder derecho A/B & A4/A5 & Encoder derecho \\
 
 Para evitar cambios de nombres en los puertos serie, se utilizan reglas \texttt{udev}. El \gls{Arduino} se expone como \texttt{/dev/motor\_controller}; el RPLidar puede exponerse como \texttt{/dev/rplidar} o \texttt{/dev/rlidar\_gpio}, según el modo de conexión.
 
-\subsection{Parámetros compartidos}
-\label{anx:parametros_compartidos}
-
-\begin{table}[H]
-\centering
-\caption{Parámetros compartidos entre firmware y plugin de hardware.}
-\label{tab:anx_trazabilidad_parametros}
-\small
-\begin{tabular}{llp{6.1cm}}
-\toprule
-\textbf{Parámetro} & \textbf{Valor} & \textbf{Uso} \\
-\midrule
-\texttt{ENC\_TICKS\_PER\_REV} & 1980 & Conversión de encoder a posición ($N_e$, Tabla~\ref{tab:parametros_modelo}). \\
-\texttt{controller\_manager.update\_rate} & 30 & Frecuencia nominal del ciclo de \texttt{ros2\_control} ($f_{\mathrm{ctrl}}$). \\
-\texttt{loop\_rate} & 30 & Frecuencia nominal usada por \texttt{DiffDriveArduino} para convertir consignas a ticks/frame ($f_{\mathrm{loop}}$). \\
-\texttt{PID\_RATE} & 30 & Frecuencia nominal declarada del PID embebido ($f_{\mathrm{PID,nom}}$). \\
-\texttt{PID\_INTERVAL} & 33~ms & Incremento entero del programador, calculado como $1000/30$. \\
-\texttt{BAUDRATE} & 57600 & Comunicación serial Arduino--Raspberry Pi. \\
-\texttt{AUTO\_STOP\_INTERVAL} & 2000~ms & Auto-detención por pérdida de comandos. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Prioridades de \texttt{twist\_mux}}
-\label{anx:twist_mux_config}
-
-\begin{table}[H]
-\centering
-\caption{Fuentes de velocidad gestionadas por \texttt{twist\_mux}.}
-\label{tab:twist_mux_resumen}
-\small
-\begin{tabular}{lcc}
-\toprule
-\textbf{Fuente} & \textbf{Tópico} & \textbf{Prioridad} \\
-\midrule
-Navegación autónoma & \texttt{/cmd\_vel} & 10 (baja) \\
-Teleoperación & \texttt{/cmd\_vel\_joy} & 100 (alta) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \subsection{Temporalidad y ciclo de la interfaz \texttt{DiffDriveArduino}}
 \label{anx:implementacion_diffdrive}
 
@@ -250,7 +209,7 @@ T_{\mathrm{PID,sched}}
 \label{eq:pid_intervalo_real}
 \end{equation}
 
-\noindent El firmware programa la ejecución del PID cada 33~ms mediante incrementos enteros de \texttt{nextPID}. Este intervalo corresponde a la planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
+\noindent donde $T_{\mathrm{PID,sched}}$ es el incremento entero aplicado a \texttt{nextPID} por el firmware. Este intervalo corresponde a la planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
 
 \section{Firmware, encoders y sintonización PID}
 \label{anx:firmware}
@@ -400,9 +359,7 @@ f_{\lambda}T_{\mathrm{sim}}K_{i,j}^{\mathrm{std}}.
 La comparación es únicamente ilustrativa: además de las aproximaciones
 señaladas, el simulador aplica banda muerta cero al controlador Lambda. Por
 ello, las curvas y métricas corresponden al script comparativo ejecutado y no
-a una validación de controladores equivalentes en hardware. En consecuencia,
-la Fig.~\ref{fig:comparacion_pso_vs_lambda} no se utiliza para demostrar
-superioridad cuantitativa entre métodos.
+a una validación de controladores equivalentes en hardware.
 
 \begin{figure}[H]
 \centering
@@ -502,7 +459,7 @@ Ocho valores \\
 \end{minipage}
 \end{table}
 
-\noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \emph{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del firmware; si no se recibe una nueva orden durante el intervalo de auto-detención definido en la Tabla~\ref{tab:anx_trazabilidad_parametros}, los motores se detienen automáticamente. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados, pero permanecen vigentes solo hasta la siguiente llamada a \texttt{resetPID()}.
+\noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \emph{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del firmware; si no se recibe una nueva orden durante el intervalo de auto-detención, los motores se detienen automáticamente. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados internos; su vigencia se describe en la Sec.~\ref{sec:motorcontrol_pid}.
 
 \subsection{Ecuaciones y estados internos del PID embebido}
 \label{anx:pid_ecuaciones}
@@ -996,7 +953,7 @@ Las configuraciones fuente se mantienen en \path{articubot_one/config/}. En simu
 \end{tabular}
 \end{table}
 
-\noindent En hardware, DWB puede muestrear hasta 0.15~m/s, pero la salida posterior queda limitada a $\pm0.13$~m/s por \texttt{diff\_drive\_controller} en \texttt{my\_controllers.yaml}.
+\noindent La relación entre el muestreo de DWB y el límite posterior impuesto por \texttt{diff\_drive\_controller} se explica en la Sec.~\ref{sec:nav2_ch9}.
 
 \subsection{Geometría del costmap e inflación}
 \label{anx:costmap_inflacion}
@@ -1112,7 +1069,7 @@ p_F^{\mathrm{impl}}
 \label{eq:centroide_frontera_impl}
 \end{equation}
 
-\noindent donde $p_F^{\mathrm{impl}}$ es el punto almacenado por la implementación como centroide de la frontera, $|F_{\mathrm{add}}|$ es el número de celdas añadidas después de la celda inicial y $p$ representa el vector de coordenadas de cada celda añadida. Por tanto, $p_F^{\mathrm{impl}}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}. Esta diferencia se mantiene porque corresponde al código ejecutado.
+\noindent donde $p_F^{\mathrm{impl}}$ es el punto almacenado por la implementación como centroide de la frontera, $|F_{\mathrm{add}}|$ es el número de celdas añadidas después de la celda inicial y $p$ representa el vector de coordenadas de cada celda añadida. Por tanto, $p_F^{\mathrm{impl}}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}.
 
 La variable \texttt{frontier.min\_distance} se calcula después de convertir las celdas añadidas a coordenadas del mundo, por lo que ya se encuentra en metros. No obstante, la función de costo implementada vuelve a multiplicarla por la resolución del costmap:
 
@@ -1390,7 +1347,7 @@ $I_j^{int}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \t
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
-$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame empleado en \texttt{SintonizacionAutomatica.py} y \texttt{SintonizacionLambda.py}, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$) & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
+$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
 \midrule
 \multicolumn{3}{l}{\textit{Identificación FODT}}\\
 $s$ & Variable compleja de Laplace & s$^{-1}$ \\
@@ -1428,7 +1385,7 @@ $\boldsymbol{\theta}_i^{\mathrm{eval}}$ & Vector de parámetros físicos usado p
 $\boldsymbol{\theta}^{\mathrm{out}}$ & Vector de parámetros informado al finalizar el PSO, escalado desde la posición global almacenada sin aplicar un nuevo recorte superior & varias \\
 $J$ & Función de costo & varias \\
 $w_{\mathrm{mse}},w_{\mathrm{OS}}$ & Pesos de error cuadrático y de sobreimpulso & adim. \\
-$\lVert\boldsymbol{\varepsilon}_j\rVert_2$ & Norma-2 (euclidiana) del vector de errores instantáneos $\varepsilon_j[k]$; se relaciona con el MSE mediante $\mathrm{MSE}=\lVert\boldsymbol{\varepsilon}_j\rVert_2^{2}/N$ & m/s \\
+$\lVert\boldsymbol{\varepsilon}_j\rVert_2$ & Norma-2 (euclidiana) del vector de errores instantáneos $\varepsilon_j[k]$ & m/s \\
 $v_j^{\mathrm{ref}}$ & Velocidad de consigna estacionaria obtenida como media para $t\geq7$~s & m/s \\
 $r_j^{sim}(t)$ & Referencia consumida por la simulación después de la interpolación lineal de \texttt{np.interp} & m/s \\
 $\operatorname{round}_{\mathrm{even}}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & --- \\

@@ -35,10 +35,7 @@ izquierda. Las muestras y el cálculo de los promedios se conservan en el
 \ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R}
 y~\eqref{eq:promedio_cuentas_L}.
 
-La alimentación proviene de una batería Li-ion de 12~V conectada al driver de
-motores. Un módulo reductor \textit{DC-DC Power Module} de 25~W genera el riel
-regulado de 5~V para la electrónica y los sensores. El chasis y las cubiertas
-se fabricaron mediante impresión 3D FDM en PLA+, tomando como referencia una
+La alimentación proviene de una batería Li-ion de 12~V. El chasis y las cubiertas se fabricaron mediante impresión 3D FDM en PLA+, tomando como referencia una
 plataforma diferencial de código abierto
 \citep{marcuslanzoni2020vacuum}. La distribución eléctrica y de datos se
 detalla en la Sec.~\ref{chap:robot_real}.
@@ -56,25 +53,52 @@ frecuencias nominales de 30~Hz corresponden a mecanismos independientes.
 
 \begin{table}[H]
 \centering
-\caption{Parámetros físicos y temporales empleados en el modelo, la interfaz de hardware y el firmware.}
+\caption{Parámetros físicos y temporales empleados en la implementación.}
 \label{tab:parametros_modelo}
 \small
-\begin{tabular}{c p{4.2cm} p{3.0cm} p{4.2cm}}
+\begin{tabular}{c p{4.4cm} p{2.8cm} p{4.2cm}}
 \toprule
-\textbf{Símbolo} & \textbf{Parámetro} & \textbf{Valor} & \textbf{Uso principal} \\
+\textbf{Símbolo} &
+\textbf{Parámetro} &
+\textbf{Valor} &
+\textbf{Uso principal} \\
 \midrule
-$r$ & Radio de rueda & 0.0335 m & Modelo cinemático y odometría \\
-$b$ & Separación entre ruedas & 0.188 m & Modelo cinemático diferencial \\
-$N_{\mathrm{Hall}}$ & Pulsos por vuelta del eje del motor & 11 & Cálculo teórico del encoder \\
-$N_g$ & Relación de reducción & 46 (nominal $46{:}1$) & Cálculo teórico del encoder \\
-$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & 2024 ticks/vuelta & Cálculo teórico \\
-$N_e$ & Resolución efectiva calibrada & 1980 ticks/vuelta &
+
+$r$ &
+Radio de rueda &
+0.0335~m &
+Modelo cinemático, odometría y conversión de velocidad \\
+
+$b$ &
+Separación entre ruedas &
+0.188~m &
+Modelo cinemático diferencial \\
+
+$N_e$ &
+Resolución efectiva calibrada &
+1980~ticks/vuelta &
 Firmware, interfaz de hardware y odometría \\
-$c_q$ & Factor de cuadratura & 4 & Decodificación A/B \\
-$f_{\mathrm{ctrl}}$ & Frecuencia nominal del ciclo de \texttt{ros2\_control} & 30 Hz & \texttt{controller\_manager.update\_rate} \\
-$f_{\mathrm{loop}}$ & Frecuencia nominal usada en la conversión de consignas & 30 Hz & Parámetro \texttt{loop\_rate} de \texttt{DiffDriveArduino} \\
-$f_{\mathrm{PID,nom}}$ & Frecuencia nominal declarada del PID embebido & 30 Hz & Constante \texttt{PID\_RATE} del firmware \\
-$T_{\mathrm{PID,sched}}$ & Incremento entero del planificador PID & 0.033 s (33 ms) & Actualización de \texttt{nextPID} en el firmware \\
+
+$f_{\mathrm{ctrl}}$ &
+Frecuencia del ciclo de \texttt{ros2\_control} &
+30~Hz &
+\texttt{controller\_manager.update\_rate} \\
+
+$f_{\mathrm{loop}}$ &
+Frecuencia usada en la conversión de consignas &
+30~Hz &
+Parámetro \texttt{loop\_rate} de \texttt{DiffDriveArduino} \\
+
+$f_{\mathrm{PID,nom}}$ &
+Frecuencia nominal del PID embebido &
+30~Hz &
+Constante \texttt{PID\_RATE} del firmware \\
+
+$T_{\mathrm{PID,sched}}$ &
+Incremento del planificador PID &
+33~ms &
+Actualización de \texttt{nextPID} en el firmware \\
+
 \bottomrule
 \end{tabular}
 \end{table}
@@ -130,8 +154,7 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 \subsection{Selección del backend de control}
 \label{sec:backend}
 
-El modelo permite seleccionar el backend mediante los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada mantiene \texttt{use\_ros2\_control=true} en ambos entornos: el robot real carga \texttt{diffdrive\_arduino/DiffDriveArduino}, descrito en la Sec.~\ref{sec:diff_drive_params}, y Gazebo carga \texttt{gazebo\_ros2\_control/GazeboSystem}. La trazabilidad del backend alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}. La Tabla~\ref{tab:xacro_args_backend} resume el backend de control cargado en
-cada entorno de ejecución.
+El modelo permite seleccionar el backend mediante los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada mantiene \texttt{use\_ros2\_control=true} en ambos entornos; el plugin cargado en cada caso se resume en la Tabla~\ref{tab:xacro_args_backend} y la interfaz de hardware real se describe en la Sec.~\ref{sec:diff_drive_params}. La trazabilidad del backend alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}.
 
 \begin{table}[H]
 \centering
@@ -188,9 +211,7 @@ En hardware real, el lanzamiento \path{articubot_one/launch/launch_robot.launch.
 
 La cadena de transformaciones mantiene la misma convención usada en simulación (Sec.~\ref{sec:tf-convenciones}): \texttt{slam\_toolbox} publica \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
 
-\subsection{Teleoperación y multiplexación de comandos}
 
-La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial. La configuración asigna prioridad 100 a la teleoperación y prioridad 10 a la navegación autónoma (\ref{anx:twist_mux_config}).
 
 \subsection{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
@@ -261,14 +282,17 @@ El intervalo $\Delta t_k$ se define en la Ec.~\eqref{eq:intervalo_diffdrive}, y 
 
 Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmware con los valores obtenidos por sintonización PSO y refinamiento experimental (Capítulo~\ref{marco_teorico}), de modo que el plugin solo intercambia referencias de velocidad y lecturas de encoder.
 
+
+\subsection{Teleoperación y multiplexación de comandos}
+
+La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
+
 \subsection{Flujo de datos del sistema}
 \label{sec:flujo_datos}
 
-El flujo completo entre \gls{ROS2}, la interfaz de hardware y el firmware se
-formaliza en el Alg.~\ref{alg:ros2control_cycle}. Las conversiones de estado
-y consigna corresponden a las Ecs.~\eqref{eq:posicion_rueda_encoder},
-\eqref{eq:w_ruedas} y~\eqref{eq:mps_to_ticks}; la definición por casos de
-$\Delta t_k$ se conserva en el \ref{anx:implementacion_diffdrive}.
+El Alg.~\ref{alg:ros2control_cycle} formaliza el flujo completo entre
+\gls{ROS2}, la interfaz de hardware y el firmware, con las conversiones y el
+intervalo $\Delta t_k$ descritos en la Sec.~\ref{sec:diff_drive_params}.
 
 \begin{algorithm}[H]
 \caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}}
@@ -312,13 +336,11 @@ $\Delta t_k$ se conserva en el \ref{anx:implementacion_diffdrive}.
 \end{algorithmic}
 \end{algorithm}
 
-El firmware incorpora además una auto-detención de seguridad ante pérdida de
-comandos, detallada en la Sec.~\ref{sec:bucle_principal}.
 %=====================================================================
 \section{Firmware de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
 
-El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto homónimo y se adaptó para este trabajo, incorporando ganancias PID independientes por rueda y la resolución efectiva de encoders del prototipo. Cumple cuatro funciones principales: lectura de encoders, control PID de velocidad por rueda, comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control} y auto-detención de seguridad ante pérdida de comandos. Su consistencia con la capa \gls{ROS2} (Sec.~\ref{chap:robot_real}) depende de los parámetros compartidos reunidos en la Tabla~\ref{tab:anx_trazabilidad_parametros}.
+El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto homónimo y se adaptó para este trabajo, incorporando ganancias PID independientes por rueda y la resolución efectiva de encoders del prototipo. Cumple cuatro funciones principales: comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control}, lectura de encoders, control PID de velocidad por rueda y auto-detención de seguridad ante pérdida de comandos.
 
 \subsection{Arquitectura modular y constantes físicas}
 
@@ -327,7 +349,7 @@ Los módulos del firmware se encuentran en \path{arduino_firmware/ROSArduinoBrid
 El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución
 efectiva ya calibrada $N_e=1980$~ticks/vuelta
 (Tabla~\ref{tab:parametros_modelo}), parametrizados respectivamente como
-\texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
+\texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes, el firmware calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} como $N_e/(2\pi r\,f_{\mathrm{PID,nom}})\approx313.56$, evaluado con $D=2r$. Es la misma expresión que los scripts de sintonización emplean como $\kappa_{\mathrm{sim}}$ (Ec.~\eqref{eq:lambda_conversion}).
 
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
@@ -377,8 +399,7 @@ de aplicar PWM directo y cuando ambos comandos de velocidad son exactamente
 cero. En consecuencia, cualquier ganancia cargada temporalmente mediante los
 comandos seriales de sintonización (Tabla~\ref{tab:protocolo_serial}) se
 reemplaza por los valores codificados al producirse cualquiera de esos
-reinicios. La secuencia de reinicio y actualización ejecutada por el firmware se
-formaliza en el Alg.~\ref{alg:pid_firmware}.
+reinicios.
 
 \begin{algorithm}[H]
 \caption{Ciclo de actualización del PID discreto ejecutado por el firmware}
@@ -415,6 +436,12 @@ formaliza en el Alg.~\ref{alg:pid_firmware}.
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
+
+
+\subsection{Bucle principal y auto-detención}
+\label{sec:bucle_principal}
+
+El bucle principal atiende el parser serial, programa el PID según el incremento $T_{\mathrm{PID,sched}}$ de la Tabla~\ref{tab:parametros_modelo} y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Alg.~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
 
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
@@ -621,10 +648,7 @@ Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajust
 
 La salida de la ejecución utilizada como punto de partida, incluidos los parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en la Tabla~\ref{tab:pso_resultados} del \ref{anx:resultados_pso_ejecucion}, junto con sus particularidades numéricas (ausencia de semilla y retardos inferiores al período de captura).
 
-\subsection{Bucle principal y auto-detención}
-\label{sec:bucle_principal}
 
-El bucle principal atiende el parser serial, programa el PID mediante incrementos enteros de 33~ms y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Alg.~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
 
 %=====================================================================
 \section{Arquitectura de control y navegación: SLAM, Nav2 y exploración}
@@ -643,12 +667,12 @@ y la habilitación del cierre de lazo se consolidan en la
 Tabla~\ref{tab:slam_params_ch9} del \ref{anx:nav2_slam_config}.
 
 Las configuraciones real y simulada comparten la estructura del algoritmo,
-pero no sus valores numéricos. En hardware real se emplean el marco
-\texttt{base\_link}, un alcance máximo de 10~m, intervalo mínimo de 0.1~s,
-desplazamiento mínimo de 0.05~m, cambio angular mínimo de 0.05~rad y un
-buffer de 110 barridos; en simulación, el marco \texttt{base\_footprint},
+pero no sus valores numéricos. En hardware real se emplean un alcance máximo
+de 10~m, intervalo mínimo de 0.1~s, desplazamiento mínimo de 0.05~m, cambio
+angular mínimo de 0.05~rad y un buffer de 110 barridos; en simulación,
 alcance de 12~m, intervalo de 0.5~s, desplazamiento de 0.1~m, cambio angular
-de 0.2~rad y buffer de 10 barridos.
+de 0.2~rad y buffer de 10 barridos. La asignación de marcos por entorno
+corresponde a la Sec.~\ref{sec:tf-convenciones}.
 
 \subsection{Localización sobre un mapa conocido con AMCL}
 
