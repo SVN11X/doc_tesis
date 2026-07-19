@@ -81,7 +81,7 @@ instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo
 \texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por
 ese lanzamiento.
 
-El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. En simulación, \texttt{slam\_toolbox} y AMCL utilizan \texttt{base\_footprint}, mientras los costmaps mantienen \texttt{base\_link}; en hardware real se utiliza \texttt{base\_link}.
+El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. En simulación, \texttt{slam\_toolbox} utiliza \texttt{base\_footprint}; AMCL emplea el mismo marco cuando se activa la localización sobre un mapa almacenado, mientras los costmaps mantienen \texttt{base\_link}. En hardware real, las configuraciones de \texttt{slam\_toolbox} y AMCL utilizan \texttt{base\_link}.
 
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
@@ -804,7 +804,8 @@ La actualización de los mejores valores sigue la clase
 \texttt{pso} ejecutada. Las particularidades de la posición global y la salida
 final escalada se desarrollan a continuación.
 
-El valor $\chi=0.7298$ coincide con la evaluación usual de la expresión de constricción de Clerc para $c_1+c_2=4.1$:
+Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de
+constricción utilizado se obtiene mediante la expresión de Clerc:
 
 \begin{equation}
 \chi
@@ -900,7 +901,7 @@ Dimensión del espacio & 3 & 3 \\
 Función de costo & Ec.~\eqref{eq:costo_identificacion} & Ec.~\eqref{eq:costo_pso} \\
 Vector de escala $s_{\mathrm{esc}}$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
 Cota superior del estado $\xi$ & No aplicada & No aplicada \\
-Recorte superior durante la evaluación & No aplicado & $\xi_{i,d}^{\mathrm{eval}}=\min\!\left(1,\max\!\left(\xi_{i,d},10^{-4}\right)\right)$ \\
+Recorte superior durante la evaluación & No aplicado & Definido por la Ec.~\eqref{eq:pso_escala}; se aplica solo en la función de costo PID \\
 \midrule
 \multicolumn{3}{l}{\textit{Hiperparámetros comunes del enjambre}} \\
 Número de partículas del enjambre $N_p$ & \multicolumn{2}{c}{50} \\
@@ -909,7 +910,7 @@ Coeficientes $c_1=c_2$ & \multicolumn{2}{c}{2.05} \\
 Factor de constricción $\chi$ & \multicolumn{2}{c}{0.7298} \\
 Cota inferior $X_{\min}$ & \multicolumn{2}{c}{$10^{-4}$} \\
 Tratamiento del costo & MSE con penalización $10^{6}$ si $\tau<0.01$~s o la respuesta contiene valores no finitos & MSE y sobreimpulso con $(w_{\mathrm{mse}},w_{\mathrm{OS}})=(1.0,3.0)$; penalización $10^{6}$ si la simulación genera una excepción o la respuesta contiene valores no finitos \\
-Entrada o referencia & Escalón PWM $=143$ & $v_j^{\mathrm{ref}}=\operatorname{mean}\{v_j^{\mathrm{med}}[k]\mid t_k\geq7~\mathrm{s}\}$; señal tabulada a 0.1~s e interpolada linealmente a $T_{\mathrm{sim}}$ \\
+Entrada o referencia & Escalón PWM $=143$ & Referencia definida por la Ec.~\eqref{eq:referencia_pso}, tabulada a 0.1~s e interpolada linealmente a $T_{\mathrm{sim}}$ \\
 \bottomrule
 \end{tabular}
 \end{table}

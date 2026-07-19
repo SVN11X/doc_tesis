@@ -300,11 +300,15 @@ Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura med
 \section{Coherencia entre simulación y hardware}
 \label{sec:comparacion_sim_real}
 
-La comparación entre simulación y hardware muestra coherencia cinemática general, pero el error medio de seguimiento en simulación y el error medio odométrico en hardware real de la Tabla~\ref{tab:resumen_odometria} no son directamente comparables. El primero se calcula respecto de la consigna, mientras que el segundo se calcula respecto de la distancia física medida. Por tanto, se informan por separado y no se utilizan para validar por sí solos la correspondencia geométrica entre ambos entornos.
+La comparación debe interpretarse según las métricas diferenciadas y las
+limitaciones establecidas en las Secs.~\ref{sec:resultados_odometria}
+y~\ref{sec:resultados_pid}. El contraste cualitativo de los mapas se presenta
+en la Tabla~\ref{tab:diferencias_mapas}, mientras que el estado alcanzado por
+cada subsistema se resume en la Tabla~\ref{tab:estado_validacion}.
 
-Las principales diferencias aparecen en el protocolo angular y en el mapeo. Por las condiciones del protocolo angular establecidas en la Sec.~\ref{sec:resultados_odometria} (referencia nominal de $360^\circ$ y límite de 0.35~rad/s sobre la solicitud de 0.4~rad/s), el contraste de la Tabla~\ref{tab:resumen_giro} no representa el error de seguimiento de una misma consigna efectiva ni permite comparar el error odométrico de orientación entre entornos. Los indicadores cuantitativos de odometría rectilínea y control PID ya se resumieron en las Tablas~\ref{tab:resumen_odometria} y~\ref{tab:pid_performance}; el estado de los subsistemas restantes se recoge en la Tabla~\ref{tab:estado_validacion} y el contraste cualitativo del mapa entre simulación y hardware, en la Tabla~\ref{tab:diferencias_mapas}.
-
-La procedencia de las métricas PID y su diferencia respecto de la respuesta experimental se establecen en la Sec.~\ref{sec:resultados_pid}. Los archivos entregados no contienen mediciones de tensión, temperatura, uso de CPU, memoria ni autonomía energética; su caracterización cuantitativa se plantea como trabajo futuro.
+Los archivos entregados no contienen mediciones de tensión, temperatura, uso
+de CPU, memoria ni autonomía energética; su caracterización cuantitativa se
+plantea como trabajo futuro.
 
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_resultados}

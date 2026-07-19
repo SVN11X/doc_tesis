@@ -453,8 +453,9 @@ $G_d^{g}$ la componente del mejor global, $w_{\mathrm{in}}^{g}$ el peso de
 inercia, $c_1$ y $c_2$ los coeficientes cognitivo y social,
 $\rho_{1,i,d}^{g}$ y $\rho_{2,i,d}^{g}$ números aleatorios uniformes en
 $[0,1]$ y $\chi$ el factor de constricción, que garantiza la convergencia
-del enjambre. En este trabajo se utilizan $c_1=c_2=2.05$ y $\chi=0.7298$. El
-peso de inercia decrece linealmente con las generaciones:
+del enjambre. Los valores utilizados para $c_1$, $c_2$ y $\chi$ se consolidan
+en la Tabla~\ref{tab:pso_config}. El peso de inercia decrece linealmente con
+las generaciones:
 
 \begin{equation}
 w_{\mathrm{in}}^{g}
@@ -497,6 +498,25 @@ evita bloquear el sistema cuando la carga computacional crece, incorpora
 detección de cierre de lazo y mantiene un consumo compatible con
 computadores embebidos, razón por la cual resulta adecuado para la
 arquitectura distribuida de este prototipo.
+
+\section{Localización en mapas conocidos mediante AMCL}
+
+Una vez construido y almacenado el mapa del entorno, la estimación de la pose
+puede realizarse sin volver a ejecutar el proceso de mapeo. Para este propósito,
+Nav2 incorpora AMCL (\textit{Adaptive Monte Carlo Localization}), un método de
+localización probabilística basado en un filtro de partículas
+\citep{thrun2005probabilistic}.
+
+Cada partícula representa una hipótesis de pose del robot en el mapa. Estas
+hipótesis se propagan utilizando la odometría y se ponderan según la
+concordancia entre los barridos del \gls{LIDAR} y el mapa de ocupación
+previamente almacenado. Posteriormente, el remuestreo concentra las partículas
+en las regiones de mayor probabilidad.
+
+AMCL estima la transformación entre los marcos \texttt{map} y \texttt{odom},
+mientras que la odometría mantiene la transformación entre \texttt{odom} y el
+marco base del robot. A diferencia de \texttt{slam\_toolbox}, AMCL no construye
+ni modifica el mapa, sino que localiza el robot dentro de uno conocido.
 
 \section{Planificación de rutas y control local}
 \label{sec:nav_marco}

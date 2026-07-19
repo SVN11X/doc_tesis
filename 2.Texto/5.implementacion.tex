@@ -1,7 +1,12 @@
 \chapter{IMPLEMENTACIÓN}
 \label{ch:implementacion}
 
-Este capítulo consolida la implementación del sistema de navegación autónoma, desde el hardware hasta la arquitectura de software. Se presentan los componentes del prototipo diferencial y sus parámetros físicos, el gemelo digital en Gazebo, la construcción físico-electrónica y su integración con \gls{ROS2} Foxy, el firmware de bajo nivel en \gls{Arduino} Nano y, finalmente, la arquitectura de control y navegación que integra \texttt{ros2\_control}, \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite}. Los detalles operativos, configuraciones extendidas y evidencia de verificación se trasladan a los anexos correspondientes.
+Este capítulo describe la materialización de la solución propuesta y la
+integración de sus principales componentes. Se presentan las decisiones de
+diseño, los elementos físicos y de software utilizados, y la configuración
+necesaria para la operación del prototipo tanto en simulación como en hardware
+real. Los detalles complementarios de implementación, configuración y
+verificación se incluyen en los anexos correspondientes.
 
 %=====================================================================
 \section{Componentes y parámetros del prototipo}
@@ -25,30 +30,45 @@ Control de bajo nivel & \gls{Arduino} Nano & Ejecutar lectura de encoders y cont
 Cómputo embebido & Raspberry Pi 4 & Ejecutar la interfaz de hardware, adquirir el \gls{LIDAR} y comunicarse con el \gls{Arduino} y la estación de trabajo. \\
 Cómputo de alto nivel & Estación de trabajo & Ejecutar \texttt{slam\_toolbox}, Nav2, exploración autónoma y RViz2. \\
 Percepción & RPLidar A1 & Obtener barridos láser 2D para mapeo y evasión de obstáculos. \\
-Energía & Batería Li-ion 12 V y regulador buck 5 V & Alimentar motores, lógica y sensores. \\
+Alimentación principal & Batería Li-ion de 12 V &
+Suministrar energía al sistema y alimentar el driver de los motores. \\
+
+Regulación de tensión & DC-DC Power Module de 25 W &
+Reducir y regular la tensión de la batería a 5 V para alimentar la electrónica
+de control y los sensores. \\
 Estructura & Chasis impreso en 3D & Integrar mecánicamente los componentes del robot. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Actuación, odometría y control de bajo nivel}
+\subsection{Configuración general del prototipo}
 
-La actuación se realiza mediante dos motorreductores JGA25-370 de 12 V, seleccionados por su disponibilidad, bajo costo y torque suficiente para una plataforma diferencial de interiores. Cada motor incorpora un encoder incremental de cuadratura, utilizado para estimar velocidad y desplazamiento de rueda.
+La locomoción se implementa mediante dos motorreductores JGA25-370 de 12~V,
+equipados con encoders incrementales de cuadratura. El \gls{Arduino} Nano
+realiza la lectura de estos sensores y ejecuta el control PID de velocidad,
+mientras que el driver L298N aplica las señales \gls{PWM} a los motores. La
+Raspberry Pi~4 ejecuta la interfaz de hardware, adquiere los barridos del
+RPLidar A1 y se comunica con la estación de trabajo, donde se ejecutan las
+funciones de mapeo, navegación y exploración.
 
-La resolución teórica del encoder en el eje de salida se obtiene a partir de la Ec. \ref{eq:resolucion_encoder}. Las mediciones experimentales, detalladas en la Sec.~\ref{sec:serial_firmware}, sustentan el valor efectivo $N_e$ de la Tabla~\ref{tab:parametros_modelo}, utilizado de forma unificada por el firmware y la odometría.
+La resolución teórica del encoder, calculada mediante la
+Ec.~\eqref{eq:resolucion_encoder} con
+$N_{\mathrm{Hall}}=11$, $c_q=4$ y $N_g=46$, es
+$N_e^{\mathrm{teo}}=2024$~ticks/vuelta. Para la implementación se adoptó el
+valor efectivo $N_e=1980$~ticks/vuelta, obtenido experimentalmente a partir
+de diez vueltas completas por rueda. Las medias registradas fueron
+1976~ticks/vuelta para la rueda derecha y 1969~ticks/vuelta para la
+izquierda. Las muestras y el cálculo de los promedios se conservan en el
+\ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R}
+y~\eqref{eq:promedio_cuentas_L}.
 
-El control de bajo nivel se ejecuta en un \gls{Arduino} Nano, encargado de leer los encoders, calcular el PID de velocidad de cada rueda y enviar señales \gls{PWM} al driver L298N. Este último introduce una zona muerta y caída de tensión que deben compensarse mediante la sintonización experimental del controlador.
-
-\subsection{Cómputo, percepción e integración con ROS 2}
-
-La Raspberry Pi 4 ejecuta Ubuntu 20.04 y \gls{ROS2} Foxy, actuando como computador principal del robot. Su función es coordinar la comunicación con el \gls{Arduino}, adquirir y publicar los datos del sensor láser, y ejecutar la interfaz de hardware \texttt{DiffDriveArduino} y el controlador diferencial \texttt{diff\_drive\_controller}; el PID de bajo nivel permanece en el \gls{Arduino}, mientras que SLAM, Nav2 y exploración se ejecutan en la estación de trabajo.
-
-El sensor principal de percepción es el RPLidar A1, un escáner láser 2D de 360 grados que publica barridos utilizados por SLAM y por los mapas de costo de Nav2.
-
-\subsection{Alimentación y fabricación}
-
-El sistema se alimenta desde una batería Li-ion de 12 V; la organización de los dominios de potencia y lógica se detalla en la Sec.~\ref{chap:robot_real}. El chasis y las cubiertas fueron fabricados mediante impresión 3D FDM en PLA+, tomando como referencia una plataforma diferencial open-source \citep{marcuslanzoni2020vacuum}. El diseño considera espacio para la Raspberry Pi, el \gls{Arduino}, el driver de motores, el regulador de tensión, la batería y el sensor RPLidar A1. En la Figura~\ref{fig:prototipo} se muestra una vista lateral del prototipo
-construido.
+La alimentación proviene de una batería Li-ion de 12~V conectada al driver de
+motores. Un módulo reductor \textit{DC-DC Power Module} de 25~W genera el riel
+regulado de 5~V para la electrónica y los sensores. El chasis y las cubiertas
+se fabricaron mediante impresión 3D FDM en PLA+, tomando como referencia una
+plataforma diferencial de código abierto
+\citep{marcuslanzoni2020vacuum}. La distribución eléctrica y de datos se
+detalla en la Sec.~\ref{chap:robot_real}.
 
 \utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.55\linewidth}
 {Vista lateral del prototipo construido.}
@@ -57,7 +77,9 @@ construido.
 \subsection{Parámetros físicos del modelo}
 \label{sec:parametros_modelo}
 
-La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos y temporales configurados para el modelo cinemático, la odometría, el gemelo digital y el firmware. Existen tres parámetros nominales de 30~Hz que coinciden numéricamente, pero pertenecen a mecanismos independientes: \texttt{update\_rate} del \texttt{controller\_manager}, \texttt{loop\_rate} de \texttt{DiffDriveArduino} y \texttt{PID\_RATE} del firmware.
+La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos y temporales
+utilizados por el modelo, la interfaz de hardware y el firmware. Las tres
+frecuencias nominales de 30~Hz corresponden a mecanismos independientes.
 
 \begin{table}[H]
 \centering
@@ -73,7 +95,8 @@ $b$ & Separación entre ruedas & 0.188 m & Modelo cinemático diferencial \\
 $N_{\mathrm{Hall}}$ & Pulsos por vuelta del eje del motor & 11 & Cálculo teórico del encoder \\
 $N_g$ & Relación de reducción & 46 (nominal $46{:}1$) & Cálculo teórico del encoder \\
 $N_e^{\mathrm{teo}}$ & Resolución teórica del encoder & 2024 ticks/vuelta & Cálculo teórico \\
-$N_e$ & Resolución efectiva del encoder & 1980 ticks/vuelta & Firmware y odometría \\
+$N_e$ & Resolución efectiva calibrada & 1980 ticks/vuelta &
+Firmware, interfaz de hardware y odometría \\
 $c_q$ & Factor de cuadratura & 4 & Decodificación A/B \\
 $f_{\mathrm{ctrl}}$ & Frecuencia nominal del ciclo de \texttt{ros2\_control} & 30 Hz & \texttt{controller\_manager.update\_rate} \\
 $f_{\mathrm{loop}}$ & Frecuencia nominal usada en la conversión de consignas & 30 Hz & Parámetro \texttt{loop\_rate} de \texttt{DiffDriveArduino} \\
@@ -99,7 +122,10 @@ La contribución principal en esta etapa corresponde al diseño del modelo URDF/
 \subsection{Estructura URDF/xacro y marcos de referencia}
 \label{sec:tf-convenciones}
 
-El modelo se organiza como un árbol de eslabones y articulaciones cuyo marco principal es \texttt{base\_link}. En simulación, \texttt{slam\_toolbox} y AMCL utilizan \texttt{base\_footprint}, mientras que en hardware real se utiliza \texttt{base\_link}. La relación exacta entre ambos marcos y la verificación estructural del árbol se documentan en el \ref{anx:gemelo_digital}.
+El modelo se organiza como un árbol de eslabones y articulaciones cuyo marco principal es \texttt{base\_link}. En simulación, \texttt{slam\_toolbox} utiliza
+\texttt{base\_footprint}; la configuración de AMCL emplea el mismo marco
+cuando se ejecuta la localización sobre un mapa previamente guardado. En
+hardware real, ambos componentes utilizan \texttt{base\_link}. La relación exacta entre ambos marcos y la verificación estructural del árbol se documentan en el \ref{anx:gemelo_digital}.
 
 Se adoptan las convenciones REP-103 y REP-105 descritas en la Sec.~\ref{sec:robot_definicion} \citep{rep103,rep105}. La cadena de transformaciones principal es:
 
@@ -131,7 +157,7 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 \subsection{Selección del backend de control}
 \label{sec:backend}
 
-El modelo permite seleccionar el backend mediante los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada mantiene \texttt{use\_ros2\_control=true} en ambos entornos: el robot real carga \texttt{diffdrive\_arduino/DiffDriveArduino} y Gazebo carga \texttt{gazebo\_ros2\_control/GazeboSystem}. La trazabilidad del backend alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}. La Tabla~\ref{tab:xacro_args_backend} resume el backend de control cargado en
+El modelo permite seleccionar el backend mediante los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada mantiene \texttt{use\_ros2\_control=true} en ambos entornos: el robot real carga \texttt{diffdrive\_arduino/DiffDriveArduino}, descrito en la Sec.~\ref{sec:diff_drive_params}, y Gazebo carga \texttt{gazebo\_ros2\_control/GazeboSystem}. La trazabilidad del backend alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}. La Tabla~\ref{tab:xacro_args_backend} resume el backend de control cargado en
 cada entorno de ejecución.
 
 \begin{table}[H]
@@ -163,7 +189,12 @@ Esta sección describe la arquitectura físico-electrónica del robot y su integ
 
 \subsection{Arquitectura física y de datos}
 
-La plataforma se organiza en dos dominios principales. El dominio de potencia utiliza un bus de 12~V para alimentar los motores DC mediante el driver L298N, y un riel regulado de 5~V para alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
+La plataforma se organiza en dos dominios principales. El dominio de potencia
+utiliza un bus de 12~V proveniente de la batería para alimentar los motores DC
+mediante el driver L298N. A partir del mismo bus, un módulo reductor
+\textit{DC-DC Power Module} de 25 W genera un riel regulado de 5~V para
+alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los
+periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
 
 El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} mediante enlace serial USB (puerto fijado por regla \texttt{udev} en \texttt{/dev/motor\_controller}, a 57600~baudios), utilizado para enviar referencias de velocidad y recibir datos de encoders. El sensor RPLidar A1 entrega barridos láser publicados en \texttt{/scan}. La Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de datos del prototipo.
 
@@ -210,7 +241,16 @@ resumen en la Tabla~\ref{tab:diff_drive_params}.
 \end{tabular}
 \end{table}
 
-La comunicación con el firmware se realiza mediante el plugin \texttt{DiffDriveArduino}, una interfaz de sistema de \texttt{ros2\_control} cuyo ciclo de lectura--actualización--escritura, formalizado en el Alg.~\ref{alg:ros2control_cycle}, se programa con la frecuencia $f_{\mathrm{ctrl}}$ indicada en la Tabla~\ref{tab:parametros_modelo}, mediante \texttt{controller\_manager.update\_rate}.
+La comunicación entre \texttt{diff\_drive\_controller} y el firmware se
+realiza mediante \texttt{DiffDriveArduino}, clase principal del paquete
+adaptado \texttt{diffdrive\_arduino}. Este componente es un plugin de hardware
+de \texttt{ros2\_control}, implementado como una interfaz de sistema, que
+expone comandos de velocidad y estados de posición y velocidad para ambas
+ruedas, y los intercambia con el \gls{Arduino} mediante el enlace serial. Su
+ciclo de lectura--actualización--escritura, formalizado en el
+Alg.~\ref{alg:ros2control_cycle}, se ejecuta con la frecuencia
+$f_{\mathrm{ctrl}}$ indicada en la Tabla~\ref{tab:parametros_modelo}, mediante
+\texttt{controller\_manager.update\_rate}.
 
 En la fase de escritura del ciclo, la velocidad angular de rueda comandada por
 \texttt{diff\_drive\_controller} se convierte en una referencia entera de
@@ -311,14 +351,22 @@ El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto ho
 
 Los módulos del firmware se encuentran en \path{arduino_firmware/ROSArduinoBridge/}. En \texttt{ROSArduinoBridge.ino} se coordina la comunicación serial y el ciclo principal; \texttt{commands.h} define los comandos; \texttt{encoder\_driver.h}/\texttt{encoder\_driver.ino} realizan la lectura de encoders; \texttt{motor\_driver.h}/\texttt{motor\_driver.ino} accionan el L298N; y \texttt{diff\_controller.h} implementa el controlador PID. El inventario de rutas se conserva en el \ref{anx:rutas_software}.
 
-El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución efectiva $N_e$ compartidos con la ruta de hardware real (Tabla~\ref{tab:parametros_modelo}), parametrizados como \texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
+El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución
+efectiva ya calibrada $N_e=1980$~ticks/vuelta
+(Tabla~\ref{tab:parametros_modelo}), parametrizados respectivamente como
+\texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes se calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} según la Ec.~\ref{eq:mps_to_ticks} ($\approx 313.56$), evaluado en el firmware con $D=2r$.
 
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
 
 La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. Durante la operación normal, los comandos principales permiten leer los encoders, enviar referencias de velocidad, cargar las ganancias PID y aplicar PWM directo durante las pruebas en lazo abierto. El protocolo completo se presenta en la Tabla~\ref{tab:protocolo_serial}.
 
-Los contadores de encoder se midieron durante diez vueltas completas por rueda. Las medias obtenidas fueron 1976~ticks/vuelta para la rueda derecha y 1969~ticks/vuelta para la izquierda; a partir de ellas se adoptó el valor unificado $N_e=1980$~ticks/vuelta, con una diferencia respecto de ambas medias inferior al 0.6\%. Las muestras individuales, el tratamiento de la lectura no atómica de los contadores y el cálculo formal de las medias se conservan en el \ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R} y \eqref{eq:promedio_cuentas_L}.
+La resolución efectiva $N_e=1980$~ticks/vuelta, obtenida mediante la
+calibración experimental descrita al inicio del capítulo, se utiliza para
+interpretar los conteos recibidos por el enlace serial. Las muestras
+individuales, el tratamiento de la lectura no atómica de los contadores y el
+cálculo formal de los promedios se conservan en el
+\ref{anx:pid_data}.
 
 \subsection{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
@@ -455,7 +503,7 @@ documenta en el \ref{anx:rutas_software}.
 \caption{Bucle de optimización y escalado de salida del PSO}
 \label{alg:pso_bucle}
 \begin{algorithmic}[1]
-\Require Enjambre y mejor global inicializados (Algoritmo~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; $c_1=c_2=2.05$; $\chi=0.7298$; modo ID o PID.
+\Require Enjambre y mejor global inicializados (Alg.~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; hiperparámetros de la Tabla~\ref{tab:pso_config}; modo ID o PID.
 \Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
 \For{$g=1,\ldots,g_{\max}$}
     \State $w_{\mathrm{in}}^{g}
@@ -618,7 +666,10 @@ Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron d
 
 El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}), en modo \texttt{online\_async}, que procesa los barridos de forma asíncrona. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot. La optimización del grafo permite corregir la deriva acumulada durante el recorrido.
 
-La configuración real utiliza el solver Ceres (\texttt{solver\_plugins::CeresSolver}, estrategia \texttt{LEVENBERG\_MARQUARDT}), los marcos \texttt{map}/\texttt{odom}/\texttt{base\_link}, el tópico \texttt{/scan} y cierre de lazo. Los valores completos se trasladan a la Tabla~\ref{tab:slam_params_ch9} del \ref{anx:nav2_slam_config}.
+La configuración real utiliza el solver Ceres con estrategia
+\texttt{LEVENBERG\_MARQUARDT}. Los marcos, el tópico de entrada, la resolución
+y la habilitación del cierre de lazo se consolidan en la
+Tabla~\ref{tab:slam_params_ch9} del \ref{anx:nav2_slam_config}.
 
 Las configuraciones real y simulada comparten la estructura del algoritmo,
 pero no sus valores numéricos. En hardware real se emplean el marco
@@ -628,16 +679,30 @@ buffer de 110 barridos; en simulación, el marco \texttt{base\_footprint},
 alcance de 12~m, intervalo de 0.5~s, desplazamiento de 0.1~m, cambio angular
 de 0.2~rad y buffer de 10 barridos.
 
+\subsection{Localización sobre un mapa conocido con AMCL}
+
+Para la navegación sobre un mapa previamente guardado se dispone del nodo
+AMCL de Nav2, configurado en \path{articubot_one/config/nav2_params.yaml} y
+\path{articubot_one/config/nav2_params_sim.yaml}. El lanzamiento
+\path{articubot_one/launch/localization_launch.py} inicia el servidor de mapas
+y el nodo \texttt{nav2\_amcl}, que utiliza el mapa de ocupación, la odometría,
+los barridos del tópico \texttt{/scan} y las transformaciones del robot para
+estimar su pose.
+
+Debe distinguirse este modo de la exploración ejecutada durante el mapeo en
+línea. En las pruebas de mapeo y exploración documentadas en este trabajo,
+\texttt{slam\_toolbox} genera el mapa y estima la transformación
+\texttt{map}$\rightarrow$\texttt{odom}; por tanto, AMCL no se ejecuta
+simultáneamente durante esas pruebas. Su configuración queda disponible para
+la navegación posterior sobre mapas almacenados.
+
 \subsection{Navegación autónoma con Nav2}
 \label{sec:nav2_ch9}
 
-Nav2 recibe una meta de navegación, calcula una ruta global y genera comandos de velocidad para que el robot la ejecute evitando obstáculos. En la Figura~\ref{fig:interaccion_nav} se muestra gráficamente la interacción
-entre los componentes de la navegación autónoma: el mapa y la pose estimados
-por \texttt{slam\_toolbox} alimentan los mapas de costo; el explorador de
-fronteras genera metas que el árbol de comportamiento orquesta mediante el
-planificador global y el controlador local; y los comandos de velocidad
-resultantes se arbitran y ejecutan sobre el controlador diferencial, cuya
-odometría realimenta el mapeo.
+Nav2 recibe una meta de navegación, calcula una ruta global y genera comandos
+de velocidad para ejecutarla evitando obstáculos. La
+Fig.~\ref{fig:interaccion_nav} sintetiza la interacción entre los componentes
+de navegación y su conexión con el control diferencial.
 
 \begin{figure}[H]
 \centering
@@ -686,7 +751,10 @@ odometría realimenta el mapeo.
 
 {\footnotesize\textit{Fuente: Elaboración propia.}}
 \end{figure}
-El planificador global utilizado es NavFn con A$^*$ (Sec.~\ref{sec:nav_marco}), mediante el plugin \texttt{nav2\_navfn\_planner/NavfnPlanner}. Para el seguimiento local se emplea \texttt{dwb\_core::DWBLocalPlanner}, que evalúa las trayectorias candidatas mediante la Ec.~\eqref{eq:dwb_cost}. La configuración concreta de ambos componentes se resume en la Tabla~\ref{tab:nav2_componentes_ch9}. 
+
+La configuración de los planificadores global y local se resume en la
+Tabla~\ref{tab:nav2_componentes_ch9}. El controlador local evalúa las
+trayectorias candidatas mediante la Ec.~\eqref{eq:dwb_cost}.
 
 \begin{table}[H] 
 \centering 
