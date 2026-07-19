@@ -24,27 +24,17 @@ Raspberry Pi~4 ejecuta la interfaz de hardware, adquiere los barridos del
 RPLidar A1 y se comunica con la estación de trabajo, donde se ejecutan las
 funciones de mapeo, navegación y exploración.
 
-La resolución teórica del encoder, calculada mediante la
-Ec.~\eqref{eq:resolucion_encoder} con
-$N_{\mathrm{Hall}}=11$, $c_q=4$ y $N_g=46$, es
-$N_e^{\mathrm{teo}}=2024$~ticks/vuelta. Para la implementación se adoptó el
-valor efectivo $N_e=1980$~ticks/vuelta, obtenido experimentalmente a partir
-de diez vueltas completas por rueda. Las medias registradas fueron
-1976~ticks/vuelta para la rueda derecha y 1969~ticks/vuelta para la
-izquierda. Las muestras y el cálculo de los promedios se conservan en el
-\ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R}
-y~\eqref{eq:promedio_cuentas_L}.
-
-La alimentación proviene de una batería Li-ion de 12~V. El chasis y las cubiertas se fabricaron mediante impresión 3D FDM en PLA+, tomando como referencia una
-plataforma diferencial de código abierto
-\citep{marcuslanzoni2020vacuum}. La distribución eléctrica y de datos se
-detalla en la Sec.~\ref{chap:robot_real}.
+La arquitectura de alimentación y la distribución eléctrica se detallan en
+la Sec.~\ref{chap:robot_real}. El chasis y las cubiertas se fabricaron
+mediante impresión 3D FDM en PLA+, tomando como referencia una plataforma
+diferencial de código abierto
+\citep{marcuslanzoni2020vacuum}.
 
 \utemFigurePropia{2.Texto/Imag/fig_prototipo_lateral_izquierda.jpg}{0.5\linewidth}
 {Vista lateral del prototipo construido.}
 {fig:prototipo}
 
-\subsection{Parámetros físicos del modelo}
+\subsection{Parámetros físicos y temporales de implementación}
 \label{sec:parametros_modelo}
 
 La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos y temporales
@@ -103,11 +93,26 @@ Actualización de \texttt{nextPID} en el firmware \\
 \end{tabular}
 \end{table}
 
+El valor efectivo $N_e=1980$~ticks/vuelta se obtuvo experimentalmente a
+partir de diez vueltas completas por rueda. Las medias registradas fueron
+1976~ticks/vuelta para la rueda derecha y 1969~ticks/vuelta para la
+izquierda. Las muestras y el cálculo de los promedios se conservan en el
+\ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R}
+y~\eqref{eq:promedio_cuentas_L}.
+
 %=====================================================================
 \section{Gemelo digital del robot}
 \label{ch:robot_digital}
 
-Sobre la base del propósito de validación expuesto en la Sec.~\ref{sec:gemelo_digital}, el gemelo digital del robot se implementa en \gls{ROS2} Foxy mediante URDF/\texttt{xacro} y Gazebo. El modelo principal se encuentra en \path{articubot_one/description/robot.urdf.xacro} e integra los módulos de chasis, ruedas, sensor láser y control. El radio de rueda y la separación entre ruedas de la Tabla~\ref{tab:parametros_modelo} se emplean como referencia geométrica común en el robot físico, el URDF/\texttt{xacro} y \texttt{diff\_drive\_controller}. En cambio, la resolución de encoders y las frecuencias \texttt{loop\_rate}/\texttt{PID\_RATE} pertenecen a la ruta de hardware real: el backend \texttt{GazeboSystem} entrega directamente los estados de las articulaciones y no utiliza la conversión por ticks ni el planificador PID del firmware.
+Sobre la base del propósito de validación expuesto en la
+Sec.~\ref{sec:gemelo_digital}, el gemelo digital se implementa en
+\gls{ROS2} Foxy mediante URDF/\texttt{xacro} y Gazebo. El radio de rueda y
+la separación entre ruedas de la Tabla~\ref{tab:parametros_modelo} se
+emplean como referencia geométrica común en el robot físico, el modelo
+digital y \texttt{diff\_drive\_controller}. El backend
+\texttt{GazeboSystem} entrega directamente los estados de las
+articulaciones, por lo que no utiliza la conversión por ticks ni el
+planificador PID del firmware.
 
 \subsection{Arquitectura del modelo digital}
 \label{sec:atribucion}
@@ -154,19 +159,25 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 \subsection{Selección del backend de control}
 \label{sec:backend}
 
-El modelo permite seleccionar el backend mediante los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada mantiene \texttt{use\_ros2\_control=true} en ambos entornos; el plugin cargado en cada caso se resume en la Tabla~\ref{tab:xacro_args_backend} y la interfaz de hardware real se describe en la Sec.~\ref{sec:diff_drive_params}. La trazabilidad del backend alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}.
+El modelo permite seleccionar el backend mediante los argumentos
+\texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada
+mantiene \texttt{use\_ros2\_control=true} en ambos entornos, pero carga un
+plugin de hardware distinto en cada caso, como resume la
+Tabla~\ref{tab:xacro_args_backend}. La interfaz empleada en el robot real se
+describe en la Sec.~\ref{sec:diff_drive_params}; la trazabilidad del backend
+alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}.
 
 \begin{table}[H]
 \centering
-\caption{Backend de control según entorno de ejecución.}
+\caption{Plugin de \texttt{ros2\_control} según entorno de ejecución.}
 \label{tab:xacro_args_backend}
 \small
-\begin{tabular}{p{2.5cm} p{2.5cm} p{8.5cm}}
+\begin{tabular}{p{2.5cm} p{5.0cm} p{6.0cm}}
 \toprule
-\textbf{Entorno} & \textbf{Backend} & \textbf{Descripción} \\
+\textbf{Entorno} & \textbf{Plugin de hardware} & \textbf{Fuente de los estados} \\
 \midrule
-Hardware real & \texttt{ros2\_control} & Plugin \texttt{DiffDriveArduino} y comunicación serial con el \gls{Arduino}. \\
-Simulación & \texttt{ros2\_control} & Plugin \texttt{gazebo\_ros2\_control/GazeboSystem} cargado por \texttt{libgazebo\_ros2\_control.so}. \\
+Hardware real & \texttt{diffdrive\_arduino/DiffDriveArduino} & Conteos de encoder recibidos desde el \gls{Arduino} mediante el enlace serial. \\
+Simulación & \texttt{gazebo\_ros2\_control/GazeboSystem} & Estados de las articulaciones entregados directamente por Gazebo. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -212,7 +223,6 @@ En hardware real, el lanzamiento \path{articubot_one/launch/launch_robot.launch.
 La cadena de transformaciones mantiene la misma convención usada en simulación (Sec.~\ref{sec:tf-convenciones}): \texttt{slam\_toolbox} publica \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
 
 
-
 \subsection{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
 
@@ -240,9 +250,7 @@ realiza mediante \texttt{DiffDriveArduino}, clase principal del paquete
 adaptado \texttt{diffdrive\_arduino}. Este componente es un plugin de hardware
 de \texttt{ros2\_control}, implementado como una interfaz de sistema, que
 expone comandos de velocidad y estados de posición y velocidad para ambas
-ruedas, y los intercambia con el \gls{Arduino} mediante el enlace serial. Su
-ciclo de lectura--actualización--escritura, formalizado en el
-Alg.~\ref{alg:ros2control_cycle}, se ejecuta con la frecuencia
+ruedas, y los intercambia con el \gls{Arduino} mediante el enlace serial. Su ciclo de lectura--actualización--escritura se ejecuta con la frecuencia
 $f_{\mathrm{ctrl}}$ indicada en la Tabla~\ref{tab:parametros_modelo}, mediante
 \texttt{controller\_manager.update\_rate}.
 
@@ -278,14 +286,16 @@ posición angular mediante la Ec.~\eqref{eq:posicion_rueda_encoder} y en
 velocidad angular mediante la Ec.~\eqref{eq:w_ruedas}, para
 $j\in\{R,L\}$.
 
-El intervalo $\Delta t_k$ se define en la Ec.~\eqref{eq:intervalo_diffdrive}, y su secuencia de inicialización se formaliza en el Alg.~\ref{alg:ros2control_cycle}. El plugin exporta una única estimación de velocidad angular por rueda y no calcula otra con el período nominal de 30~Hz.
+El intervalo $\Delta t_k$ se define en la
+Ec.~\eqref{eq:intervalo_diffdrive}. El plugin exporta una única estimación de
+velocidad angular por rueda y no calcula otra con el período nominal de
+30~Hz.
 
-Las ganancias PID no se transmiten en tiempo de ejecución: residen en el firmware con los valores obtenidos por sintonización PSO y refinamiento experimental (Capítulo~\ref{marco_teorico}), de modo que el plugin solo intercambia referencias de velocidad y lecturas de encoder.
+Las ganancias PID no se transmiten en tiempo de ejecución: residen en el
+firmware con los valores obtenidos mediante el procedimiento descrito en la
+Sec.~\ref{sec:sintonizacion_pso}. Por tanto, el plugin solo intercambia
+referencias de velocidad y lecturas de encoder.
 
-
-\subsection{Teleoperación y multiplexación de comandos}
-
-La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
 
 \subsection{Flujo de datos del sistema}
 \label{sec:flujo_datos}
@@ -336,6 +346,11 @@ intervalo $\Delta t_k$ descritos en la Sec.~\ref{sec:diff_drive_params}.
 \end{algorithmic}
 \end{algorithm}
 
+
+\subsection{Teleoperación y multiplexación de comandos}
+
+La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
+
 %=====================================================================
 \section{Firmware de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
@@ -349,7 +364,7 @@ Los módulos del firmware se encuentran en \path{arduino_firmware/ROSArduinoBrid
 El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución
 efectiva ya calibrada $N_e=1980$~ticks/vuelta
 (Tabla~\ref{tab:parametros_modelo}), parametrizados respectivamente como
-\texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). El backend de Gazebo no utiliza \texttt{ENC\_TICKS\_PER\_REV} ni \texttt{PID\_RATE}. A partir de estas constantes, el firmware calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} como $N_e/(2\pi r\,f_{\mathrm{PID,nom}})\approx313.56$, evaluado con $D=2r$. Es la misma expresión que los scripts de sintonización emplean como $\kappa_{\mathrm{sim}}$ (Ec.~\eqref{eq:lambda_conversion}).
+\texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). A partir de estas constantes, el firmware calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} como $N_e/(2\pi r\,f_{\mathrm{PID,nom}})\approx313.56$, evaluado con $D=2r$. Es la misma expresión que los scripts de sintonización emplean como $\kappa_{\mathrm{sim}}$ (Ec.~\eqref{eq:lambda_conversion}).
 
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
@@ -402,13 +417,11 @@ reemplaza por los valores codificados al producirse cualquiera de esos
 reinicios.
 
 \begin{algorithm}[H]
-\caption{Ciclo de actualización del PID discreto ejecutado por el firmware}
+\caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
-\Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; ganancias; $K_o=50$; \texttt{MAX\_PWM}$=255$.
+\Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; parámetros PID y límites de saturación definidos previamente.
 \Ensure Salidas PWM y estados internos actualizados.
-\State \Call{resetPID}{}
-\Statex
 \Procedure{resetPID}{}
     \State Cargar las ganancias predeterminadas de ambas ruedas.
     \State Leer los conteos actuales de los encoders.
@@ -427,13 +440,6 @@ reinicios.
     \State \Call{doPID}{PID izquierdo,$2$}
     \State \Call{setMotorSpeeds}{\texttt{leftPID.output},\texttt{rightPID.output}}
 \EndProcedure
-\Statex
-\While{el firmware esté activo}
-    \If{\texttt{millis()}$>$\texttt{nextPID}}
-        \State \Call{updatePID}{}
-        \State \texttt{nextPID}$\gets$\texttt{nextPID}$+33$~ms
-    \EndIf
-\EndWhile
 \end{algorithmic}
 \end{algorithm}
 
@@ -441,7 +447,7 @@ reinicios.
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
 
-El bucle principal atiende el parser serial, programa el PID según el incremento $T_{\mathrm{PID,sched}}$ de la Tabla~\ref{tab:parametros_modelo} y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Alg.~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
+El bucle principal atiende el parser serial, programa el PID mediante el intervalo $T_{\mathrm{PID,sched}}$ definido en la Tabla~\ref{tab:parametros_modelo} y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Alg.~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
 
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
@@ -467,79 +473,6 @@ Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en
 \State \Return $(K_{p,j},K_{d,j},K_{i,j})$, para $j\in\{L,R\}$.
 \end{algorithmic}
 \end{algorithm}
-
-El núcleo del optimizador se implementa en un módulo propio de Python, cuyo
-flujo completo se formaliza en los Alg.~\ref{alg:pso_nucleo}
-y~\ref{alg:pso_bucle}: el primero inicializa el enjambre y el mejor global,
-y el segundo ejecuta el bucle de optimización y el escalado de salida; las
-posiciones y velocidades iniciales se generan de forma pseudoaleatoria sin
-fijar una semilla, por lo que distintas ejecuciones pueden producir
-parámetros diferentes. La localización del módulo dentro del repositorio se
-documenta en el \ref{anx:rutas_software}.
-
-\begin{algorithm}[H]
-\caption{Inicialización del enjambre del PSO ejecutado por \texttt{pyPso.py}}
-\label{alg:pso_nucleo}
-\begin{algorithmic}[1]
-\Require Función de costo $J$; partículas $N_p$; modo ID o PID.
-\Ensure Enjambre inicial $(\xi_i,V_i,P_i,J_i^{\mathrm{best}})$ y mejor global $(J^*,G)$.
-\For{$i=1,\ldots,N_p$}
-    \State $\xi_i\sim\mathcal{U}[0,1]^3$
-    \State $V_i\sim\mathcal{U}[0,1]^3$
-    \State $\theta_i^{\mathrm{eval}}\gets\Call{Escalar}{\xi_i,\mathrm{modo}}$
-    \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
-    \State $P_i\gets\xi_i$
-    \State $J_i^{\mathrm{best}}\gets J_i$
-\EndFor
-\State $i^*\gets\arg\min_i J_i$
-\State $J^*\gets J_{i^*}$
-\State $G\gets\xi_{i^*}$
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}[H]
-\caption{Bucle de optimización y escalado de salida del PSO}
-\label{alg:pso_bucle}
-\begin{algorithmic}[1]
-\Require Enjambre y mejor global inicializados (Alg.~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; hiperparámetros de la Tabla~\ref{tab:pso_config}; modo ID o PID.
-\Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
-\For{$g=1,\ldots,g_{\max}$}
-    \State $w_{\mathrm{in}}^{g}
-    \gets\Call{CalcularInercia}{g,g_{\max}}$
-    \For{$i=1,\ldots,N_p$}
-        \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$
-        \State $V_i\gets
-        \Call{ActualizarVelocidadPSO}
-        {V_i,\xi_i,P_i,G,w_{\mathrm{in}}^{g},
-        c_1,c_2,\chi,\rho_1,\rho_2}$
-        \State $\xi_i\gets\Call{ActualizarPosicion}{\xi_i,V_i}$
-        \State $\theta_i^{\mathrm{eval}}
-        \gets\Call{EscalarCandidato}{\xi_i,\mathrm{modo}}$
-        \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
-        \If{$J_i<J_i^{\mathrm{best}}$}
-            \State $J_i^{\mathrm{best}}\gets J_i$
-            \State $P_i\gets\xi_i$
-        \EndIf
-    \EndFor
-    \State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$
-    \If{$J_{\mathrm{new}}^*<J^*$}
-        \State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$
-        \State $G\gets\xi_{i^*}$
-        \State $J^*\gets J_{\mathrm{new}}^*$
-    \EndIf
-\EndFor
-\State $\theta^{\mathrm{out}}
-\gets\Call{EscalarSalida}{G,\mathrm{modo}}$
-\State \Return $(J^*,G,\theta^{\mathrm{out}})$
-\end{algorithmic}
-\end{algorithm}
-
-Las operaciones \Call{ActualizarVelocidadPSO}, \Call{CalcularInercia},
-\Call{ActualizarPosicion}, \Call{EscalarCandidato} y \Call{EscalarSalida}
-corresponden a las Ecs.~\eqref{eq:pso_vel_marco_teorico},
-\eqref{eq:pso_inercia}, \eqref{eq:pso_pos_marco_teorico},
-\eqref{eq:pso_escala} y~\eqref{eq:pso_salida}, respectivamente. El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
-scripts recorren las ruedas, formalizado en el Alg.~\ref{alg:sintonizacion}.
 
 \subsubsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -637,9 +570,84 @@ para $j\in\{R,L\}$.
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Identificación y optimización}
+\subsubsection{Identificación FODT y optimización PID}
 
 La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Durante la identificación, la señal medida se suaviza antes del ajuste. Los scripts de sintonización emplean una aproximación de la planta y del controlador que no reproduce exactamente el retardo, los tipos enteros ni las bandas muertas asimétricas del firmware; el filtro, la función de costo, la interpolación de la referencia y la cuantización ejecutadas se documentan en el \ref{anx:fodt_scripts}, Ecs.~\eqref{eq:filtro_uniforme}--\eqref{eq:medicion_simulada_ticks}.
+
+\subsubsection{Implementación del optimizador PSO}
+
+El núcleo del optimizador se implementa en un módulo propio de Python, cuyo
+flujo completo se formaliza en los Alg.~\ref{alg:pso_nucleo}
+y~\ref{alg:pso_bucle}: el primero inicializa el enjambre y el mejor global,
+y el segundo ejecuta el bucle de optimización y el escalado de salida; las
+posiciones y velocidades iniciales se generan de forma pseudoaleatoria sin
+fijar una semilla, por lo que distintas ejecuciones pueden producir
+parámetros diferentes. La localización del módulo dentro del repositorio se
+documenta en el \ref{anx:rutas_software}.
+
+\begin{algorithm}[H]
+\caption{Inicialización del enjambre del PSO ejecutado por \texttt{pyPso.py}}
+\label{alg:pso_nucleo}
+\begin{algorithmic}[1]
+\Require Función de costo $J$; partículas $N_p$; modo ID o PID.
+\Ensure Enjambre inicial $(\xi_i,V_i,P_i,J_i^{\mathrm{best}})$ y mejor global $(J^*,G)$.
+\For{$i=1,\ldots,N_p$}
+    \State $\xi_i\sim\mathcal{U}[0,1]^3$
+    \State $V_i\sim\mathcal{U}[0,1]^3$
+    \State $\theta_i^{\mathrm{eval}}\gets\Call{Escalar}{\xi_i,\mathrm{modo}}$
+    \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+    \State $P_i\gets\xi_i$
+    \State $J_i^{\mathrm{best}}\gets J_i$
+\EndFor
+\State $i^*\gets\arg\min_i J_i$
+\State $J^*\gets J_{i^*}$
+\State $G\gets\xi_{i^*}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Bucle de optimización y escalado de salida del PSO}
+\label{alg:pso_bucle}
+\begin{algorithmic}[1]
+\Require Enjambre y mejor global inicializados (Alg.~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; hiperparámetros de la Tabla~\ref{tab:pso_config}; modo ID o PID.
+\Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
+\For{$g=1,\ldots,g_{\max}$}
+    \State $w_{\mathrm{in}}^{g}
+    \gets\Call{CalcularInercia}{g,g_{\max}}$
+    \For{$i=1,\ldots,N_p$}
+        \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$
+        \State $V_i\gets
+        \Call{ActualizarVelocidadPSO}
+        {V_i,\xi_i,P_i,G,w_{\mathrm{in}}^{g},
+        c_1,c_2,\chi,\rho_1,\rho_2}$
+        \State $\xi_i\gets\Call{ActualizarPosicion}{\xi_i,V_i}$
+        \State $\theta_i^{\mathrm{eval}}
+        \gets\Call{EscalarCandidato}{\xi_i,\mathrm{modo}}$
+        \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+        \If{$J_i<J_i^{\mathrm{best}}$}
+            \State $J_i^{\mathrm{best}}\gets J_i$
+            \State $P_i\gets\xi_i$
+        \EndIf
+    \EndFor
+    \State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$
+    \If{$J_{\mathrm{new}}^*<J^*$}
+        \State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$
+        \State $G\gets\xi_{i^*}$
+        \State $J^*\gets J_{\mathrm{new}}^*$
+    \EndIf
+\EndFor
+\State $\theta^{\mathrm{out}}
+\gets\Call{EscalarSalida}{G,\mathrm{modo}}$
+\State \Return $(J^*,G,\theta^{\mathrm{out}})$
+\end{algorithmic}
+\end{algorithm}
+
+Las operaciones \Call{ActualizarVelocidadPSO}, \Call{CalcularInercia},
+\Call{ActualizarPosicion}, \Call{EscalarCandidato} y \Call{EscalarSalida}
+corresponden a las Ecs.~\eqref{eq:pso_vel_marco_teorico},
+\eqref{eq:pso_inercia}, \eqref{eq:pso_pos_marco_teorico},
+\eqref{eq:pso_escala} y~\eqref{eq:pso_salida}, respectivamente. El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
+scripts recorren las ruedas, formalizado en el Alg.~\ref{alg:sintonizacion}.
 
 \subsubsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
@@ -647,7 +655,6 @@ La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al es
 Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El código final solo conserva las ganancias resultantes por rueda; no registra de forma automática qué modificación experimental se asocia a cada fenómeno mecánico.
 
 La salida de la ejecución utilizada como punto de partida, incluidos los parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en la Tabla~\ref{tab:pso_resultados} del \ref{anx:resultados_pso_ejecucion}, junto con sus particularidades numéricas (ausencia de semilla y retardos inferiores al período de captura).
-
 
 
 %=====================================================================
@@ -767,6 +774,7 @@ Controlador local & \texttt{dwb\_core::DWBLocalPlanner} & Críticos de obstácul
 \end{table} 
 
 En hardware real, DWB admite candidatos de hasta 0.15~m/s, mientras que \texttt{diff\_drive\_controller} limita la velocidad lineal a 0.13~m/s; por ello, las consignas superiores a este último valor se limitan posteriormente.
+
 \subsection{Mapas de costos}
 \label{sec:costmaps_ch9}
 
@@ -847,15 +855,19 @@ puntaje y la programación del temporizador, se documentan en el
 \ref{anx:explore_impl}, Ecs.~\eqref{eq:centroide_frontera_impl},
 \eqref{eq:frontier_cost} y~\eqref{eq:periodo_explorador_real}.
 
-\subsection{Integración del ciclo autónomo y transferencia simulación--hardware}
+\subsection{Transferencia simulación--hardware}
 \label{sec:integracion_ciclo}
 
-La arquitectura de la Fig.~\ref{fig:interaccion_nav} permite que el robot pase desde la teleoperación y el mapeo inicial hacia la navegación autónoma y la exploración de zonas desconocidas.
-
-La transferencia al hardware se realiza manteniendo la estructura de tópicos y marcos, pero seleccionando archivos de configuración específicos para el entorno real; la asignación de \texttt{use\_sim\_time} y los archivos YAML equivalentes de simulación y hardware se detallan en el \ref{anx:nav2_slam_config}. Además, se ajustan límites cinemáticos, frecuencias, tolerancias e inflación de costmaps según las capacidades del prototipo físico.
+La transferencia al hardware se realiza manteniendo la estructura de tópicos
+y marcos, pero seleccionando archivos de configuración específicos para el
+entorno real. La asignación de \texttt{use\_sim\_time} y los archivos YAML
+equivalentes de simulación y hardware se detallan en el
+\ref{anx:nav2_slam_config}. Además, se ajustan límites cinemáticos,
+frecuencias, tolerancias e inflación de los mapas de costos según las
+capacidades del prototipo físico.
 
 %=====================================================================
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_ch9}
 
-La implementación integra componentes accesibles; plataforma diferencial, encoders, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1, con una arquitectura de software basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permitió validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el hardware real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PID de ruedas —sintonizado mediante PSO y refinamiento experimental— y publicación de odometría, con auto-detención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en hardware real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.
+La implementación integra componentes accesibles: plataforma diferencial, encoders, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1, con una arquitectura de software basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permitió validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el hardware real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PID de ruedas —sintonizado mediante PSO y refinamiento experimental— y publicación de odometría, con auto-detención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en hardware real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.
