@@ -200,18 +200,19 @@ del robot (m/s); con subíndice $j\in\{R,L\}$ denota la velocidad lineal de
 rueda. $\omega$ sin subíndice denota la velocidad angular del robot (rad/s);
 con subíndice $j$ denota la velocidad angular de rueda (rad/s). El subíndice
 $R$ corresponde a la rueda derecha y $L$ a la izquierda. La posición angular
-de rueda se denota $\phi_j$ (rad). Las minúsculas $x_k$, $y_k$ se reservan para las coordenadas de pose del
-robot; la posición de una partícula del algoritmo PSO se denota mediante la
-letra griega $\xi_{i,d}$ y su velocidad mediante $V_{i,d}$, de modo que
-ningún símbolo de pose o velocidad del robot se reutiliza en el optimizador. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su
+de rueda se denota $\phi_j$ (rad). Las minúsculas $x_k$ y $y_k$ se reservan para las coordenadas de pose del
+robot; la notación del optimizador se define en la
+Sec.~\ref{sec:pso_marco}, sin reutilizar símbolos de pose o velocidad del
+robot. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su
 representación discreta $n_{d,j}$ (muestras). El conteo de encoder se
 expresa en ticks, donde un tick corresponde a una cuenta producida por la
 decodificación en cuadratura.
 
 Considérese un robot diferencial con radio de rueda $r$, separación entre
-ruedas $b$ y pose $q_k=(x_k,y_k,\theta_k)$ (m, m, rad), donde $k$ identifica
-la muestra discreta. La relación entre las velocidades angulares de rueda y
-las velocidades del robot es:
+ruedas $b$ y la forma muestreada $q_k=(x_k,y_k,\theta_k)$ de la pose definida
+en la Sec.~\ref{sec:robot_definicion}, donde $k$ identifica la muestra
+discreta. La relación entre las velocidades angulares de rueda y las
+velocidades del robot es:
 
 \begin{align}
 v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right),

@@ -49,27 +49,6 @@ Tolerancia de ensamblaje & 0.2--0.4~mm \\
 \end{tabular}
 \end{table}
 
-\section{Arquitecturas y plataformas de referencia}
-\label{anx:arquitecturas}
-
-\begin{table}[H]
-\centering
-\caption{Comparación cualitativa de arquitecturas de locomoción.}
-\label{tab:anx_comparativa_arquitecturas}
-\small
-\begin{tabular}{lccc}
-\toprule
-\textbf{Arquitectura} & \textbf{Maniobrabilidad} & \textbf{Complejidad} & \textbf{Adecuación} \\
-\midrule
-Diferencial & Alta & Baja & Alta \\
-Ackermann & Media & Media & Media \\
-Omnidireccional & Muy alta & Alta & Media \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-La arquitectura diferencial ofrece el mejor equilibrio entre costo, facilidad de implementación, soporte en \gls{ROS2} y calidad de odometría para interiores. El prototipo desarrollado se ubica cerca de plataformas educativas como TurtleBot; el alcance del aporte propio sobre las bases adaptadas se describe en la Justificación de la Introducción.
-
 \section{Gemelo digital y verificación estructural}
 \label{anx:gemelo_digital}
 
@@ -915,7 +894,7 @@ $K_i$ & 0.00001 & 0.00001 \\
 \parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales (tras refinamiento experimental) se reportan en la Tabla~\ref{tab:ganancias_pid}; el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.}
 \end{table}
 
-\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, $n_{d,j}=\lfloor L_{d,j}/T_{\mathrm{cap}}\rfloor=0$ muestras. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
+\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, $n_{d,j}=0$ muestras según la Ec.~\eqref{eq:retardo_muestras}. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
 
 \subsection{Captura de la respuesta en lazo cerrado}
 \label{anx:captura_lazo_cerrado}
@@ -1011,45 +990,34 @@ La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, cor
 
 \begin{table}[H]
 \centering
-\caption{Parámetros principales de \texttt{slam\_toolbox} cargados en hardware real.}
-\label{tab:slam_params_ch9}
+\caption{Acciones de recuperación configuradas en Nav2.}
+\label{tab:recovery_ch9}
 \small
-\begin{tabular}{p{3.5cm} p{3cm} p{5cm}}
+\begin{tabular}{p{3.2cm} p{4.8cm} p{5.2cm}}
 \toprule
-\textbf{Parámetro} & \textbf{Valor} & \textbf{Función} \\
+\textbf{Acción} &
+\textbf{Condición o alcance} &
+\textbf{Parámetro configurado} \\
 \midrule
-\texttt{solver\_plugin} & \texttt{CeresSolver} & Optimización del grafo \\
-\texttt{odom\_frame} & \texttt{odom} & Marco de odometría \\
-\texttt{map\_frame} & \texttt{map} & Marco global \\
-\texttt{base\_frame} & \texttt{base\_link} & Marco base del robot \\
-\texttt{scan\_topic} & \texttt{/scan} & Entrada del \gls{LIDAR} \\
-\texttt{resolution} & 0.05~m & Resolución del mapa \\
-\texttt{do\_loop\_closing} & \texttt{true} & Cierre de lazo activado \\
-\bottomrule
-\end{tabular}
-\end{table}
+\textit{Clear global costmap} &
+Fallo del planificador o recuperación global &
+Radio de limpieza de 1.5~m \\
 
-\subsection{Parámetros y flujo operativo de exploración}
+\textit{Clear local costmap} &
+Fallo del seguimiento o recuperación global &
+Radio de limpieza de 1.0~m \\
 
-\begin{table}[H]
-\centering
-\caption{Parámetros principales del explorador de fronteras.}
-\label{tab:explore_params_ch9}
-\small
-\begin{tabular}{p{3.5cm} p{4.5cm} p{5.8cm}}
-\toprule
-\textbf{Parámetro} & \textbf{Valor} & \textbf{Función} \\
-\midrule
-\texttt{robot\_base\_frame} & \texttt{base\_link} & Marco base del robot \\
-\texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & Costmap usado para detectar fronteras \\
-\texttt{planner\_frequency} & 0.3~Hz & Valor configurado; período efectivo según la Ec.~\ref{eq:periodo_explorador_real} \\
-\texttt{progress\_timeout} & 10.0~s & Tiempo máximo sin progreso \\
-\texttt{gain\_scale} & 1.0 & Peso de ganancia de información (Ec.~\ref{eq:frontier_cost}) \\
-\texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera (Ec.~\ref{eq:frontier_cost}) \\
-\texttt{orientation\_scale} & 0.0 & Parámetro cargado, pero no utilizado por \texttt{FrontierSearch} en el código ejecutado \\
-\texttt{min\_frontier\_size} & 0.05~m & Tamaño mínimo de una frontera válida \\
-\texttt{return\_to\_init} & \texttt{false} (valor por defecto) & No se carga en \texttt{explore.yaml}; no se ejecuta el retorno a la pose inicial \\
-\texttt{resolution} (costmap) & 0.05~m/celda & Resolución del costmap, $\rho_{\mathrm{map}}$ en la Ec.~\ref{eq:frontier_cost} \\
+\textit{BackUp} &
+Secuencia de recuperación global &
+0.15~m a 0.05~m/s; máximo 8.0~s \\
+
+\textit{Spin} &
+Secuencia de recuperación global &
+Giro de 0.8~rad \\
+
+\textit{Wait} &
+Fin de la secuencia antes del reintento &
+2~s \\
 \bottomrule
 \end{tabular}
 \end{table}

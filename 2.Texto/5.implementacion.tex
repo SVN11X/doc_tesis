@@ -226,7 +226,7 @@ La cadena de transformaciones mantiene la misma convención usada en simulación
 \subsection{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
 
-El controlador diferencial recibe comandos de velocidad lineal y angular, y los convierte en velocidades de rueda mediante el modelo cinemático descrito en el Capítulo~\ref{marco_teorico}. Sus parámetros geométricos (\texttt{wheel\_radius} = $r$ y \texttt{wheel\_separation} = $b$) coinciden con el modelo físico y el gemelo digital, según los valores consolidados en la Tabla~\ref{tab:parametros_modelo}. Los parámetros principales configurados en el controlador diferencial se
+El controlador diferencial recibe comandos de velocidad lineal y angular, y los convierte en velocidades de rueda mediante el modelo cinemático descrito en el Capítulo~\ref{marco_teorico}. Sus parámetros geométricos son \texttt{wheel\_radius} = $r$ y \texttt{wheel\_separation} = $b$ (Tabla~\ref{tab:parametros_modelo}). Los parámetros principales configurados en el controlador diferencial se
 resumen en la Tabla~\ref{tab:diff_drive_params}.
 
 \begin{table}[H]
@@ -276,7 +276,7 @@ m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
 \noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y $v_j^{\mathrm{cmd}}[k]$ son
 las consignas angular [rad/s] y lineal [m/s] de la rueda $j$; $2\pi/N_e$ es
 la resolución angular por tick (rad/tick); $\operatorname{trunc}_{0}()$
-representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor (Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado $f_{\mathrm{loop}}$; aunque $f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$ coinciden numéricamente según la Tabla~\ref{tab:parametros_modelo}, no representan el mismo mecanismo ni comparten una medición temporal. La ruta normal de \texttt{ros2\_control} utiliza el
+representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor (Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado $f_{\mathrm{loop}}$  (Tabla~\ref{tab:parametros_modelo}); la distinción entre ambos mecanismos se detalla en el \ref{anx:implementacion_diffdrive}. La ruta normal de \texttt{ros2\_control} utiliza el
 comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el
 firmware también incorpora una conversión directa desde m/s para ese
 comando.
@@ -666,7 +666,7 @@ Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron d
 \subsection{Mapeo con \texttt{slam\_toolbox}}
 \label{sec:slam_ch9}
 
-El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}), en modo \texttt{online\_async}, que procesa los barridos de forma asíncrona. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot. La optimización del grafo permite corregir la deriva acumulada durante el recorrido.
+El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}), en modo \texttt{online\_async}. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
 
 La configuración real utiliza el solver Ceres con estrategia
 \texttt{LEVENBERG\_MARQUARDT}. Los marcos, el tópico de entrada, la resolución
@@ -785,15 +785,13 @@ En hardware real, las capas de inflación de \texttt{global\_costmap} y \texttt{
 \subsection{Árbol de comportamiento y recuperación}
 \label{sec:bt_ch9}
 
-La navegación de alto nivel se organiza mediante un árbol de comportamiento. La rama principal calcula la ruta global y ejecuta el seguimiento local; si ocurre un fallo, se activan acciones de recuperación, lo que permite reintentos ante bloqueos sin modificar la lógica completa del sistema.
+La navegación de alto nivel se organiza mediante el árbol de comportamiento descrito en la Sec.~\ref{sec:nav_marco}.
 
-El árbol ejecutado recalcula la ruta a 4~Hz y aplica un principio de
-escalada en dos niveles: ante fallos de planificación o seguimiento limpia
-el costmap correspondiente; si la navegación completa falla, limpia ambos
-costmaps, retrocede 0.15~m a 0.05~m/s, gira 0.8~rad, vuelve a planificar,
-intenta seguir la nueva ruta y espera 2~s entre reintentos. El detalle de
-cada acción configurada se conserva en el \ref{anx:recovery_nav2},
-Tabla~\ref{tab:recovery_ch9}.
+El árbol ejecutado recalcula la ruta a 4~Hz y aplica recuperaciones en dos
+niveles: ante fallos de planificación o seguimiento actúa sobre el costmap
+correspondiente; si falla la navegación completa, ejecuta la secuencia
+configurada en la Tabla~\ref{tab:recovery_ch9} del
+\ref{anx:recovery_nav2}.
 
 \subsection{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
