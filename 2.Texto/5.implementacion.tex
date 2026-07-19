@@ -186,7 +186,7 @@ Simulación & \texttt{gazebo\_ros2\_control/GazeboSystem} & Estados de las artic
 
 En simulación, el sensor se modela mediante \texttt{lidar\_sim.xacro}, publicando datos en \texttt{/scan} con el marco \texttt{laser\_frame}. El modelo reproduce el comportamiento general del RPLidar A1 físico, aunque con diferencias propias de la simulación, como ausencia de ruido real y un rango mínimo más permisivo; estas diferencias se consideran parte de la brecha simulación--realidad.
 
-Antes de usar el gemelo digital para pruebas de SLAM y navegación, se verifican la continuidad de la cadena TF, la publicación de \texttt{/scan} y \texttt{/odom}, la respuesta cinemática ante comandos de velocidad y la paridad geométrica con el prototipo. La tabla de verificación y la evidencia estructural se trasladan al \ref{anx:gemelo_digital}, Tabla~\ref{tab:criterios_aceptacion_resumen}.
+Antes de usar el gemelo digital para pruebas de SLAM y navegación, se aplicaron los criterios de aceptación resumidos en la Tabla~\ref{tab:criterios_aceptacion_resumen} del \ref{anx:gemelo_digital}, donde también se conserva la evidencia estructural.
 
 %=====================================================================
 \section{Construcción de hardware y comunicación con ROS 2}
