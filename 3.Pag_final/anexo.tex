@@ -162,6 +162,13 @@ Encoder derecho A/B & A4/A5 & Encoder derecho \\
 
 Para evitar cambios de nombres en los puertos serie, se utilizan reglas \texttt{udev}. El \gls{Arduino} se expone como \texttt{/dev/motor\_controller}; el RPLidar puede exponerse como \texttt{/dev/rplidar} o \texttt{/dev/rlidar\_gpio}, según el modo de conexión.
 
+La teleoperación utiliza los nodos \texttt{joy\_node} y
+\texttt{teleop\_twist\_joy}. Sus comandos se integran mediante
+\texttt{twist\_mux}; la salida se remapea al tópico
+\texttt{/diff\_cont/cmd\_vel\_unstamped}, entrada del controlador
+diferencial. El botón de habilitación actúa como
+\textit{dead-man switch}.
+
 \subsection{Temporalidad y ciclo de la interfaz \texttt{DiffDriveArduino}}
 \label{anx:implementacion_diffdrive}
 
@@ -188,7 +195,34 @@ T_{\mathrm{PID,sched}}
 \label{eq:pid_intervalo_real}
 \end{equation}
 
-\noindent donde $T_{\mathrm{PID,sched}}$ es el incremento entero aplicado a \texttt{nextPID} por el firmware. Este intervalo corresponde a la planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
+\noindent La Ec.~\eqref{eq:pid_intervalo_real} expresa el incremento entero
+aplicado a \texttt{nextPID} por el firmware. Este intervalo corresponde a la
+planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
+
+En la fase de escritura de la interfaz, la velocidad angular de rueda se
+convierte en una referencia entera de \textit{ticks/frame} antes de enviar el
+comando serial:
+
+\begin{equation}
+m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
+=
+\operatorname{trunc}_{0}
+\left(
+\frac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}[k]
+\right)
+=
+\operatorname{trunc}_{0}
+\left(
+\frac{N_e}{2\pi r f_{\mathrm{loop}}}\,v_j^{\mathrm{cmd}}[k]
+\right),
+\label{eq:mps_to_ticks}
+\end{equation}
+
+\noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y
+$v_j^{\mathrm{cmd}}[k]$ son las consignas angular [rad/s] y lineal [m/s] de
+la rueda $j$; $\operatorname{trunc}_{0}()$ representa el truncamiento hacia
+cero asociado al argumento entero del comando serial; y
+$m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en \textit{ticks/frame}.
 
 \section{Firmware, encoders y sintonización PID}
 \label{anx:firmware}
@@ -508,7 +542,9 @@ I_j^{int}[k]
 \label{eq:pid_incremento}
 \end{equation}
 
-\noindent donde $\Delta u_j^{long}[k]$ es el incremento de salida truncado e $I_j^{int}[k]$ el estado integral entero de la rueda $j$.
+\noindent La Ec.~\eqref{eq:pid_incremento} define el incremento de salida
+truncado $\Delta u_j^{long}[k]$, mientras que $I_j^{int}[k]$ corresponde al
+estado integral entero de la rueda $j$.
 
 \begin{equation}
 u_j^{raw}[k]
@@ -553,6 +589,37 @@ resume en el Alg.~\ref{alg:pid_firmware}.
 \subsection{Procesamiento FODT usado por los scripts}
 \label{anx:fodt_scripts}
 
+Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$
+segundos, el retardo se cuantiza a un número entero de muestras y el sistema
+de primer orden se discretiza mediante el método de Euler:
+
+\begin{align}
+n_{d,j}
+&=
+\operatorname{trunc}\left(\frac{L_{d,j}}{T_{\mathrm{cap}}}\right),
+\label{eq:retardo_muestras}\\
+u_{j,d}[k]
+&=
+u_j\!\left[\max(k-n_{d,j},0)\right],
+\label{eq:entrada_retrasada}\\
+\widehat{v}_j[k]
+&=
+\widehat{v}_j[k-1]
++
+\frac{T_{\mathrm{cap}}}{\tau_j}
+\left(
+K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
+\right),
+\qquad \widehat{v}_j[0]=0.
+\label{eq:fodt_discreto}
+\end{align}
+
+\noindent donde $u_j[k]$ es la entrada \gls{PWM} aplicada,
+$u_{j,d}[k]$ la entrada retardada y $\widehat{v}_j[k]$ la velocidad lineal
+estimada por el modelo para la rueda $j$ (m/s). Esta formulación corresponde
+al procedimiento de identificación; las diferencias de la planta usada
+durante la sintonización se describen más adelante.
+
 La velocidad medida se procesa fuera de línea mediante \texttt{scipy.ndimage.uniform\_filter1d} con SciPy~1.16.3. Como el script solo especifica \texttt{size=5}, se ejecutan los valores predeterminados \texttt{axis=-1}, \texttt{mode='reflect'} y \texttt{origin=0}. En las muestras interiores, el resultado corresponde a un filtro uniforme centrado:
 
 \begin{equation}
@@ -563,7 +630,11 @@ v_j^{filt}[k]
 \label{eq:filtro_uniforme}
 \end{equation}
 
-\noindent donde $v_j^{\mathrm{med}}[k]$ es la velocidad medida, $v_j^{filt}[k]$ la velocidad filtrada de la rueda $j$ y $q$ el desplazamiento entero respecto de la muestra central. En los extremos la señal se prolonga mediante reflexión. No corresponde a un promedio móvil causal, porque utiliza muestras anteriores y posteriores al índice procesado.
+\noindent En la Ec.~\eqref{eq:filtro_uniforme},
+$v_j^{\mathrm{med}}[k]$ es la velocidad medida,
+$v_j^{filt}[k]$ la velocidad filtrada de la rueda $j$ y $q$ el
+desplazamiento entero respecto de la muestra central. En los extremos la
+señal se prolonga mediante reflexión. No corresponde a un promedio móvil causal, porque utiliza muestras anteriores y posteriores al índice procesado.
 
 La función de costo de identificación ejecutada por el script es:
 
@@ -752,7 +823,6 @@ constricción utilizado se obtiene mediante la expresión de Clerc:
 \label{eq:constriccion}
 \end{equation}
 
-
 Para distinguir el error del firmware del error utilizado por el optimizador,
 se define:
 
@@ -931,7 +1001,10 @@ Las configuraciones fuente se mantienen en \path{articubot_one/config/}. En simu
 \end{tabular}
 \end{table}
 
-\noindent La relación entre el muestreo de DWB y el límite posterior impuesto por \texttt{diff\_drive\_controller} se explica en la Sec.~\ref{sec:nav2_ch9}.
+\noindent En hardware real, DWB evalúa candidatos de hasta 0.15~m/s,
+mientras que \texttt{diff\_drive\_controller} limita la velocidad lineal a
+0.13~m/s; por ello, las consignas superiores a este último valor se limitan
+en la etapa posterior.
 
 \subsection{Geometría del costmap e inflación}
 \label{anx:costmap_inflacion}
@@ -1120,7 +1193,19 @@ Clearpath Jackal & US\$~18.000 & Plataforma industrial. \\
 
 Este anexo recoge el detalle por repetición de las pruebas resumidas en la Sec.~\ref{sec:resultados_odometria}: trayectoria rectilínea de 2~m (medias en la Tabla~\ref{tab:resumen_odometria}) y protocolo angular con referencia nominal de $360^\circ$ (medias en la Tabla~\ref{tab:resumen_giro}). Se presentan las cinco repeticiones por entorno.
 
-En simulación, la interpretación del error rectilíneo y la condición del protocolo angular (referencia nominal de $360^\circ$ bajo el límite de 0.35~rad/s del controlador) corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
+Los scripts de la prueba angular publican una consigna de 0.4~rad/s durante
+$2\pi/0.4$~s directamente sobre el tópico de entrada del controlador
+diferencial, lo que corresponde a la referencia nominal de $360^\circ$
+empleada por los scripts de análisis. Sin embargo, la configuración del
+controlador satura la velocidad angular en 0.35~rad/s
+(Tabla~\ref{tab:diff_drive_params}); bajo ese límite, mantenido de forma
+ideal y constante, el giro teórico alcanzable es
+$0.35\,(2\pi/0.4)$~rad, equivalente a $315^\circ$. Por lo tanto, las
+desviaciones informadas en la Sec.~\ref{sec:resultados_odometria} se miden
+respecto de una referencia nominal y no respecto de una consigna de giro
+completo efectivamente aplicada.
+
+En simulación, la interpretación del error rectilíneo y la condición del protocolo angular corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
 
 \subsection{Trayectoria rectilínea de 2~m}
 
@@ -1246,6 +1331,14 @@ El script define \texttt{TOLERANCIA\_SIM=0.25}~m y \texttt{TOLERANCIA\_REAL=0.22
 
 \subsection{Procedencia de los indicadores de mapeo}
 
+\noindent La clasificación de celdas empleada en la
+Ec.~\eqref{eq:cobertura_libre} se realiza sobre la imagen PGM del mapa de
+ocupación. Siendo $M$ dicha imagen y $p$ la intensidad de cada celda, se
+consideran libres las celdas con $p\geq230$ y desconocidas las celdas con
+$50<p<230$; las celdas restantes se clasifican como ocupadas y no participan
+en el cálculo del índice de cobertura. Las diferencias de lectura y redondeo
+entre los distintos scripts de análisis se originan en esta clasificación.
+
 \noindent El script de análisis \path{test/slam/analizar_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_M=0.05$~m/celda y redondea el resultado a dos decimales.
 
 \subsection{Comparación cualitativa de mapas}
@@ -1282,6 +1375,7 @@ mantienen solo como salidas diagnósticas del script y no deben interpretarse
 como números de metas únicas, intentos ni arribos.
 
 \section{Nomenclatura}
+\label{anx:nomenclatura}
 {\small
 \begin{longtable}{p{2.7cm} p{8.5cm} p{2.2cm}}
 \toprule
@@ -1432,7 +1526,6 @@ $N^{-1}\sum_{k=1}^{N}\varepsilon_j[k]^2$
 & (m/s)$^2$ \\
 \end{longtable}
 }
-
 
 \section{Convención de rutas y localización del software}
 \label{anx:rutas_software}

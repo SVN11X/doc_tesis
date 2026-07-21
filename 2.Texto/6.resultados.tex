@@ -6,9 +6,14 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 \section{Validación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
-La evaluación rectilínea utiliza una referencia de 2~m. En simulación, la distancia de odometría coincide con la distancia obtenida mediante \texttt{/get\_entity\_state} en los registros disponibles; en hardware real, el error odométrico corresponde a la discrepancia entre la odometría de encoders y la medición física.
+La evaluación rectilínea utiliza una referencia de 2~m. En simulación, la distancia de odometría coincide con la posición verdadera entregada por el simulador en los registros disponibles; en hardware real, el error odométrico corresponde a la discrepancia entre la odometría de encoders y la medición física.
 
-Las pruebas angulares utilizan una referencia nominal de $360^\circ$ codificada en los scripts de ejecución \path{test/prueba_giro/prueba_giro.py} para hardware y \path{test/prueba_giro_sim/prueba_giro_sim.py} para simulación. Ambos publican \texttt{VEL\_ANGULAR}$=0.4$~rad/s durante $2\pi/0.4$~s directamente en \texttt{diff\_cont/cmd\_vel\_unstamped}; sin embargo, la configuración del controlador \path{articubot_one/config/my_controllers.yaml} limita \texttt{angular.z.max\_velocity} a 0.35~rad/s. Por tanto, $360^\circ$ es la referencia nominal usada por los scripts de análisis, no una consigna angular de $360^\circ$ aplicada sin limitación por el controlador. Bajo el límite ideal constante, el producto $0.35(2\pi/0.4)$ corresponde a $315^\circ$.
+Las pruebas angulares se analizaron respecto de una referencia nominal de
+$360^\circ$ definida por el protocolo. Debido al límite de velocidad angular
+del controlador, esta referencia no corresponde a una consigna efectiva de
+vuelta completa; por ello, los resultados expresan desviación respecto del
+valor nominal y no un error odométrico angular aislado. El desarrollo del
+protocolo se conserva en el \ref{anx:odometria_detalle}.
 
 Para distinguir ambos fenómenos se utilizaron las siguientes métricas:
 
@@ -56,10 +61,10 @@ E_{\theta,360}
 \label{eq:desviacion_angular_360}
 \end{equation}
 
-\noindent donde $E_{\theta,360}$ es la desviación angular normalizada [\%], $\Delta\theta_{360}$ la referencia nominal fija y $\Delta\theta_{\mathrm{obs}}$ el giro observado: medición física en hardware real y giro acumulado de \texttt{/odom} en simulación. Los valores simulados no constituyen una verdad de terreno angular
-independiente, por lo que $E_{\theta,360}$ tampoco representa un error
-odométrico angular; el tratamiento exacto de la orientación se conserva en el
-\ref{anx:odometria_detalle}. La Tabla~\ref{tab:resumen_odometria} consolida las métricas diferenciadas
+\noindent donde $E_{\theta,360}$ es la desviación angular normalizada [\%],
+$\Delta\theta_{360}$ la referencia nominal fija y
+$\Delta\theta_{\mathrm{obs}}$ el giro observado. La
+Tabla~\ref{tab:resumen_odometria} consolida las métricas diferenciadas
 obtenidas en la trayectoria rectilínea de 2~m.
 
 \begin{table}[H]
@@ -100,34 +105,32 @@ Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ \\
 \end{tabular}
 \end{table}
 
-La desviación angular observada combina el límite de velocidad del controlador, la duración fijada por el script, la dinámica física y el procedimiento de medición. Por ello, estos datos no aíslan el error de odometría de orientación ni permiten atribuir cuantitativamente la desviación a la ausencia de una IMU; la incorporación de una IMU se mantiene únicamente como mejora futura.
+La desviación angular observada integra los efectos del límite de
+velocidad, la duración del ensayo, la dinámica física y el procedimiento de
+medición. La incorporación de una IMU se plantea como mejora futura.
 
 \section{Evaluación del controlador PID}
 \label{sec:resultados_pid}
 
-La respuesta experimental en lazo cerrado se adquirió mediante el script de captura
-\path{arduino_firmware/pid_config/ControlLazoCerrado.py}, con una referencia de 0.13~m/s y un período
-nominal de captura de 0.1~s. La lectura serial es asíncrona, por lo que cada
-registro corresponde al último valor disponible informado por el firmware. El
-procedimiento exacto se conserva en el \ref{anx:captura_lazo_cerrado}. La
-Fig.~\ref{fig:respuesta_escalon_final} representa esos datos experimentales y
-no una respuesta simulada del modelo FODT.
+La respuesta en lazo cerrado de la
+Fig.~\ref{fig:respuesta_escalon_final} se adquirió sobre el robot real con
+una referencia de 0.13~m/s. El protocolo de captura se conserva en el
+\ref{anx:captura_lazo_cerrado}.
 
 \utemFigurePropia{2.Texto/Imag/respuesta_escalon_final.png}{0.82\textwidth}
-{Respuesta experimental en lazo cerrado adquirida mediante
-\texttt{ControlLazoCerrado.py} con referencia de 0.13~m/s.}
+{Respuesta experimental en lazo cerrado del robot real con referencia de
+0.13~m/s.}
 {fig:respuesta_escalon_final}
 
-Los indicadores de la Tabla~\ref{tab:pid_performance} provienen de
-una simulación ejecutada por el script comparativo \path{arduino_firmware/pid_config/SintonizacionLambda.py} sobre un modelo
-FODT reidentificado, no de la figura experimental anterior. Las diferencias
-numéricas respecto del firmware real se documentan en el
+Los indicadores de la Tabla~\ref{tab:pid_performance} corresponden a una
+evaluación simulada de las ganancias finales sobre un modelo FODT
+reidentificado. Las aproximaciones del procedimiento se documentan en el
 \ref{anx:lambda_detalle}.
 
 \begin{table}[H]
 \centering
-\caption{Indicadores producidos por una ejecución de
-\texttt{SintonizacionLambda.py} para las ganancias finales del firmware.}
+\caption{Indicadores simulados de la respuesta al escalón para las ganancias
+finales del firmware.}
 \label{tab:pid_performance}
 \small
 \begin{tabular}{p{5.8cm} cc}
@@ -146,41 +149,34 @@ En esa ejecución simulada, la rueda izquierda no permanece dentro de la banda
 del 2\% durante el horizonte de 10~s, mientras que la derecha sí alcanza el
 criterio de establecimiento dentro del horizonte evaluado.
 
-La comparación completa entre la aproximación denominada
-firmware y la referencia Lambda se conserva en la
-Fig.~\ref{fig:comparacion_pso_vs_lambda} del \ref{anx:comparacion_pso_lambda}.
-No se utiliza para demostrar superioridad cuantitativa entre métodos.
+La comparación completa entre las ganancias del firmware y la referencia
+analítica Lambda se conserva en la Fig.~\ref{fig:comparacion_pso_vs_lambda}
+del \ref{anx:comparacion_pso_lambda}, con carácter ilustrativo.
 
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-El mapeo se evaluó primero en simulación, teleoperando el robot dentro del mundo de prueba \path{articubot_one/worlds/obstacles.world}. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
+El mapeo se evaluó primero en simulación, teleoperando el robot dentro de un mundo de prueba con obstáculos. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
 
-La métrica utilizada corresponde al índice de cobertura libre calculado sobre
-la imagen PGM del mapa:
+La métrica utilizada corresponde al índice de cobertura libre, definido como
+la proporción de celdas observadas como libres respecto del total de celdas
+susceptibles de ser exploradas:
 
-\begin{align}
-N_{\mathrm{libre}}
-&=
-\text{número de celdas de } M \text{ con } p\geq230,
-\notag\\
-N_{\mathrm{desconocido}}
-&=
-\text{número de celdas de } M \text{ con } 50<p<230,
-\notag\\
+\begin{equation}
 C_{\mathrm{libre}}
-&=
+=
 100\,
 \frac{N_{\mathrm{libre}}}
-{N_{\mathrm{libre}}+N_{\mathrm{desconocido}}}.
+{N_{\mathrm{libre}}+N_{\mathrm{desconocido}}},
 \label{eq:cobertura_libre}
-\end{align}
+\end{equation}
 
-\noindent donde $M$ es la imagen PGM del mapa, $p$ la intensidad de cada
-celda, $N_{\mathrm{libre}}$ el número de celdas clasificadas como libres,
-$N_{\mathrm{desconocido}}$ el número de celdas desconocidas y
-$C_{\mathrm{libre}}$ el índice de cobertura libre [\%]. Las celdas ocupadas
-no se incluyen en el denominador.
+\noindent donde $N_{\mathrm{libre}}$ es el número de celdas clasificadas como
+libres, $N_{\mathrm{desconocido}}$ el número de celdas desconocidas y
+$C_{\mathrm{libre}}$ el índice de cobertura libre [\%]. Las celdas ocupadas no
+se incluyen en el denominador. La clasificación se realiza sobre la imagen de
+ocupación generada por \texttt{slam\_toolbox}, según los umbrales de
+intensidad indicados en el \ref{anx:resultados_metodologia}.
 
 El área libre mapeada se calcula a partir del número de celdas libres:
 
@@ -191,8 +187,11 @@ N_{\mathrm{libre}}\,\rho_M^2,
 \label{eq:area_libre_mapeada}
 \end{equation}
 
-\noindent donde $A_{\mathrm{libre}}$ es el área libre mapeada [m$^2$] y $\rho_M$ la resolución del mapa [m/celda]. Esta magnitud se deriva de la clasificación de la imagen PGM y no constituye una
-medición física independiente de la superficie del recinto. Las diferencias de lectura y redondeo entre los scripts se documentan en el \ref{anx:resultados_metodologia}. La Tabla~\ref{tab:slam_sim_indicadores} resume los indicadores del mapeo obtenidos en simulación.
+\noindent donde $A_{\mathrm{libre}}$ es el área libre mapeada [m$^2$] y
+$\rho_M$ la resolución del mapa [m/celda]. La
+Tabla~\ref{tab:slam_sim_indicadores} resume los indicadores del mapeo
+obtenidos en simulación; la procedencia y el alcance de estas métricas se
+documentan en el \ref{anx:resultados_metodologia}.
 
 \begin{table}[H]
 \centering
@@ -214,21 +213,24 @@ Consistencia global del mapa (inspección visual) & Correcta \\
 \end{tabular}
 \end{table}
 
-\noindent El tiempo, la distancia, la cobertura y el área se obtienen del
-rosbag y la imagen PGM; el número de nodos es un dato suministrado y la
-consistencia global corresponde a inspección visual. El detalle del origen de
-cada campo se conserva en el \ref{anx:resultados_metodologia}.
+\noindent El origen de los indicadores y el criterio de evaluación
+cualitativa se detallan en el \ref{anx:resultados_metodologia}.
 
-En hardware real también se obtuvieron mapas utilizables. Su evaluación cuantitativa con los archivos disponibles se presenta mediante el índice de cobertura libre y el área libre mapeada de las cinco iteraciones válidas de exploración; no se dispone de un ensayo controlado que permita atribuir la calidad del mapa a un intervalo específico de velocidad.
+En hardware real también se obtuvieron mapas utilizables. Su evaluación
+cuantitativa se presenta mediante el índice de cobertura libre y el área
+libre mapeada de las cinco iteraciones válidas de exploración.
 
 El contraste cualitativo entre los mapas de simulación y hardware real se presenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
 
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
-El script de evaluación por escenarios \path{test/navegacion/run_prueba_nav.sh} se describe en el \ref{anx:protocolo_nav}. Este procedimiento no fue ejecutado en los datos entregados y, en su forma actual, no conserva identificadores de meta ni garantiza que cada estado observado corresponda unívocamente a la repetición en curso.
+El protocolo de evaluación por escenarios se describe en el
+\ref{anx:protocolo_nav}; no fue ejecutado sobre los datos disponibles. Por
+esta razón, la navegación dirigida se evalúa funcionalmente, mientras que
+la exploración se analiza mediante cobertura y área mapeada.
 
-La exploración basada en fronteras se ejecutó y registró mediante \path{test/exploracion/run_explore.sh} en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada}, con la interpretación allí establecida. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico; el campo de intervenciones corresponde únicamente a intervenciones registradas manualmente por el operador mediante el script.
+La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada}. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico.
 
 \begin{table}[H]
 \centering
@@ -239,11 +241,8 @@ La exploración basada en fronteras se ejecutó y registró mediante \path{test/
 \toprule
 \textbf{Indicador} & $\boldsymbol{\mu}$ & $\boldsymbol{\sigma}$ \\
 \midrule
-Duración de sesión (rosbag) & 2.5 min & 0.5 min \\
+Duración de sesión & 2.5 min & 0.5 min \\
 Duración de exploración activa & 1.1 min & 0.6 min \\
-Metas generadas registradas por el contador & 0.0 & 0.0 \\
-Coincidencias de éxito registradas & 0.4 & 0.9 \\
-Coincidencias de cancelación, aborto o fallo registradas & 132.2 & 89.1 \\
 Índice de cobertura libre & 62.2\% & 12.9\% \\
 Área libre mapeada & 3.50 m$^2$ & 0.03 m$^2$ \\
 Intervenciones manuales registradas & 0 & 0 \\
@@ -254,23 +253,19 @@ Intervenciones manuales registradas & 0 & 0 \\
 \begin{minipage}{0.95\textwidth}
 \footnotesize
 \textit{Nota:} $\mu$ representa la media aritmética y $\sigma$ la desviación
-estándar, calculadas a partir de las cinco iteraciones válidas.
+estándar, calculadas a partir de las cinco iteraciones válidas. Los
+contadores diagnósticos de metas, éxitos y fallos se excluyen de este
+resumen por no identificar objetivos únicos; su detalle y limitaciones se
+presentan en el \ref{anx:resultados_metodologia}.
 \end{minipage}
 \end{table}
 
-La métrica cuantitativa sustentada por los archivos existentes es el índice de
-cobertura libre; la mejor iteración alcanzó 82.9\%. Esta cobertura demuestra
-acumulación de observaciones durante la ejecución, pero no demuestra por sí
-sola la llegada efectiva a las fronteras. Los contadores de metas, éxito y
-fallo no identifican objetivos únicos y pueden repetir estados de una misma
-acción, por lo que no permiten calcular una tasa de éxito; la mecánica exacta
-del registro se conserva en el \ref{anx:resultados_metodologia}. La
-configuración de inflación de 0.15~m en un recinto reducido constituye una
-limitación plausible de la navegación, aunque los registros actuales no
-permiten atribuir cuantitativamente cada cancelación o aborto a esa causa. En
-consecuencia, se verifica la integración funcional del ciclo y se cuantifica
-la cobertura, mientras que la tasa de éxito de navegación dirigida queda
-indeterminada. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de
+La mejor iteración alcanzó un índice de cobertura libre de 82.9\%. El
+radio de inflación de 0.15~m aplicado en un recinto reducido
+(Sec.~\ref{sec:costmaps_ch9}) condiciona la maniobrabilidad. En conjunto, los
+ensayos verifican la integración funcional y cuantifican la cobertura, pero
+no permiten establecer una tasa válida de éxito para metas de navegación
+dirigida. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de
 validación alcanzado por cada subsistema.
 
 \begin{table}[H]
@@ -284,10 +279,10 @@ validación alcanzado por cada subsistema.
 \midrule
 Odometría & Validada cuantitativamente & Simulación y hardware real \\
 Control PID & Evaluado mediante datos experimentales y simulación &
-Respuesta experimental graficada; métricas de la Tabla~\ref{tab:pid_performance} generadas por \texttt{SintonizacionLambda.py} \\
+Respuesta experimental graficada; las métricas de la Tabla~\ref{tab:pid_performance} provienen de simulación \\
 SLAM & Validado cuantitativamente en simulación; verificado en hardware & En hardware se cuantificaron cobertura y área libre durante la exploración y se evaluaron cualitativamente los mapas \\
-Nav2 & Verificada funcionalmente & El script de escenarios no fue ejecutado y no garantiza asociación unívoca entre meta y estado \\
-Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura media en 5 iteraciones; los contadores diagnósticos no representan metas únicas; véase Tabla~\ref{tab:resumen_exploracion} \\
+Nav2 & Verificada funcionalmente & El protocolo por escenarios no fue ejecutado sobre los datos disponibles \\
+Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura media en 5 iteraciones; véase Tabla~\ref{tab:resumen_exploracion} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -305,15 +300,16 @@ plantea como trabajo futuro.
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_resultados}
 
-Los resultados muestran que el prototipo alcanza un error odométrico medio de 3.63\% en trayectorias rectas de hardware real. La desviación angular media de $11.7^\circ$ corresponde a la medición física respecto de la referencia nominal de $360^\circ$ usada por el script, bajo una solicitud de 0.4~rad/s limitada a 0.35~rad/s por el controlador; no corresponde al error de seguimiento de una consigna efectiva de giro completo. La respuesta en lazo cerrado de la Fig.~\ref{fig:respuesta_escalon_final} fue medida en hardware; los sobreimpulsos de 10.66\%--15.63\% provienen, en cambio, de una ejecución simulada de \texttt{SintonizacionLambda.py} y deben interpretarse con las aproximaciones numéricas de ese script.
+Los resultados muestran un error odométrico medio de 3.63\% en
+trayectorias rectas sobre hardware real y una desviación angular media de
+$11.7^\circ$ respecto de la referencia nominal del protocolo. La respuesta
+en lazo cerrado de la Fig.~\ref{fig:respuesta_escalon_final} fue medida en
+hardware, mientras que los sobreimpulsos de 10.66\%--15.63\% corresponden a
+la evaluación simulada de las ganancias finales.
 
 El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en
-simulación y hardware real. La exploración por fronteras alcanzó un índice medio
-de cobertura libre de 62.2\% ($\sigma=12.9$) en cinco iteraciones, con un
-área libre mapeada media de 3.50~m$^2$ calculada desde las imágenes PGM. Los contadores de éxito y fallo de
-\texttt{run\_explore.sh} no corresponden a metas únicas y presentan una
-inconsistencia interna con el contador de metas generadas; por ello, no se
-informa una tasa de éxito de Nav2. La integración funcional y la cobertura
-quedan documentadas, mientras que la validación cuantitativa de navegación por
-metas requiere un registro que identifique cada meta de forma unívoca; el script
-actual del \ref{anx:protocolo_nav} no proporciona esa asociación.
+simulación y hardware real. La exploración por fronteras alcanzó un índice
+medio de cobertura libre de 62.2\% ($\sigma=12.9$) en cinco iteraciones, con
+un área libre mapeada media de 3.50~m$^2$. La integración funcional y la
+cobertura quedaron verificadas; la validación cuantitativa de navegación por
+metas permanece pendiente.

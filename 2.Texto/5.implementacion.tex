@@ -8,7 +8,6 @@ necesaria para la operación del prototipo tanto en simulación como en hardware
 real. Los detalles complementarios de implementación, configuración y
 verificación se incluyen en los anexos correspondientes.
 
-%=====================================================================
 \section{Componentes y parámetros del prototipo}
 \label{ch:componentes}
 
@@ -93,14 +92,10 @@ Actualización de \texttt{nextPID} en el firmware \\
 \end{tabular}
 \end{table}
 
-El valor efectivo $N_e=1980$~ticks/vuelta se obtuvo experimentalmente a
-partir de diez vueltas completas por rueda. Las medias registradas fueron
-1976~ticks/vuelta para la rueda derecha y 1969~ticks/vuelta para la
-izquierda. Las muestras y el cálculo de los promedios se conservan en el
-\ref{anx:pid_data}, Ecs.~\eqref{eq:promedio_cuentas_R}
-y~\eqref{eq:promedio_cuentas_L}.
+El valor efectivo $N_e=1980$~ticks/vuelta se adoptó a partir de una
+calibración experimental por rueda. Las muestras, los promedios y el error
+asociado al valor unificado se conservan en el \ref{anx:pid_data}.
 
-%=====================================================================
 \section{Gemelo digital del robot}
 \label{ch:robot_digital}
 
@@ -117,7 +112,7 @@ planificador PID del firmware.
 \subsection{Arquitectura del modelo digital}
 \label{sec:atribucion}
 
-El modelo digital se organiza mediante archivos \texttt{xacro} modulares dentro de \path{articubot_one/description/}. Desde \texttt{robot.urdf.xacro} se incluye la estructura mecánica definida en \texttt{robot\_core.xacro} y se selecciona el sensor según el entorno: \texttt{lidar.xacro} para hardware real y \texttt{lidar\_sim.xacro} para simulación. La función y localización de cada archivo se consolidan en el \ref{anx:rutas_software}.
+El modelo digital se organiza mediante una descripción \texttt{xacro} modular: la estructura mecánica se define una sola vez y el sensor láser se selecciona según el entorno de ejecución, de modo que hardware real y simulación comparten la misma geometría. El inventario de archivos, su función y su localización se consolidan en el \ref{anx:rutas_software}.
 
 La contribución principal en esta etapa corresponde al diseño del modelo URDF/\texttt{xacro}, la parametrización geométrica del robot, la definición de marcos de referencia y la integración con los sistemas de control, SLAM y navegación. La atribución completa de paquetes propios, adaptados y externos se documenta en el \ref{anx:gemelo_digital}.
 
@@ -159,13 +154,12 @@ Transformación estática & \texttt{base\_link} $\rightarrow$ \texttt{laser\_fra
 \subsection{Selección del backend de control}
 \label{sec:backend}
 
-El modelo permite seleccionar el backend mediante los argumentos
-\texttt{use\_ros2\_control} y \texttt{sim\_mode}. La ejecución utilizada
-mantiene \texttt{use\_ros2\_control=true} en ambos entornos, pero carga un
+El modelo utiliza \texttt{ros2\_control} en ambos entornos, pero carga un
 plugin de hardware distinto en cada caso, como resume la
 Tabla~\ref{tab:xacro_args_backend}. La interfaz empleada en el robot real se
-describe en la Sec.~\ref{sec:diff_drive_params}; la trazabilidad del backend
-alternativo no ejecutado se conserva en el \ref{anx:gemelo_digital}.
+describe en la Sec.~\ref{sec:diff_drive_params}; los argumentos de
+selección y la trazabilidad del backend alternativo no ejecutado se
+conservan en el \ref{anx:gemelo_digital}.
 
 \begin{table}[H]
 \centering
@@ -184,11 +178,10 @@ Simulación & \texttt{gazebo\_ros2\_control/GazeboSystem} & Estados de las artic
 
 \subsection{Sensor láser simulado y criterios de aceptación}
 
-En simulación, el sensor se modela mediante \texttt{lidar\_sim.xacro}, publicando datos en \texttt{/scan} con el marco \texttt{laser\_frame}. El modelo reproduce el comportamiento general del RPLidar A1 físico, aunque con diferencias propias de la simulación, como ausencia de ruido real y un rango mínimo más permisivo; estas diferencias se consideran parte de la brecha simulación--realidad.
+En simulación, el sensor se modela mediante el complemento de simulación correspondiente, publicando datos en \texttt{/scan} con el marco \texttt{laser\_frame}. El modelo reproduce el comportamiento general del RPLidar A1 físico, aunque con diferencias propias de la simulación, como ausencia de ruido real y un rango mínimo más permisivo; estas diferencias se consideran parte de la brecha simulación--realidad.
 
 Antes de usar el gemelo digital para pruebas de SLAM y navegación, se aplicaron los criterios de aceptación resumidos en la Tabla~\ref{tab:criterios_aceptacion_resumen} del \ref{anx:gemelo_digital}, donde también se conserva la evidencia estructural.
 
-%=====================================================================
 \section{Construcción de hardware y comunicación con ROS 2}
 \label{chap:robot_real}
 
@@ -203,7 +196,13 @@ mediante el driver L298N. A partir del mismo bus, un módulo reductor
 alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los
 periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
 
-El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} mediante enlace serial USB (puerto fijado por regla \texttt{udev} en \texttt{/dev/motor\_controller}, a 57600~baudios), utilizado para enviar referencias de velocidad y recibir datos de encoders. El sensor RPLidar A1 entrega barridos láser publicados en \texttt{/scan}. La Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de datos del prototipo.
+El dominio de comunicaciones conecta la Raspberry Pi con el
+\gls{Arduino} mediante un enlace serial USB para intercambiar referencias de
+velocidad y datos de encoders. El RPLidar A1 entrega los barridos utilizados
+por el sistema de percepción. La asignación de dispositivos, la velocidad
+serial y las reglas de identificación persistente se documentan en el
+\ref{anx:hardware_ros2}. La Figura~\ref{fig:esquema_conexiones} resume las
+conexiones eléctricas y de datos del prototipo.
 
 \utemFigurePropia{2.Texto/Imag/circuit_diagram.png}{0.99\textwidth}
 {Esquema de conexiones eléctricas y de datos del robot diferencial.}
@@ -211,7 +210,7 @@ El dominio de comunicaciones conecta la Raspberry Pi con el \gls{Arduino} median
 
 \subsection{Integración con ROS 2}
 
-En hardware real, el lanzamiento \path{articubot_one/launch/launch_robot.launch.py} inicia los nodos necesarios para publicar la descripción del robot, activar \texttt{ros2\_control} y cargar el controlador diferencial. La arquitectura incluye:
+En hardware real, un único archivo de lanzamiento inicia los nodos necesarios para publicar la descripción del robot, activar \texttt{ros2\_control} y cargar el controlador diferencial. La arquitectura incluye:
 
 \begin{itemize}
 \item \texttt{robot\_state\_publisher}, encargado de publicar las transformaciones del robot.
@@ -221,7 +220,6 @@ En hardware real, el lanzamiento \path{articubot_one/launch/launch_robot.launch.
 \end{itemize}
 
 La cadena de transformaciones mantiene la misma convención usada en simulación (Sec.~\ref{sec:tf-convenciones}): \texttt{slam\_toolbox} publica \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
-
 
 \subsection{Control diferencial e interfaz de hardware}
 \label{sec:diff_drive_params}
@@ -254,48 +252,25 @@ ruedas, y los intercambia con el \gls{Arduino} mediante el enlace serial. Su cic
 $f_{\mathrm{ctrl}}$ indicada en la Tabla~\ref{tab:parametros_modelo}, mediante
 \texttt{controller\_manager.update\_rate}.
 
-En la fase de escritura del ciclo, la velocidad angular de rueda comandada por
-\texttt{diff\_drive\_controller} se convierte en una referencia entera de
-\textit{ticks/frame} antes de enviar el comando serial \texttt{m}:
-
-\begin{equation}
-m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
-=
-\operatorname{trunc}_{0}
-\left(
-\frac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}[k]
-\right)
-=
-\operatorname{trunc}_{0}
-\left(
-\frac{N_e}{2\pi r f_{\mathrm{loop}}}\,v_j^{\mathrm{cmd}}[k]
-\right),
-\label{eq:mps_to_ticks}
-\end{equation}
-
-\noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y $v_j^{\mathrm{cmd}}[k]$ son
-las consignas angular [rad/s] y lineal [m/s] de la rueda $j$; $2\pi/N_e$ es
-la resolución angular por tick (rad/tick); $\operatorname{trunc}_{0}()$
-representa el truncamiento hacia cero producido al convertir la expresión en punto flotante al argumento entero de la interfaz de envío de comandos de motor (Alg.~\ref{alg:ros2control_cycle}); y $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en ticks/frame. La división utiliza el parámetro independiente \texttt{loop\_rate} de la interfaz, denotado $f_{\mathrm{loop}}$  (Tabla~\ref{tab:parametros_modelo}); la distinción entre ambos mecanismos se detalla en el \ref{anx:implementacion_diffdrive}. La ruta normal de \texttt{ros2\_control} utiliza el
-comando \texttt{m}; no utiliza el comando alternativo \texttt{k}, aunque el
-firmware también incorpora una conversión directa desde m/s para ese
-comando.
+En la fase de escritura, las consignas de rueda se convierten a la unidad
+esperada por el firmware y se envían mediante el enlace serial. La conversión
+incluye la resolución del encoder y una frecuencia propia de la interfaz,
+distinta del ciclo de actualización de \texttt{ros2\_control}; su formulación
+exacta se conserva en el \ref{anx:implementacion_diffdrive},
+Ec.~\eqref{eq:mps_to_ticks}.
 
 En la fase de lectura, los conteos acumulados $c_j[k]$ se convierten en
 posición angular mediante la Ec.~\eqref{eq:posicion_rueda_encoder} y en
 velocidad angular mediante la Ec.~\eqref{eq:w_ruedas}, para
 $j\in\{R,L\}$.
 
-El intervalo $\Delta t_k$ se define en la
-Ec.~\eqref{eq:intervalo_diffdrive}. El plugin exporta una única estimación de
-velocidad angular por rueda y no calcula otra con el período nominal de
-30~Hz.
+El intervalo $\Delta t_k$ corresponde al tiempo real transcurrido entre
+lecturas y se define en la Ec.~\eqref{eq:intervalo_diffdrive}.
 
 Las ganancias PID no se transmiten en tiempo de ejecución: residen en el
 firmware con los valores obtenidos mediante el procedimiento descrito en la
 Sec.~\ref{sec:sintonizacion_pso}. Por tanto, el plugin solo intercambia
 referencias de velocidad y lecturas de encoder.
-
 
 \subsection{Flujo de datos del sistema}
 \label{sec:flujo_datos}
@@ -317,41 +292,42 @@ intervalo $\Delta t_k$ descritos en la Sec.~\ref{sec:diff_drive_params}.
 \State Esperar $3000$~ms y vaciar el búfer de entrada.
 \State Enviar un retorno de carro vacío.
 \While{la interfaz esté iniciada}
-    \If{el puerto serial está cerrado}
-        \State \Return \texttt{ERROR}
-    \EndIf
-    \Statex
-    \State $t_k\gets\Call{TiempoActual}{}$
-    \State $\Delta t_k\gets t_k-t_{\mathrm{prev}}$
-    \State $t_{\mathrm{prev}}\gets t_k$
-    \State $s\gets\Call{SolicitarSerial}{\texttt{e}}$
-    \State $(c_L[k],c_R[k])\gets\Call{ConvertirEnteros}{s}$
-    \For{$j\in\{L,R\}$}
-    \State $(\phi_j[k],\widehat{\omega}_j[k])
-    \gets\Call{ActualizarEstadoRueda}{c_j[k],\Delta t_k}$
-    \EndFor
-    \State Exportar $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$.
-    \State \Call{ActualizarControladorDiferencial}{}
-    \Statex
-    \If{el puerto serial está cerrado}
-        \State \Return \texttt{ERROR}
-    \EndIf
-    \For{$j\in\{L,R\}$}
-    \State $m_j^{\mathrm{cmd}}
-    \gets\Call{ConvertirATicksFrame}
-    {\omega_j^{\mathrm{cmd}},N_e,f_{\mathrm{loop}}}$
-    \EndFor
-    \State \Call{EnviarComando}{\texttt{m},$m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$}
+\If{el puerto serial está cerrado}
+\State \Return \texttt{ERROR}
+\EndIf
+\Statex
+\State $t_k\gets\Call{TiempoActual}{}$
+\State $\Delta t_k\gets t_k-t_{\mathrm{prev}}$
+\State $t_{\mathrm{prev}}\gets t_k$
+\State $s\gets\Call{SolicitarSerial}{\texttt{e}}$
+\State $(c_L[k],c_R[k])\gets\Call{ConvertirEnteros}{s}$
+\For{$j\in\{L,R\}$}
+\State $(\phi_j[k],\widehat{\omega}_j[k])
+\gets\Call{ActualizarEstadoRueda}{c_j[k],\Delta t_k}$
+\EndFor
+\State Exportar $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$.
+\State \Call{ActualizarControladorDiferencial}{}
+\Statex
+\If{el puerto serial está cerrado}
+\State \Return \texttt{ERROR}
+\EndIf
+\For{$j\in\{L,R\}$}
+\State $m_j^{\mathrm{cmd}}
+\gets\Call{ConvertirATicksFrame}
+{\omega_j^{\mathrm{cmd}},N_e,f_{\mathrm{loop}}}$
+\EndFor
+\State \Call{EnviarComando}{\texttt{m},$m_L^{\mathrm{cmd}},m_R^{\mathrm{cmd}}$}
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
 
-
 \subsection{Teleoperación y multiplexación de comandos}
 
-La teleoperación se realiza mediante un mando inalámbrico (nodos \texttt{joy\_node} y \texttt{teleop\_twist\_joy}) y funciona como mecanismo de seguridad mediante un \textit{dead-man switch} asociado al botón de habilitación. La salida del multiplexor se remapea hacia \texttt{/diff\_cont/cmd\_vel\_unstamped}, tópico de entrada del controlador diferencial.
+La teleoperación se realiza mediante un mando inalámbrico y utiliza un
+\textit{dead-man switch} como mecanismo de seguridad. Sus nodos, el
+multiplexor y el remapeo del tópico de salida se documentan en el
+\ref{anx:hardware_ros2}.
 
-%=====================================================================
 \section{Firmware de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
 
@@ -359,12 +335,15 @@ El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto ho
 
 \subsection{Arquitectura modular y constantes físicas}
 
-Los módulos del firmware se encuentran en \path{arduino_firmware/ROSArduinoBridge/}. En \texttt{ROSArduinoBridge.ino} se coordina la comunicación serial y el ciclo principal; \texttt{commands.h} define los comandos; \texttt{encoder\_driver.h}/\texttt{encoder\_driver.ino} realizan la lectura de encoders; \texttt{motor\_driver.h}/\texttt{motor\_driver.ino} accionan el L298N; y \texttt{diff\_controller.h} implementa el controlador PID. El inventario de rutas se conserva en el \ref{anx:rutas_software}.
+El firmware se organiza en módulos independientes para la comunicación serial y el ciclo principal, la definición de comandos, la lectura de encoders, el accionamiento del driver L298N y el controlador PID. El inventario de archivos y rutas se conserva en el \ref{anx:rutas_software}.
 
-El firmware utiliza el diámetro de rueda $D=2r=0.067$~m y la resolución
-efectiva ya calibrada $N_e=1980$~ticks/vuelta
-(Tabla~\ref{tab:parametros_modelo}), parametrizados respectivamente como
-\texttt{WHEEL\_DIAMETER} y \texttt{ENC\_TICKS\_PER\_REV}. La constante \texttt{PID\_RATE}$=30$ pertenece específicamente al planificador del firmware; interviene en las conversiones y en la división entera \texttt{1000/PID\_RATE}, por lo que \texttt{nextPID} se incrementa en 33~ms, no en $1/30$~s exactos (Ec.~\eqref{eq:pid_intervalo_real}). A partir de estas constantes, el firmware calcula el factor de conversión entre velocidad lineal en m/s y velocidad de rueda en \textit{ticks/frame} como $N_e/(2\pi r\,f_{\mathrm{PID,nom}})\approx313.56$, evaluado con $D=2r$. Es la misma expresión que los scripts de sintonización emplean como $\kappa_{\mathrm{sim}}$ (Ec.~\eqref{eq:lambda_conversion}).
+El firmware utiliza la geometría y la resolución efectiva de encoders de
+la Tabla~\ref{tab:parametros_modelo} para expresar las referencias y
+mediciones en \textit{ticks/frame}. La temporalidad interna del controlador
+es independiente del ciclo de \texttt{ros2\_control}; su programación y los
+factores de conversión se documentan en el
+\ref{anx:implementacion_diffdrive} y en el
+\ref{anx:protocolos_sintonizacion}.
 
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
@@ -403,13 +382,13 @@ $K_o$ & 50 & 50 \\
 \end{tabular}
 \end{table}
 
-Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del firmware. El código divide por $K_o$ el numerador completo de la Ec.~\ref{eq:pid_incremento} y después asigna el resultado a una variable \texttt{long}. Debido a ese truncamiento y a los estados enteros, la operación ejecutada no debe reemplazarse por tres ganancias predivididas $K_p/K_o$, $K_d/K_o$ y $K_i/K_o$ como si fueran algebraicamente equivalentes. La salida se satura al intervalo PWM $[u_{\min},u_{\max}]=[-255,255]$ (constante \texttt{MAX\_PWM} del firmware). La convención heredada de \texttt{ROSArduinoBridge} ordena los parámetros como $K_p$, $K_d$, $K_i$, $K_o$.
-
-La rutina de reinicio del controlador no se limita a reiniciar los estados
-internos: también vuelve a cargar las ganancias predeterminadas mostradas en
-la Tabla~\ref{tab:ganancias_pid}. Sus contextos de invocación son los
-indicados en la Tabla~\ref{tab:protocolo_serial}. En consecuencia, cualquier
-ganancia cargada temporalmente mediante los comandos seriales de sintonización se reemplaza por los valores codificados al producirse cualquiera de esos reinicios.
+Las ganancias se aplican en la escala interna del firmware, con salida
+saturada al intervalo PWM permitido. La implementación utiliza estados
+enteros, bandas muertas independientes por rueda y actualización condicional
+del integrador; el detalle de tipos, truncamientos y orden de operaciones se
+conserva en el \ref{anx:pid_ecuaciones}. Los valores de la
+Tabla~\ref{tab:ganancias_pid} corresponden a las ganancias definitivas
+cargadas al reiniciar el controlador.
 
 \begin{algorithm}[H]
 \caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware}
@@ -418,36 +397,40 @@ ganancia cargada temporalmente mediante los comandos seriales de sintonización 
 \Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; parámetros PID y límites de saturación definidos previamente.
 \Ensure Salidas PWM y estados internos actualizados.
 \Procedure{resetPID}{}
-    \State Cargar las ganancias predeterminadas de ambas ruedas.
-    \State Leer los conteos actuales de los encoders.
-    \State Inicializar \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero.
+\State Cargar las ganancias predeterminadas de ambas ruedas.
+\State Leer los conteos actuales de los encoders.
+\State Inicializar \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero.
 \EndProcedure
 \Statex
 \Procedure{updatePID}{}
-    \State Leer $c_L[k]$ y luego $c_R[k]$.
-    \If{\texttt{moving}$=0$}
-        \If{algún \texttt{PrevInput} es distinto de cero}
-            \State \Call{resetPID}{}
-        \EndIf
-        \State \Return
-    \EndIf
-    \State \Call{doPID}{PID derecho,$1$}
-    \State \Call{doPID}{PID izquierdo,$2$}
-    \State \Call{setMotorSpeeds}{\texttt{leftPID.output},\texttt{rightPID.output}}
+\State Leer $c_L[k]$ y luego $c_R[k]$.
+\If{\texttt{moving}$=0$}
+\If{algún \texttt{PrevInput} es distinto de cero}
+\State \Call{resetPID}{}
+\EndIf
+\State \Return
+\EndIf
+\State \Call{doPID}{PID derecho,$1$}
+\State \Call{doPID}{PID izquierdo,$2$}
+\State \Call{setMotorSpeeds}{\texttt{leftPID.output},\texttt{rightPID.output}}
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
-
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
 
-El bucle principal atiende el parser serial, programa el PID mediante el intervalo $T_{\mathrm{PID,sched}}$ definido en la Tabla~\ref{tab:parametros_modelo} y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento. La rama de auto-detención no invoca directamente la rutina de reinicio del controlador; en la siguiente actualización programada, dicha rutina solo se ejecuta si la última medición de velocidad de alguna rueda es distinta de cero, como se detalla en el Alg.~\ref{alg:pid_firmware}. Esta condición evita que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación.
+El bucle principal atiende el parser serial, programa la ejecución del PID mediante el intervalo $T_{\mathrm{PID,sched}}$ definido en la Tabla~\ref{tab:parametros_modelo} y evalúa la auto-detención. Si transcurren más de 2000~ms sin recibir comandos de movimiento, el firmware detiene los motores y desactiva la bandera de movimiento, evitando que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación. La secuencia de reinicio asociada se presenta en el Alg.~\ref{alg:pid_firmware}.
 
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
 
-Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT, optimización por PSO y refinamiento experimental, formalizado en el Alg.~\ref{alg:sintonizacion}. La identificación y la sintonización utilizan enjambres de $N_p=50$ partículas durante $g_{\max}=150$ generaciones. Las variables, escalas, cotas y funciones de costo se conservan en la Tabla~\ref{tab:pso_config} del \ref{anx:protocolos_sintonizacion}.
+Las ganancias PID se determinaron mediante el procedimiento híbrido
+descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT,
+optimización por PSO y refinamiento experimental, formalizado en el
+Alg.~\ref{alg:sintonizacion}. La configuración del enjambre, las escalas, las
+cotas y las funciones de costo se conservan en el
+\ref{anx:protocolos_sintonizacion}.
 
 \begin{algorithm}[H]
 \caption{Sintonización híbrida del PID mediante identificación FODT y PSO}
@@ -457,11 +440,11 @@ Las ganancias PID se determinaron mediante el procedimiento híbrido descrito en
 \Ensure Ganancias PID definitivas por rueda.
 \State Cargar las señales de entrada, velocidad y tiempo.
 \For{$j\in\{L,R\}$}
-    \State $v_j^{\mathrm{filt}}\gets\Call{FiltrarVelocidad}{v_j^{\mathrm{med}}}$
-    \State Definir $J_{\mathrm{ID}}$ mediante la Ec.~\eqref{eq:costo_identificacion}.
-    \State $(K_{m,j},\tau_j,L_{d,j})\gets\Call{PSO}{J_{\mathrm{ID}}}$
-    \State Definir $J_{\mathrm{PID}}$ mediante la Ec.~\eqref{eq:costo_pso}.
-    \State $(K_{p,j},K_{d,j},K_{i,j})\gets\Call{PSO}{J_{\mathrm{PID}}}$
+\State $v_j^{\mathrm{filt}}\gets\Call{FiltrarVelocidad}{v_j^{\mathrm{med}}}$
+\State Definir $J_{\mathrm{ID}}$ mediante la Ec.~\eqref{eq:costo_identificacion}.
+\State $(K_{m,j},\tau_j,L_{d,j})\gets\Call{PSO}{J_{\mathrm{ID}}}$
+\State Definir $J_{\mathrm{PID}}$ mediante la Ec.~\eqref{eq:costo_pso}.
+\State $(K_{p,j},K_{d,j},K_{i,j})\gets\Call{PSO}{J_{\mathrm{PID}}}$
 \EndFor
 \State Refinar las ganancias sobre el robot real.
 \State Registrar las ganancias definitivas en el firmware.
@@ -499,60 +482,60 @@ para $j\in\{R,L\}$.
 \gets\Call{LeerEncoders}{}$
 
 \If{la lectura inicial es inválida}
-    \State Detener los motores y cerrar el puerto.
-    \State \Return \texttt{ERROR}
+\State Detener los motores y cerrar el puerto.
+\State \Return \texttt{ERROR}
 \EndIf
 
 \State $k\gets0$
 
 \While{$t_k=kT_{\mathrm{cap}}\leq t_f$}
 
-    \State $t_{\mathrm{ini}}
-    \gets\Call{TiempoActual}{}$
+\State $t_{\mathrm{ini}}
+\gets\Call{TiempoActual}{}$
 
-    \If{$t_k\geq t_{\mathrm{step}}$}
-        \State $u_L[k],u_R[k]\gets u_{\mathrm{step}}$
-    \Else
-        \State $u_L[k],u_R[k]\gets0$
-    \EndIf
+\If{$t_k\geq t_{\mathrm{step}}$}
+\State $u_L[k],u_R[k]\gets u_{\mathrm{step}}$
+\Else
+\State $u_L[k],u_R[k]\gets0$
+\EndIf
 
-    \State \Call{AplicarPWM}{$u_L[k],u_R[k]$}
+\State \Call{AplicarPWM}{$u_L[k],u_R[k]$}
 
-    \State $(c_L[k],c_R[k])
-    \gets\Call{LeerEncoders}{}$
+\State $(c_L[k],c_R[k])
+\gets\Call{LeerEncoders}{}$
 
-    \If{la lectura es inválida}
-        \State $(c_L[k],c_R[k])
-        \gets(c_L[k-1],c_R[k-1])$
-        \State Registrar una advertencia.
-    \EndIf
+\If{la lectura es inválida}
+\State $(c_L[k],c_R[k])
+\gets(c_L[k-1],c_R[k-1])$
+\State Registrar una advertencia.
+\EndIf
 
-    \For{$j\in\{R,L\}$}
+\For{$j\in\{R,L\}$}
 
-        \State $\Delta c_j[k]
-        \gets c_j[k]-c_j[k-1]$
+\State $\Delta c_j[k]
+\gets c_j[k]-c_j[k-1]$
 
-        \State Calcular $v_j^{\mathrm{med}}[k]$
-        mediante la Ec.~\eqref{eq:vel_lazo_abierto}.
+\State Calcular $v_j^{\mathrm{med}}[k]$
+mediante la Ec.~\eqref{eq:vel_lazo_abierto}.
 
-        \State Registrar
-        $(u_j[k],v_j^{\mathrm{med}}[k])$.
+\State Registrar
+$(u_j[k],v_j^{\mathrm{med}}[k])$.
 
-        \State $c_j[k-1]\gets c_j[k]$
+\State $c_j[k-1]\gets c_j[k]$
 
-    \EndFor
+\EndFor
 
-    \State $t_{\mathrm{uso}}
-    \gets\Call{TiempoActual}{}-t_{\mathrm{ini}}$
+\State $t_{\mathrm{uso}}
+\gets\Call{TiempoActual}{}-t_{\mathrm{ini}}$
 
-    \If{$t_{\mathrm{uso}}<T_{\mathrm{cap}}$}
+\If{$t_{\mathrm{uso}}<T_{\mathrm{cap}}$}
 
-        \State \Call{Esperar}
-        {$T_{\mathrm{cap}}-t_{\mathrm{uso}}$}
+\State \Call{Esperar}
+{$T_{\mathrm{cap}}-t_{\mathrm{uso}}$}
 
-    \EndIf
+\EndIf
 
-    \State $k\gets k+1$
+\State $k\gets k+1$
 
 \EndWhile
 
@@ -567,32 +550,35 @@ para $j\in\{R,L\}$.
 
 \subsubsection{Identificación FODT y optimización PID}
 
-La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la respuesta al escalón en lazo abierto (Ec.~\ref{eq:fodt_discreto}); luego, ese mismo modelo de primer orden actúa como planta en la simulación del controlador (Ec.~\ref{eq:fodt_lazo_cerrado}). Durante la identificación, la señal medida se suaviza antes del ajuste. Los scripts de sintonización emplean una aproximación de la planta y del controlador que no reproduce exactamente el retardo, los tipos enteros ni las bandas muertas asimétricas del firmware; el filtro, la función de costo, la interpolación de la referencia y la cuantización ejecutadas se documentan en el \ref{anx:fodt_scripts}, Ecs.~\eqref{eq:filtro_uniforme}--\eqref{eq:medicion_simulada_ticks}.
+La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la
+respuesta en lazo abierto y utiliza el modelo obtenido para simular el
+controlador. La señal medida se suaviza antes del ajuste. Las aproximaciones
+numéricas de la planta y del controlador, que difieren de algunos detalles
+del firmware, se documentan en el \ref{anx:fodt_scripts}.
 
 \subsubsection{Implementación del optimizador PSO}
 
 El núcleo del optimizador se implementa en un módulo propio de Python, cuyo
 flujo completo se formaliza en los Alg.~\ref{alg:pso_nucleo}
 y~\ref{alg:pso_bucle}: el primero inicializa el enjambre y el mejor global,
-y el segundo ejecuta el bucle de optimización y el escalado de salida; las
-posiciones y velocidades iniciales se generan de forma pseudoaleatoria sin
-fijar una semilla, por lo que distintas ejecuciones pueden producir
-parámetros diferentes. La localización del módulo dentro del repositorio se
-documenta en el \ref{anx:rutas_software}.
+y el segundo ejecuta el bucle de optimización y el escalado de salida. Las
+condiciones de reproducibilidad de la búsqueda se documentan en el
+\ref{anx:pso_detalle} y la localización del módulo en el
+\ref{anx:rutas_software}.
 
 \begin{algorithm}[H]
-\caption{Inicialización del enjambre del PSO ejecutado por \texttt{pyPso.py}}
+\caption{Inicialización del enjambre del PSO}
 \label{alg:pso_nucleo}
 \begin{algorithmic}[1]
 \Require Función de costo $J$; partículas $N_p$; modo ID o PID.
 \Ensure Enjambre inicial $(\xi_i,V_i,P_i,J_i^{\mathrm{best}})$ y mejor global $(J^*,G)$.
 \For{$i=1,\ldots,N_p$}
-    \State $\xi_i\sim\mathcal{U}[0,1]^3$
-    \State $V_i\sim\mathcal{U}[0,1]^3$
-    \State $\theta_i^{\mathrm{eval}}\gets\Call{Escalar}{\xi_i,\mathrm{modo}}$
-    \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
-    \State $P_i\gets\xi_i$
-    \State $J_i^{\mathrm{best}}\gets J_i$
+\State $\xi_i\sim\mathcal{U}[0,1]^3$
+\State $V_i\sim\mathcal{U}[0,1]^3$
+\State $\theta_i^{\mathrm{eval}}\gets\Call{Escalar}{\xi_i,\mathrm{modo}}$
+\State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+\State $P_i\gets\xi_i$
+\State $J_i^{\mathrm{best}}\gets J_i$
 \EndFor
 \State $i^*\gets\arg\min_i J_i$
 \State $J^*\gets J_{i^*}$
@@ -607,29 +593,29 @@ documenta en el \ref{anx:rutas_software}.
 \Require Enjambre y mejor global inicializados (Alg.~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; hiperparámetros de la Tabla~\ref{tab:pso_config}; modo ID o PID.
 \Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
 \For{$g=1,\ldots,g_{\max}$}
-    \State $w_{\mathrm{in}}^{g}
-    \gets\Call{CalcularInercia}{g,g_{\max}}$
-    \For{$i=1,\ldots,N_p$}
-        \State $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$
-        \State $V_i\gets
-        \Call{ActualizarVelocidadPSO}
-        {V_i,\xi_i,P_i,G,w_{\mathrm{in}}^{g},
-        c_1,c_2,\chi,\rho_1,\rho_2}$
-        \State $\xi_i\gets\Call{ActualizarPosicion}{\xi_i,V_i}$
-        \State $\theta_i^{\mathrm{eval}}
-        \gets\Call{EscalarCandidato}{\xi_i,\mathrm{modo}}$
-        \State $J_i\gets J(\theta_i^{\mathrm{eval}})$
-        \If{$J_i<J_i^{\mathrm{best}}$}
-            \State $J_i^{\mathrm{best}}\gets J_i$
-            \State $P_i\gets\xi_i$
-        \EndIf
-    \EndFor
-    \State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$
-    \If{$J_{\mathrm{new}}^*<J^*$}
-        \State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$
-        \State $G\gets\xi_{i^*}$
-        \State $J^*\gets J_{\mathrm{new}}^*$
-    \EndIf
+\State $w_{\mathrm{in}}^{g}
+\gets\Call{CalcularInercia}{g,g_{\max}}$
+\For{$i=1,\ldots,N_p$}
+\State $\rho_1,\rho_2\sim\mathcal{U}[0,1]^3$
+\State $V_i\gets
+\Call{ActualizarVelocidadPSO}
+{V_i,\xi_i,P_i,G,w_{\mathrm{in}}^{g},
+c_1,c_2,\chi,\rho_1,\rho_2}$
+\State $\xi_i\gets\Call{ActualizarPosicion}{\xi_i,V_i}$
+\State $\theta_i^{\mathrm{eval}}
+\gets\Call{EscalarCandidato}{\xi_i,\mathrm{modo}}$
+\State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+\If{$J_i<J_i^{\mathrm{best}}$}
+\State $J_i^{\mathrm{best}}\gets J_i$
+\State $P_i\gets\xi_i$
+\EndIf
+\EndFor
+\State $J_{\mathrm{new}}^*\gets\min_i J_i^{\mathrm{best}}$
+\If{$J_{\mathrm{new}}^*<J^*$}
+\State $i^*\gets\arg\min_i J_i^{\mathrm{best}}$
+\State $G\gets\xi_{i^*}$
+\State $J^*\gets J_{\mathrm{new}}^*$
+\EndIf
 \EndFor
 \State $\theta^{\mathrm{out}}
 \gets\Call{EscalarSalida}{G,\mathrm{modo}}$
@@ -637,54 +623,50 @@ documenta en el \ref{anx:rutas_software}.
 \end{algorithmic}
 \end{algorithm}
 
-Las operaciones \Call{ActualizarVelocidadPSO}, \Call{CalcularInercia},
-\Call{ActualizarPosicion}, \Call{EscalarCandidato} y \Call{EscalarSalida}
-corresponden a las Ecs.~\eqref{eq:pso_vel_marco_teorico},
-\eqref{eq:pso_inercia}, \eqref{eq:pso_pos_marco_teorico},
-\eqref{eq:pso_escala} y~\eqref{eq:pso_salida}, respectivamente. El orden $\{L,R\}$ del bucle de sintonización reproduce el orden en que los
-scripts recorren las ruedas, formalizado en el Alg.~\ref{alg:sintonizacion}.
+Las operaciones principales de los Alg.~\ref{alg:pso_nucleo}
+y~\ref{alg:pso_bucle} siguen la formulación de la
+Sec.~\ref{sec:pso_marco}, incluida la actualización de velocidad e inercia
+de las Ecs.~\eqref{eq:pso_vel_marco_teorico} y~\eqref{eq:pso_inercia}. Las cotas,
+el escalado y la transformación de salida
+(Ecs.~\eqref{eq:pso_pos_marco_teorico}--\eqref{eq:pso_salida}) se documentan
+en el \ref{anx:pso_detalle}.
 
 \subsubsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}
 
-Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}). El código final solo conserva las ganancias resultantes por rueda; no registra de forma automática qué modificación experimental se asocia a cada fenómeno mecánico.
+Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}), hasta obtener los valores definitivos de la Tabla~\ref{tab:ganancias_pid}.
 
-La salida de la ejecución utilizada como punto de partida, incluidos los parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva en la Tabla~\ref{tab:pso_resultados} del \ref{anx:resultados_pso_ejecucion}, junto con sus particularidades numéricas (ausencia de semilla y retardos inferiores al período de captura).
+La salida de la ejecución utilizada como punto de partida, incluidos los
+parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva
+en la Tabla~\ref{tab:pso_resultados} del
+\ref{anx:resultados_pso_ejecucion}, junto con sus condiciones de
+reproducibilidad.
 
-
-%=====================================================================
 \section{Arquitectura de control y navegación: SLAM, Nav2 y exploración}
 \label{chap:app_control_nav}
 
-Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron desarrolladas en las secciones anteriores; esta sección enfatiza la orquestación de los subsistemas mediante \texttt{ros2\_control}, \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite}. Las configuraciones ejecutables se mantienen en \path{articubot_one/config/}; la correspondencia entre archivos, entorno y función se reúne en el \ref{anx:rutas_software}, y los parámetros completos de configuración se trasladan al \ref{anx:nav2_slam_config}.
+Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron desarrolladas en las secciones anteriores; esta sección enfatiza la orquestación de los subsistemas mediante \texttt{ros2\_control}, \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite}. La correspondencia entre archivos de configuración, entorno y función se reúne en el \ref{anx:rutas_software}, y los parámetros completos se trasladan al \ref{anx:nav2_slam_config}.
 
 \subsection{Mapeo con \texttt{slam\_toolbox}}
 \label{sec:slam_ch9}
 
 El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}), en modo \texttt{online\_async}. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
 
-La configuración real utiliza el solver Ceres con estrategia
-\texttt{LEVENBERG\_MARQUARDT}. Los marcos, el tópico de entrada, la resolución
-y la habilitación del cierre de lazo se consolidan en la
-Tabla~\ref{tab:slam_params_ch9} del \ref{anx:nav2_slam_config}.
-
-Las configuraciones real y simulada comparten la estructura del algoritmo,
-pero no sus valores numéricos. En hardware real se emplean un alcance máximo
-de 10~m, intervalo mínimo de 0.1~s, desplazamiento mínimo de 0.05~m, cambio
-angular mínimo de 0.05~rad y un buffer de 110 barridos; en simulación,
-alcance de 12~m, intervalo de 0.5~s, desplazamiento de 0.1~m, cambio angular
-de 0.2~rad y buffer de 10 barridos. La asignación de marcos por entorno
-corresponde a la Sec.~\ref{sec:tf-convenciones}.
+La configuración real utiliza el solver Ceres. Las configuraciones de
+hardware y simulación comparten la estructura del algoritmo, pero emplean
+parámetros específicos para cada entorno. Los marcos, el tópico de entrada,
+la resolución y el cierre de lazo se resumen en la
+Tabla~\ref{tab:slam_params_ch9}; los valores completos se documentan en el
+\ref{anx:nav2_slam_config}.
 
 \subsection{Localización sobre un mapa conocido con AMCL}
 
 Para la navegación sobre un mapa previamente guardado se dispone del nodo
-AMCL de Nav2, configurado en \path{articubot_one/config/nav2_params.yaml} y
-\path{articubot_one/config/nav2_params_sim.yaml}. El lanzamiento
-\path{articubot_one/launch/localization_launch.py} inicia el servidor de mapas
-y el nodo \texttt{nav2\_amcl}, que utiliza el mapa de ocupación, la odometría,
-los barridos del tópico \texttt{/scan} y las transformaciones del robot para
-estimar su pose.
+AMCL de Nav2, con archivos de configuración propios para hardware real y
+simulación. Su lanzamiento inicia el servidor de mapas y el nodo de
+localización, que utiliza el mapa de ocupación, la odometría, los barridos
+del tópico \texttt{/scan} y las transformaciones del robot para estimar su
+pose.
 
 Debe distinguirse este modo de la exploración ejecutada durante el mapeo en
 línea. En las pruebas de mapeo y exploración documentadas en este trabajo,
@@ -704,11 +686,11 @@ de navegación y su conexión con el control diferencial.
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[font=\small,
-  nodo/.style={draw, rounded corners=2pt, align=center, fill=gray!10,
-               minimum height=0.85cm, inner sep=4pt},
-  dato/.style={-{Stealth[length=2.5mm]}, thick},
-  bidato/.style={{Stealth[length=2.5mm]}-{Stealth[length=2.5mm]}, thick},
-  etq/.style={font=\scriptsize, fill=white, inner sep=1pt}]
+nodo/.style={draw, rounded corners=2pt, align=center, fill=gray!10,
+minimum height=0.85cm, inner sep=4pt},
+dato/.style={-{Stealth[length=2.5mm]}, thick},
+bidato/.style={{Stealth[length=2.5mm]}-{Stealth[length=2.5mm]}, thick},
+etq/.style={font=\scriptsize, fill=white, inner sep=1pt}]
 
 \node[nodo] (lidar)   at (4.2,9.4)  {\gls{LIDAR} 2D};
 \node[nodo] (slam)    at (4.2,7.6)  {\texttt{slam\_toolbox}\\ mapa y pose};
@@ -736,7 +718,7 @@ de navegación y su conexión con el control diferencial.
 \draw[dato] (mux)     -- (diff)    node[etq, midway, right=2pt] {consignas};
 \draw[bidato] (diff)  -- (hw)      node[etq, midway, right=2pt] {referencias y encoders};
 \draw[dato] (diff.west) -- ++(-6.0,0) |- (slam.west)
-            node[etq, pos=0.25, above=1pt] {\texttt{/odom}};
+node[etq, pos=0.25, above=1pt] {\texttt{/odom}};
 \end{tikzpicture}
 
 \vspace{4pt}
@@ -753,48 +735,48 @@ La configuración de los planificadores global y local se resume en la
 Tabla~\ref{tab:nav2_componentes_ch9}. El controlador local evalúa las
 trayectorias candidatas mediante la Ec.~\eqref{eq:dwb_cost}.
 
-\begin{table}[H] 
-\centering 
-\caption{Configuración de los planificadores global y local utilizados.} 
-\label{tab:nav2_componentes_ch9} 
-\small 
-\begin{tabular}{p{3.0cm} p{4.8cm} p{5.4cm}} 
-\toprule 
-\textbf{Componente} & \textbf{Plugin} & \textbf{Configuración principal} \\ 
-\midrule 
-Planificador global & \texttt{nav2\_navfn\_planner/NavfnPlanner} & A$^*$ habilitado, espacio desconocido permitido y tolerancia de 0.5~m \\ 
-Controlador local & \texttt{dwb\_core::DWBLocalPlanner} & Críticos de obstáculos, oscilación, alineación y distancia respecto de la ruta y de la meta \\ 
-\bottomrule 
-\end{tabular} 
-\end{table} 
+\begin{table}[H]
+\centering
+\caption{Configuración de los planificadores global y local utilizados.}
+\label{tab:nav2_componentes_ch9}
+\small
+\begin{tabular}{p{3.0cm} p{4.8cm} p{5.4cm}}
+\toprule
+\textbf{Componente} & \textbf{Plugin} & \textbf{Configuración principal} \\
+\midrule
+Planificador global & \texttt{nav2\_navfn\_planner/NavfnPlanner} & A$^*$ habilitado, espacio desconocido permitido y tolerancia de 0.5~m \\
+Controlador local & \texttt{dwb\_core::DWBLocalPlanner} & Críticos de obstáculos, oscilación, alineación y distancia respecto de la ruta y de la meta \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-En hardware real, DWB admite candidatos de hasta 0.15~m/s, mientras que \texttt{diff\_drive\_controller} limita la velocidad lineal a 0.13~m/s; por ello, las consignas superiores a este último valor se limitan posteriormente.
+La relación entre los límites del controlador local y del controlador
+diferencial se documenta en el \ref{anx:nav2_slam_config}.
 
 \subsection{Mapas de costos}
 \label{sec:costmaps_ch9}
 
 Nav2 utiliza dos mapas de costos. El \texttt{global\_costmap} entrega la representación usada por el planificador global, mientras que el \texttt{local\_costmap} se actualiza alrededor del robot y permite al controlador DWB reaccionar ante obstáculos cercanos. Ambos mapas incorporan una capa de inflación, necesaria para mantener una distancia de seguridad respecto de los obstáculos.
 
-En hardware real, las capas de inflación de \texttt{global\_costmap} y \texttt{local\_costmap} utilizan \texttt{inflation\_radius}=0.15~m y \texttt{cost\_scaling\_factor}=5.0, con resolución de 0.05~m/celda. En simulación, ambos costmaps utilizan 0.55~m y 3.0, respectivamente. El detalle completo se presenta en el \ref{anx:nav2_slam_config}.
+En hardware real ambos mapas de costos emplean un radio de inflación de 0.15~m, valor inferior al configurado en simulación; sus implicancias sobre la navegación en un recinto reducido se discuten en la Sec.~\ref{sec:resultados_nav2}. La geometría completa de los costmaps se presenta en el \ref{anx:nav2_slam_config}.
 
 \subsection{Árbol de comportamiento y recuperación}
 \label{sec:bt_ch9}
 
 La navegación de alto nivel se organiza mediante el árbol de comportamiento descrito en la Sec.~\ref{sec:nav_marco}.
 
-El árbol ejecutado recalcula la ruta a 4~Hz y aplica recuperaciones en dos
-niveles: ante fallos de planificación o seguimiento actúa sobre el costmap
-correspondiente; si falla la navegación completa, ejecuta la secuencia
-configurada en la Tabla~\ref{tab:recovery_ch9} del
-\ref{anx:recovery_nav2}.
+El árbol ejecutado replanifica la ruta de forma periódica y aplica
+recuperaciones en dos niveles: ante fallos de planificación o seguimiento
+actúa sobre el costmap correspondiente; si falla la navegación completa,
+ejecuta una secuencia de recuperación configurada, detallada en la
+Tabla~\ref{tab:recovery_ch9} del \ref{anx:recovery_nav2}.
 
 \subsection{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
 
 Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}); su nodo \texttt{explore\_server} identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 
-El explorador utiliza el costmap global, reevalúa las fronteras con una frecuencia configurada de 0.3~Hz y aplica un tiempo máximo sin progreso de 10~s. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo de detección, selección, envío de metas y gestión de la lista negra se resume en el Alg.~\ref{alg:exploracion_fronteras}.
-
+El explorador opera sobre el costmap global, reevalúa periódicamente las fronteras y descarta las metas que no muestran progreso dentro de un tiempo máximo configurado. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo de detección, selección, envío de metas y gestión de la lista negra se resume en el Alg.~\ref{alg:exploracion_fronteras}.
 
 \begin{algorithm}[H]
 \caption{Integración operativa de \texttt{explore\_lite} con Nav2}
@@ -805,61 +787,57 @@ El explorador utiliza el costmap global, reevalúa las fronteras con una frecuen
 \State Ejecutar una planificación inicial.
 \State Programar las planificaciones periódicas.
 \While{la exploración esté activa}
-    \State $q\gets\Call{ObtenerPoseRobot}{}$
-    \State $\mathcal{F}\gets\Call{DetectarFronteras}{C,q}$
-    \For{cada frontera $F\in\mathcal{F}$}
-    \State Calcular $p_F^{\mathrm{impl}}$ y $U(F)$ mediante las Ecs.~\eqref{eq:centroide_frontera_impl} y~\eqref{eq:frontier_cost}.
-    \EndFor
-    \State Eliminar las fronteras menores que \texttt{min\_frontier\_size}.
-    \State Ordenar $\mathcal{F}$ por costo ascendente.
-    \If{$\mathcal{F}=\varnothing$}
-        \State Cancelar la meta activa.
-        \State Detener la exploración.
-        \State \Return
-    \EndIf
-    \State $F^*\gets$ primera frontera de $\mathcal{F}$ cuyo punto no pertenezca a $B$.
-    \If{no existe $F^*$}
-        \State $B\gets\varnothing$
-    \Else
-        \State $p^*\gets p_{F^*}^{\mathrm{impl}}$
-        \If{la meta no presenta progreso durante \texttt{progress\_timeout}}
-            \State $B\gets B\cup\{p^*\}$
-            \State Cancelar la meta activa.
-        \Else
-            \State Enviar $p^*$ a \texttt{NavigateToPose} con orientación identidad.
-            \State $s\gets\Call{ObtenerEstadoMeta}{}$
-            \If{$s=\texttt{SUCCEEDED}$}
-                \State Programar una nueva planificación.
-            \ElsIf{$s=\texttt{ABORTED}$}
-                \State $B\gets B\cup\{p^*\}$
-            \ElsIf{$s=\texttt{CANCELED}$}
-                \State Conservar $B$ sin cambios.
-            \EndIf
-        \EndIf
-    \EndIf
+\State $q\gets\Call{ObtenerPoseRobot}{}$
+\State $\mathcal{F}\gets\Call{DetectarFronteras}{C,q}$
+\For{cada frontera $F\in\mathcal{F}$}
+\State Calcular $p_F^{\mathrm{impl}}$ y $U(F)$ mediante las Ecs.~\eqref{eq:centroide_frontera_impl} y~\eqref{eq:frontier_cost}.
+\EndFor
+\State Eliminar las fronteras menores que \texttt{min\_frontier\_size}.
+\State Ordenar $\mathcal{F}$ por costo ascendente.
+\If{$\mathcal{F}=\varnothing$}
+\State Cancelar la meta activa.
+\State Detener la exploración.
+\State \Return
+\EndIf
+\State $F^*\gets$ primera frontera de $\mathcal{F}$ cuyo punto no pertenezca a $B$.
+\If{no existe $F^*$}
+\State $B\gets\varnothing$
+\Else
+\State $p^*\gets p_{F^*}^{\mathrm{impl}}$
+\If{la meta no presenta progreso durante \texttt{progress\_timeout}}
+\State $B\gets B\cup\{p^*\}$
+\State Cancelar la meta activa.
+\Else
+\State Enviar $p^*$ a \texttt{NavigateToPose} con orientación identidad.
+\State $s\gets\Call{ObtenerEstadoMeta}{}$
+\If{$s=\texttt{SUCCEEDED}$}
+\State Programar una nueva planificación.
+\ElsIf{$s=\texttt{ABORTED}$}
+\State $B\gets B\cup\{p^*\}$
+\ElsIf{$s=\texttt{CANCELED}$}
+\State Conservar $B$ sin cambios.
+\EndIf
+\EndIf
+\EndIf
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
 
-
-Las particularidades de la implementación ejecutada, el cálculo del punto
-representativo de cada frontera, el escalamiento de la distancia en el
-puntaje y la programación del temporizador, se documentan en el
-\ref{anx:explore_impl}, Ecs.~\eqref{eq:centroide_frontera_impl},
-\eqref{eq:frontier_cost} y~\eqref{eq:periodo_explorador_real}.
+El cálculo del punto representativo de cada frontera, el escalamiento de la
+distancia en el puntaje y la programación del temporizador se documentan en
+el \ref{anx:explore_impl}.
 
 \subsection{Transferencia simulación--hardware}
 \label{sec:integracion_ciclo}
 
-La transferencia al hardware se realiza manteniendo la estructura de tópicos
+La transferencia al hardware conserva la arquitectura de navegación
+descrita en la Sec.~\ref{sec:nav2_ch9}, manteniendo la estructura de tópicos
 y marcos, pero seleccionando archivos de configuración específicos para el
-entorno real. La asignación de \texttt{use\_sim\_time} y los archivos YAML
-equivalentes de simulación y hardware se detallan en el
-\ref{anx:nav2_slam_config}. Además, se ajustan límites cinemáticos,
+entorno real. La correspondencia entre los archivos equivalentes de
+simulación y hardware se detalla en el \ref{anx:nav2_slam_config}. Además, se ajustan límites cinemáticos,
 frecuencias, tolerancias e inflación de los mapas de costos según las
 capacidades del prototipo físico.
 
-%=====================================================================
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_ch9}
 

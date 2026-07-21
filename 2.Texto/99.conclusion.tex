@@ -6,13 +6,36 @@ El presente trabajo tuvo como objetivo diseñar e implementar un prototipo de ro
 
 En relación con la plataforma física, se construyó un robot diferencial de bajo costo con dos motores DC, encoders de cuadratura, driver L298N, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1. El \gls{Arduino} ejecuta la lectura de encoders y el control PID de cada rueda. La Raspberry Pi ejecuta la interfaz \texttt{DiffDriveArduino}, \texttt{diff\_drive\_controller}, la adquisición del \gls{LIDAR} y la comunicación con la estación de trabajo; esta última ejecuta SLAM, navegación, exploración y supervisión.
 
-El gemelo digital desarrollado en Gazebo utiliza \texttt{ros2\_control} con el backend \texttt{gazebo\_ros2\_control/GazeboSystem}, seleccionado por el lanzamiento de simulación documentado en el \ref{anx:rutas_software}. Esta configuración permitió verificar la geometría, la cinemática, la cadena de transformaciones y la interfaz de control antes de operar el robot físico. En simulación, el error medio de seguimiento de la consigna rectilínea fue 3.39\%, mientras que la odometría coincidió con la verdad de terreno de Gazebo. En hardware real, el error odométrico medio fue 3.63\% y el error físico de seguimiento respecto de la consigna fue 7.18\%.
+El gemelo digital desarrollado en Gazebo permitió verificar la geometría,
+la cinemática, la cadena de transformaciones y la interfaz de control antes de
+operar el robot físico. En simulación, el error medio de seguimiento
+rectilíneo fue 3.39\% y la odometría coincidió con la verdad de terreno de
+Gazebo. En hardware real, el error odométrico medio fue 3.63\% y el error
+físico de seguimiento fue 7.18\%. La selección del backend y su trazabilidad
+se documentan en el \ref{anx:gemelo_digital}.
 
-Respecto del control de bajo nivel, el firmware ejecuta un programador con incremento entero de 33~ms, derivado de \texttt{PID\_INTERVAL = 1000/PID\_RATE} con \texttt{PID\_RATE=30}. El controlador implementa ganancias, bandas muertas y estados independientes por rueda, además de saturación de salida y actualización condicional del integrador. La Fig.~\ref{fig:respuesta_escalon_final} corresponde a una adquisición experimental en lazo cerrado. Los sobreimpulsos de 10.66\%--15.63\% de la Tabla~\ref{tab:pid_performance} proceden del script comparativo de sintonización identificado en el \ref{anx:rutas_software}; no son mediciones directas sobre el robot y deben interpretarse considerando las aproximaciones numéricas de ese script.
+Respecto del control de bajo nivel, el firmware implementa ganancias,
+bandas muertas y estados independientes por rueda, además de saturación y
+actualización condicional del integrador. La
+Fig.~\ref{fig:respuesta_escalon_final} corresponde a una adquisición
+experimental en lazo cerrado; los sobreimpulsos de 10.66\%--15.63\% de la
+Tabla~\ref{tab:pid_performance} corresponden a la evaluación simulada de las
+ganancias finales. La temporalidad y las aproximaciones numéricas se
+documentan en los anexos de implementación y sintonización.
 
-El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. En simulación se obtuvo un índice de cobertura libre de 95.6\%, una resolución de 0.05~m/celda y 45 nodos en el grafo. En hardware real se obtuvieron mapas utilizables y se cuantificaron la cobertura libre y el área mapeada durante las iteraciones de exploración; los datos disponibles no sustentan una relación cuantitativa entre calidad del mapa y un intervalo específico de velocidad.
+El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en
+simulación y hardware real. En simulación se obtuvo un índice de cobertura
+libre de 95.6\%. En hardware real se obtuvieron mapas utilizables y se
+cuantificaron la cobertura libre y el área mapeada durante las iteraciones de
+exploración.
 
-La navegación con Nav2 quedó integrada mediante NavFn con A\*, DWB, mapas de costo y un árbol de comportamiento con recuperaciones. La exploración por fronteras se ejecutó en cinco iteraciones válidas y alcanzó un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$) sobre el espacio disponible. No obstante, el script de registro de exploración cuenta coincidencias de texto y estados de acción sin deduplicar identificadores de meta; además, los resúmenes registran cero metas generadas junto con coincidencias de éxito y fallo. En consecuencia, esos contadores no permiten calcular una tasa de éxito de Nav2 ni demostrar arribos únicos a fronteras. Se verifica la integración funcional y se cuantifica la cobertura, pero la navegación dirigida no queda validada cuantitativamente con el registro disponible.
+La navegación con Nav2 quedó integrada mediante planificación global,
+control local, mapas de costo y acciones de recuperación. La exploración por
+fronteras se ejecutó en cinco iteraciones válidas y alcanzó un índice medio de
+cobertura libre de 62.2\% ($\sigma=12.9$). Los registros disponibles
+permiten verificar la integración funcional y cuantificar la cobertura, pero
+no calcular una tasa válida de éxito para metas únicas de navegación; el
+detalle metodológico se conserva en el \ref{anx:resultados_metodologia}.
 
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 

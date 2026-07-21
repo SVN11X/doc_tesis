@@ -2,7 +2,8 @@
 \label{marco_teorico}
 
 Este capítulo presenta los fundamentos generales empleados en el diseño del
-robot móvil diferencial. Se define primero el robot como sistema físico (estructura, marcos de referencia y rotaciones junto con su descripción
+robot móvil diferencial. Se define primero el robot como sistema físico
+(estructura, marcos de referencia y rotaciones), junto con su descripción
 mediante URDF y la simulación en Gazebo. Luego se explica \gls{ROS2} y su
 mecanismo de comunicación, el principio de funcionamiento de los sensores y
 actuadores utilizados (\gls{LIDAR} 2D, encoders, motores DC con driver), el
@@ -183,7 +184,7 @@ interruptores a frecuencia fija y variando el ciclo de trabajo se controla
 la tensión media efectiva sobre el motor. Los drivers reales introducen
 efectos no ideales relevantes para el control: una caída de tensión interna
 en los transistores y una zona muerta a bajos ciclos de trabajo, en la cual
-el motor no vence la fricción estática y no gira. 
+el motor no vence la fricción estática y no gira.
 
 \section{Cinemática diferencial y odometría}
 \label{sec:odometria}
@@ -193,18 +194,12 @@ sus ruedas \citep{ferreira2023differential}. Es adecuada para sistemas
 embebidos por su bajo costo computacional, pero acumula deriva por errores
 de calibración, cuantización de encoders y deslizamiento \citep{corke2023}.
 
-\noindent\textbf{Convención.} $v$ sin subíndice denota la velocidad lineal
-del robot (m/s); con subíndice $j\in\{R,L\}$ denota la velocidad lineal de
-rueda. $\omega$ sin subíndice denota la velocidad angular del robot (rad/s);
-con subíndice $j$ denota la velocidad angular de rueda (rad/s). El subíndice
-$R$ corresponde a la rueda derecha y $L$ a la izquierda. La posición angular
-de rueda se denota $\phi_j$ (rad). Las minúsculas $x_k$ y $y_k$ se reservan para las coordenadas de pose del
-robot; la notación del optimizador se define en la
-Sec.~\ref{sec:pso_marco}, sin reutilizar símbolos de pose o velocidad del
-robot. El retardo FODT de cada rueda se denota $L_{d,j}$ [s] y su
-representación discreta $n_{d,j}$ (muestras). El conteo de encoder se
-expresa en ticks, donde un tick corresponde a una cuenta producida por la
-decodificación en cuadratura.
+\noindent\textbf{Convención.} $v$ y $\omega$ sin subíndice denotan la
+velocidad lineal (m/s) y angular (rad/s) del robot; con subíndice
+$j\in\{R,L\}$ denotan las magnitudes correspondientes de la rueda derecha o
+izquierda. La posición angular de rueda se denota $\phi_j$ (rad) y el conteo
+de encoder se expresa en ticks. El listado completo de símbolos, subíndices
+y unidades empleados en el documento se reúne en el \ref{anx:nomenclatura}.
 
 Considérese un robot diferencial con radio de rueda $r$, separación entre
 ruedas $b$ y la forma muestreada $q_k=(x_k,y_k,\theta_k)$ de la pose definida
@@ -314,39 +309,11 @@ rueda $j$, $K_{m,j}$ la ganancia estática, $\tau_j$ la constante
 de tiempo (s) y $s$ la variable de Laplace (s$^{-1}$); $L_{d,j}$ corresponde
 al retardo definido en la convención inicial.
 
-Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$
-segundos, el retardo se cuantiza a un número entero de muestras y el sistema
-de primer orden se discretiza mediante el método de Euler:
-
-\begin{align}
-n_{d,j}
-&=
-\operatorname{trunc}\left(\frac{L_{d,j}}{T_{\mathrm{cap}}}\right),
-\label{eq:retardo_muestras}\\
-u_{j,d}[k]
-&=
-u_j\!\left[\max(k-n_{d,j},0)\right],
-\label{eq:entrada_retrasada}\\
-\widehat{v}_j[k]
-&=
-\widehat{v}_j[k-1]
-+
-\frac{T_{\mathrm{cap}}}{\tau_j}
-\left(
-K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
-\right),
-\qquad \widehat{v}_j[0]=0.
-\label{eq:fodt_discreto}
-\end{align}
-
-\noindent donde $u_j[k]$ es la entrada \gls{PWM} aplicada, $u_{j,d}[k]$ la
-entrada retardada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el
-modelo para la rueda $j$ (m/s); $\operatorname{trunc}()$ conserva
-únicamente la parte entera del resultado. Los parámetros
-$(K_{m},\tau,L_{d})$ se estiman minimizando el error cuadrático entre la
-respuesta medida y la del modelo discreto. El protocolo experimental de
-captura y las aproximaciones numéricas del procedimiento aplicado se
-presentan en el Capítulo~\ref{ch:implementacion}.
+Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error
+cuadrático entre la respuesta medida y la respuesta del modelo. La
+discretización, la cuantización del retardo y las aproximaciones numéricas
+empleadas por los scripts se documentan en el
+\ref{anx:fodt_scripts}, Ecs.~\eqref{eq:retardo_muestras}--\eqref{eq:fodt_discreto}.
 
 \section{Control PID}
 \label{sec:pid}
@@ -372,42 +339,14 @@ $K_{i,j}^{\mathrm{cont}}$, $K_{d,j}^{\mathrm{cont}}$ las ganancias
 proporcional, integral y derivativa de la forma continua; $\sigma$ es la
 variable de integración.
 
-En un sistema embebido el controlador se ejecuta en tiempo discreto. Una
-forma habitual es la ley incremental con derivada sobre la medición, que
-reduce los saltos de la salida ante cambios bruscos de la referencia:
-
-\begin{align*}
-\Delta u_j[k]
-&=
-\frac{
-K_{p,j}e_j[k]
--
-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)
-+
-I_j[k]
-}{
-K_{o,j}
-},\\
-u_j[k]
-&=
-\operatorname{sat}_{[-255,255]}
-\bigl(u_j[k-1]+\Delta u_j[k]\bigr).
-\end{align*}
-
-\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias discretas
-de la rueda $j$; $e_j[k]$ es el error discreto, $m_j[k]$ la medición de
-velocidad, $I_j[k]$ el estado integral asociado a $K_{i,j}$,
-$\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y
-$K_{o,j}$ un divisor de escalamiento que permite trabajar con ganancias
-enteras; $\operatorname{sat}_{[-255,255]}(\cdot)$ representa la saturación
-al intervalo \gls{PWM} permitido. Dos técnicas complementarias son
-habituales en controladores embebidos y se emplean en este trabajo: el
-\emph{anti-windup}, que limita la acumulación del integrador cuando la
-salida está saturada, y una \emph{zona muerta} sobre el error, que evita
-ciclos límite producidos por la cuantización de la medición. La ley
-efectivamente ejecutada, sus estados enteros, el orden de operaciones y las
-ganancias definitivas por rueda se presentan en el
-Capítulo~\ref{ch:implementacion} y en el \ref{anx:pid_ecuaciones}.
+En un sistema embebido el controlador se ejecuta en tiempo discreto. En
+este trabajo se emplea una forma incremental con derivada sobre la medición,
+saturación de la salida, actualización condicional del integrador
+(\emph{anti-windup}) y una zona muerta sobre el error. Estas decisiones
+reducen los saltos ante cambios de referencia y los ciclos límite asociados
+a la cuantización. La ley exacta, los estados internos y el orden de
+operaciones se documentan en el \ref{anx:pid_ecuaciones}; las ganancias
+definitivas se presentan en el Capítulo~\ref{ch:implementacion}.
 
 \section{Sintonización del controlador PID mediante PSO}
 \label{sec:sintonizacion}
