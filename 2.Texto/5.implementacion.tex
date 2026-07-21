@@ -383,9 +383,7 @@ El controlador de velocidad se ejecuta de forma independiente para cada rueda. L
 
 La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap.~\ref{marco_teorico}. La secuencia de actualización se presenta en el Alg.~\ref{alg:pid_firmware}, mientras que las operaciones internas por rueda se formalizan en las Ecs.~\ref{eq:medicion_pid_entera}--\ref{eq:integrador_condicional}.
 
-El firmware incluye anti-windup condicional, zona muerta para reducir ciclos
-límite por cuantización y saturación de la salida PWM. Las ganancias
-definitivas codificadas en el firmware se consolidan en la
+Las ganancias definitivas codificadas en el firmware se consolidan en la
 Tabla~\ref{tab:ganancias_pid}.
 
 \begin{table}[H]
@@ -409,12 +407,9 @@ Las ganancias $K_{p,j},K_{d,j},K_{i,j}$ se expresan en la escala interna del fir
 
 La rutina de reinicio del controlador no se limita a reiniciar los estados
 internos: también vuelve a cargar las ganancias predeterminadas mostradas en
-la Tabla~\ref{tab:ganancias_pid}. Se invoca al reiniciar los encoders, antes
-de aplicar PWM directo y cuando ambos comandos de velocidad son exactamente
-cero. En consecuencia, cualquier ganancia cargada temporalmente mediante los
-comandos seriales de sintonización (Tabla~\ref{tab:protocolo_serial}) se
-reemplaza por los valores codificados al producirse cualquiera de esos
-reinicios.
+la Tabla~\ref{tab:ganancias_pid}. Sus contextos de invocación son los
+indicados en la Tabla~\ref{tab:protocolo_serial}. En consecuencia, cualquier
+ganancia cargada temporalmente mediante los comandos seriales de sintonización se reemplaza por los valores codificados al producirse cualquiera de esos reinicios.
 
 \begin{algorithm}[H]
 \caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware}
