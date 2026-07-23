@@ -5,7 +5,7 @@
 
 Este trabajo describe el diseño e implementación de un prototipo de robot móvil diferencial para mapeo 2D, navegación autónoma y exploración de interiores con \gls{ROS2} Foxy sobre Ubuntu 20.04 en una Raspberry Pi 4. El sistema integra un \gls{Arduino} Nano para el control de bajo nivel, un driver L298N, encoders de cuadratura, un RPLidar A1 y un gemelo digital en Gazebo.
 
-El control diferencial se implementó con \texttt{ros2\_control} y \texttt{diff\_drive\_controller}, y las ganancias PID del firmware se obtuvieron mediante optimización por enjambre de partículas (PSO) y refinamiento experimental sobre hardware real. El mapeo se realizó con \texttt{slam\_toolbox} y la navegación con Nav2 (NavFn/A*, DWB, mapas de costo y árboles de comportamiento con recuperación ante bloqueos), incorporando además exploración autónoma basada en fronteras.
+El control diferencial se implementó sobre la infraestructura de control de ROS 2, con un controlador diferencial y una interfaz de hardware para el enlace con el firmware, y las ganancias PID del firmware se obtuvieron mediante optimización por enjambre de partículas (PSO) y refinamiento experimental sobre hardware real. El mapeo se realizó con SLAM Toolbox y la navegación con Nav2 (NavFn/A*, DWB, mapas de costo y árboles de comportamiento con recuperación ante bloqueos), incorporando además exploración autónoma basada en fronteras.
 
 La odometría y el mapeo se validaron cuantitativamente, con un error medio
 de odometría de 3.63\% en trayectorias rectas sobre hardware real. El
@@ -27,7 +27,7 @@ la validación cuantitativa de navegación dirigida permanece pendiente.
 
 This thesis describes the design and implementation of a differential mobile robot prototype for 2D mapping, autonomous navigation, and indoor exploration using \gls{ROS2} Foxy on Ubuntu 20.04 on a Raspberry Pi 4. The system integrates an \gls{Arduino} Nano for low-level control, an L298N motor driver, quadrature encoders, an RPLidar A1, and a Gazebo-based digital twin.
 
-Differential control was implemented with \texttt{ros2\_control} and \texttt{diff\_drive\_controller}, and the firmware PID gains were obtained through Particle Swarm Optimization (PSO) and experimental refinement on real hardware. Mapping used \texttt{slam\_toolbox} and navigation used Nav2 (NavFn/A*, DWB, costmaps, and behavior trees with recovery actions), additionally incorporating frontier-based autonomous exploration.
+Differential control was implemented on top of the ROS 2 control infrastructure, with a differential controller and a hardware interface bridging to the firmware, and the firmware PID gains were obtained through Particle Swarm Optimization (PSO) and experimental refinement on real hardware. Mapping used SLAM Toolbox and navigation used Nav2 (NavFn/A*, DWB, costmaps, and behavior trees with recovery actions), additionally incorporating frontier-based autonomous exploration.
 
 Odometry and mapping were quantitatively validated, with a mean odometry
 error of 3.63\% on straight trajectories on real hardware. Performance

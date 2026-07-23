@@ -2,16 +2,11 @@
 \label{marco_teorico}
 
 Este capítulo presenta los fundamentos generales empleados en el diseño del
-robot móvil diferencial. Se define primero el robot como sistema físico
-(estructura, marcos de referencia y rotaciones), junto con su descripción
-mediante URDF y la simulación en Gazebo. Luego se explica \gls{ROS2} y su
-mecanismo de comunicación, el principio de funcionamiento de los sensores y
-actuadores utilizados (\gls{LIDAR} 2D, encoders, motores DC con driver), el
-modelo cinemático diferencial y la odometría, la identificación FODT, el
-controlador PID y su sintonización mediante PSO, el SLAM basado en grafos con
-SLAM Toolbox, la planificación de rutas con A*, el control local por ventana
-dinámica y la exploración autónoma basada en fronteras.
-
+robot móvil diferencial. La exposición avanza desde el robot como sistema
+físico (estructura, marcos de referencia y descripción digital) hacia la
+plataforma de software que lo integra, los principios de sensado y
+actuación, el modelo cinemático y el control de bajo nivel, y finalmente
+las capas de mapeo, localización, navegación y exploración autónoma.
 \section{El robot móvil: estructura, marcos de referencia y rotaciones}
 \label{sec:robot_definicion}
 
