@@ -213,9 +213,6 @@ Consistencia global del mapa (inspección visual) & Correcta \\
 \end{tabular}
 \end{table}
 
-\noindent El origen de los indicadores y el criterio de evaluación
-cualitativa se detallan en el \ref{anx:resultados_metodologia}.
-
 En hardware real también se obtuvieron mapas utilizables. Su evaluación
 cuantitativa se presenta mediante el índice de cobertura libre y el área
 libre mapeada de las cinco iteraciones válidas de exploración.
@@ -230,7 +227,15 @@ El protocolo de evaluación por escenarios se describe en el
 esta razón, la navegación dirigida se evalúa funcionalmente, mientras que
 la exploración se analiza mediante cobertura y área mapeada.
 
-La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada}. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico.
+La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada}. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico. La Fig.~\ref{fig:mapa_formacion} ilustra el mapa en formación durante la exploración autónoma.
+
+\begin{utemMultiFigurePropia}{Mapa en formación durante la exploración autónoma por fronteras.}{fig:mapa_formacion}
+\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part1.PNG}{Fronteras detectadas en la fase inicial.}
+\hfill
+\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part2.PNG}{Ruta planificada por Nav2 hacia una meta.}
+\hfill
+\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part3.PNG}{Cobertura avanzada del recinto.}
+\end{utemMultiFigurePropia}
 
 \begin{table}[H]
 \centering
@@ -290,8 +295,27 @@ Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura med
 \section{Coherencia entre simulación y hardware}
 \label{sec:comparacion_sim_real}
 
-La comparación entre simulación y hardware debe interpretarse con las
-métricas y limitaciones particulares de cada ensayo.
+En la trayectoria rectilínea de 2~m, el error medio de seguimiento aumenta de
+3.39\% en simulación a 7.18\% en hardware real
+(Tabla~\ref{tab:resumen_odometria}). El error odométrico solo se separa del
+error de seguimiento en hardware real, donde alcanza 3.63\%, porque en
+simulación la odometría coincide con la posición verdadera entregada por el
+simulador.
+
+En el protocolo angular, la desviación media respecto de la referencia
+nominal de $360^\circ$ es mayor en simulación ($17.1^\circ$) que en hardware
+real ($11.7^\circ$), con una dispersión menor ($5.8^\circ$ frente a
+$8.0^\circ$), según la Tabla~\ref{tab:resumen_giro}. Como se indicó en la
+Sec.~\ref{sec:resultados_odometria}, estas cifras expresan desviación
+respecto de un valor nominal y no un error odométrico angular aislado.
+
+Los índices de cobertura libre de ambos entornos no son directamente
+comparables: el valor de simulación (95.6\%) proviene de un recorrido
+teleoperado de 10.1~min sobre un área libre de 42.53~m$^2$, mientras que el
+valor medio en hardware real (62.2\%) proviene de iteraciones de exploración
+autónoma de 1.1~min de actividad media sobre un área libre de 3.50~m$^2$. Las
+limitaciones metodológicas de cada ensayo se detallan en el
+\ref{anx:resultados_metodologia}.
 
 Los archivos entregados no contienen mediciones de tensión, temperatura, uso
 de CPU, memoria ni autonomía energética; su caracterización cuantitativa se

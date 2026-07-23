@@ -58,14 +58,21 @@ Sec.~\ref{sec:atribucion}. Como trazabilidad adicional, el lanzamiento
 \texttt{use\_ros2\_control=true} y \texttt{sim\_mode=true}; por ello,
 instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo
 \texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por
-ese lanzamiento.
+ese lanzamiento. Los identificadores completos de \textit{plugin} resumidos en la
+Tabla~\ref{tab:xacro_args_backend} son
+\texttt{diffdrive\_arduino/DiffDriveArduino} en hardware real y
+\texttt{gazebo\_ros2\_control/GazeboSystem} en simulación.
 
-El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. La asignación de marcos por entorno es la indicada en la Sec.~\ref{sec:tf-convenciones}; adicionalmente, los costmaps mantienen \texttt{base\_link} en ambos entornos.
+El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. El marco base declarado en la configuración depende del entorno: en simulación, \texttt{slam\_toolbox} y AMCL emplean \texttt{base\_footprint}; en hardware real, ambos emplean \texttt{base\_link}. Los costmaps mantienen \texttt{base\_link} en ambos entornos.
 
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
 
-La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF principal (Sec.~\ref{sec:tf-convenciones}).
+La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF principal (Sec.~\ref{sec:tf-convenciones}). La geometría acotada del modelo, con las dimensiones de chasis, ruedas, rueda loca y sensor, se presenta en la Fig.~\ref{fig:anx_cotas}.
+
+\utemFigurePropia{2.Texto/Imag/fig_cotas_gemelo_digital.png}{0.9\textwidth}
+{Dimensiones del modelo del robot (gemelo digital): vistas lateral, frontal y en planta.}
+{fig:anx_cotas}
 
 \begin{table}[H]
 \centering
@@ -82,6 +89,13 @@ Marcos principales & \texttt{odom}, \texttt{base\_link}, \texttt{base\_footprint
 \bottomrule
 \end{tabular}
 \end{table}
+
+La correspondencia entre componentes, marcos y tópicos del modelo digital es la
+siguiente: la base diferencial publica la transformación
+\texttt{odom}$\rightarrow$\texttt{base\_link} y la odometría en \texttt{/odom};
+el sensor láser opera en \texttt{laser\_frame} y publica en \texttt{/scan}; y la
+transformación estática \texttt{base\_link}$\rightarrow$\texttt{laser\_frame} se
+publica en \texttt{/tf\_static}.
 
 \subsection{Criterios de aceptación del gemelo digital}
 
@@ -224,10 +238,73 @@ la rueda $j$; $\operatorname{trunc}_{0}()$ representa el truncamiento hacia
 cero asociado al argumento entero del comando serial; y
 $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en \textit{ticks/frame}.
 
+\subsection{Identificadores de código de los parámetros del cuerpo}
+\label{anx:identificadores}
+
+La Tabla~\ref{tab:anx_identificadores} asocia los parámetros presentados en el
+Capítulo~\ref{ch:implementacion} con el identificador que reciben en el
+código y con el archivo que los define; la localización completa de cada
+archivo se indica en el \ref{anx:rutas_software}. El identificador de la
+resolución efectiva $N_e$ se documenta en el \ref{anx:pid_data}.
+
+\begin{table}[H]
+\centering
+\caption{Correspondencia entre parámetros del cuerpo e identificadores del código.}
+\label{tab:anx_identificadores}
+\small
+\begin{tabular}{p{3.5cm} p{5.2cm} p{4.6cm}}
+\toprule
+\textbf{Parámetro} & \textbf{Identificador} & \textbf{Archivo} \\
+\midrule
+$f_{\mathrm{ctrl}}=30$~Hz &
+\texttt{controller\_manager.update\_rate} &
+\texttt{my\_controllers.yaml} \\
+
+$f_{\mathrm{loop}}=30$~Hz &
+\texttt{loop\_rate} &
+\texttt{ros2\_control.xacro} \\
+
+$f_{\mathrm{PID,nom}}=30$~Hz &
+\texttt{PID\_RATE} &
+\texttt{ROSArduinoBridge.ino} \\
+
+$T_{\mathrm{PID,sched}}=33$~ms &
+\texttt{PID\_INTERVAL}, incremento aplicado a \texttt{nextPID} &
+\texttt{ROSArduinoBridge.ino} \\
+
+$r=0.0335$~m &
+\texttt{wheel\_radius}; en el firmware, \texttt{WHEEL\_DIAMETER}$=0.067$~m &
+\texttt{my\_controllers.yaml}, \texttt{ROSArduinoBridge.ino} \\
+
+$b=0.188$~m &
+\texttt{wheel\_separation} &
+\texttt{my\_controllers.yaml} \\
+
+Límites lineales $\pm0.13$~m/s &
+\texttt{linear.x.min\_velocity}, \texttt{linear.x.max\_velocity} &
+\texttt{my\_controllers.yaml} \\
+
+Límites angulares $\pm0.35$~rad/s &
+\texttt{angular.z.min\_velocity}, \texttt{angular.z.max\_velocity} &
+\texttt{my\_controllers.yaml} \\
+
+Publicación de \texttt{odom}$\rightarrow$\texttt{base\_link} &
+\texttt{enable\_odom\_tf} &
+\texttt{my\_controllers.yaml} \\
+
+Auto-detención de seguridad &
+\texttt{AUTO\_STOP\_INTERVAL}$=2000$~ms &
+\texttt{ROSArduinoBridge.ino} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Firmware, encoders y sintonización PID}
 \label{anx:firmware}
 
 Este anexo complementa el capítulo de firmware con datos experimentales y parámetros usados durante la sintonización del controlador PID.
+
+El firmware se distribuye en módulos independientes: \texttt{ROSArduinoBridge.ino} contiene el ciclo principal y el analizador serial; \texttt{commands.h}, los identificadores de comandos; \texttt{encoder\_driver.h} y \texttt{encoder\_driver.ino}, la lectura de encoders; \texttt{motor\_driver.h} y \texttt{motor\_driver.ino}, el accionamiento del L298N; y \texttt{diff\_controller.h}, el controlador PID discreto y sus ganancias. Su localización se indica en el \ref{anx:rutas_software}.
 
 \subsection{Ticks por vuelta y ganancias finales}
 \label{anx:pid_data}
@@ -472,7 +549,7 @@ Ocho valores \\
 \end{minipage}
 \end{table}
 
-\noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \emph{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del firmware; si no se recibe una nueva orden durante el intervalo de auto-detención, los motores se detienen automáticamente. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados internos; su vigencia se describe en la Sec.~\ref{sec:motorcontrol_pid}.
+\noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \emph{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del firmware; si no se recibe una nueva orden durante el intervalo de auto-detención, definido en el firmware como \texttt{AUTO\_STOP\_INTERVAL}$=2000$~ms, los motores se detienen automáticamente y la bandera interna \texttt{moving} vuelve a cero. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados internos; su vigencia se describe en la Sec.~\ref{sec:motorcontrol_pid}.
 
 \subsection{Ecuaciones y estados internos del PID embebido}
 \label{anx:pid_ecuaciones}
@@ -982,6 +1059,11 @@ iteración.
 \label{anx:nav2_slam_config}
 
 Las configuraciones fuente se mantienen en \path{articubot_one/config/}. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}; en hardware real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
+
+Los identificadores de \textit{plugin} cargados por los componentes resumidos
+en la Tabla~\ref{tab:nav2_componentes_ch9} son
+\texttt{nav2\_navfn\_planner/NavfnPlanner} para el planificador global y
+\texttt{dwb\_core::DWBLocalPlanner} para el controlador local.
 
 \begin{table}[H]
 \centering
@@ -1558,6 +1640,7 @@ en \path{articubot_one/config/}.
 \path{robot_core.xacro} & \path{articubot_one/description/} & Geometría, eslabones y articulaciones. \\
 \path{lidar.xacro}, \path{lidar_sim.xacro} & \path{articubot_one/description/} & Sensor real y modelo simulado del LiDAR. \\
 \path{gazebo_control.xacro} & \path{articubot_one/description/} & Backend alternativo no seleccionado. \\
+\path{ros2_control.xacro} & \path{articubot_one/description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
 \path{launch_robot.launch.py} & \path{articubot_one/launch/} & Arranque del robot físico y controladores. \\
 \path{launch_sim.launch.py} & \path{articubot_one/launch/} & Arranque del gemelo digital en Gazebo. \\
 \path{my_controllers.yaml} & \path{articubot_one/config/} & Geometría y límites del controlador diferencial. \\
