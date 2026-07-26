@@ -14,14 +14,13 @@ Gazebo. En hardware real, el error odométrico medio fue 3.63\% y el error
 físico de seguimiento fue 7.18\%. La selección del backend y su trazabilidad
 se documentan en el \ref{anx:gemelo_digital}.
 
-Respecto del control de bajo nivel, el firmware implementa ganancias,
-bandas muertas y estados independientes por rueda, además de saturación y
-actualización condicional del integrador. La
+Respecto del control de bajo nivel, el firmware ejecuta un controlador PID
+discreto independiente para cada rueda. La
 Fig.~\ref{fig:respuesta_escalon_final} corresponde a una adquisición
 experimental en lazo cerrado; los sobreimpulsos de 10.66\%--15.63\% de la
 Tabla~\ref{tab:pid_performance} corresponden a la evaluación simulada de las
-ganancias finales. La temporalidad y las aproximaciones numéricas se
-documentan en los anexos de implementación y sintonización.
+ganancias finales. Los estados internos, la temporalidad y las aproximaciones
+numéricas se documentan en los anexos de implementación y sintonización.
 
 El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en
 simulación y hardware real. En simulación se obtuvo un índice de cobertura
@@ -49,7 +48,7 @@ El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 \item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras fue integrado y su cobertura fue cuantificada. Los contadores disponibles no permiten cuantificar metas únicas alcanzadas o fallidas.
 \end{description}
 
-En consecuencia, el objetivo general se alcanzó en diseño, construcción, control y mapeo. La navegación y la exploración quedaron integradas funcionalmente; la cobertura fue cuantificada, pero el éxito de navegación por metas permanece sin una medición válida en los datos disponibles.
+En consecuencia, el objetivo general se alcanzó en diseño, construcción, control y mapeo. La navegación y la exploración quedaron integradas funcionalmente y su cobertura fue cuantificada; el éxito de navegación por metas permanece sin cuantificar.
 
 \section*{Limitaciones}
 \phantomsection
@@ -58,7 +57,7 @@ En consecuencia, el objetivo general se alcanzó en diseño, construcción, cont
 \begin{itemize}
 \item \textbf{Deriva odométrica:} la odometría basada solo en encoders acumula error, especialmente en giros y trayectorias largas.
 \item \textbf{Espacio de pruebas reducido:} el recinto disponible limita la ejecución de recorridos extensos y condiciona la geometría de los mapas de costo.
-\item \textbf{Registro de navegación:} los contadores del script de exploración no identifican metas únicas y no sustentan una tasa de éxito de Nav2.
+\item \textbf{Registro de navegación:} los contadores disponibles no identifican metas únicas y no sustentan una tasa de éxito de Nav2.
 \item \textbf{Métricas PID:} la figura experimental y las métricas simuladas provienen de procedimientos distintos y no deben interpretarse como una única prueba.
 \item \textbf{Fidelidad de la simulación:} Gazebo no reproduce completamente fricción, zona muerta del driver, ruido sensorial ni latencias reales.
 \item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.

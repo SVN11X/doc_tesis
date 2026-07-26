@@ -9,11 +9,11 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 La evaluación rectilínea utiliza una referencia de 2~m. En simulación, la distancia de odometría coincide con la posición verdadera entregada por el simulador en los registros disponibles; en hardware real, el error odométrico corresponde a la discrepancia entre la odometría de encoders y la medición física.
 
 Las pruebas angulares se analizaron respecto de una referencia nominal de
-$360^\circ$ definida por el protocolo. Debido al límite de velocidad angular
-del controlador, esta referencia no corresponde a una consigna efectiva de
-vuelta completa; por ello, los resultados expresan desviación respecto del
-valor nominal y no un error odométrico angular aislado. El desarrollo del
-protocolo se conserva en el \ref{anx:odometria_detalle}.
+$360^\circ$ definida por el protocolo, que no corresponde a una consigna
+efectiva de vuelta completa; por ello, sus resultados expresan desviación
+respecto de ese valor nominal y no un error odométrico angular aislado. El
+desarrollo del protocolo y el límite que origina esta distinción se conservan
+en el \ref{anx:odometria_detalle}.
 
 Para distinguir ambos fenómenos se utilizaron las siguientes métricas:
 
@@ -41,7 +41,7 @@ $d_{\mathrm{odom}}$ la distancia calculada mediante odometría (m),
 $E_{\mathrm{seg}}$ el error de seguimiento (\%) y
 $E_{\mathrm{odom}}$ el error odométrico (\%).
 
-Para conservar las métricas generadas por los scripts, la desviación angular normalizada se expresa respecto de su referencia nominal fija:
+La desviación angular normalizada se expresa respecto de esa referencia nominal fija:
 
 \begin{equation}
 E_{\theta,360}
@@ -92,7 +92,7 @@ Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref
 
 \begin{table}[H]
 \centering
-\caption{Desviación angular respecto de la referencia nominal de $360^\circ$ usada por los scripts (5 repeticiones por entorno).}
+\caption{Desviación angular respecto de la referencia nominal de $360^\circ$ (5 repeticiones por entorno).}
 \label{tab:resumen_giro}
 \small
 \begin{tabular}{p{5.0cm} p{3.2cm} p{3.2cm}}
@@ -204,11 +204,11 @@ documentan en el \ref{anx:resultados_metodologia}.
 \midrule
 Tiempo total de mapeo & 10.1 min \\
 Distancia recorrida por odometría & 23.32 m \\
-Número de nodos del grafo (ingreso manual) & 45 \\
+Número de nodos del grafo & 45 \\
 Resolución del mapa & 0.05 m/celda \\
 Índice de cobertura libre & 95.6\% \\
 Área libre mapeada & 42.53 m$^2$ \\
-Consistencia global del mapa (inspección visual) & Correcta \\
+Consistencia global del mapa & Correcta \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -222,10 +222,9 @@ El contraste cualitativo entre los mapas de simulación y hardware real se prese
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
-El protocolo de evaluación por escenarios se describe en el
-\ref{anx:protocolo_nav}; no fue ejecutado sobre los datos disponibles. Por
-esta razón, la navegación dirigida se evalúa funcionalmente, mientras que
-la exploración se analiza mediante cobertura y área mapeada.
+La navegación dirigida se evalúa funcionalmente, mientras que la exploración
+se analiza mediante cobertura y área mapeada; el protocolo de evaluación por
+escenarios, no ejecutado, se describe en el \ref{anx:protocolo_nav}.
 
 La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada}. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico. La Fig.~\ref{fig:mapa_formacion} ilustra el mapa en formación durante la exploración autónoma.
 
@@ -259,9 +258,8 @@ Intervenciones manuales registradas & 0 & 0 \\
 \footnotesize
 \textit{Nota:} $\mu$ representa la media aritmética y $\sigma$ la desviación
 estándar, calculadas a partir de las cinco iteraciones válidas. Los
-contadores diagnósticos de metas, éxitos y fallos se excluyen de este
-resumen por no identificar objetivos únicos; su detalle y limitaciones se
-presentan en el \ref{anx:resultados_metodologia}.
+contadores diagnósticos de metas se excluyen de este resumen; su detalle y
+limitaciones se presentan en el \ref{anx:resultados_metodologia}.
 \end{minipage}
 \end{table}
 
@@ -286,7 +284,7 @@ Odometría & Validada cuantitativamente & Simulación y hardware real \\
 Control PID & Evaluado mediante datos experimentales y simulación &
 Respuesta experimental graficada; las métricas de la Tabla~\ref{tab:pid_performance} provienen de simulación \\
 SLAM & Validado cuantitativamente en simulación; verificado en hardware & En hardware se cuantificaron cobertura y área libre durante la exploración y se evaluaron cualitativamente los mapas \\
-Nav2 & Verificada funcionalmente & El protocolo por escenarios no fue ejecutado sobre los datos disponibles \\
+Nav2 & Verificada funcionalmente & Sin tasa de éxito por meta; véase Sec.~\ref{sec:resultados_nav2} \\
 Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura media en 5 iteraciones; véase Tabla~\ref{tab:resumen_exploracion} \\
 \bottomrule
 \end{tabular}
@@ -305,9 +303,7 @@ simulador.
 En el protocolo angular, la desviación media respecto de la referencia
 nominal de $360^\circ$ es mayor en simulación ($17.1^\circ$) que en hardware
 real ($11.7^\circ$), con una dispersión menor ($5.8^\circ$ frente a
-$8.0^\circ$), según la Tabla~\ref{tab:resumen_giro}. Como se indicó en la
-Sec.~\ref{sec:resultados_odometria}, estas cifras expresan desviación
-respecto de un valor nominal y no un error odométrico angular aislado.
+$8.0^\circ$), según la Tabla~\ref{tab:resumen_giro}.
 
 Los índices de cobertura libre de ambos entornos no son directamente
 comparables: el valor de simulación (95.6\%) proviene de un recorrido
@@ -317,9 +313,9 @@ autónoma de 1.1~min de actividad media sobre un área libre de 3.50~m$^2$. Las
 limitaciones metodológicas de cada ensayo se detallan en el
 \ref{anx:resultados_metodologia}.
 
-Los archivos entregados no contienen mediciones de tensión, temperatura, uso
-de CPU, memoria ni autonomía energética; su caracterización cuantitativa se
-plantea como trabajo futuro.
+La caracterización cuantitativa del consumo energético y de la carga
+computacional no forma parte de los ensayos realizados y se plantea como
+trabajo futuro; su alcance se precisa en el \ref{anx:resultados_metodologia}.
 
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_resultados}

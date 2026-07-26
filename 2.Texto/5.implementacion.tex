@@ -35,10 +35,12 @@ diferencial de código abierto
 \label{sec:parametros_modelo}
 
 La Tabla~\ref{tab:parametros_modelo} reúne los parámetros físicos y temporales
-utilizados por el modelo, la interfaz de hardware y el firmware. Las tres
-frecuencias nominales de 30~Hz corresponden a mecanismos independientes. La
-correspondencia entre cada parámetro y su identificador en el código se
-consolida en el \ref{anx:identificadores}.
+utilizados por el modelo y la interfaz de hardware. Las frecuencias
+$f_{\mathrm{ctrl}}$ y $f_{\mathrm{loop}}$ coinciden numéricamente, pero
+corresponden a mecanismos independientes; la temporalidad interna del firmware
+y la correspondencia entre cada parámetro y su identificador en el código se
+consolidan en el \ref{anx:implementacion_diffdrive} y en el
+\ref{anx:identificadores}.
 
 \begin{table}[H]
 \centering
@@ -78,16 +80,6 @@ Frecuencia usada en la conversión de consignas &
 30~Hz &
 Conversión de consignas de rueda a \textit{ticks/frame} \\
 
-$f_{\mathrm{PID,nom}}$ &
-Frecuencia nominal del PID embebido &
-30~Hz &
-Frecuencia de referencia del controlador embebido \\
-
-$T_{\mathrm{PID,sched}}$ &
-Incremento del planificador PID &
-33~ms &
-Programación temporal del PID en el firmware \\
-
 \bottomrule
 \end{tabular}
 \end{table}
@@ -119,12 +111,12 @@ cargado en Gazebo.
 
 El modelo digital se organiza mediante una descripción \texttt{xacro} modular: la estructura mecánica se define una sola vez y el sensor láser se selecciona según el entorno de ejecución, de modo que hardware real y simulación comparten la misma geometría. El inventario de archivos, su función y su localización se consolidan en el \ref{anx:rutas_software}. La geometría del modelo se presenta acotada en la Fig.~\ref{fig:anx_cotas} del \ref{anx:validacion_urdf}.
 
-La contribución principal en esta etapa corresponde al diseño del modelo URDF/\texttt{xacro}, la parametrización geométrica del robot, la definición de marcos de referencia y la integración con los sistemas de control, SLAM y navegación. La atribución completa de paquetes propios, adaptados y externos se documenta en el \ref{anx:gemelo_digital}.
+La contribución principal en esta etapa corresponde al diseño del modelo URDF/\texttt{xacro}, la parametrización geométrica del robot, la definición de marcos de referencia y la integración con los sistemas de control, SLAM y navegación. La atribución completa de paquetes propios, adaptados y externos se documenta en el \ref{anx:workspace}.
 
 \subsection{Estructura URDF/xacro y marcos de referencia}
 \label{sec:tf-convenciones}
 
-El modelo se organiza como un árbol de eslabones y articulaciones cuyo marco principal es \texttt{base\_link}. El marco base declarado para \texttt{slam\_toolbox} y AMCL difiere entre simulación y hardware real; la asignación por entorno, la relación exacta entre \texttt{base\_link} y \texttt{base\_footprint} y la verificación estructural del árbol se documentan en el \ref{anx:gemelo_digital}.
+El modelo se organiza como un árbol de eslabones y articulaciones cuyo marco principal es \texttt{base\_link}. El marco base declarado para \texttt{slam\_toolbox} y AMCL difiere entre simulación y hardware real.
 
 Se adoptan las convenciones REP-103 y REP-105 descritas en la Sec.~\ref{sec:robot_definicion} \citep{rep103,rep105}. La cadena de transformaciones principal es:
 
@@ -134,8 +126,9 @@ Se adoptan las convenciones REP-103 y REP-105 descritas en la Sec.~\ref{sec:robo
 
 \noindent con la rama fija y coincidente \texttt{base\_link}$\rightarrow$\texttt{base\_footprint}.
 
-La correspondencia entre componentes, marcos y tópicos asociados del modelo
-digital se consolida en el \ref{anx:gemelo_digital}.
+La asignación de marcos por entorno, la correspondencia entre componentes,
+marcos y tópicos, y la verificación estructural del árbol se documentan en el
+\ref{anx:gemelo_digital}.
 
 \subsection{Selección del backend de control}
 \label{sec:backend}
@@ -143,10 +136,8 @@ digital se consolida en el \ref{anx:gemelo_digital}.
 El modelo utiliza \texttt{ros2\_control} en ambos entornos, pero carga un
 plugin de hardware distinto en cada caso, como resume la
 Tabla~\ref{tab:xacro_args_backend}. La interfaz empleada en el robot real se
-describe en la Sec.~\ref{sec:diff_drive_params}; los argumentos de
-selección, los identificadores completos de cada \textit{plugin} y la
-trazabilidad del backend alternativo no ejecutado se conservan en el
-\ref{anx:gemelo_digital}.
+describe en la Sec.~\ref{sec:diff_drive_params}; la trazabilidad completa de
+la selección se conserva en el \ref{anx:gemelo_digital}.
 
 \begin{table}[H]
 \centering
@@ -164,8 +155,9 @@ Simulación & \texttt{GazeboSystem} & Estados de las articulaciones entregados d
 \end{table}
 
 \subsection{Sensor láser simulado y criterios de aceptación}
+\label{sec:laser_sim}
 
-En simulación, el sensor se modela mediante el complemento de simulación correspondiente, publicando datos en \texttt{/scan} con el marco \texttt{laser\_frame}. El modelo reproduce el comportamiento general del RPLidar A1 físico, aunque con diferencias propias de la simulación, como ausencia de ruido real y un rango mínimo más permisivo; estas diferencias se consideran parte de la brecha simulación--realidad. La Fig.~\ref{fig:gazebo_laser} muestra el barrido del LIDAR simulado dentro del mundo de prueba con obstáculos.
+En simulación, el sensor se modela mediante el complemento de simulación correspondiente, publicando datos en \texttt{/scan} con el marco \texttt{laser\_frame}. El modelo reproduce el comportamiento general del RPLidar A1 físico, aunque con diferencias propias de la simulación; estas diferencias se consideran parte de la brecha simulación--realidad y se detallan en el \ref{anx:gemelo_digital}. La Fig.~\ref{fig:gazebo_laser} muestra el barrido del LIDAR simulado dentro del mundo de prueba con obstáculos.
 
 \utemFigurePropia{2.Texto/Imag/gazebo_laser_robot.png}{0.72\textwidth}
 {Barrido del LIDAR 2D simulado en el mundo de prueba con obstáculos.}
@@ -176,7 +168,7 @@ Antes de usar el gemelo digital para pruebas de SLAM y navegación, se aplicaron
 \section{Construcción de hardware y comunicación con ROS 2}
 \label{chap:robot_real}
 
-Esta sección describe la arquitectura físico-electrónica del robot y su integración con \gls{ROS2} Foxy sobre la Raspberry Pi 4. Los detalles operativos de cableado, reglas \texttt{udev} y configuración extendida se trasladan al \ref{anx:hardware_ros2}.
+Esta sección describe la arquitectura físico-electrónica del robot y su integración con \gls{ROS2} Foxy sobre la Raspberry Pi 4. Los detalles operativos y de configuración extendida se trasladan al \ref{anx:hardware_ros2}.
 
 \subsection{Arquitectura física y de datos}
 
@@ -198,10 +190,10 @@ periféricos. Esta separación reduce la interferencia eléctrica producida por 
 El dominio de comunicaciones conecta la Raspberry Pi con el
 \gls{Arduino} mediante un enlace serial USB para intercambiar referencias de
 velocidad y datos de encoders. El RPLidar A1 entrega los barridos utilizados
-por el sistema de percepción. La asignación de dispositivos, la velocidad
-serial y las reglas de identificación persistente se documentan en el
-\ref{anx:hardware_ros2}. La Figura~\ref{fig:esquema_conexiones} resume las
-conexiones eléctricas y de datos del prototipo.
+por el sistema de percepción. La asignación de dispositivos y su
+identificación persistente se documentan en el \ref{anx:hardware_ros2}. La
+Figura~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de
+datos del prototipo.
 
 \utemFigurePropia{2.Texto/Imag/circuit_diagram.png}{0.99\textwidth}
 {Esquema de conexiones eléctricas y de datos del robot diferencial.}
@@ -209,14 +201,11 @@ conexiones eléctricas y de datos del prototipo.
 
 \subsection{Integración con ROS 2}
 
-En hardware real, un único archivo de lanzamiento inicia los nodos necesarios para publicar la descripción del robot, activar \texttt{ros2\_control} y cargar el controlador diferencial. La arquitectura incluye:
-
-\begin{itemize}
-\item \texttt{robot\_state\_publisher}, encargado de publicar las transformaciones del robot.
-\item \texttt{controller\_manager}, que gestiona la interfaz de hardware y los controladores.
-\item \texttt{diff\_drive\_controller}, que convierte comandos de velocidad en referencias para las ruedas.
-\item \texttt{joint\_state\_broadcaster}, que publica el estado de las articulaciones.
-\end{itemize}
+En hardware real, un único archivo de lanzamiento inicia los nodos necesarios
+para publicar la descripción del robot, activar \texttt{ros2\_control} y
+cargar el controlador diferencial junto con el difusor de estados de
+articulación. El inventario de nodos y la responsabilidad de cada uno se
+documentan en el \ref{anx:nodos_lanzamiento}.
 
 La cadena de transformaciones mantiene la misma convención usada en simulación (Sec.~\ref{sec:tf-convenciones}): \texttt{slam\_toolbox} publica \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
 
@@ -244,32 +233,24 @@ Publicación de odometría & Habilitada & Publica \texttt{odom}$\rightarrow$\tex
 
 La comunicación entre \texttt{diff\_drive\_controller} y el firmware se
 realiza mediante \texttt{DiffDriveArduino}, el plugin de hardware de
-\texttt{ros2\_control} que expone comandos de velocidad y estados de posición
-y velocidad para ambas ruedas y los intercambia con el \gls{Arduino} mediante
-el enlace serial; su identidad de paquete y \textit{plugin} se documenta en el
-\ref{anx:workspace} y en el \ref{anx:gemelo_digital}. Su ciclo de
-lectura--actualización--escritura se ejecuta con la frecuencia
-$f_{\mathrm{ctrl}}$ indicada en la Tabla~\ref{tab:parametros_modelo}.
+\texttt{ros2\_control} que intercambia con el \gls{Arduino}, mediante el
+enlace serial, las referencias de velocidad de rueda y las lecturas de
+encoder. Su ciclo de lectura--actualización--escritura se ejecuta con la
+frecuencia $f_{\mathrm{ctrl}}$ indicada en la
+Tabla~\ref{tab:parametros_modelo}.
 
-En la fase de escritura, las consignas de rueda se convierten a la unidad
-esperada por el firmware y se envían mediante el enlace serial. La conversión
-incluye la resolución del encoder y una frecuencia propia de la interfaz,
-distinta del ciclo de actualización de \texttt{ros2\_control}; su formulación
-exacta se conserva en el \ref{anx:implementacion_diffdrive},
-Ec.~\eqref{eq:mps_to_ticks}.
-
-En la fase de lectura, los conteos acumulados $c_j[k]$ se convierten en
-posición angular mediante la Ec.~\eqref{eq:posicion_rueda_encoder} y en
-velocidad angular mediante la Ec.~\eqref{eq:w_ruedas}, para
-$j\in\{R,L\}$.
-
-El intervalo $\Delta t_k$ corresponde al tiempo real transcurrido entre
-lecturas y se define en la Ec.~\eqref{eq:intervalo_diffdrive}.
+En la fase de escritura, las consignas de rueda se convierten a
+\textit{ticks/frame} mediante la Ec.~\eqref{eq:mps_to_ticks}; en la fase de
+lectura, los conteos acumulados $c_j[k]$ se convierten en posición y
+velocidad angular mediante las Ecs.~\eqref{eq:posicion_rueda_encoder}
+y~\eqref{eq:w_ruedas}, para $j\in\{R,L\}$, con el intervalo $\Delta t_k$ de
+la Ec.~\eqref{eq:intervalo_diffdrive}. Las interfaces expuestas y el
+desarrollo de ambas conversiones se conservan en el
+\ref{anx:implementacion_diffdrive}.
 
 Las ganancias PID no se transmiten en tiempo de ejecución: residen en el
 firmware con los valores obtenidos mediante el procedimiento descrito en la
-Sec.~\ref{sec:sintonizacion_pso}. Por tanto, el plugin solo intercambia
-referencias de velocidad y lecturas de encoder.
+Sec.~\ref{sec:sintonizacion_pso}.
 
 \subsection{Flujo de datos del sistema}
 \label{sec:flujo_datos}
@@ -334,20 +315,19 @@ El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto ho
 
 \subsection{Arquitectura modular y constantes físicas}
 
-El firmware se organiza en módulos independientes para la comunicación serial y el ciclo principal, la lectura de encoders, el accionamiento del driver L298N y el controlador PID. El inventario de archivos y rutas se conserva en el \ref{anx:firmware} y en el \ref{anx:rutas_software}.
+El firmware se organiza en módulos independientes; su descomposición, junto
+con el inventario de archivos y rutas, se conserva en el \ref{anx:firmware}.
 
 El firmware utiliza la geometría y la resolución efectiva de encoders de
 la Tabla~\ref{tab:parametros_modelo} para expresar las referencias y
 mediciones en \textit{ticks/frame}. La temporalidad interna del controlador
-es independiente del ciclo de \texttt{ros2\_control}; su programación y los
-factores de conversión se documentan en el
-\ref{anx:implementacion_diffdrive} y en el
-\ref{anx:protocolos_sintonizacion}.
+es independiente del ciclo de \texttt{ros2\_control}; su programación se
+documenta en el \ref{anx:implementacion_diffdrive}.
 
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
 
-La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. Durante la operación normal, los comandos principales permiten leer los encoders, enviar referencias de velocidad, cargar las ganancias PID y aplicar PWM directo durante las pruebas en lazo abierto. El protocolo completo se presenta en la Tabla~\ref{tab:protocolo_serial} del \ref{anx:protocolo_serial}.
+La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. El conjunto de comandos implementado ---lectura de encoders, referencias de velocidad, carga de ganancias y accionamiento directo en lazo abierto--- se presenta en la Tabla~\ref{tab:protocolo_serial} del \ref{anx:protocolo_serial}.
 
 Los conteos recibidos por el enlace serial se interpretan mediante la
 resolución efectiva $N_e$ (Tabla~\ref{tab:parametros_modelo}). El
@@ -381,10 +361,8 @@ $K_o$ & 50 & 50 \\
 \end{tabular}
 \end{table}
 
-Las ganancias se aplican en la escala interna del firmware, con salida
-saturada al intervalo PWM permitido. Los estados internos, los tipos de dato,
-los truncamientos y el orden de operaciones de la implementación se conservan
-en el \ref{anx:pid_ecuaciones}.
+Las ganancias se aplican en la escala interna del firmware; el detalle de la
+implementación se conserva en el \ref{anx:pid_ecuaciones}.
 
 \begin{algorithm}[H]
 \caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware}
@@ -416,7 +394,7 @@ en el \ref{anx:pid_ecuaciones}.
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
 
-El bucle principal atiende el parser serial, programa la ejecución del PID mediante el intervalo $T_{\mathrm{PID,sched}}$ definido en la Tabla~\ref{tab:parametros_modelo} y evalúa la auto-detención. Si transcurre el intervalo de auto-detención sin recibir comandos de movimiento, el firmware detiene los motores, evitando que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación. El valor de ese intervalo y la bandera interna asociada se documentan en el \ref{anx:protocolo_serial}; la secuencia de reinicio se presenta en el Alg.~\ref{alg:pid_firmware}.
+El bucle principal atiende el parser serial, programa la ejecución del PID y evalúa la auto-detención. Si transcurre el intervalo de auto-detención sin recibir comandos de movimiento, el firmware detiene los motores, evitando que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación. Ambos intervalos programados se documentan en el \ref{anx:implementacion_diffdrive} y en el \ref{anx:protocolo_serial}.
 
 \subsection{Sintonización del controlador PID asistida por PSO}
 \label{sec:sintonizacion_pso}
@@ -454,8 +432,7 @@ cotas y las funciones de costo se conservan en el
 La prueba aplica un escalón de PWM en lazo abierto y registra los conteos de
 encoder cada $T_{\mathrm{cap}}=0.1$~s durante 10~s. El procedimiento
 reproducible se formaliza en el Alg.~\ref{alg:captura_lazo_abierto}; el valor
-del escalón aplicado, la ecuación de conversión de conteos a velocidad y el
-tratamiento del período de muestreo se conservan en el
+del escalón y el tratamiento del período de muestreo se conservan en el
 \ref{anx:protocolos_sintonizacion}, Ec.~\eqref{eq:vel_lazo_abierto}.
 
 \begin{algorithm}[H]
@@ -553,13 +530,10 @@ del firmware, se documentan en el \ref{anx:fodt_scripts}.
 
 \subsubsection{Implementación del optimizador PSO}
 
-El núcleo del optimizador se implementa en un módulo de Python independiente, cuyo
-flujo completo se formaliza en los Alg.~\ref{alg:pso_nucleo}
-y~\ref{alg:pso_bucle}: el primero inicializa el enjambre y el mejor global,
-y el segundo ejecuta el bucle de optimización y el escalado de salida. Las
-condiciones de reproducibilidad de la búsqueda se documentan en el
-\ref{anx:pso_detalle} y la localización del módulo en el
-\ref{anx:rutas_software}.
+El núcleo del optimizador se implementa en un módulo de Python independiente,
+cuyo flujo completo se formaliza en los Alg.~\ref{alg:pso_nucleo}
+y~\ref{alg:pso_bucle}. Las condiciones de reproducibilidad de la búsqueda se
+documentan en el \ref{anx:pso_detalle}.
 
 \begin{algorithm}[H]
 \caption{Inicialización del enjambre del PSO}
@@ -648,19 +622,15 @@ Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron d
 El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}), en modo \texttt{online\_async}. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
 
 Las configuraciones de hardware y simulación comparten la estructura del
-algoritmo, pero emplean parámetros específicos para cada entorno; el solver de
-optimización del grafo, los marcos, el tópico de entrada, la resolución y el
-cierre de lazo se consolidan en la Tabla~\ref{tab:slam_params_ch9} del
+algoritmo, pero emplean parámetros específicos para cada entorno; los valores
+cargados se consolidan en la Tabla~\ref{tab:slam_params_ch9} del
 \ref{anx:nav2_slam_config}.
 
 \subsection{Localización sobre un mapa conocido con AMCL}
 
 Para la navegación sobre un mapa previamente guardado se dispone del nodo
 AMCL de Nav2, con archivos de configuración propios para hardware real y
-simulación. Su lanzamiento inicia el servidor de mapas y el nodo de
-localización, que utiliza el mapa de ocupación, la odometría, los barridos
-del tópico \texttt{/scan} y las transformaciones del robot para estimar su
-pose.
+simulación; su lanzamiento se documenta en el \ref{anx:amcl_lanzamiento}.
 
 Debe distinguirse este modo de la exploración ejecutada durante el mapeo en
 línea. En las pruebas de mapeo y exploración documentadas en este trabajo,
@@ -769,9 +739,12 @@ Tabla~\ref{tab:recovery_ch9} del \ref{anx:recovery_nav2}.
 \subsection{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
 
-Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}); su nodo \texttt{explore\_server} identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
+Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}), que identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 
-El explorador opera sobre el costmap global, reevalúa periódicamente las fronteras y descarta las metas que no muestran progreso dentro de un tiempo máximo configurado. Los parámetros completos se conservan en la Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo de detección, selección, envío de metas y gestión de la lista negra se resume en el Alg.~\ref{alg:exploracion_fronteras}.
+Los parámetros completos se conservan en la
+Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo
+de detección, selección, envío de metas y gestión de la lista negra se resume
+en el Alg.~\ref{alg:exploracion_fronteras}.
 
 \begin{algorithm}[H]
 \caption{Integración operativa de \texttt{explore\_lite} con Nav2}

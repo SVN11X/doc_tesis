@@ -65,6 +65,13 @@ Tabla~\ref{tab:xacro_args_backend} son
 
 El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. El marco base declarado en la configuración depende del entorno: en simulación, \texttt{slam\_toolbox} y AMCL emplean \texttt{base\_footprint}; en hardware real, ambos emplean \texttt{base\_link}. Los costmaps mantienen \texttt{base\_link} en ambos entornos.
 
+El sensor láser simulado se declara en \texttt{lidar\_sim.xacro} mediante el
+complemento de sensor de rango de Gazebo, con 360 muestras por barrido,
+apertura de $\pm3.14$~rad, tasa de actualización de 10~Hz y rango de 0.08~m a
+12~m. La declaración no incorpora un término de ruido y su rango mínimo es
+más permisivo que el del sensor físico; ambas diferencias corresponden a la
+brecha simulación--realidad señalada en la Sec.~\ref{sec:laser_sim}.
+
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
 
@@ -150,6 +157,46 @@ El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación
 
 \noindent Todos los paquetes provienen de bases de código de terceros (de código abierto), modificadas y configuradas por el autor. El aporte propio sobre estos paquetes se describe en la Justificación de la Introducción.
 
+\subsection{Nodos del lanzamiento en hardware real}
+\label{anx:nodos_lanzamiento}
+
+El archivo \texttt{launch\_robot.launch.py} inicia los nodos resumidos en la
+Tabla~\ref{tab:anx_nodos_lanzamiento}. Los dos controladores no se lanzan
+como nodos independientes: se cargan mediante \textit{spawners} sobre el
+\texttt{controller\_manager}, con los nombres \texttt{diff\_cont} y
+\texttt{joint\_broad} declarados en \texttt{my\_controllers.yaml}. La
+descripción del robot se publica desde el lanzamiento anidado
+\texttt{rsp.launch.py}, con \texttt{use\_ros2\_control=true} y
+\texttt{use\_sim\_time=false}.
+
+\begin{table}[H]
+\centering
+\caption{Nodos iniciados por el lanzamiento en hardware real.}
+\label{tab:anx_nodos_lanzamiento}
+\small
+\begin{tabular}{p{4.0cm} p{4.4cm} p{4.9cm}}
+\toprule
+\textbf{Nodo o controlador} & \textbf{Paquete o tipo} & \textbf{Rol en el sistema} \\
+\midrule
+\texttt{robot\_state\_publisher} &
+\texttt{robot\_state\_publisher} &
+Publica las transformaciones del robot a partir de la descripción URDF/\texttt{xacro}. \\
+
+\texttt{controller\_manager} &
+\texttt{controller\_manager} (ejecutable \texttt{ros2\_control\_node}) &
+Gestiona la interfaz de hardware y el ciclo de los controladores. \\
+
+\texttt{diff\_cont} &
+\texttt{diff\_drive\_controller/} \texttt{DiffDriveController} &
+Convierte comandos de velocidad del robot en referencias de rueda y publica la odometría. \\
+
+\texttt{joint\_broad} &
+\texttt{joint\_state\_broadcaster/} \texttt{JointStateBroadcaster} &
+Publica el estado de las articulaciones. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Asignación de pines y dispositivos}
 \label{anx:pinout_dispositivos}
 
@@ -185,6 +232,14 @@ diferencial. El botón de habilitación actúa como
 
 \subsection{Temporalidad y ciclo de la interfaz \texttt{DiffDriveArduino}}
 \label{anx:implementacion_diffdrive}
+
+\noindent El plugin exporta, para cada rueda, una interfaz de comando de
+velocidad y dos interfaces de estado, de posición y de velocidad. En la fase
+de lectura, el conteo acumulado recibido por el enlace serial se convierte en
+posición angular mediante el factor $2\pi/N_e$ de la
+Ec.~\eqref{eq:posicion_rueda_encoder} y en velocidad angular por diferencias
+finitas, según la Ec.~\eqref{eq:w_ruedas}, empleando como denominador el
+intervalo $\Delta t_k$ definido a continuación.
 
 \noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el buffer de entrada. Si $t_{\mathrm{cfg}}$ es ese instante y $t_{\mathrm{read},k}$ el instante medido al comenzar la llamada $k$ a \texttt{read()}, el denominador ejecutado es:
 
@@ -1088,6 +1143,18 @@ mientras que \texttt{diff\_drive\_controller} limita la velocidad lineal a
 0.13~m/s; por ello, las consignas superiores a este último valor se limitan
 en la etapa posterior.
 
+\subsection{Lanzamiento de la localización con AMCL}
+\label{anx:amcl_lanzamiento}
+
+El lanzamiento de localización activa el servidor de mapas
+(\texttt{nav2\_map\_server}) y el nodo \texttt{amcl}
+(\texttt{nav2\_amcl}), gestionados como nodos de ciclo de vida por
+\texttt{nav2\_lifecycle\_manager}. AMCL estima la pose a partir del mapa de
+ocupación almacenado, la odometría, los barridos del tópico \texttt{/scan} y
+las transformaciones del robot. Este lanzamiento es independiente del de
+\texttt{slam\_toolbox} y no se ejecuta durante las pruebas de mapeo y
+exploración descritas en la Sec.~\ref{sec:resultados_slam}.
+
 \subsection{Geometría del costmap e inflación}
 \label{anx:costmap_inflacion}
 
@@ -1442,6 +1509,14 @@ Zonas de sombra láser & Mínimas & Presentes \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Mediciones no incluidas en los ensayos}
+
+Los registros entregados no contienen mediciones de tensión, temperatura, uso
+de CPU, memoria ni autonomía energética. Por ello, la caracterización
+cuantitativa del consumo energético y de la carga computacional indicada en la
+Sec.~\ref{sec:comparacion_sim_real} no se sustenta en los datos de este
+trabajo y se plantea como trabajo futuro.
 
 \subsection{Limitaciones de los contadores de exploración}
 
