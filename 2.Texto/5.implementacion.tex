@@ -644,56 +644,24 @@ la navegación posterior sobre mapas almacenados.
 
 Nav2 recibe una meta de navegación, calcula una ruta global y genera comandos
 de velocidad para ejecutarla evitando obstáculos. La
-Fig.~\ref{fig:interaccion_nav} sintetiza la interacción entre los componentes
-de navegación y su conexión con el control diferencial.
+Fig.~\ref{fig:interaccion_nav} sintetiza esta interacción y la sitúa dentro
+del flujo completo del sistema: la percepción del RPLidar~A1 alimenta a
+\texttt{slam\_toolbox} y a los mapas de costos; \texttt{bt\_navigator}
+coordina la planificación global y el control local; y los comandos
+resultantes se arbitran en \texttt{twist\_mux} antes de llegar al control
+diferencial de bajo nivel descrito en la Sec.~\ref{sec:diff_drive_params}.
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[font=\small,
-nodo/.style={draw, rounded corners=2pt, align=center, fill=gray!10,
-minimum height=0.85cm, inner sep=4pt},
-dato/.style={-{Stealth[length=2.5mm]}, thick},
-bidato/.style={{Stealth[length=2.5mm]}-{Stealth[length=2.5mm]}, thick},
-etq/.style={font=\scriptsize, fill=white, inner sep=1pt}]
+\utemFigurePropia{2.Texto/Imag/diagrama_navegacion_autonoma.png}{1.0\textwidth}
+{Interacción entre los componentes de la navegación autónoma.}
+{fig:interaccion_nav}
 
-\node[nodo] (lidar)   at (4.2,9.4)  {\gls{LIDAR} 2D};
-\node[nodo] (slam)    at (4.2,7.6)  {\texttt{slam\_toolbox}\\ mapa y pose};
-\node[nodo] (explore) at (8.8,7.6)  {\texttt{explore\_lite}\\ fronteras};
-\node[nodo] (cost)    at (4.2,5.8)  {Mapas de costo\\ global y local};
-\node[nodo] (bt)      at (8.8,5.8)  {\texttt{bt\_navigator}\\ árbol de comportamiento};
-\node[nodo] (plan)    at (2.9,3.9)  {\texttt{planner\_server}\\ NavFn con A$^*$};
-\node[nodo] (ctrl)    at (6.6,3.9)  {\texttt{controller\_server}\\ DWB};
-\node[nodo] (mux)     at (6.6,2.0)  {\texttt{twist\_mux}};
-\node[nodo] (teleop)  at (10.4,2.0) {Teleoperación};
-\node[nodo] (diff)    at (6.6,0.2)  {\texttt{diff\_drive\_controller}};
-\node[nodo] (hw)      at (6.6,-1.6) {Interfaz de hardware\\ y firmware PID};
-
-\draw[dato] (lidar)   -- (slam)    node[etq, midway, right=2pt] {\texttt{/scan}};
-\draw[dato] (slam)    -- (explore) node[etq, midway, above=1pt] {mapa y pose};
-\draw[dato] (slam)    -- (cost)    node[etq, midway, right=2pt] {mapa};
-\draw[dato] (explore) -- (bt)      node[etq, midway, right=2pt] {metas};
-\draw[dato] (bt)      -- (plan);
-\draw[dato] (bt)      -- (ctrl);
-\draw[dato] (cost)    -- (plan);
-\draw[dato] (cost)    -- (ctrl);
-\draw[dato] (plan)    -- (ctrl)    node[etq, midway, above=1pt] {ruta};
-\draw[dato] (ctrl)    -- (mux)     node[etq, midway, right=2pt] {\texttt{/cmd\_vel}};
-\draw[dato] (teleop)  -- (mux);
-\draw[dato] (mux)     -- (diff)    node[etq, midway, right=2pt] {consignas};
-\draw[bidato] (diff)  -- (hw)      node[etq, midway, right=2pt] {referencias y encoders};
-\draw[dato] (diff.west) -- ++(-6.0,0) |- (slam.west)
-node[etq, pos=0.25, above=1pt] {\texttt{/odom}};
-\end{tikzpicture}
-
-\vspace{4pt}
-
-\caption{Interacción entre los componentes de la navegación autónoma.}
-\label{fig:interaccion_nav}
-
-\vspace{2pt}
-
-{\footnotesize\textit{Fuente: Elaboración propia.}}
-\end{figure}
+El diagrama organiza los nodos según su rol dentro de la arquitectura
+\gls{ROS2} y no según el equipo que los ejecuta. En la configuración
+distribuida empleada, \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite}
+se ejecutan en la estación de trabajo, mientras que la interfaz
+\texttt{ros2\_control} y la publicación de \texttt{/scan}, \texttt{/odom} y
+las transformaciones asociadas residen en la Raspberry Pi~4
+(Sec.~\ref{chap:robot_real}).
 
 La configuración de los planificadores global y local se resume en la
 Tabla~\ref{tab:nav2_componentes_ch9}. El controlador local evalúa las
