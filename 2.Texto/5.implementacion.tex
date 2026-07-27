@@ -863,6 +863,32 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 \end{algorithmic}
 \end{algorithm}
 
+El algoritmo arranca con una planificación inicial y programa planificaciones
+periódicas; a partir de ahí, cada planificación repite el mismo ciclo mientras la
+exploración esté activa. Primero obtiene la pose del robot y detecta, sobre el
+costmap global, las fronteras entre el espacio libre conocido y las zonas no
+observadas. Para cada frontera calcula un punto representativo
+$p_F^{\mathrm{impl}}$ ---su meta candidata--- y un puntaje $U(F)$ que combina
+distancia y tamaño, de modo que se prefieren las fronteras cercanas y las que
+prometen descubrir más entorno.
+
+Enseguida descarta las fronteras menores que \texttt{min\_frontier\_size}, para
+no perseguir aberturas demasiado pequeñas, y ordena el resto por costo
+ascendente. Si no queda ninguna frontera, la exploración termina y el entorno
+alcanzable se considera mapeado. En caso contrario, elige la primera frontera
+cuyo punto no esté en la lista negra $B$; si todas están en ella, la lista se
+vacía para volver a intentarlas y evitar detenerse antes de tiempo.
+
+La lista negra $B$ evita reintentar metas improductivas. Si la meta elegida lleva
+demasiado tiempo sin avanzar (\texttt{progress\_timeout}), se añade a $B$ y se
+abandona; en caso contrario, se envía a Nav2 mediante \texttt{NavigateToPose} con
+orientación identidad ---solo importa la posición de la frontera, no un rumbo
+final concreto---. El ciclo reacciona después según el resultado que devuelva
+Nav2: si la meta se alcanza (\texttt{SUCCEEDED}), programa una nueva
+planificación hacia la siguiente frontera; si se aborta (\texttt{ABORTED}), añade
+la meta a la lista negra; y si se cancela (\texttt{CANCELED}), mantiene la lista
+negra sin cambios.
+
 El cálculo del punto representativo de cada frontera, el escalamiento de la
 distancia en el puntaje y la programación del temporizador se documentan en
 el \ref{anx:explore_impl}.
