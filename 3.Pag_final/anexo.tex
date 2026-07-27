@@ -1360,7 +1360,7 @@ En simulación, la interpretación del error rectilíneo y la condición del pro
 
 \begin{table}[H]
 \centering
-\caption{Error de seguimiento en trayectoria rectilínea de 2~m ---
+\caption{Error de seguimiento en trayectoria rectilínea de 2~m en
 simulación (Gazebo).}
 \label{tab:odom_recta_sim}
 \small
@@ -1380,7 +1380,7 @@ simulación (Gazebo).}
 
 \begin{table}[H]
 \centering
-\caption{Error de odometría en trayectoria rectilínea de 2~m --- hardware real. El error corresponde a la discrepancia entre la odometría de encoders y la distancia física medida.}
+\caption{Error de odometría en trayectoria rectilínea de 2~m en hardware real. El error corresponde a la discrepancia entre la odometría de encoders y la distancia física medida.}
 \label{tab:odom_recta_real}
 \small
 \begin{tabular}{ccccc}
@@ -1401,7 +1401,7 @@ simulación (Gazebo).}
 
 \begin{table}[H]
 \centering
-\caption{Desviación del giro acumulado de \texttt{/odom} respecto de la referencia nominal de $360^\circ$ --- simulación.}
+\caption{Desviación del giro acumulado de \texttt{/odom} respecto de la referencia nominal de $360^\circ$ en simulación.}
 \label{tab:odom_giro_sim}
 \small
 \begin{tabular}{ccccc}
@@ -1419,7 +1419,7 @@ simulación (Gazebo).}
 
 \begin{table}[H]
 \centering
-\caption{Desviación angular física respecto de la referencia nominal de $360^\circ$ usada por el script --- hardware real. Las desviaciones son bidireccionales (sobre- y subgiros).}
+\caption{Desviación angular física respecto de la referencia nominal de $360^\circ$ usada por el script en hardware real. Las desviaciones son bidireccionales (sobre- y subgiros).}
 \label{tab:odom_giro}
 \small
 \begin{tabular}{cccc}
@@ -1609,7 +1609,7 @@ $\hat{v}_j[k]$ & Velocidad lineal estimada por el modelo de la rueda $j$ &
 m/s \\
 $v_j^{\mathrm{med}}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto &
 m/s \\
-$\mathrm{e}$ & Número de Euler & --- \\
+$\mathrm{e}$ & Número de Euler & No aplica \\
 \midrule
 \multicolumn{3}{l}{\textit{Optimización por enjambre (PSO)}}\\
 $\xi_{i,d},V_{i,d}$ & Posición y velocidad de búsqueda de la partícula $i$, dimensión $d$ & adim. \\
@@ -1623,9 +1623,9 @@ $c_1,c_2$ & Coeficientes cognitivo y social & adim. \\
 $\psi$ & Suma de coeficientes cognitivo y social ($\psi=c_1+c_2=4.1$, Ec.~\ref{eq:constriccion}) & adim. \\
 
 $\rho_1,\rho_2$ & Coeficientes aleatorios $\sim\mathcal{U}[0,1]$ & adim. \\
-$\mathcal{U}[a,b]$ & Distribución uniforme continua en el intervalo $[a,b]$: todos sus valores son igual de probables. El exponente indica la dimensión del vector sorteado; por ejemplo, $\mathcal{U}[0,1]^3$ denota tres componentes muestreadas de forma independiente en $[0,1]$ & --- \\
-$g,g_{\max}$ & Generación actual y generación máxima & --- \\
-$N_p$ & Número de partículas del enjambre & --- \\
+$\mathcal{U}[a,b]$ & Distribución uniforme continua en el intervalo $[a,b]$: todos sus valores son igual de probables. El exponente indica la dimensión del vector sorteado; por ejemplo, $\mathcal{U}[0,1]^3$ denota tres componentes muestreadas de forma independiente en $[0,1]$ & No aplica \\
+$g,g_{\max}$ & Generación actual y generación máxima & No aplica \\
+$N_p$ & Número de partículas del enjambre & No aplica \\
 $s_{\mathrm{esc},d}$ & Factor de escala de la dimensión $d$ del PSO (columnas ID y PID de la Tabla~\ref{tab:pso_config}) & varias \\
 $\boldsymbol{\theta}_i^{\mathrm{eval}}$ & Vector de parámetros físicos usado para evaluar el candidato de la partícula $i$ & varias \\
 $\boldsymbol{\theta}^{\mathrm{out}}$ & Vector de parámetros informado al finalizar el PSO, escalado desde la posición global almacenada sin aplicar un nuevo recorte superior & varias \\
@@ -1634,7 +1634,7 @@ $w_{\mathrm{mse}},w_{\mathrm{OS}}$ & Pesos de error cuadrático y de sobreimpuls
 $\lVert\boldsymbol{\varepsilon}_j\rVert_2$ & Norma-2 (euclidiana) del vector de errores instantáneos $\varepsilon_j[k]$ & m/s \\
 $v_j^{\mathrm{ref}}$ & Velocidad de consigna estacionaria obtenida como media para $t\geq7$~s & m/s \\
 $r_j^{sim}(t)$ & Referencia consumida por la simulación después de la interpolación lineal de \texttt{np.interp} & m/s \\
-$\operatorname{round}_{\mathrm{even}}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & --- \\
+$\operatorname{round}_{\mathrm{even}}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & No aplica \\
 \midrule
 \multicolumn{3}{l}{\textit{Validación experimental y cobertura}}\\
 $d_{\mathrm{ref}}$ & Distancia comandada en la prueba rectilínea & m \\
@@ -1647,7 +1647,7 @@ medida & \% \\
 $\Delta\theta_{360}$ & Referencia nominal fija de $360^\circ$ utilizada por los scripts de giro & grados \\
 $\Delta\theta_{\mathrm{obs}}$ & Giro observado: acumulación de \texttt{/odom} en simulación o medición física en hardware real & grados \\
 $E_{\theta,360}$ & Desviación angular normalizada respecto de $\Delta\theta_{360}$; no corresponde a error odométrico angular ni a seguimiento de una consigna efectiva sin limitación & \% \\
-$M$ & Imagen PGM o conjunto de celdas del mapa analizado & --- \\
+$M$ & Imagen PGM o conjunto de celdas del mapa analizado & No aplica \\
 $p$ & Intensidad de una celda de la imagen PGM & nivel de gris \\
 $\mathbf{1}[\cdot]$ & Función indicadora de una condición lógica & adim. \\
 $N_{\mathrm{libre}}$ & Número de celdas clasificadas como espacio libre &
@@ -1659,13 +1659,13 @@ $A_{\mathrm{libre}}$ & Área libre mapeada, calculada como $N_{\mathrm{libre}}\r
 $\rho_M$ & Resolución utilizada para convertir celdas del mapa en área; \texttt{run\_explore.sh} usa el valor fijo 0.05 & m/celda \\
 \midrule
 \multicolumn{3}{l}{\textit{Navegación y exploración}}\\
-$f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & --- \\
-$J_{\mathrm{DWB}}$ & Costo total del controlador local DWB & --- \\
-$C_c,S_c$ & Crítico $c$ del DWB y escala configurada para ese crítico & --- \\
+$f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & No aplica \\
+$J_{\mathrm{DWB}}$ & Costo total del controlador local DWB & No aplica \\
+$C_c,S_c$ & Crítico $c$ del DWB y escala configurada para ese crítico & No aplica \\
 $d_o$ & Distancia al obstáculo & m \\
 $r_{\mathrm{inscrito}},r_{\mathrm{inflacion}}$ & Radio inscrito del robot y radio de inflación & m \\
 $\beta$ & Factor de decaimiento del costo (\texttt{cost\_scaling\_factor}) & 1/m \\
-$U(F)$ & Puntaje de costo de la frontera $F$ (heurístico, no homogéneo) & --- \\
+$U(F)$ & Puntaje de costo de la frontera $F$ (heurístico, no homogéneo) & No aplica \\
 $d_{\min}^{\mathrm{world}}(F)$ & Distancia mínima calculada en coordenadas del mundo antes de aplicar el factor adicional de resolución & m \\
 $|F|$ & Contador de tamaño de la frontera; se inicializa en 1 y se incrementa por celdas vecinas incorporadas. Si no se añade ninguna, la frontera conserva tamaño 1 & celdas \\
 $\mathbf{p}_{F}^{\mathrm{impl}}$ & Centroide implementado: suma solo celdas vecinas y divide por $|F|$, que incluye la celda inicial. Para una frontera sin vecinos añadidos permanece en $(0,0)$ & m \\
@@ -1677,7 +1677,7 @@ $t_{\mathrm{prog}}$ & Tiempo máximo sin progreso del explorador (\texttt{progre
 $\varepsilon_j[k]$ & Error de seguimiento del modelo para la rueda $j$,
 $v_j^{\mathrm{ref}}-\hat{v}_j[k]$ & m/s \\
 $\boldsymbol{\varepsilon}_j$ & Vector de errores de seguimiento de la rueda $j$ & m/s \\
-$N$ & Número de muestras de $\boldsymbol{\varepsilon}_j$ & --- \\
+$N$ & Número de muestras de $\boldsymbol{\varepsilon}_j$ & No aplica \\
 $\mathrm{MSE}(\boldsymbol{\varepsilon}_j)$ &
 Error cuadrático medio,
 $N^{-1}\sum_{k=1}^{N}\varepsilon_j[k]^2$

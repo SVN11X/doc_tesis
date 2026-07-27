@@ -137,7 +137,7 @@ láser; de esta cadena cuelga, además, la rama fija
 \texttt{base\_link}$\rightarrow$\texttt{base\_footprint}.
 
 Sobre esta estructura, el marco que \texttt{slam\_toolbox} y AMCL declaran como
-base para localizar al robot ---\texttt{base\_link} o \texttt{base\_footprint}---
+base para localizar al robot (\texttt{base\_link} o \texttt{base\_footprint})
 no es el mismo en simulación que en hardware real. Esa asignación por entorno,
 la correspondencia entre componentes, marcos y tópicos, y la verificación
 estructural del árbol se documentan en el \ref{anx:gemelo_digital}.
@@ -328,8 +328,8 @@ fijo y se vacía el búfer de entrada antes de comenzar el intercambio de datos
 con el firmware.
 
 Dentro del ciclo, cada iteración comienza midiendo el intervalo real
-transcurrido $\Delta t_k$ entre lecturas ---y no un período fijo de
-$1/f_{\mathrm{ctrl}}$---, según la definición de la
+transcurrido $\Delta t_k$ entre lecturas, en lugar de asumir un período fijo de
+$1/f_{\mathrm{ctrl}}$, según la definición de la
 Ec.~\eqref{eq:intervalo_diffdrive}. En la fase de lectura, la interfaz solicita
 al firmware los conteos de ambos encoders mediante el comando serial \texttt{e},
 los interpreta como enteros y, con ellos y con $\Delta t_k$, reconstruye la
@@ -359,8 +359,8 @@ modo que al soltarlo el robot deja de recibir consignas y se detiene. Así se
 evitan desplazamientos accidentales ante una pérdida de atención o de la señal
 del mando.
 
-El robot puede recibir comandos de velocidad de dos orígenes ---la teleoperación
-manual y la navegación autónoma de Nav2---, por lo que ambos flujos se integran
+El robot puede recibir comandos de velocidad de dos orígenes: la teleoperación
+manual y la navegación autónoma de Nav2. Por ello, ambos flujos se integran
 mediante el multiplexor \texttt{twist\_mux}, que selecciona una única fuente
 según un esquema de prioridades y descarta aquellas que dejan de emitir. La
 teleoperación manual tiene prioridad sobre los comandos autónomos, de modo que
@@ -391,7 +391,7 @@ documenta en el \ref{anx:implementacion_diffdrive}.
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
 
-La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. El conjunto de comandos implementado ---lectura de encoders, referencias de velocidad, carga de ganancias y accionamiento directo en lazo abierto--- se presenta en la Tabla~\ref{tab:protocolo_serial} del \ref{anx:protocolo_serial}.
+La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. El conjunto de comandos implementado incluye lectura de encoders, referencias de velocidad, carga de ganancias y accionamiento directo en lazo abierto, y se presenta en la Tabla~\ref{tab:protocolo_serial} del \ref{anx:protocolo_serial}.
 
 Los conteos recibidos por el enlace serial se interpretan mediante la
 resolución efectiva $N_e$ (Tabla~\ref{tab:parametros_modelo}). El
@@ -459,12 +459,12 @@ estado conocido: recarga las ganancias por defecto de ambas ruedas, lee los
 conteos actuales de encoder y pone en cero la salida acumulada, la medición
 previa y el término integral. \texttt{updatePID} se ejecuta en cada ciclo de
 control: lee los conteos de ambas ruedas y, si no hay movimiento comandado
-($\texttt{moving}=0$), reinicia una sola vez los estados ---únicamente si habían
-quedado valores previos distintos de cero--- y no actualiza las salidas; en caso
+($\texttt{moving}=0$), reinicia una sola vez los estados, únicamente si habían
+quedado valores previos distintos de cero, y no actualiza las salidas; en caso
 contrario, ejecuta el cálculo PID de cada rueda por separado mediante
 \texttt{doPID} y aplica a los motores las órdenes PWM resultantes. Las
-operaciones internas de \texttt{doPID} ---banda muerta, saturación e integrador
-condicional--- son las formalizadas en las ecuaciones citadas más arriba.
+operaciones internas de \texttt{doPID} (banda muerta, saturación e integrador
+condicional) son las formalizadas en las ecuaciones citadas más arriba.
 
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
@@ -504,7 +504,7 @@ cotas y las funciones de costo se conservan en el
 El procedimiento encadena tres etapas. Las dos primeras se ejecutan para cada
 rueda: primero suaviza la velocidad medida en lazo abierto y ajusta el modelo
 FODT $(K_m,\tau,L_d)$ minimizando el costo de identificación $J_{\mathrm{ID}}$
-con PSO; luego, sobre ese modelo, busca ---también con PSO--- las ganancias
+con PSO; luego, sobre ese modelo, busca, también mediante PSO, las ganancias
 $(K_p,K_d,K_i)$ que minimizan el costo de control $J_{\mathrm{PID}}$. En la
 tercera etapa, las ganancias resultantes se ajustan sobre el robot real y se
 registran en el firmware como valores definitivos.
@@ -604,8 +604,8 @@ para $j\in\{R,L\}$.
 \end{algorithm}
 
 El algoritmo mantiene un muestreo de período fijo $T_{\mathrm{cap}}$: en cada
-paso aplica el PWM correspondiente ---cero antes del instante $t_{\mathrm{step}}$
-y el escalón $u_{\mathrm{step}}$ a partir de él---, lee los encoders, calcula la
+paso aplica el PWM correspondiente (cero antes del instante $t_{\mathrm{step}}$
+y el escalón $u_{\mathrm{step}}$ a partir de él), lee los encoders, calcula la
 velocidad de cada rueda a partir del incremento de conteo y registra el par
 entrada--velocidad. Si una lectura resulta inválida, reutiliza el último conteo
 válido y deja constancia de la advertencia; al final de cada paso espera el
@@ -689,10 +689,10 @@ inicialización (Alg.~\ref{alg:pso_nucleo}) crea $N_p$ partículas con posición
 velocidad aleatorias, evalúa el costo de cada una, guarda su mejor posición
 personal y determina la mejor posición global del enjambre. El bucle
 (Alg.~\ref{alg:pso_bucle}) repite, en cada generación, la actualización de la
-inercia y, para cada partícula, la de su velocidad ---combinando inercia,
-atracción hacia su mejor posición personal y atracción hacia la global--- y la
-de su posición; a continuación reevalúa el costo y actualiza los mejores
-personal y global. Al finalizar, la mejor posición global se transforma en el
+inercia y, para cada partícula, actualiza su velocidad combinando la inercia,
+la atracción hacia su mejor posición personal y la atracción hacia la global;
+luego actualiza su posición, reevalúa el costo y modifica los mejores personal
+y global cuando corresponde. Al finalizar, la mejor posición global se transforma en el
 vector de parámetros de salida $\theta^{\mathrm{out}}$, que corresponde al modelo
 FODT o a las ganancias PID según el modo de ejecución.
 
@@ -868,7 +868,7 @@ periódicas; a partir de ahí, cada planificación repite el mismo ciclo mientra
 exploración esté activa. Primero obtiene la pose del robot y detecta, sobre el
 costmap global, las fronteras entre el espacio libre conocido y las zonas no
 observadas. Para cada frontera calcula un punto representativo
-$p_F^{\mathrm{impl}}$ ---su meta candidata--- y un puntaje $U(F)$ que combina
+$p_F^{\mathrm{impl}}$, que corresponde a su meta candidata, y un puntaje $U(F)$ que combina
 distancia y tamaño, de modo que se prefieren las fronteras cercanas y las que
 prometen descubrir más entorno.
 
@@ -882,8 +882,8 @@ vacía para volver a intentarlas y evitar detenerse antes de tiempo.
 La lista negra $B$ evita reintentar metas improductivas. Si la meta elegida lleva
 demasiado tiempo sin avanzar (\texttt{progress\_timeout}), se añade a $B$ y se
 abandona; en caso contrario, se envía a Nav2 mediante \texttt{NavigateToPose} con
-orientación identidad ---solo importa la posición de la frontera, no un rumbo
-final concreto---. El ciclo reacciona después según el resultado que devuelva
+orientación identidad, ya que solo importa la posición de la frontera y no un rumbo
+final concreto. El ciclo reacciona después según el resultado que devuelva
 Nav2: si la meta se alcanza (\texttt{SUCCEEDED}), programa una nueva
 planificación hacia la siguiente frontera; si se aborta (\texttt{ABORTED}), añade
 la meta a la lista negra; y si se cancela (\texttt{CANCELED}), mantiene la lista
