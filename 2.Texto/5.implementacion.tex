@@ -116,19 +116,31 @@ La contribución principal en esta etapa corresponde al diseño del modelo URDF/
 \subsection{Estructura URDF/xacro y marcos de referencia}
 \label{sec:tf-convenciones}
 
-El modelo se organiza como un árbol de eslabones y articulaciones cuyo marco principal es \texttt{base\_link}. El marco base declarado para \texttt{slam\_toolbox} y AMCL difiere entre simulación y hardware real.
+El modelo se organiza como un árbol de eslabones y articulaciones cuyo marco
+principal es \texttt{base\_link}, solidario al cuerpo del robot. De él se deriva
+\texttt{base\_footprint}, el marco de contacto del robot con el suelo, que en
+este modelo se declara como un eslabón hijo fijo y coincidente con
+\texttt{base\_link}. La organización de estos marcos sigue las convenciones
+REP-103 y REP-105 descritas en la Sec.~\ref{sec:robot_definicion}
+\citep{rep103,rep105}, que fijan la orientación de los ejes y la jerarquía entre
+el marco del mapa, el odométrico y el de la base.
 
-Se adoptan las convenciones REP-103 y REP-105 descritas en la Sec.~\ref{sec:robot_definicion} \citep{rep103,rep105}. La cadena de transformaciones principal es:
+La cadena de transformaciones principal es:
 
 \begin{center}
 \texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base\_link} $\rightarrow$ \texttt{laser\_frame},
 \end{center}
 
-\noindent con la rama fija y coincidente \texttt{base\_link}$\rightarrow$\texttt{base\_footprint}.
+\noindent donde \texttt{map} es el marco global del mapa, \texttt{odom} el marco
+odométrico (continuo, con deriva) y \texttt{laser\_frame} el marco del sensor
+láser; de esta cadena cuelga, además, la rama fija
+\texttt{base\_link}$\rightarrow$\texttt{base\_footprint}.
 
-La asignación de marcos por entorno, la correspondencia entre componentes,
-marcos y tópicos, y la verificación estructural del árbol se documentan en el
-\ref{anx:gemelo_digital}.
+Sobre esta estructura, el marco que \texttt{slam\_toolbox} y AMCL declaran como
+base para localizar al robot ---\texttt{base\_link} o \texttt{base\_footprint}---
+no es el mismo en simulación que en hardware real. Esa asignación por entorno,
+la correspondencia entre componentes, marcos y tópicos, y la verificación
+estructural del árbol se documentan en el \ref{anx:gemelo_digital}.
 
 \subsection{Selección del backend de control}
 \label{sec:backend}
@@ -256,8 +268,14 @@ Sec.~\ref{sec:sintonizacion_pso}.
 \label{sec:flujo_datos}
 
 El Alg.~\ref{alg:ros2control_cycle} formaliza el flujo completo entre
-\gls{ROS2}, la interfaz de hardware y el firmware, con las conversiones y el
-intervalo $\Delta t_k$ descritos en la Sec.~\ref{sec:diff_drive_params}.
+\gls{ROS2}, la interfaz de hardware y el firmware. Corresponde al ciclo de
+lectura--actualización--escritura que \texttt{ros2\_control} repite con la
+frecuencia $f_{\mathrm{ctrl}}$ (Sec.~\ref{sec:diff_drive_params}): en cada
+iteración, la interfaz lee los encoders desde el \gls{Arduino}, reconstruye el
+estado de cada rueda, actualiza el controlador diferencial y devuelve al
+firmware las nuevas referencias de velocidad. Las conversiones y el intervalo
+$\Delta t_k$ empleados se describen en la Sec.~\ref{sec:diff_drive_params} y en
+el \ref{anx:implementacion_diffdrive}.
 
 \begin{algorithm}[H]
 \caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}}
@@ -301,11 +319,57 @@ intervalo $\Delta t_k$ descritos en la Sec.~\ref{sec:diff_drive_params}.
 \end{algorithmic}
 \end{algorithm}
 
+El algoritmo distingue una fase de inicialización, ejecutada una sola vez, y un
+ciclo permanente. En la inicialización se registra el instante inicial, se leen
+los parámetros de rueda y comunicación, y se calcula el paso angular por tick
+$\delta\phi=2\pi/N_e$, que traduce cada conteo de encoder en un incremento de
+ángulo de rueda. A continuación se abre el puerto serial, se espera un tiempo
+fijo y se vacía el búfer de entrada antes de comenzar el intercambio de datos
+con el firmware.
+
+Dentro del ciclo, cada iteración comienza midiendo el intervalo real
+transcurrido $\Delta t_k$ entre lecturas ---y no un período fijo de
+$1/f_{\mathrm{ctrl}}$---, según la definición de la
+Ec.~\eqref{eq:intervalo_diffdrive}. En la fase de lectura, la interfaz solicita
+al firmware los conteos de ambos encoders mediante el comando serial \texttt{e},
+los interpreta como enteros y, con ellos y con $\Delta t_k$, reconstruye la
+posición $\phi_j$ y la velocidad angular $\widehat{\omega}_j$ de cada rueda.
+Esos cuatro estados se exportan a \texttt{ros2\_control}, y a partir de ellos el
+controlador diferencial calcula las nuevas consignas de rueda. En la fase de
+escritura, cada consigna angular $\omega_j^{\mathrm{cmd}}$ se convierte a una
+referencia entera en \textit{ticks/frame} y se envía al firmware mediante el
+comando serial \texttt{m}.
+
+Las dos comprobaciones del puerto serial actúan como resguardo ante la pérdida
+del enlace: si el puerto está cerrado, la interfaz señala un error y termina el
+ciclo. Esta protección se complementa con la auto-detención de seguridad del
+firmware descrita en la Sec.~\ref{sec:bucle_principal}.
+
 \subsection{Teleoperación y multiplexación de comandos}
 
-La teleoperación se realiza mediante un mando inalámbrico y utiliza un
-\textit{dead-man switch} como mecanismo de seguridad. Sus nodos, el
-multiplexor y el remapeo del tópico de salida se documentan en el
+La teleoperación permite conducir el robot de forma manual, tanto para pruebas
+de desplazamiento como para el mapeo teleoperado descrito en el
+Capítulo~\ref{ch:resultados}. Se realiza mediante un mando inalámbrico: un nodo
+lee el estado del mando y otro convierte la posición de sus palancas en comandos
+de velocidad lineal y angular para el robot.
+
+Como mecanismo de seguridad se emplea un \textit{dead-man switch}: el mando solo
+publica comandos mientras se mantiene presionado un botón de habilitación, de
+modo que al soltarlo el robot deja de recibir consignas y se detiene. Así se
+evitan desplazamientos accidentales ante una pérdida de atención o de la señal
+del mando.
+
+El robot puede recibir comandos de velocidad de dos orígenes ---la teleoperación
+manual y la navegación autónoma de Nav2---, por lo que ambos flujos se integran
+mediante el multiplexor \texttt{twist\_mux}, que selecciona una única fuente
+según un esquema de prioridades y descarta aquellas que dejan de emitir. La
+teleoperación manual tiene prioridad sobre los comandos autónomos, de modo que
+el operador puede retomar el control en cualquier momento. La salida del
+multiplexor se remapea a la entrada del controlador diferencial, enlazando con
+el control de bajo nivel de la Sec.~\ref{sec:diff_drive_params}; este mismo
+multiplexor forma parte de la arquitectura de navegación de la
+Sec.~\ref{sec:nav2_ch9} (Fig.~\ref{fig:interaccion_nav}). Los nodos utilizados,
+el esquema de prioridades y el remapeo del tópico de salida se documentan en el
 \ref{anx:hardware_ros2}.
 
 \section{Firmware de bajo nivel en Arduino Nano}
@@ -361,8 +425,7 @@ $K_o$ & 50 & 50 \\
 \end{tabular}
 \end{table}
 
-Las ganancias se aplican en la escala interna del firmware; el detalle de la
-implementación se conserva en el \ref{anx:pid_ecuaciones}.
+Las ganancias se aplican en la escala interna del firmware.
 
 \begin{algorithm}[H]
 \caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware}
@@ -390,6 +453,18 @@ implementación se conserva en el \ref{anx:pid_ecuaciones}.
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
+
+El algoritmo reúne dos rutinas. \texttt{resetPID} deja el controlador en un
+estado conocido: recarga las ganancias por defecto de ambas ruedas, lee los
+conteos actuales de encoder y pone en cero la salida acumulada, la medición
+previa y el término integral. \texttt{updatePID} se ejecuta en cada ciclo de
+control: lee los conteos de ambas ruedas y, si no hay movimiento comandado
+($\texttt{moving}=0$), reinicia una sola vez los estados ---únicamente si habían
+quedado valores previos distintos de cero--- y no actualiza las salidas; en caso
+contrario, ejecuta el cálculo PID de cada rueda por separado mediante
+\texttt{doPID} y aplica a los motores las órdenes PWM resultantes. Las
+operaciones internas de \texttt{doPID} ---banda muerta, saturación e integrador
+condicional--- son las formalizadas en las ecuaciones citadas más arriba.
 
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
@@ -425,6 +500,14 @@ cotas y las funciones de costo se conservan en el
 \State \Return $(K_{p,j},K_{d,j},K_{i,j})$, para $j\in\{L,R\}$.
 \end{algorithmic}
 \end{algorithm}
+
+El procedimiento encadena tres etapas. Las dos primeras se ejecutan para cada
+rueda: primero suaviza la velocidad medida en lazo abierto y ajusta el modelo
+FODT $(K_m,\tau,L_d)$ minimizando el costo de identificación $J_{\mathrm{ID}}$
+con PSO; luego, sobre ese modelo, busca ---también con PSO--- las ganancias
+$(K_p,K_d,K_i)$ que minimizan el costo de control $J_{\mathrm{PID}}$. En la
+tercera etapa, las ganancias resultantes se ajustan sobre el robot real y se
+registran en el firmware como valores definitivos.
 
 \subsubsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -520,6 +603,15 @@ para $j\in\{R,L\}$.
 \end{algorithmic}
 \end{algorithm}
 
+El algoritmo mantiene un muestreo de período fijo $T_{\mathrm{cap}}$: en cada
+paso aplica el PWM correspondiente ---cero antes del instante $t_{\mathrm{step}}$
+y el escalón $u_{\mathrm{step}}$ a partir de él---, lee los encoders, calcula la
+velocidad de cada rueda a partir del incremento de conteo y registra el par
+entrada--velocidad. Si una lectura resulta inválida, reutiliza el último conteo
+válido y deja constancia de la advertencia; al final de cada paso espera el
+tiempo restante para respetar el período $T_{\mathrm{cap}}$. Al terminar, detiene
+los motores y entrega las series por rueda que alimentan la identificación.
+
 \subsubsection{Identificación FODT y optimización PID}
 
 La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la
@@ -591,6 +683,18 @@ c_1,c_2,\chi,\rho_1,\rho_2}$
 \State \Return $(J^*,G,\theta^{\mathrm{out}})$
 \end{algorithmic}
 \end{algorithm}
+
+En conjunto, ambos algoritmos describen una búsqueda por enjambre. La
+inicialización (Alg.~\ref{alg:pso_nucleo}) crea $N_p$ partículas con posición y
+velocidad aleatorias, evalúa el costo de cada una, guarda su mejor posición
+personal y determina la mejor posición global del enjambre. El bucle
+(Alg.~\ref{alg:pso_bucle}) repite, en cada generación, la actualización de la
+inercia y, para cada partícula, la de su velocidad ---combinando inercia,
+atracción hacia su mejor posición personal y atracción hacia la global--- y la
+de su posición; a continuación reevalúa el costo y actualiza los mejores
+personal y global. Al finalizar, la mejor posición global se transforma en el
+vector de parámetros de salida $\theta^{\mathrm{out}}$, que corresponde al modelo
+FODT o a las ganancias PID según el modo de ejecución.
 
 Las operaciones principales de los Alg.~\ref{alg:pso_nucleo}
 y~\ref{alg:pso_bucle} siguen la formulación de la
