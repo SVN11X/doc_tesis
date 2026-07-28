@@ -175,6 +175,12 @@ En simulación, el sensor se modela mediante el complemento de simulación corre
 {Barrido del LIDAR 2D simulado en el mundo de prueba con obstáculos.}
 {fig:gazebo_laser}
 
+El barrido cubre el plano horizontal del escenario y se interrumpe en las
+superficies visibles de los obstáculos, generando zonas de oclusión detrás de
+ellos. Esta respuesta permite verificar la coherencia entre la posición del
+sensor, su marco de referencia y la geometría del mundo simulado antes de
+utilizar los datos en los procesos de SLAM y navegación.
+
 Antes de usar el gemelo digital para pruebas de SLAM y navegación, se aplicaron los criterios de aceptación resumidos en la Tabla~\ref{tab:criterios_aceptacion_resumen} del \ref{anx:gemelo_digital}, donde también se conserva la evidencia estructural.
 
 \section{Construcción de hardware y comunicación con ROS 2}
@@ -759,6 +765,16 @@ diferencial de bajo nivel descrito en la Sec.~\ref{sec:diff_drive_params}.
 {Interacción entre los componentes de la navegación autónoma.}
 {fig:interaccion_nav}
 
+El flujo representado puede separarse en una cadena de percepción y otra de
+actuación. En la primera, los barridos láser y la información odométrica
+alimentan la estimación del mapa, las transformaciones y los mapas de costos.
+En la segunda, las metas introducidas por el operador o generadas por el
+explorador son procesadas por Nav2, convertidas en comandos de velocidad y
+arbitradas por \texttt{twist\_mux} antes de llegar a
+\texttt{ros2\_control}. La realimentación de los encoders cierra el control de
+velocidad de las ruedas y actualiza la odometría utilizada por los módulos
+superiores.
+
 El diagrama organiza los nodos según su rol dentro de la arquitectura
 \gls{ROS2} y no según el equipo que los ejecuta. En la configuración
 distribuida empleada, \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite}
@@ -796,6 +812,14 @@ diferencial, junto con los identificadores completos de ambos
 Nav2 utiliza dos mapas de costos. El \texttt{global\_costmap} entrega la representación usada por el planificador global, mientras que el \texttt{local\_costmap} se actualiza alrededor del robot y permite al controlador DWB reaccionar ante obstáculos cercanos. Ambos mapas incorporan una capa de inflación, necesaria para mantener una distancia de seguridad respecto de los obstáculos.
 
 En hardware real ambos mapas de costos emplean un radio de inflación de 0.15~m, valor inferior al configurado en simulación; sus implicancias sobre la navegación en un recinto reducido se discuten en la Sec.~\ref{sec:resultados_nav2}. La geometría completa de los costmaps se presenta en el \ref{anx:nav2_slam_config}.
+
+\begin{utemMultiFigurePropia}{Representación conceptual de la huella del robot y la capa de inflación del mapa de costos.}{fig:esquema_costmap_inflacion}
+\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part1.PNG}{Fronteras detectadas en la fase inicial.}
+\hfill
+\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part2.PNG}{Ruta planificada por Nav2 hacia una meta.}
+\hfill
+\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part3.PNG}{Cobertura avanzada del recinto.}
+\end{utemMultiFigurePropia}
 
 \subsection{Árbol de comportamiento y recuperación}
 \label{sec:bt_ch9}

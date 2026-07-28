@@ -15,6 +15,11 @@ La Fig.~\ref{fig:arquitectura_alto_nivel} presenta el diagrama de bloques simpli
 {Diagrama de bloques simplificado de la solución implementada.}
 {fig:arquitectura_alto_nivel}
 
+Las flechas del diagrama representan el flujo lógico de mediciones, estados,
+metas y comandos entre los componentes. Por tanto, no todas corresponden a
+conexiones físicas directas, ya que parte del intercambio se realiza mediante
+tópicos, acciones y transformaciones de \gls{ROS2} a través de la red local.
+
 La función general de cada dominio es la siguiente:
 
 \begin{description}

@@ -508,7 +508,7 @@ a una validación de controladores equivalentes en hardware.
 
 \begin{figure}[H]
 \centering
-\caption{Comparación simulada generada por \texttt{SintonizacionLambda.py}.}
+\caption{Identificación de los modelos FODT de ambas ruedas en lazo abierto y comparación simulada de las respuestas en lazo cerrado obtenidas con las ganancias finales asociadas al procedimiento PSO y con la sintonización Lambda.}
 \label{fig:comparacion_pso_vs_lambda}
 \label{fig:anx_comparacion_pso_vs_lambda}
 
@@ -1095,6 +1095,21 @@ $K_i$ & 0.00001 & 0.00001 \\
 \parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales (tras refinamiento experimental) se reportan en la Tabla~\ref{tab:ganancias_pid}; el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.}
 \end{table}
 
+% ======================================================================
+% IMAGEN NUEVA RECOMENDADA: IDENTIFICACIÓN FODT Y SINTONIZACIÓN POR PSO
+% Ubicación: insertar aquí, inmediatamente después de la tabla de resultados
+% de la ejecución PSO y antes de discutir su variabilidad y resolución temporal.
+% La imagen ya existe en el volcado de código fuente:
+%   arduino_firmware/pid_config/identificacion_y_sintonizacion_pso.png
+% Copiarla a:
+%   2.Texto/Imag/identificacion_y_sintonizacion_pso.png
+%
+% Bloque listo para habilitar cuando el archivo esté copiado:
+% \utemFigurePropia{2.Texto/Imag/identificacion_y_sintonizacion_pso.png}{0.92\textwidth}
+% {Identificación FODT en lazo abierto y respuesta simulada con las ganancias sugeridas por PSO para ambas ruedas.}
+% {fig:identificacion_sintonizacion_pso}
+% ======================================================================
+
 \noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, $n_{d,j}=0$ muestras según la Ec.~\eqref{eq:retardo_muestras}. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
 
 \subsection{Captura de la respuesta en lazo cerrado}
@@ -1185,6 +1200,21 @@ La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, cor
 \end{equation}
 
 \noindent donde $d_o$ es la distancia desde la celda evaluada al obstáculo más cercano [m], $r_{\mathrm{inscrito}}$ el radio inscrito del \textit{footprint} [m], $r_{\mathrm{inflacion}}$ el radio máximo de influencia de la capa [m], $\beta$ el factor de decaimiento configurado mediante \texttt{cost\_scaling\_factor} [m$^{-1}$] y $\operatorname{costo}(d_o)$ el valor entero asignado por la capa de inflación. Los valores 254, 253 y 0 corresponden a las categorías letal, inscrita inflada y libre del costmap.
+
+% ======================================================================
+% IMAGEN NUEVA RECOMENDADA: DETALLE GEOMÉTRICO DE LA INFLACIÓN
+% Ubicación: insertar aquí, después de la ecuación de costo y antes de las
+% acciones de recuperación. Puede utilizarse la misma imagen conceptual
+% propuesta en la Sec. 4.5.4, pero en el anexo debe incorporar las cotas del
+% footprint, r_inscrito y r_inflacion=0.15 m.
+% Guardar la imagen sugerida en:
+%   2.Texto/Imag/esquema_costmap_inflacion_detalle.png
+%
+% Bloque listo para habilitar cuando la imagen esté disponible:
+% \utemFigurePropia{2.Texto/Imag/esquema_costmap_inflacion_detalle.png}{0.78\textwidth}
+% {Geometría de la huella del robot y regiones de costo de la capa de inflación.}
+% {fig:anx_costmap_inflacion}
+% ======================================================================
 
 \subsection{Acciones de recuperación de Nav2}
 \label{anx:recovery_nav2}
@@ -1465,6 +1495,25 @@ Se ejecutaron seis iteraciones; la iteración~02 se abortó durante la inicializ
 \end{table}
 
 Los estadísticos agregados y la interpretación de los contadores se presentan en la Tabla~\ref{tab:resumen_exploracion} y en la Sec.~\ref{sec:resultados_nav2}. El campo de intervenciones del resumen corresponde al registro manual del operador.
+
+% ======================================================================
+% IMAGEN NUEVA RECOMENDADA: TRAYECTORIAS DE EXPLORACIÓN SOBRE EL MAPA
+% Ubicación: insertar aquí, después de la tabla por iteración y antes de la
+% subsección de navegación autónoma.
+% El código fuente contiene imágenes de trayectoria para las iteraciones
+% 01, 03, 04, 05 y 06 bajo:
+%   test/sesiones_mapeo/sesion_actual/iteracion_XX/analisis_post/
+%   slam_trayectoria_iterXX.png
+% Seleccionar una iteración representativa o construir una composición de las
+% cinco iteraciones válidas con la misma escala y orientación.
+% Copiar el resultado a:
+%   2.Texto/Imag/trayectorias_exploracion_iteraciones.png
+%
+% Bloque listo para habilitar cuando la imagen esté disponible:
+% \utemFigurePropia{2.Texto/Imag/trayectorias_exploracion_iteraciones.png}{0.92\textwidth}
+% {Trayectorias registradas durante las iteraciones válidas de exploración autónoma.}
+% {fig:anx_trayectorias_exploracion}
+% ======================================================================
 
 \subsection{Navegación autónoma con Nav2}
 \label{anx:protocolo_nav}

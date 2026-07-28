@@ -3,6 +3,9 @@
 
 Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. Los resultados complementarios de exploración y mapeo en hardware real se presentan en el \ref{anx:protocolo_resultados}.
 
+\utemFigurePropia{2.Texto/Imag/entorno_experimental.jpg}{0.78\textwidth}
+{Entorno utilizado para las pruebas experimentales en hardware real.}{fig:entorno_experimental}
+
 \section{Validación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
@@ -106,6 +109,16 @@ Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \end{tabular}
 \end{table}
 
+\begin{utemMultiFigurePropia}{Resultados por repetición de las pruebas rectilíneas y angulares en simulación y hardware real.}{fig:resultados_odometria_repeticiones}
+\addutem{0.48}{2.Texto/Imag/odom_recta_sim.png}{Trayectoria rectilínea en simulación.}
+\hfill
+\addutem{0.48}{2.Texto/Imag/odom_recta_real.png}{Trayectoria rectilínea en hardware real.}
+\\[0.4cm]
+\addutem{0.48}{2.Texto/Imag/odom_giro_sim.png}{Protocolo angular en simulación.}
+\hfill
+\addutem{0.48}{2.Texto/Imag/odom_giro_real.png}{Protocolo angular en hardware real.}
+\end{utemMultiFigurePropia}
+
 La desviación angular observada integra los efectos del límite de
 velocidad, la duración del ensayo, la dinámica física y el procedimiento de
 medición. La incorporación de una IMU se plantea como mejora futura.
@@ -122,6 +135,13 @@ una referencia de 0.13~m/s. El protocolo de captura se conserva en el
 {Respuesta experimental en lazo cerrado del robot real con referencia de
 0.13~m/s.}
 {fig:respuesta_escalon_final}
+
+En ambas ruedas, la velocidad medida converge hacia la referencia de
+0.13~m/s. La rueda derecha presenta una respuesta más uniforme, mientras que
+la izquierda muestra pequeñas variaciones discretas alrededor del valor
+objetivo. La figura constituye una verificación cualitativa del seguimiento
+sobre el robot real; los indicadores de la Tabla~\ref{tab:pid_performance}
+corresponden, en cambio, a una evaluación simulada sobre el modelo FODT.
 
 Los indicadores de la Tabla~\ref{tab:pid_performance} corresponden a una
 evaluación simulada de las ganancias finales sobre un modelo FODT
@@ -157,7 +177,7 @@ del \ref{anx:comparacion_pso_lambda}, con carácter ilustrativo.
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-El mapeo se evaluó primero en simulación, teleoperando el robot dentro de un mundo de prueba con obstáculos. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
+El mapeo se evaluó despues de varias sesiones practicas donde el robot estaba dentro del entorno experimental. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
 
 La métrica utilizada corresponde al índice de cobertura libre, definido como
 la proporción de celdas observadas como libres respecto del total de celdas
@@ -214,8 +234,26 @@ Consistencia global del mapa & Correcta \\
 \end{tabular}
 \end{table}
 
-En hardware real también se obtuvieron mapas utilizables. Su evaluación
-cuantitativa se presenta mediante el índice de cobertura libre y el área
+% ======================================================================
+% IMAGEN NUEVA RECOMENDADA: MAPA FINAL EN SIMULACIÓN Y HARDWARE REAL
+% Ubicación: insertar aquí, inmediatamente después de la tabla de indicadores
+% del mapeo en simulación y antes de describir los mapas obtenidos en hardware.
+% Exportar ambos mapas con la misma orientación, escala aproximada y recorte.
+% Señalar paredes, zonas desconocidas y artefactos principales sin presentar
+% la comparación como cuantitativa, porque los ensayos no son equivalentes.
+% Guardar las imágenes sugeridas en:
+%   2.Texto/Imag/mapa_final_simulacion.png
+%   2.Texto/Imag/mapa_final_hardware.png
+%
+% Bloque listo para habilitar cuando las imágenes estén disponibles:
+% \begin{utemMultiFigurePropia}{Comparación visual de los mapas obtenidos en simulación y hardware real.}{fig:comparacion_mapas_sim_real}
+% \addutem{0.48}{2.Texto/Imag/mapa_final_simulacion.png}{Mapa final obtenido en simulación.}
+% \hfill
+% \addutem{0.48}{2.Texto/Imag/mapa_final_hardware.png}{Mapa final obtenido en hardware real.}
+% \end{utemMultiFigurePropia}
+% ======================================================================
+
+Su evaluación cuantitativa se presenta mediante el índice de cobertura libre y el área
 libre mapeada de las cinco iteraciones válidas de exploración.
 
 El contraste cualitativo entre los mapas de simulación y hardware real se presenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
@@ -227,15 +265,40 @@ La navegación dirigida se evalúa funcionalmente, mientras que la exploración
 se analiza mediante cobertura y área mapeada; el protocolo de evaluación por
 escenarios, no ejecutado, se describe en el \ref{anx:protocolo_nav}.
 
+% ======================================================================
+% IMAGEN NUEVA RECOMENDADA: SECUENCIA FUNCIONAL DE NAVEGACIÓN CON NAV2
+% Ubicación: insertar aquí, después de aclarar el alcance funcional de la
+% navegación dirigida y antes de presentar los resultados de exploración.
+% Capturar tres estados de una misma ejecución: (a) pose inicial y meta,
+% (b) ruta global y trayectorias locales, y (c) robot detenido cerca de la
+% meta. La leyenda debe indicar que es evidencia funcional y no una tasa de
+% éxito cuantitativa.
+% Guardar las imágenes sugeridas en:
+%   2.Texto/Imag/nav2_meta_inicial.png
+%   2.Texto/Imag/nav2_ruta_ejecucion.png
+%   2.Texto/Imag/nav2_llegada_meta.png
+%
+% Bloque listo para habilitar cuando las capturas estén disponibles:
+% \begin{utemMultiFigurePropia}{Secuencia funcional de navegación dirigida con Nav2.}{fig:secuencia_nav2_funcional}
+% \addutem{0.32}{2.Texto/Imag/nav2_meta_inicial.png}{Pose inicial y meta seleccionada.}
+% \hfill
+% \addutem{0.32}{2.Texto/Imag/nav2_ruta_ejecucion.png}{Ruta global y seguimiento local.}
+% \hfill
+% \addutem{0.32}{2.Texto/Imag/nav2_llegada_meta.png}{Llegada a la vecindad de la meta.}
+% \end{utemMultiFigurePropia}
+% ======================================================================
+
 La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada}. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico. La Fig.~\ref{fig:mapa_formacion} ilustra el mapa en formación durante la exploración autónoma.
 
-\begin{utemMultiFigurePropia}{Mapa en formación durante la exploración autónoma por fronteras.}{fig:mapa_formacion}
-\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part1.PNG}{Fronteras detectadas en la fase inicial.}
-\hfill
-\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part2.PNG}{Ruta planificada por Nav2 hacia una meta.}
-\hfill
-\addutem{0.32}{2.Texto/Imag/fig_mapa_en_formacion_part3.PNG}{Cobertura avanzada del recinto.}
-\end{utemMultiFigurePropia}
+
+
+La secuencia muestra el avance desde un mapa parcial, en el que permanecen
+regiones por explorar, hasta una representación de mayor cobertura. Durante
+este proceso, el explorador selecciona una meta, Nav2 genera una ruta y el
+mapa se actualiza con la nueva información adquirida por el LIDAR. La figura
+respalda la integración funcional de exploración, navegación y SLAM, mientras
+que la cobertura alcanzada se cuantifica en la
+Tabla~\ref{tab:resumen_exploracion}.
 
 \begin{table}[H]
 \centering
