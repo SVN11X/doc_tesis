@@ -1,7 +1,7 @@
 \chapter{RESULTADOS EXPERIMENTALES}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial en simulación y hardware real. Las pruebas se organizaron en cuatro etapas: odometría y control diferencial, sintonización PID, mapeo con \texttt{slam\_toolbox}, y verificación funcional de navegación autónoma y exploración de fronteras. Los resultados complementarios de exploración y mapeo en hardware real se presentan en el \ref{anx:protocolo_resultados}.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evaluaron en simulación y en hardware real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evaluaron sobre el hardware real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}.
 
 \utemFigurePropia{2.Texto/Imag/entorno_experimental.jpg}{0.78\textwidth}
 {Entorno utilizado para las pruebas experimentales en hardware real.}{fig:entorno_experimental}
@@ -171,13 +171,12 @@ del 2\% durante el horizonte de 10~s, mientras que la derecha sí alcanza el
 criterio de establecimiento dentro del horizonte evaluado.
 
 La comparación completa entre las ganancias del firmware y la referencia
-analítica Lambda se conserva en la Fig.~\ref{fig:comparacion_pso_vs_lambda}
-del \ref{anx:comparacion_pso_lambda}, con carácter ilustrativo.
+analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}, con carácter ilustrativo.
 
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-El mapeo se evaluó despues de varias sesiones practicas donde el robot estaba dentro del entorno experimental. El mapa obtenido presentó paredes definidas, buena consistencia global y cobertura casi completa del entorno.
+El mapeo se evaluó sobre el hardware real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones produjeron un mapa válido. Los mapas obtenidos presentaron paredes definidas, buena consistencia global e inspección visual satisfactoria de la alineación de paredes.
 
 La métrica utilizada corresponde al índice de cobertura libre, definido como
 la proporción de celdas observadas como libres respecto del total de celdas
@@ -194,7 +193,7 @@ C_{\mathrm{libre}}
 
 \noindent donde $N_{\mathrm{libre}}$ es el número de celdas clasificadas como
 libres, $N_{\mathrm{desconocido}}$ el número de celdas desconocidas y
-$C_{\mathrm{libre}}$ el índice de cobertura libre [\%]. Las celdas ocupadas no
+$C_{\mathrm{libre}}$ el índice de cobertura libre (\%). Las celdas ocupadas no
 se incluyen en el denominador. La clasificación se realiza sobre la imagen de
 ocupación generada por \texttt{slam\_toolbox}, según los umbrales de
 intensidad indicados en el \ref{anx:resultados_metodologia}.
@@ -210,53 +209,45 @@ N_{\mathrm{libre}}\,\rho_M^2,
 
 \noindent donde $A_{\mathrm{libre}}$ es el área libre mapeada [m$^2$] y
 $\rho_M$ la resolución del mapa [m/celda]. La
-Tabla~\ref{tab:slam_sim_indicadores} resume los indicadores del mapeo
-obtenidos en simulación; la procedencia y el alcance de estas métricas se
-documentan en el \ref{anx:resultados_metodologia}.
+Tabla~\ref{tab:slam_real_indicadores} consolida los indicadores de mapeo
+obtenidos en las cinco iteraciones válidas sobre hardware real, recuperados
+post-hoc del \textit{rosbag} y del mapa PGM de cada sesión; su procedencia y
+alcance se documentan en el \ref{anx:resultados_metodologia}.
 
 \begin{table}[H]
 \centering
-\caption{Indicadores del mapeo.}
-\label{tab:slam_sim_indicadores}
+\caption{Indicadores de mapeo en hardware real por iteración (resolución $0.05$~m/celda).}
+\label{tab:slam_real_indicadores}
+\begin{threeparttable}
 \small
-\begin{tabular}{p{8.9cm} p{2.5cm}}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{ccccccc}
 \toprule
-\textbf{Indicador} & \textbf{Valor} \\
+\textbf{Iter.} & \makecell{\textbf{Dur.}\\\textbf{(min)}} & \makecell{\textbf{Dist.}\\\textbf{odom. (m)}} & \makecell{\textbf{Cobertura}\\\textbf{(\%)}} & \makecell{\textbf{Área libre}\\\textbf{(m$^2$)}} & \textbf{Nodos}\tnote{a} & \makecell{\textbf{Cierre}\\\textbf{lazo}\tnote{a}} \\
 \midrule
-Tiempo total de mapeo & 10.1 min \\
-Distancia recorrida por odometría & 23.32 m \\
-Número de nodos del grafo & 45 \\
-Resolución del mapa & 0.05 m/celda \\
-Índice de cobertura libre & 95.6\% \\
-Área libre mapeada & 42.53 m$^2$ \\
-Consistencia global del mapa & Correcta \\
+1 & 3.45 & 6.305 & 82.9 & 3.510 & --- & No detectado \\
+2 & \multicolumn{6}{c}{Incompleta (sin mapa)} \\
+3 & 2.16 & 3.536 & 53.5 & 3.540 & --- & No detectado \\
+4 & 2.27 & 4.144 & 54.2 & 3.478 & --- & No detectado \\
+5 & 2.50 & 3.850 & 67.1 & 3.483 & --- & No detectado \\
+6 & 2.30 & 4.066 & 53.4 & 3.478 & --- & No detectado \\
+\midrule
+$\mu$ & 2.54 & 4.38 & 62.22 & 3.50 & --- & --- \\
+$\sigma$ & 0.53 & 1.10 & 12.94 & 0.03 & --- & --- \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item[\textsuperscript{a}] Nodos del grafo y cierre de lazo: reconstrucción \textit{offline} reproduciendo el \textit{rosbag} en \texttt{slam\_toolbox}; no son mediciones de la sesión en vivo.
+\item[] $\mu$: media aritmética. \quad $\sigma$: desviación estándar (estimador muestral, $n-1$). Ambas sobre las cinco iteraciones válidas.
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
-
-% ======================================================================
-% IMAGEN NUEVA RECOMENDADA: MAPA FINAL EN SIMULACIÓN Y HARDWARE REAL
-% Ubicación: insertar aquí, inmediatamente después de la tabla de indicadores
-% del mapeo en simulación y antes de describir los mapas obtenidos en hardware.
-% Exportar ambos mapas con la misma orientación, escala aproximada y recorte.
-% Señalar paredes, zonas desconocidas y artefactos principales sin presentar
-% la comparación como cuantitativa, porque los ensayos no son equivalentes.
-% Guardar las imágenes sugeridas en:
-%   2.Texto/Imag/mapa_final_simulacion.png
-%   2.Texto/Imag/mapa_final_hardware.png
-%
-% Bloque listo para habilitar cuando las imágenes estén disponibles:
-% \begin{utemMultiFigurePropia}{Comparación visual de los mapas obtenidos en simulación y hardware real.}{fig:comparacion_mapas_sim_real}
-% \addutem{0.48}{2.Texto/Imag/mapa_final_simulacion.png}{Mapa final obtenido en simulación.}
-% \hfill
-% \addutem{0.48}{2.Texto/Imag/mapa_final_hardware.png}{Mapa final obtenido en hardware real.}
-% \end{utemMultiFigurePropia}
-% ======================================================================
-
 Su evaluación cuantitativa se presenta mediante el índice de cobertura libre y el área
 libre mapeada de las cinco iteraciones válidas de exploración.
 
-El contraste cualitativo entre los mapas de simulación y hardware real se presenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
+El contraste cualitativo de los mapas obtenidos se documenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
 
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
@@ -265,75 +256,27 @@ La navegación dirigida se evalúa funcionalmente, mientras que la exploración
 se analiza mediante cobertura y área mapeada; el protocolo de evaluación por
 escenarios, no ejecutado, se describe en el \ref{anx:protocolo_nav}.
 
-% ======================================================================
-% IMAGEN NUEVA RECOMENDADA: SECUENCIA FUNCIONAL DE NAVEGACIÓN CON NAV2
-% Ubicación: insertar aquí, después de aclarar el alcance funcional de la
-% navegación dirigida y antes de presentar los resultados de exploración.
-% Capturar tres estados de una misma ejecución: (a) pose inicial y meta,
-% (b) ruta global y trayectorias locales, y (c) robot detenido cerca de la
-% meta. La leyenda debe indicar que es evidencia funcional y no una tasa de
-% éxito cuantitativa.
-% Guardar las imágenes sugeridas en:
-%   2.Texto/Imag/nav2_meta_inicial.png
-%   2.Texto/Imag/nav2_ruta_ejecucion.png
-%   2.Texto/Imag/nav2_llegada_meta.png
-%
-% Bloque listo para habilitar cuando las capturas estén disponibles:
-% \begin{utemMultiFigurePropia}{Secuencia funcional de navegación dirigida con Nav2.}{fig:secuencia_nav2_funcional}
-% \addutem{0.32}{2.Texto/Imag/nav2_meta_inicial.png}{Pose inicial y meta seleccionada.}
-% \hfill
-% \addutem{0.32}{2.Texto/Imag/nav2_ruta_ejecucion.png}{Ruta global y seguimiento local.}
-% \hfill
-% \addutem{0.32}{2.Texto/Imag/nav2_llegada_meta.png}{Llegada a la vecindad de la meta.}
-% \end{utemMultiFigurePropia}
-% ======================================================================
+La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada por iteración se consignan en la Tabla~\ref{tab:slam_real_indicadores}, calculándose el área mediante la Ec.~\eqref{eq:area_libre_mapeada}. La exploración activa promedió 1.1~min por iteración ($\sigma=0.6$) y no requirió intervenciones manuales. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico.
 
-La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada se resumen en la Tabla~\ref{tab:resumen_exploracion}; esta última se calcula mediante la Ec.~\eqref{eq:area_libre_mapeada}. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico. La Fig.~\ref{fig:mapa_formacion} ilustra el mapa en formación durante la exploración autónoma.
-
-
-
-La secuencia muestra el avance desde un mapa parcial, en el que permanecen
-regiones por explorar, hasta una representación de mayor cobertura. Durante
-este proceso, el explorador selecciona una meta, Nav2 genera una ruta y el
-mapa se actualiza con la nueva información adquirida por el LIDAR. La figura
-respalda la integración funcional de exploración, navegación y SLAM, mientras
-que la cobertura alcanzada se cuantifica en la
-Tabla~\ref{tab:resumen_exploracion}.
-
-\begin{table}[H]
-\centering
-\caption{Resumen estadístico de las cinco iteraciones válidas de exploración.}
-\label{tab:resumen_exploracion}
-\small
-\begin{tabular}{p{9.5cm} p{1.7cm} p{1.7cm}}
-\toprule
-\textbf{Indicador} & $\boldsymbol{\mu}$ & $\boldsymbol{\sigma}$ \\
-\midrule
-Duración de sesión & 2.5 min & 0.5 min \\
-Duración de exploración activa & 1.1 min & 0.6 min \\
-Índice de cobertura libre & 62.2\% & 12.9\% \\
-Área libre mapeada & 3.50 m$^2$ & 0.03 m$^2$ \\
-Intervenciones manuales registradas & 0 & 0 \\
-\bottomrule
-\end{tabular}
-\vspace{0.2cm}
-
-\begin{minipage}{0.95\textwidth}
-\footnotesize
-\textit{Nota:} $\mu$ representa la media aritmética y $\sigma$ la desviación
-estándar, calculadas a partir de las cinco iteraciones válidas. Los
-contadores diagnósticos de metas se excluyen de este resumen; su detalle y
-limitaciones se presentan en el \ref{anx:resultados_metodologia}.
-\end{minipage}
-\end{table}
+Los registros documentan el avance desde un mapa parcial, en el que
+permanecen regiones por explorar, hasta una representación de mayor cobertura:
+el explorador selecciona una meta, Nav2 genera una ruta y el mapa se actualiza
+con la nueva información adquirida por el LIDAR. Este comportamiento respalda
+la integración funcional de exploración, navegación y SLAM, mientras que la
+cobertura alcanzada se cuantifica en la
+Tabla~\ref{tab:slam_real_indicadores}.
 
 La mejor iteración alcanzó un índice de cobertura libre de 82.9\%. El
 radio de inflación de 0.15~m aplicado en un recinto reducido
 (Sec.~\ref{sec:costmaps_ch9}) condiciona la maniobrabilidad. En conjunto, los
 ensayos verifican la integración funcional y cuantifican la cobertura, pero
 no permiten establecer una tasa válida de éxito para metas de navegación
-dirigida. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de
-validación alcanzado por cada subsistema.
+dirigida. La finalización correcta de las cinco iteraciones se refiere a la
+generación de un mapa válido, no a una tasa de metas cumplidas: los
+contadores de metas del explorador no son fiables (\ref{anx:resultados_metodologia})
+y el protocolo de navegación dirigida por escenarios no se ejecutó
+(\ref{anx:protocolo_nav}). La Tabla~\ref{tab:estado_validacion} sintetiza el
+estado de validación alcanzado por cada subsistema.
 
 \begin{table}[H]
 \centering
@@ -347,9 +290,9 @@ validación alcanzado por cada subsistema.
 Odometría & Validada cuantitativamente & Simulación y hardware real \\
 Control PID & Evaluado mediante datos experimentales y simulación &
 Respuesta experimental graficada; las métricas de la Tabla~\ref{tab:pid_performance} provienen de simulación \\
-SLAM & Validado cuantitativamente en simulación; verificado en hardware & En hardware se cuantificaron cobertura y área libre durante la exploración y se evaluaron cualitativamente los mapas \\
+SLAM & Validado cuantitativamente en hardware real & Cobertura y área libre cuantificadas en cinco iteraciones válidas de exploración; alineación de paredes evaluada por inspección visual \\
 Nav2 & Verificada funcionalmente & Sin tasa de éxito por meta; véase Sec.~\ref{sec:resultados_nav2} \\
-Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura media en 5 iteraciones; véase Tabla~\ref{tab:resumen_exploracion} \\
+Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura media en 5 iteraciones; véase Tabla~\ref{tab:slam_real_indicadores} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -369,13 +312,12 @@ nominal de $360^\circ$ es mayor en simulación ($17.1^\circ$) que en hardware
 real ($11.7^\circ$), con una dispersión menor ($5.8^\circ$ frente a
 $8.0^\circ$), según la Tabla~\ref{tab:resumen_giro}.
 
-Los índices de cobertura libre de ambos entornos no son directamente
-comparables: el valor de simulación (95.6\%) proviene de un recorrido
-teleoperado de 10.1~min sobre un área libre de 42.53~m$^2$, mientras que el
-valor medio en hardware real (62.2\%) proviene de iteraciones de exploración
-autónoma de 1.1~min de actividad media sobre un área libre de 3.50~m$^2$. Las
-limitaciones metodológicas de cada ensayo se detallan en el
-\ref{anx:resultados_metodologia}.
+El mapeo y la exploración se evaluaron únicamente sobre hardware real, por lo
+que no admiten un contraste directo simulación--hardware. En hardware real, el
+índice de cobertura libre promedió 62.2\% ($\sigma=12.9$) sobre las cinco
+iteraciones válidas, con un área libre mapeada media de 3.50~m$^2$ y una mejor
+iteración de 82.9\%. Las limitaciones metodológicas de cada ensayo se detallan
+en el \ref{anx:resultados_metodologia}.
 
 La caracterización cuantitativa del consumo energético y de la carga
 computacional no forma parte de los ensayos realizados y se plantea como
@@ -392,7 +334,7 @@ hardware, mientras que los sobreimpulsos de 10.66\%--15.63\% corresponden a
 la evaluación simulada de las ganancias finales.
 
 El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en
-simulación y hardware real. La exploración por fronteras alcanzó un índice
+hardware real. La exploración por fronteras alcanzó un índice
 medio de cobertura libre de 62.2\% ($\sigma=12.9$) en cinco iteraciones, con
 un área libre mapeada media de 3.50~m$^2$. La integración funcional y la
 cobertura quedaron verificadas; la validación cuantitativa de navegación por
