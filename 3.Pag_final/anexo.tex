@@ -510,7 +510,6 @@ a una validación de controladores equivalentes en hardware.
 {Identificación de los modelos FODT de ambas ruedas en lazo abierto y comparación simulada de las respuestas en lazo cerrado obtenidas con las ganancias finales asociadas al procedimiento PSO y con la sintonización Lambda.}
 {fig:anx_comparacion_pso_vs_lambda}
 
-
 \subsection{Protocolo de comunicación serial}
 \label{anx:protocolo_serial}
 
@@ -1454,6 +1453,18 @@ Se ejecutaron seis iteraciones; la iteración~02 se abortó durante la inicializ
 \end{table}
 
 Los estadísticos agregados por iteración se presentan en la Tabla~\ref{tab:slam_real_indicadores} y la interpretación de los contadores en la Sec.~\ref{sec:resultados_nav2}. Las intervenciones manuales, registradas por el operador, fueron nulas en las cinco iteraciones válidas.
+
+La Fig.~\ref{fig:anx_nav_exploracion_secuencia} muestra la secuencia completa de una ejecución representativa, desde el mapeo inicial de un pasillo estrecho hasta la mayor cobertura alcanzada, junto con la ruta planificada por Nav2 hacia las fronteras seleccionadas.
+
+\begin{utemMultiFigurePropia}{Secuencia de una ejecución representativa de exploración por fronteras y navegación autónoma sobre hardware real (vista de RViz y cámara cenital del recinto).}{fig:anx_nav_exploracion_secuencia}
+\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Etapa temprana: pasillo estrecho.}
+\hfill
+\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte3.png}{Mapa parcial en expansión.}
+\\[0.4cm]
+\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Cobertura amplia con ruta planificada activa.}
+\hfill
+\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte2.png}{Mayor cobertura alcanzada al cierre de la exploración.}
+\end{utemMultiFigurePropia}
 
 \subsection{Navegación autónoma con Nav2}
 \label{anx:protocolo_nav}
