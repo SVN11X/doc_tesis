@@ -67,39 +67,39 @@ La Tabla~\ref{tab:comparativa_middleware} presenta una comparación general.
 
 ROS~1 &
 Amplio conjunto histórico de paquetes, controladores y herramientas para
-desarrollo robótico &
+desarrollo robótico. &
 Cuenta con una comunidad y base de software extensa, pero su última
-distribución oficial finalizó su período de soporte en 2025
+distribución oficial finalizó su período de soporte en 2025.
 \citep{ros_noetic_eol} \\
 
 ROS~2 &
 Plataforma modular para sistemas distribuidos, con diferentes mecanismos de
 comunicación, calidad de servicio y herramientas para integrar hardware y
-algoritmos &
+algoritmos. &
 Ofrece un ecosistema amplio, aunque su configuración y administración de
-dependencias pueden aumentar la complejidad del sistema
+dependencias pueden aumentar la complejidad del sistema.
 \citep{macenski2022ros2} \\
 
 YARP &
 Middleware orientado a la comunicación entre módulos y a la abstracción de
 dispositivos; se utiliza en plataformas que requieren conectar componentes
-distribuidos &
+distribuidos. &
 Favorece la independencia entre módulos, pero dispone de un ecosistema de
-algoritmos móviles menos amplio que ROS
+algoritmos móviles menos amplio que ROS.
 \citep{yarp_docs} \\
 
 Orocos RTT &
 Entorno basado en componentes para control robótico y aplicaciones con
-requerimientos de tiempo real &
+requerimientos de tiempo real. &
 Resulta apropiado para control determinista, aunque requiere mayor desarrollo
-específico para incorporar funciones completas de navegación
+específico para incorporar funciones completas de navegación.
 \citep{orocos_rtt} \\
 
 LCM &
 Sistema ligero de publicación y suscripción, orientado al intercambio de
-mensajes con baja latencia &
+mensajes con baja latencia. &
 Simplifica la comunicación, pero no proporciona por sí solo una colección
-completa de herramientas de percepción, mapeo y navegación
+completa de herramientas de percepción, mapeo y navegación.
 \citep{lcm_docs} \\
 
 \bottomrule
@@ -144,22 +144,22 @@ integración con \gls{ROS2}.
 \midrule
 
 GMapping &
-Bajo consumo y amplia utilización en plataformas educativas &
+Bajo consumo y amplia utilización en plataformas educativas. &
 Menor integración nativa con \gls{ROS2} y dependencia de una odometría
-consistente \\
+consistente. \\
 
 Hector SLAM &
-Puede operar con baja dependencia de la odometría de ruedas &
+Puede operar con baja dependencia de la odometría de ruedas. &
 Requiere barridos frecuentes y entornos con características geométricas
-suficientes \\
+suficientes. \\
 
 Cartographer &
-Buena consistencia global y capacidad de cierre de lazo &
-Mayor complejidad de configuración y procesamiento \\
+Buena consistencia global y capacidad de cierre de lazo. &
+Mayor complejidad de configuración y procesamiento. \\
 
 \texttt{slam\_toolbox} &
-Integración con \gls{ROS2}, grafos de poses y almacenamiento de mapas &
-Su desempeño depende de la calidad de la odometría y de los datos láser \\
+Integración con \gls{ROS2}, grafos de poses y almacenamiento de mapas. &
+Su desempeño depende de la calidad de la odometría y de los datos láser. \\
 
 \bottomrule
 \end{tabular}
