@@ -1573,7 +1573,7 @@ $f_{\mathrm{loop}}$ & Frecuencia nominal usada por \texttt{DiffDriveArduino} en 
 $f_{\mathrm{PID,nom}}$ & Frecuencia nominal declarada por \texttt{PID\_RATE} en el firmware & Hz \\
 $T_{\mathrm{PID,sched}}$ & Incremento del programador del firmware, igual a 33~ms por división entera & s \\
 $T_{\mathrm{cap}}$ & Período de captura en lazo abierto & s \\
-$\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lectura se mide desde la asignación de \texttt{time\_} al inicio de \texttt{configure()}, antes de la espera serial de 3000~ms; desde la segunda, entre llamadas consecutivas a \texttt{read()} & s \\
+$\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lectura se mide desde la asignación de \texttt{time\_} al inicio de \texttt{configure()}, antes de la espera serial de 3000~ms; desde la segunda, entre llamadas consecutivas a \texttt{read()} & s \\ $T_k$ & Intervalo entre las muestras $k$ y $k+1$ del modelo cinemático general (Ecs.~\eqref{eq:pose_x}--\eqref{eq:pose_theta}); distinto del intervalo ejecutado $\Delta t_k$ & s \\
 \midrule
 \multicolumn{3}{l}{\textit{Conversión y control de firmware}}\\
 $m_j^{int}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[k-1]$, almacenada en \texttt{PrevInput} & ticks/frame \\
@@ -1592,7 +1592,7 @@ $I_j^{int}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \t
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
-$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
+$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]$ & Referencia entera generada por \texttt{DiffDriveArduino} al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ a ticks/frame (Ec.~\eqref{eq:mps_to_ticks}) & ticks/frame \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s), Ecs.~\eqref{eq:fodt_lazo_cerrado} y~\eqref{eq:lambda_conversion} & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado (Ec.~\eqref{eq:medicion_simulada_ticks}) & ticks/frame \\
 \midrule
 \multicolumn{3}{l}{\textit{Identificación FODT}}\\
 $s$ & Variable compleja de Laplace & s$^{-1}$ \\
@@ -1609,7 +1609,7 @@ $\hat{v}_j[k]$ & Velocidad lineal estimada por el modelo de la rueda $j$ &
 m/s \\
 $v_j^{\mathrm{med}}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto &
 m/s \\
-$\mathrm{e}$ & Número de Euler & No aplica \\
+$\mathrm{e}$ & Número de Euler & No aplica \\ $v_j^{filt}[k]$ & Velocidad medida tras el filtro uniforme centrado (Ec.~\eqref{eq:filtro_uniforme}) & m/s \\ $q$ & Desplazamiento entero respecto de la muestra central en el filtro uniforme (Ec.~\eqref{eq:filtro_uniforme}) & muestras \\ \midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}}\\ $\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\ $L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ (Ec.~\eqref{eq:lambda_retardo_efectivo}) & s \\ $K_{m,j}^{norm}$ & Ganancia de planta normalizada por el PWM nominal ($K_{m,j}^{norm}=143\,K_{m,j}$) & m/s \\ $K_{c,j}'$ & Ganancia de la forma serie (interactuante) de Lambda & esc.\ script \\ $T_{i,j}',\,T_{d,j}'$ & Tiempos integral y derivativo de la forma serie & s \\ $K_{p,j}^{std},\,K_{i,j}^{std},\,K_{d,j}^{std}$ & Ganancias de la forma paralela estándar de Lambda & esc.\ script \\ $T_{i,j}^{std},\,T_{d,j}^{std}$ & Tiempos integral y derivativo equivalentes de la forma estándar & s \\ $f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ (Ec.~\eqref{eq:lambda_conversion}) & esc.\ script \\ $K_{p,j}^{\mathrm{fw}},\,K_{d,j}^{\mathrm{fw}},\,K_{i,j}^{\mathrm{fw}}$ & Ganancias Lambda expresadas en la escala de firmware del script & esc.\ fw \\
 \midrule
 \multicolumn{3}{l}{\textit{Optimización por enjambre (PSO)}}\\
 $\xi_{i,d},V_{i,d}$ & Posición y velocidad de búsqueda de la partícula $i$, dimensión $d$ & adim. \\

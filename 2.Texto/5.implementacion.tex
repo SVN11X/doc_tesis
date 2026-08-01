@@ -1,7 +1,7 @@
 \chapter{IMPLEMENTACIÓN}
 \label{ch:implementacion}
 
-Este capítulo describe la materialización de la solución propuesta y la
+Este capítulo describe la materialización de la solución implementada y la
 integración de sus principales componentes. Se presentan las decisiones de
 diseño, los elementos físicos y de software utilizados, y la configuración
 necesaria para la operación del prototipo tanto en simulación como en hardware real. Los detalles complementarios de implementación, configuración y verificación se incluyen en los anexos correspondientes.
@@ -58,27 +58,27 @@ consolidan en el \ref{anx:implementacion_diffdrive} y en el
 $r$ &
 Radio de rueda &
 0.0335~m &
-Modelo cinemático, odometría y conversión de velocidad \\
+Modelo cinemático, odometría y conversión de velocidad. \\
 
 $b$ &
 Separación entre ruedas &
 0.188~m &
-Modelo cinemático diferencial \\
+Modelo cinemático diferencial. \\
 
 $N_e$ &
 Resolución efectiva calibrada &
 1980~ticks/vuelta &
-Firmware, interfaz de hardware y odometría \\
+Firmware, interfaz de hardware y odometría. \\
 
 $f_{\mathrm{ctrl}}$ &
 Frecuencia del ciclo de \texttt{ros2\_control} &
 30~Hz &
-Ciclo de lectura, actualización y escritura de la interfaz de hardware \\
+Ciclo de lectura, actualización y escritura de la interfaz de hardware. \\
 
 $f_{\mathrm{loop}}$ &
 Frecuencia usada en la conversión de consignas &
 30~Hz &
-Conversión de consignas de rueda a \textit{ticks/frame} \\
+Conversión de consignas de rueda a \textit{ticks/frame}. \\
 
 \bottomrule
 \end{tabular}
@@ -242,9 +242,9 @@ resumen en la Tabla~\ref{tab:diff_drive_params}.
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
 \midrule
-Velocidad lineal & $-0.13/0.13$~m/s & Límites aplicados a la consigna lineal \\
-Velocidad angular & $-0.35/0.35$~rad/s & Límites aplicados a la consigna angular \\
-Publicación de odometría & Habilitada & Publica \texttt{odom}$\rightarrow$\texttt{base\_link} \\
+Velocidad lineal & $-0.13/0.13$~m/s & Límites aplicados a la consigna lineal. \\
+Velocidad angular & $-0.35/0.35$~rad/s & Límites aplicados a la consigna angular. \\
+Publicación de odometría & Habilitada & Publica \texttt{odom}$\rightarrow$\texttt{base\_link}. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -796,8 +796,8 @@ trayectorias candidatas mediante la Ec.~\eqref{eq:dwb_cost}.
 \toprule
 \textbf{Componente} & \textbf{Plugin} & \textbf{Configuración principal} \\
 \midrule
-Planificador global & NavFn & A$^*$ habilitado, espacio desconocido permitido y tolerancia de 0.5~m \\
-Controlador local & DWB & Críticos de obstáculos, oscilación, alineación y distancia respecto de la ruta y de la meta \\
+Planificador global & NavFn & A$^*$ habilitado, espacio desconocido permitido y tolerancia de 0.5~m. \\
+Controlador local & DWB & Críticos de obstáculos, oscilación, alineación y distancia respecto de la ruta y de la meta. \\
 \bottomrule
 \end{tabular}
 \end{table}
