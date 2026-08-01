@@ -2,14 +2,17 @@
 \label{ch:solucion}
 
 Este capítulo describe, de forma general, la solución diseñada antes de entrar
-al detalle teórico y de implementación. Se propone un robot móvil diferencial
-de bajo costo que integra percepción láser 2D, odometría por encoders y control
-PID embebido, sobre una arquitectura distribuida en dos entornos; robot y
+al detalle teórico y de implementación. A partir de las alternativas revisadas
+en el Capítulo~\ref{ch:estado_arte}, se propone un robot móvil diferencial de
+bajo costo que integra percepción láser 2D, odometría por encoders y control
+PID embebido, sobre una arquitectura distribuida en dos entornos: robot y
 estación de trabajo, comunicados mediante \gls{ROS2}. El objetivo es que el
 sistema sea capaz de mapear, navegar y explorar entornos interiores de forma
 autónoma.
 
-La Fig.~\ref{fig:arquitectura_alto_nivel} presenta el diagrama de bloques simplificado del sistema, organizado en cuatro dominios funcionales identificados por color.
+La Fig.~\ref{fig:arquitectura_alto_nivel} presenta el diagrama de bloques
+simplificado del sistema, organizado en cuatro dominios funcionales
+identificados por color.
 
 \utemFigurePropia{2.Texto/Imag/arquitectura_alto_nivel.png}{1.0\textwidth}
 {Diagrama de bloques simplificado de la solución implementada.}
@@ -32,8 +35,53 @@ diferencial.
 \item[Sistema computacional del robot.] La Raspberry Pi~4 integra \gls{ROS2},
 estima la odometría a partir de las velocidades de rueda y actúa de puente
 entre el hardware embebido y la estación de trabajo.
-\item[Mapeo y navegación.] En la estación de trabajo, \texttt{slam\_toolbox}
-construye el mapa y estima la pose, Nav2 planifica y controla la navegación,
-el explorador de fronteras genera metas autónomas y RViz2 permite la
-supervisión.
+\item[Mapeo, navegación y exploración.] En la estación de trabajo,
+\texttt{slam\_toolbox} construye el mapa y estima la pose, Nav2 planifica y
+controla la navegación, el explorador de fronteras genera metas autónomas y
+RViz2 permite la supervisión.
 \end{description}
+
+%------------------------------------------------------------------
+\section{Selección de tecnologías}
+\label{sec:seleccion_tecnologias}
+
+Cada dominio del sistema se construyó eligiendo, entre las alternativas del
+Capítulo~\ref{ch:estado_arte}, la que mejor se ajusta a una plataforma
+diferencial de bajo costo orientada a interiores. A continuación se justifica
+cada decisión principal.
+
+El middleware de comunicación se eligió entre las alternativas de la
+Sec.~\ref{sec:alternativas_middleware}. Se adoptó \gls{ROS2} por su ecosistema
+amplio de paquetes de mapeo, navegación y exploración, y por su soporte vigente
+para sistemas distribuidos, frente a ROS~1, cuya última distribución finalizó
+su soporte en 2025, y frente a middlewares como YARP, Orocos RTT o LCM, que
+ofrecen menos herramientas móviles ya integradas
+\citep{macenski2022ros2,ros_noetic_eol}.
+
+Para la percepción y el mapeo se consideraron las opciones de la
+Sec.~\ref{sec:sensores}. Se seleccionó un \gls{LIDAR} 2D en lugar de cámaras
+RGB-D o \gls{LIDAR} 3D, por su menor costo y carga de procesamiento y por ser
+suficiente para mapear entornos interiores. Sobre esa medición se eligió
+\texttt{slam\_toolbox} por su integración nativa con \gls{ROS2}, su enfoque
+basado en grafos de poses y su capacidad de guardar y cargar mapas, frente a
+GMapping, con menor integración, y a Cartographer, de mayor complejidad de
+configuración para una plataforma de bajo costo \citep{macenski2021slamtoolbox}.
+
+La navegación se apoyó en las alternativas de la Sec.~\ref{sec:exploracion}. Se
+adoptó Nav2 como plataforma por su integración con \gls{ROS2} y sus componentes
+ya probados, en lugar de desarrollar una arquitectura propia. Dentro de Nav2 se
+usó un planificador global de búsqueda sobre rejilla y un controlador local
+reactivo, adecuados para un mapa de ocupación 2D y de bajo costo computacional,
+en lugar de los métodos de muestreo o predictivos, orientados a otros
+escenarios y de mayor carga de cálculo \citep{hart1968astar,macenski2023desks}.
+
+Para la exploración autónoma se compararon los enfoques de la misma
+Sec.~\ref{sec:exploracion}. Se eligió la exploración basada en fronteras por su
+menor complejidad y su fácil integración con el mapa de ocupación y el sistema
+de navegación ya presentes, frente a los métodos de ganancia de información y de
+\textit{active SLAM}, que exigen modelos y capacidad de cómputo adicionales
+\citep{liu2025frontier,horner_mexplore}.
+
+El fundamento teórico de cada uno de estos componentes se desarrolla en el
+Capítulo~\ref{marco_teorico}, y su implementación concreta en el
+Capítulo~\ref{ch:implementacion}.

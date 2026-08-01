@@ -15,11 +15,11 @@ plataforma diferencial de bajo costo.
 El desarrollo actual de robótica móvil abarca aplicaciones en logística, inspección, servicios, agricultura,
 educación e investigación. La diversidad de aplicaciones ha dado lugar a robots con distintas
 arquitecturas de locomoción. Las plataformas diferenciales son frecuentes en
-interiores por su simplicidad y capacidad de giro; los vehículos con dirección
+interiores por su simplicidad y capacidad de giro \citep{ferreira2023differential}; los vehículos con dirección
 tipo Ackermann se emplean cuando se requiere un movimiento semejante al de un
 automóvil; y las bases omnidireccionales permiten desplazamientos laterales
 en espacios reducidos. La elección depende de factores como el entorno, la
-carga transportada, la maniobrabilidad requerida y la complejidad del control.
+carga transportada, la maniobrabilidad requerida y la complejidad del control \citep{corke2023}.
 
 También existen diferencias en el nivel de autonomía. Algunos sistemas siguen
 rutas previamente definidas, mientras que otros estiman su posición,
@@ -27,7 +27,7 @@ construyen mapas, planifican trayectorias y reaccionan ante cambios del
 entorno. Por ejemplo, un robot logístico puede desplazarse entre estaciones
 conocidas; un robot de inspección puede recorrer una instalación y registrar
 mediciones; y una plataforma de investigación puede explorar un recinto
-desconocido mientras genera su mapa.
+desconocido mientras genera su mapa \citep{thrun2005probabilistic}.
 
 Desde el punto de vista computacional, estas funciones pueden concentrarse en
 un solo computador o distribuirse entre varios dispositivos. El control de
@@ -35,7 +35,7 @@ los actuadores suele requerir una ejecución rápida y periódica, mientras que
 la percepción, el mapeo y la planificación demandan mayor capacidad de
 procesamiento. Como resultado, en la robótica móvil coexisten arquitecturas
 centralizadas, sistemas distribuidos y soluciones híbridas adaptadas a los
-requerimientos de cada aplicación.
+requerimientos de cada aplicación \citep{macenski2022ros2}.
 
 %------------------------------------------------------------------
 \section{Plataformas de software y middleware robótico}
@@ -115,7 +115,6 @@ presentan en el Capítulo~\ref{ch:solucion}.
 %------------------------------------------------------------------
 \section{Percepción y mapeo del entorno}
 \label{sec:sensores}
-\label{sec:slam_lidar}
 
 En robots de interiores, las principales alternativas de percepción incluyen
 sensores \gls{LIDAR} 2D, cámaras RGB-D, sistemas de visión estéreo y sensores
@@ -165,47 +164,63 @@ Su desempeño depende de la calidad de la odometría y de los datos láser. \\
 \end{tabular}
 \end{table}
 
+En consecuencia, la elección del sensor de percepción y de la herramienta de
+SLAM depende del costo, la carga computacional, la dependencia de la odometría
+y el grado de integración con \gls{ROS2}.
 %------------------------------------------------------------------
 \section{Navegación y exploración autónoma}
 \label{sec:exploracion}
 
-La navegación autónoma suele organizarse en dos niveles: la planificación de una ruta general y la generación de movimientos que permitan seguirla evitando obstáculos. La planificación global determina una ruta entre la posición inicial y la
-meta a partir de la representación disponible del entorno. Entre las
-alternativas más utilizadas se encuentran los métodos de búsqueda sobre
-rejillas, como Dijkstra y A$^*$, adecuados para mapas de ocupación
-bidimensionales.
+La navegación autónoma combina dos decisiones de diseño: qué planificador
+global calcula la ruta y qué controlador local la sigue evitando obstáculos.
+Para una plataforma diferencial de bajo costo que opera en interiores sobre un mapa de ocupación 2D, no todas las alternativas resultan igualmente
+pertinentes, y la elección responde principalmente a la representación del
+entorno y a la capacidad de cómputo disponible.
 
-También existen métodos basados en muestreo, como RRT y RRT$^*$, empleados
-principalmente en espacios continuos, escenarios de mayor dimensión o
-sistemas con restricciones de movimiento. A estas alternativas se agregan
-los métodos de optimización de trayectorias, que incorporan criterios como
-longitud, suavidad, distancia a obstáculos y factibilidad cinemática
+En la planificación global, los métodos de búsqueda sobre rejilla, como
+Dijkstra y A$^*$, son los más utilizados en mapas de ocupación 2D porque
+operan directamente sobre la rejilla y permiten replanificar de forma
+periódica con bajo costo computacional. Los métodos basados en muestreo, como RRT y RRT$^*$, se emplean sobre todo en espacios continuos de mayor dimensión o en sistemas con restricciones de movimiento, condiciones que no aplican a
+una base diferencial en 2D. Los métodos de optimización de trayectorias
+mejoran la suavidad y la factibilidad de la ruta, pero agregan un costo de
+cómputo que no se justifica en este tipo de plataforma
 \citep{hart1968astar,lavalle2006planning}.
 
-Una vez obtenida la ruta global, el control local genera los movimientos
-necesarios para seguirla y responder ante las condiciones inmediatas del
-entorno. En este nivel coexisten métodos reactivos, geométricos y
-predictivos. Los métodos reactivos, como el enfoque de ventana dinámica, evalúan
-combinaciones de velocidad dentro de un horizonte reducido. Los métodos
-geométricos, como Pure Pursuit y sus variantes, calculan los comandos a
-partir de puntos de seguimiento sobre la ruta. Por su parte, los métodos
-predictivos optimizan una secuencia futura de acciones considerando la
-dinámica del robot y las restricciones del entorno
-\citep{macenski2023desks}.
+En el control local coexisten tres familias. Los métodos reactivos, como el
+enfoque de ventana dinámica, evalúan un conjunto reducido de velocidades
+alcanzables y son habituales en robots diferenciales por su bajo costo y su
+buena respuesta ante obstáculos cercanos. Los métodos geométricos, como Pure
+Pursuit, siguen la ruta con menor esfuerzo de cálculo, pero responden peor
+ante obstáculos dinámicos. Los métodos predictivos optimizan una secuencia
+futura de comandos considerando la dinámica del robot, a costa de una mayor
+carga computacional \citep{macenski2023desks}.
 
 \subsection{Plataformas para navegación autónoma}
 
-Nav2 constituye un ejemplo de este tipo de plataforma. Su estructura modular
-permite combinar planificadores como NavFn y Smac con controladores como DWB,
-Regulated Pure Pursuit y MPPI. Cada combinación responde a diferentes
-requerimientos de maniobrabilidad, restricciones cinemáticas y capacidad
-computacional.
+Los métodos de planificación y control descritos no se ejecutan de forma
+aislada, sino a través de una plataforma que los integra y coordina. Para esto
+existen distintas alternativas, que van desde frameworks de navegación ya
+consolidados hasta arquitecturas desarrolladas de forma específica.
 
-También existen arquitecturas desarrolladas específicamente para una
-plataforma o integradas mediante otros middleware robóticos. En estos casos,
-los algoritmos de planificación y control pueden ser equivalentes, aunque
-difieren las interfaces, herramientas de supervisión y mecanismos de
-comunicación utilizados.
+Nav2 es el framework de navegación de referencia en \gls{ROS2}. Su estructura
+modular permite combinar planificadores como NavFn y Smac con controladores
+como DWB, Regulated Pure Pursuit y MPPI, y orquestar la navegación mediante
+árboles de comportamiento \citep{nav2_doc}. Su predecesor en ROS~1,
+\texttt{move\_base}, cumplió un rol equivalente durante años, pero quedó ligado
+a una distribución cuyo soporte ya finalizó \citep{ros_noetic_eol}. En un
+ámbito distinto, Autoware ofrece una pila de navegación orientada a vehículos
+autónomos, con mayores requerimientos de percepción y cómputo que los de una
+plataforma de interiores. También existen soluciones propietarias integradas en
+robots comerciales, cuyo funcionamiento interno no siempre es accesible.
+
+Como alternativa a estos frameworks, es posible desarrollar una arquitectura
+propia, apoyándose en bibliotecas de planificación de movimiento como OMPL o
+integrando los componentes mediante otros middleware robóticos. Los algoritmos
+de planificación y control pueden ser equivalentes, pero cambian las
+interfaces, las herramientas de supervisión y los mecanismos de comunicación.
+En términos generales, un framework consolidado reduce el esfuerzo de
+integración y aporta componentes ya probados, mientras que una arquitectura
+propia ofrece mayor control a cambio de un mayor esfuerzo de desarrollo.
 
 \subsection{Exploración autónoma}
 
@@ -237,7 +252,7 @@ aunque demandan una representación más completa del estado del sistema y una
 mayor capacidad de procesamiento.
 
 %------------------------------------------------------------------
-\section{Simulación y transferencia al robot físico}
+\section{Simulación de robots móviles}
 \label{sec:gemelo_digital}
 
 Entre las alternativas disponibles se encuentran simuladores de propósito
@@ -268,7 +283,9 @@ mayor fidelidad.
 \section*{Conclusión del capítulo}
 
 La revisión muestra que las soluciones actuales para robótica móvil se
-orientan hacia arquitecturas modulares, fusión de sensores, planificación
-avanzada y simuladores de mayor fidelidad. No obstante, estas alternativas
-pueden aumentar el costo, el consumo de recursos y la complejidad de
-implementación.
+orientan hacia arquitecturas modulares basadas en \gls{ROS2}, percepción y
+mapeo del entorno, planificación y exploración autónomas, y simuladores de
+mayor fidelidad. Estas alternativas amplían las capacidades del sistema, pero suelen aumentar el costo, el consumo de recursos y la complejidad de
+implementación. La selección concreta de tecnologías para el prototipo, que
+busca un equilibrio entre estas capacidades y las restricciones de una
+plataforma de bajo costo, se presenta en el Capítulo~\ref{ch:solucion}.
