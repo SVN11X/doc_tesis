@@ -443,32 +443,32 @@ El script calcula primero una forma serie y luego una forma paralela estándar:
 K_{c,j}'
 &=
 \frac{\tau_j}
-{K_{m,j}^{norm}\left(L_{ef,j}/2+\lambda_j\right)},
+{K_{m,j}^{\mathrm{norm}}\left(L_{ef,j}/2+\lambda_j\right)},
 &
 T_{i,j}'&=\tau_j,
 &
 T_{d,j}'&=\frac{L_{ef,j}}{2},
 \notag\\
-K_{p,j}^{std}
+K_{p,j}^{\mathrm{std}}
 &=
 K_{c,j}'\frac{T_{i,j}'+T_{d,j}'}{T_{i,j}'},
 &
-T_{i,j}^{std}&=T_{i,j}'+T_{d,j}',
+T_{i,j}^{\mathrm{std}}&=T_{i,j}'+T_{d,j}',
 &
-T_{d,j}^{std}&=
+T_{d,j}^{\mathrm{std}}&=
 \frac{T_{i,j}'T_{d,j}'}{T_{i,j}'+T_{d,j}'},
 \notag\\
-K_{i,j}^{std}
+K_{i,j}^{\mathrm{std}}
 &=
-\frac{K_{p,j}^{std}}{T_{i,j}^{std}},
+\frac{K_{p,j}^{\mathrm{std}}}{T_{i,j}^{\mathrm{std}}},
 &
-K_{d,j}^{std}&=
-K_{p,j}^{std}T_{d,j}^{std},
+K_{d,j}^{\mathrm{std}}&=
+K_{p,j}^{\mathrm{std}}T_{d,j}^{\mathrm{std}},
 &&
 \label{eq:lambda_script}
 \end{align}
 
-\noindent donde $K_{c,j}'$, $T_{i,j}'$ y $T_{d,j}'$ son los parámetros de la forma serie; $K_{p,j}^{std}$, $K_{i,j}^{std}$ y $K_{d,j}^{std}$ las ganancias de la forma paralela estándar; y $T_{i,j}^{std}$ y $T_{d,j}^{std}$ sus tiempos integral y derivativo equivalentes. Además, $K_{m,j}^{norm}=143K_{m,j}$ es la ganancia de planta normalizada por el PWM nominal. La conversión a la escala denominada de firmware utiliza:
+\noindent donde $K_{c,j}'$, $T_{i,j}'$ y $T_{d,j}'$ son los parámetros de la forma serie; $K_{p,j}^{\mathrm{std}}$, $K_{i,j}^{\mathrm{std}}$ y $K_{d,j}^{\mathrm{std}}$ las ganancias de la forma paralela estándar; y $T_{i,j}^{\mathrm{std}}$ y $T_{d,j}^{\mathrm{std}}$ sus tiempos integral y derivativo equivalentes. Además, $K_{m,j}^{\mathrm{norm}}=143K_{m,j}$ es la ganancia de planta normalizada por el PWM nominal. La conversión a la escala denominada de firmware utiliza:
 
 \begin{equation}
 \begin{aligned}
@@ -602,7 +602,7 @@ Ocho valores \\
 En cada actualización se leen primero ambos encoders. El incremento de conteo se almacena en una variable de tipo \texttt{int}:
 
 \begin{equation}
-m_j^{int}[k]
+m_j^{\mathrm{int}}[k]
 =
 \operatorname{int}
 \left(c_j[k]-c_j[k-1]\right),
@@ -610,30 +610,30 @@ m_j^{int}[k]
 \label{eq:medicion_pid_entera}
 \end{equation}
 
-\noindent donde $m_j^{int}[k]$ es el incremento de conteo de la rueda $j$ almacenado en un entero y la conversión a \texttt{int} conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, pero el error se almacena en un \texttt{long}; por ello se aplica truncamiento hacia cero:
+\noindent donde $m_j^{\mathrm{int}}[k]$ es el incremento de conteo de la rueda $j$ almacenado en un entero y la conversión a \texttt{int} conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, pero el error se almacena en un \texttt{long}; por ello se aplica truncamiento hacia cero:
 
 \begin{equation}
-e_j^{long}[k]
+e_j^{\mathrm{long}}[k]
 =
 \operatorname{trunc}_{0}
 \left(
-m_j^{cmd}[k]-m_j^{int}[k]
+m_j^{cmd}[k]-m_j^{\mathrm{int}}[k]
 \right).
 \label{eq:error_pid}
 \end{equation}
 
-\noindent donde $m_j^{cmd}[k]$ es la referencia de la rueda $j$ [ticks/frame] y $e_j^{long}[k]$ el error truncado almacenado por el firmware.
+\noindent donde $m_j^{cmd}[k]$ es la referencia de la rueda $j$ [ticks/frame] y $e_j^{\mathrm{long}}[k]$ el error truncado almacenado por el firmware.
 
 La banda muerta se aplica después de ese truncamiento:
 
 \begin{equation}
-e_j^{db}[k]
+e_j^{\mathrm{db}}[k]
 =
 \begin{cases}
 0,
-& |e_j^{long}[k]|\leq e_{db,j},\\
-e_j^{long}[k],
-& |e_j^{long}[k]|>e_{db,j},
+& |e_j^{\mathrm{long}}[k]|\leq e_{db,j},\\
+e_j^{\mathrm{long}}[k],
+& |e_j^{\mathrm{long}}[k]|>e_{db,j},
 \end{cases}
 \qquad
 e_{db,R}=1,
@@ -642,34 +642,34 @@ e_{db,L}=2.
 \label{eq:error_pid_deadband}
 \end{equation}
 
-\noindent donde $e_j^{db}[k]$ es el error después de la banda muerta y $e_{db,j}$ su umbral [ticks/frame].
+\noindent donde $e_j^{\mathrm{db}}[k]$ es el error después de la banda muerta y $e_{db,j}$ su umbral [ticks/frame].
 
 El incremento de salida se calcula en punto flotante, pero se almacena en un \texttt{long} antes de acumularse:
 
 \begin{equation}
-\Delta u_j^{long}[k]
+\Delta u_j^{\mathrm{long}}[k]
 =
 \operatorname{trunc}_{0}
 \left[
 \frac{
-K_{p,j}e_j^{db}[k]
+K_{p,j}e_j^{\mathrm{db}}[k]
 -
-K_{d,j}\left(m_j^{int}[k]-m_j^{int}[k-1]\right)
+K_{d,j}\left(m_j^{\mathrm{int}}[k]-m_j^{\mathrm{int}}[k-1]\right)
 +
-I_j^{int}[k]
+I_j^{\mathrm{int}}[k]
 }{K_o}
 \right],
 \label{eq:pid_incremento}
 \end{equation}
 
 \noindent La Ec.~\eqref{eq:pid_incremento} define el incremento de salida
-truncado $\Delta u_j^{long}[k]$, mientras que $I_j^{int}[k]$ corresponde al
+truncado $\Delta u_j^{\mathrm{long}}[k]$, mientras que $I_j^{\mathrm{int}}[k]$ corresponde al
 estado integral entero de la rueda $j$.
 
 \begin{equation}
-u_j^{raw}[k]
+u_j^{\mathrm{raw}}[k]
 =
-u_j[k-1]+\Delta u_j^{long}[k],
+u_j[k-1]+\Delta u_j^{\mathrm{long}}[k],
 \label{eq:pid_raw}
 \end{equation}
 
@@ -677,30 +677,30 @@ u_j[k-1]+\Delta u_j^{long}[k],
 u_j[k]
 =
 \operatorname{sat}_{[-255,255]}
-\left(u_j^{raw}[k]\right).
+\left(u_j^{\mathrm{raw}}[k]\right).
 \label{eq:pid_firmware}
 \end{equation}
 
-\noindent donde $u_j^{raw}[k]$ es la salida acumulada antes de saturar y $u_j[k]$ la orden PWM finalmente aplicada.
+\noindent donde $u_j^{\mathrm{raw}}[k]$ es la salida acumulada antes de saturar y $u_j[k]$ la orden PWM finalmente aplicada.
 
 El término integral se almacena en un \texttt{int}. La operación compuesta \texttt{ITerm += Ki*Perror} vuelve a convertir el resultado al tipo entero:
 
 \begin{equation}
-I_j^{int}[k+1]
+I_j^{\mathrm{int}}[k+1]
 =
 \begin{cases}
 \operatorname{trunc}_{0}
 \left(
-I_j^{int}[k]+K_{i,j}e_j^{db}[k]
+I_j^{\mathrm{int}}[k]+K_{i,j}e_j^{\mathrm{db}}[k]
 \right),
-& -255<u_j^{raw}[k]<255,\\[2pt]
-I_j^{int}[k],
+& -255<u_j^{\mathrm{raw}}[k]<255,\\[2pt]
+I_j^{\mathrm{int}}[k],
 & \text{en otro caso}.
 \end{cases}
 \label{eq:integrador_condicional}
 \end{equation}
 
-\noindent Por tanto, el integrador puede permanecer sin cambios cuando el incremento $K_{i,j}e_j^{db}[k]$ no alcanza una unidad entera. El término $I_j^{int}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
+\noindent Por tanto, el integrador puede permanecer sin cambios cuando el incremento $K_{i,j}e_j^{\mathrm{db}}[k]$ no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
 
 Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
@@ -743,7 +743,7 @@ durante la sintonización se describen más adelante.
 La velocidad medida se procesa fuera de línea mediante \texttt{scipy.ndimage.uniform\_filter1d} con SciPy~1.16.3. Como el script solo especifica \texttt{size=5}, se ejecutan los valores predeterminados \texttt{axis=-1}, \texttt{mode='reflect'} y \texttt{origin=0}. En las muestras interiores, el resultado corresponde a un filtro uniforme centrado:
 
 \begin{equation}
-v_j^{filt}[k]
+v_j^{\mathrm{filt}}[k]
 =
 \frac{1}{5}
 \sum_{q=-2}^{2}v_j^{\mathrm{med}}[k+q],
@@ -752,7 +752,7 @@ v_j^{filt}[k]
 
 \noindent En la Ec.~\eqref{eq:filtro_uniforme},
 $v_j^{\mathrm{med}}[k]$ es la velocidad medida,
-$v_j^{filt}[k]$ la velocidad filtrada de la rueda $j$ y $q$ el
+$v_j^{\mathrm{filt}}[k]$ la velocidad filtrada de la rueda $j$ y $q$ el
 desplazamiento entero respecto de la muestra central. En los extremos la
 señal se prolonga mediante reflexión. No corresponde a un promedio móvil causal, porque utiliza muestras anteriores y posteriores al índice procesado.
 
@@ -768,7 +768,7 @@ J_{\mathrm{ID}}
 & \widehat{v}_j \text{ contiene valores no finitos},\\[2pt]
 \displaystyle
 \frac{1}{N}\sum_{k=1}^{N}
-\left(v_j^{filt}[k]-\widehat{v}_j[k]\right)^2,
+\left(v_j^{\mathrm{filt}}[k]-\widehat{v}_j[k]\right)^2,
 & \text{en otro caso}.
 \end{cases}
 \label{eq:costo_identificacion}
@@ -810,7 +810,7 @@ v_j^{\mathrm{med}}[k]\,\middle|\,t_k\geq7~\mathrm{s}
 \noindent donde $v_j^{\mathrm{ref}}$ es la referencia de velocidad de la rueda $j$ y $t_k$ el instante asociado a la muestra $k$ [s]. En los datos de entrada del script, muestreados cada 0.1~s, la referencia vale cero para $t<1$~s y $v_j^{\mathrm{ref}}$ para $t\geq1$~s. Sin embargo, la recurrencia del PID se evalúa cada $T_{\mathrm{sim}}$, definido en la Ec.~\eqref{eq:lambda_conversion}, y obtiene la referencia mediante interpolación lineal con \texttt{np.interp}. Por ello, la señal efectivamente consumida por la simulación es:
 
 \begin{equation}
-r_j^{sim}(t)
+r_j^{\mathrm{sim}}(t)
 =
 \begin{cases}
 0, & t\leq0.9~\mathrm{s},\\[2pt]
@@ -820,7 +820,7 @@ v_j^{\mathrm{ref}}, & t\geq1.0~\mathrm{s}.
 \label{eq:referencia_interpolada_pid}
 \end{equation}
 
-\noindent donde $r_j^{sim}(t)$ es la referencia continua obtenida por interpolación para la simulación de la rueda $j$.
+\noindent donde $r_j^{\mathrm{sim}}(t)$ es la referencia continua obtenida por interpolación para la simulación de la rueda $j$.
 
 La simulación cuantiza únicamente la medición que ingresa al PID:
 
@@ -967,21 +967,21 @@ formado por esos errores; $\lVert\boldsymbol{\varepsilon}_j\rVert_2$ su
 norma-2 (euclidiana) [m/s]; y $\mathrm{MSE}(\boldsymbol{\varepsilon}_j)$ su
 error cuadrático medio [(m/s)$^2$], igual a la norma-2 al cuadrado dividida
 por el número de muestras. Ninguna de estas cantidades corresponde al error
-entero $e_j^{long}$ consumido por el firmware.
+entero $e_j^{\mathrm{long}}$ consumido por el firmware.
 
 La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que el costo histórico de la partícula. El almacenamiento global presenta una particularidad adicional. El script calcula:
 
 \begin{equation}
 J^{*,g+1}
 =
-\min_i J_i^{best},
+\min_i J_i^{\mathrm{best}},
 \label{eq:pso_mejor_costo}
 \end{equation}
 
-\noindent donde $J^{*,g+1}$ es el menor costo histórico almacenado al finalizar la generación $g+1$ y $J_i^{best}$ el mejor costo histórico de la partícula $i$.
+\noindent donde $J^{*,g+1}$ es el menor costo histórico almacenado al finalizar la generación $g+1$ y $J_i^{\mathrm{best}}$ el mejor costo histórico de la partícula $i$.
 
 Sea $i^*$ el índice de la partícula cuyo costo histórico
-$J_i^{best}$ es mínimo. Entonces, el script actualiza la posición
+$J_i^{\mathrm{best}}$ es mínimo. Entonces, el script actualiza la posición
 global mediante:
 
 \begin{equation}
@@ -996,18 +996,18 @@ G^{g+1}
 Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recorte superior:
 
 \begin{equation}
-\boldsymbol{\theta}^{out}
+\boldsymbol{\theta}^{\mathrm{out}}
 =
 \begin{cases}
-\left(0.01G_1^{final},\,2.0G_2^{final},\,0.5G_3^{final}\right),
+\left(0.01G_1^{\mathrm{final}},\,2.0G_2^{\mathrm{final}},\,0.5G_3^{\mathrm{final}}\right),
 & \text{identificación FODT},\\[2pt]
-\left(40G_1^{final},\,25G_2^{final},\,0.05G_3^{final}\right),
+\left(40G_1^{\mathrm{final}},\,25G_2^{\mathrm{final}},\,0.05G_3^{\mathrm{final}}\right),
 & \text{sintonización PID}.
 \end{cases}
 \label{eq:pso_salida}
 \end{equation}
 
-\noindent donde $\boldsymbol{\theta}^{out}$ es el vector de parámetros informado al finalizar el PSO y $G_d^{final}$ es la componente $d$ de la posición global almacenada al término de la última generación. En la etapa PID, $\boldsymbol{\theta}^{out}$ puede superar los valores de escala 40, 25 y 0.05, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
+\noindent donde $\boldsymbol{\theta}^{\mathrm{out}}$ es el vector de parámetros informado al finalizar el PSO y $G_d^{\mathrm{final}}$ es la componente $d$ de la posición global almacenada al término de la última generación. En la etapa PID, $\boldsymbol{\theta}^{\mathrm{out}}$ puede superar los valores de escala 40, 25 y 0.05, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
 
 \subsection{Protocolos de captura, identificación y sintonización}
 \label{anx:protocolos_sintonizacion}
@@ -1576,19 +1576,19 @@ $T_{\mathrm{cap}}$ & Período de captura en lazo abierto & s \\
 $\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lectura se mide desde la asignación de \texttt{time\_} al inicio de \texttt{configure()}, antes de la espera serial de 3000~ms; desde la segunda, entre llamadas consecutivas a \texttt{read()} & s \\ $T_k$ & Intervalo entre las muestras $k$ y $k+1$ del modelo cinemático general (Ecs.~\eqref{eq:pose_x}--\eqref{eq:pose_theta}); distinto del intervalo ejecutado $\Delta t_k$ & s \\
 \midrule
 \multicolumn{3}{l}{\textit{Conversión y control de firmware}}\\
-$m_j^{int}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[k-1]$, almacenada en \texttt{PrevInput} & ticks/frame \\
+$m_j^{\mathrm{int}}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[k-1]$, almacenada en \texttt{PrevInput} & ticks/frame \\
 $m_j^{cmd}[k]$ & Referencia de velocidad de rueda enviada al firmware & ticks/frame \\
 $v_j^{cmd}[k]$ & Velocidad lineal de rueda comandada & m/s \\
 $\omega_j^{cmd}[k]$ & Velocidad angular de rueda comandada & rad/s \\
 $u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FODT & PWM \\
-$e_j^{long}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & ticks/frame \\
-$e_j^{db}[k]$ & Error de control después de aplicar la banda muerta &
+$e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & ticks/frame \\
+$e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta &
 ticks/frame \\
-$\Delta u_j^{long}[k]$ & Incremento de la salida calculado por el controlador discreto y asignado al tipo \texttt{long} & PWM \\
-$u_j^{raw}[k]$ & Salida acumulada antes de aplicar la saturación & PWM \\
+$\Delta u_j^{\mathrm{long}}[k]$ & Incremento de la salida calculado por el controlador discreto y asignado al tipo \texttt{long} & PWM \\
+$u_j^{\mathrm{raw}}[k]$ & Salida acumulada antes de aplicar la saturación & PWM \\
 $e_{db,j}$ & Banda muerta por rueda ($e_{db,R}=1$, $e_{db,L}=2$) & ticks/frame \\
 $u_{\max},u_{\min}$ & Límites de saturación de la salida PID ($\pm255$, \texttt{MAX\_PWM}) & PWM \\
-$I_j^{int}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \texttt{int}; posee la misma escala interna que $K_{p,j}e_j^{db}[k]$ & esc.\ fw \\
+$I_j^{\mathrm{int}}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \texttt{int}; posee la misma escala interna que $K_{p,j}e_j^{\mathrm{db}}[k]$ & esc.\ fw \\
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
@@ -1609,7 +1609,7 @@ $\hat{v}_j[k]$ & Velocidad lineal estimada por el modelo de la rueda $j$ &
 m/s \\
 $v_j^{\mathrm{med}}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto &
 m/s \\
-$\mathrm{e}$ & Número de Euler & No aplica \\ $v_j^{filt}[k]$ & Velocidad medida tras el filtro uniforme centrado (Ec.~\eqref{eq:filtro_uniforme}) & m/s \\ $q$ & Desplazamiento entero respecto de la muestra central en el filtro uniforme (Ec.~\eqref{eq:filtro_uniforme}) & muestras \\ \midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}}\\ $\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\ $L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ (Ec.~\eqref{eq:lambda_retardo_efectivo}) & s \\ $K_{m,j}^{norm}$ & Ganancia de planta normalizada por el PWM nominal ($K_{m,j}^{norm}=143\,K_{m,j}$) & m/s \\ $K_{c,j}'$ & Ganancia de la forma serie (interactuante) de Lambda & esc.\ script \\ $T_{i,j}',\,T_{d,j}'$ & Tiempos integral y derivativo de la forma serie & s \\ $K_{p,j}^{std},\,K_{i,j}^{std},\,K_{d,j}^{std}$ & Ganancias de la forma paralela estándar de Lambda & esc.\ script \\ $T_{i,j}^{std},\,T_{d,j}^{std}$ & Tiempos integral y derivativo equivalentes de la forma estándar & s \\ $f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ (Ec.~\eqref{eq:lambda_conversion}) & esc.\ script \\ $K_{p,j}^{\mathrm{fw}},\,K_{d,j}^{\mathrm{fw}},\,K_{i,j}^{\mathrm{fw}}$ & Ganancias Lambda expresadas en la escala de firmware del script & esc.\ fw \\
+$\mathrm{e}$ & Número de Euler & No aplica \\ $v_j^{\mathrm{filt}}[k]$ & Velocidad medida tras el filtro uniforme centrado (Ec.~\eqref{eq:filtro_uniforme}) & m/s \\ $q$ & Desplazamiento entero respecto de la muestra central en el filtro uniforme (Ec.~\eqref{eq:filtro_uniforme}) & muestras \\ \midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}}\\ $\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\ $L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ (Ec.~\eqref{eq:lambda_retardo_efectivo}) & s \\ $K_{m,j}^{\mathrm{norm}}$ & Ganancia de planta normalizada por el PWM nominal ($K_{m,j}^{\mathrm{norm}}=143\,K_{m,j}$) & m/s \\ $K_{c,j}'$ & Ganancia de la forma serie (interactuante) de Lambda & esc.\ script \\ $T_{i,j}',\,T_{d,j}'$ & Tiempos integral y derivativo de la forma serie & s \\ $K_{p,j}^{\mathrm{std}},\,K_{i,j}^{\mathrm{std}},\,K_{d,j}^{\mathrm{std}}$ & Ganancias de la forma paralela estándar de Lambda & esc.\ script \\ $T_{i,j}^{\mathrm{std}},\,T_{d,j}^{\mathrm{std}}$ & Tiempos integral y derivativo equivalentes de la forma estándar & s \\ $f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ (Ec.~\eqref{eq:lambda_conversion}) & esc.\ script \\ $K_{p,j}^{\mathrm{fw}},\,K_{d,j}^{\mathrm{fw}},\,K_{i,j}^{\mathrm{fw}}$ & Ganancias Lambda expresadas en la escala de firmware del script & esc.\ fw \\
 \midrule
 \multicolumn{3}{l}{\textit{Optimización por enjambre (PSO)}}\\
 $\xi_{i,d},V_{i,d}$ & Posición y velocidad de búsqueda de la partícula $i$, dimensión $d$ & adim. \\
@@ -1633,7 +1633,7 @@ $J$ & Función de costo & varias \\
 $w_{\mathrm{mse}},w_{\mathrm{OS}}$ & Pesos de error cuadrático y de sobreimpulso & adim. \\
 $\lVert\boldsymbol{\varepsilon}_j\rVert_2$ & Norma-2 (euclidiana) del vector de errores instantáneos $\varepsilon_j[k]$ & m/s \\
 $v_j^{\mathrm{ref}}$ & Velocidad de consigna estacionaria obtenida como media para $t\geq7$~s & m/s \\
-$r_j^{sim}(t)$ & Referencia consumida por la simulación después de la interpolación lineal de \texttt{np.interp} & m/s \\
+$r_j^{\mathrm{sim}}(t)$ & Referencia consumida por la simulación después de la interpolación lineal de \texttt{np.interp} & m/s \\
 $\operatorname{round}_{\mathrm{even}}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & No aplica \\
 \midrule
 \multicolumn{3}{l}{\textit{Validación experimental y cobertura}}\\
