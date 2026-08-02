@@ -1,7 +1,7 @@
 \chapter{RESULTADOS EXPERIMENTALES}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evaluaron en simulación y en hardware real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evaluaron sobre el hardware real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evaluaron en simulación y en hardware real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evaluaron sobre el hardware real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}. El entorno físico en que se realizaron las pruebas sobre hardware real se muestra en la Fig.~\ref{fig:entorno_experimental}.
 
 \utemFigurePropia{2.Texto/Imag/entorno_experimental.jpg}{0.78\textwidth}
 {Entorno utilizado para las pruebas experimentales en hardware real.}{fig:entorno_experimental}
@@ -108,6 +108,10 @@ Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+El desglose por repetición de ambos protocolos (trayectoria rectilínea y
+protocolo angular, en simulación y hardware real) se presenta en la
+Fig.~\ref{fig:resultados_odometria_repeticiones}.
 
 \begin{utemMultiFigurePropia}{Resultados por repetición de las pruebas rectilíneas y angulares en simulación y hardware real.}{fig:resultados_odometria_repeticiones}
 \addutem{0.48}{2.Texto/Imag/odom_error_barras_sim.png}{Trayectoria rectilínea en simulación.}

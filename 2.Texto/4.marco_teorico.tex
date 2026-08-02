@@ -318,14 +318,14 @@ El controlador de velocidad se ejecuta de forma independiente para cada rueda en
 \begin{equation*}
 u_j(t)
 =
-K_{p,j}^{cont}e_j(t)
+K_{p,j}^{\mathrm{cont}}e_j(t)
 +
-K_{i,j}^{cont}\int_0^t e_j(\sigma)\,d\sigma
+K_{i,j}^{\mathrm{cont}}\int_0^t e_j(\sigma)\,d\sigma
 +
-K_{d,j}^{cont}\frac{de_j(t)}{dt}.
+K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
 \end{equation*}
 
-\noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{cont}$, $K_{i,j}^{cont}$ y $K_{d,j}^{cont}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
+\noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{\mathrm{cont}}$, $K_{i,j}^{\mathrm{cont}}$ y $K_{d,j}^{\mathrm{cont}}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
 
 En la práctica, el controlador no se evalúa de forma continua, sino a
 intervalos regulares en el microcontrolador. Por ello se implementa en
