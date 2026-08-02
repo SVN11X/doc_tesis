@@ -407,12 +407,51 @@ tratamiento de la lectura no atómica de los contadores se conserva en el
 \subsection{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda, con la referencia y la medición expresadas en ticks/frame.
+El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano, con la referencia y la medición expresadas en ticks/frame. Como bien se dijo en Cap. \ref{marco_teorico}, la forma continua del PID se utiliza únicamente como
+referencia conceptual
 
-La ley implementada corresponde a la forma incremental con derivada sobre la medición definida en el Cap.~\ref{marco_teorico}. La secuencia de actualización se presenta en el Alg.~\ref{alg:pid_firmware}, mientras que el error por rueda, definido en la Ec.~\eqref{eq:error_pid}, y las restantes operaciones internas se formalizan en las Ecs.~\eqref{eq:medicion_pid_entera}--\eqref{eq:integrador_condicional} del \ref{anx:pid_ecuaciones}.
+En la práctica el controlador no se evalúa de forma continua, sino a intervalos
+regulares en el microcontrolador. Por ello la ley se implementa en tiempo
+discreto, con una forma incremental y derivada sobre la medición. El incremento
+de control, la actualización del integrador y la salida saturada se resumen
+como:
+\begin{align*}
+\Delta u_j[k]
+&=
+\frac{
+K_{p,j}e_j[k]
+-
+K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)
++
+I_j[k]
+}{
+K_o
+},\\
+I_j[k+1]
+&=
+I_j[k]+K_{i,j}e_j[k],\\
+u_j[k]
+&=
+\operatorname{sat}_{[-255,255]}
+\bigl(u_j[k-1]+\Delta u_j[k]\bigr).
+\end{align*}
+\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias proporcional,
+integral y derivativa discretas de la rueda $j$; $e_j[k]$ es el error discreto
+de velocidad; $m_j[k]$ la medición de velocidad en la escala interna del
+firmware; $I_j[k]$ el estado integral, que acumula $K_{i,j}e_j[k]$ en cada
+ciclo; $\Delta u_j[k]$ el incremento de control; $u_j[k]$ la salida acumulada;
+$K_o$ el divisor de escalamiento de la salida, común a ambas ruedas; y
+$\operatorname{sat}_{[-255,255]}(\cdot)$ la saturación al intervalo PWM
+permitido.
 
-Las ganancias definitivas codificadas en el firmware se consolidan en la
-Tabla~\ref{tab:ganancias_pid}.
+La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
+bandas muertas distintas por rueda y actualización condicional del integrador.
+Las ecuaciones exactas y sus tipos de datos se conservan en el
+\ref{anx:pid_ecuaciones},
+Ecs.~\eqref{eq:medicion_pid_entera}--\eqref{eq:integrador_condicional}. Las
+ganancias definitivas se presentan en la Tabla~\ref{tab:ganancias_pid}; el orden
+de ejecución, los reinicios y la saturación se detallan en el
+Alg.~\ref{alg:pid_firmware}.
 
 \begin{table}[H]
 \centering

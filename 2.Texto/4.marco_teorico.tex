@@ -313,36 +313,51 @@ empleadas por los scripts se documentan en el
 \section{Control PID}
 \label{sec:pid}
 
-El controlador PID genera la acción de control combinando tres términos
-sobre el error entre la referencia y la medición: uno proporcional al error
-presente, uno proporcional a su integral acumulada, que elimina el error estacionario, y uno proporcional a su derivada, que anticipa la tendencia.
-En tiempo continuo:
+El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID solo se utiliza como referencia conceptual:
 
 \begin{equation*}
 u_j(t)
 =
-K_{p,j}^{\mathrm{cont}}e_j(t)
+K_{p,j}^{cont}e_j(t)
 +
-K_{i,j}^{\mathrm{cont}}\int_0^t e_j(\sigma)\,d\sigma
+K_{i,j}^{cont}\int_0^t e_j(\sigma)\,d\sigma
 +
-K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
+K_{d,j}^{cont}\frac{de_j(t)}{dt}.
 \end{equation*}
 
-\noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control,
-$e_j(t)$ el error de velocidad y $K_{p,j}^{\mathrm{cont}}$,
-$K_{i,j}^{\mathrm{cont}}$, $K_{d,j}^{\mathrm{cont}}$ las ganancias
-proporcional, integral y derivativa de la forma continua; $\sigma$ es la
-variable de integración.
+\noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{cont}$, $K_{i,j}^{cont}$ y $K_{d,j}^{cont}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
 
-En un sistema embebido el controlador se ejecuta en tiempo discreto. En
-este trabajo se emplea una forma incremental con derivada sobre la medición,
-saturación de la salida, actualización condicional del integrador
-(\emph{anti-windup}) y una zona muerta sobre el error. Estas decisiones
-reducen los saltos ante cambios de referencia y los ciclos límite asociados
-a la cuantización. La ley exacta, los estados internos y el orden de
-operaciones se documentan en el \ref{anx:pid_ecuaciones}; las ganancias
-definitivas se presentan en el Capítulo~\ref{ch:implementacion}.
+\noindent La implementación real utiliza una ley discreta acumulativa con
+derivada sobre la medición. En forma conceptual, el incremento de control y la
+salida saturada pueden resumirse como:
 
+\begin{align*}
+\Delta u_j[k]
+&=
+\frac{
+K_{p,j}e_j[k]
+-
+K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)
++
+I_j[k]
+}{
+K_{o,j}
+},\\
+u_j[k]
+&=
+\operatorname{sat}_{[-255,255]}
+\bigl(u_j[k-1]+\Delta u_j[k]\bigr).
+\end{align*}
+
+\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias proporcional, integral y derivativa discretas de la rueda $j$; $e_j[k]$ es el error discreto, $m_j[k]$ la medición de velocidad en la escala interna del firmware, $I_j[k]$ el estado integral asociado a $K_{i,j}$, $\Delta u_j[k]$ el incremento de control, $u_j[k]$ la salida acumulada y $K_{o,j}$ el divisor de escalamiento; $\operatorname{sat}_{[-255,255]}()$ representa la saturación al intervalo PWM permitido.
+
+La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
+bandas muertas distintas por rueda y actualización condicional del integrador.
+Las ecuaciones exactas y sus tipos de datos se conservan en el
+\ref{anx:pid_ecuaciones}, Ecs.~\eqref{eq:medicion_pid_entera}--
+\eqref{eq:integrador_condicional}. Las ganancias definitivas se presentan en
+la Tabla~\ref{tab:ganancias_pid}; el orden de ejecución, los reinicios y la
+saturación se detallan en el Alg.~\ref{alg:pid_firmware}.
 \section{Sintonización del controlador PID mediante PSO}
 \label{sec:sintonizacion}
 
