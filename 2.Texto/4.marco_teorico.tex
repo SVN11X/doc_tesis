@@ -331,7 +331,7 @@ Fig.~\ref{fig:lazo_pid} resume esta estructura.
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID solo se utiliza como referencia conceptual:
 
-\begin{equation*}
+\begin{equation}
 u_j(t)
 =
 K_{p,j}^{\mathrm{cont}}e_j(t)
@@ -339,7 +339,8 @@ K_{p,j}^{\mathrm{cont}}e_j(t)
 K_{i,j}^{\mathrm{cont}}\int_0^t e_j(\sigma)\,d\sigma
 +
 K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
-\end{equation*}
+\label{eq:pid_continuo}
+\end{equation}
 
 \noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{\mathrm{cont}}$, $K_{i,j}^{\mathrm{cont}}$ y $K_{d,j}^{\mathrm{cont}}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
 
@@ -416,7 +417,7 @@ amortiguadas. Las escalas de búsqueda, las cotas, la configuración del
 enjambre y las particularidades numéricas de la ejecución se presentan en el
 Capítulo~\ref{ch:implementacion} y en el \ref{anx:pso_detalle}.
 
-\section{SLAM basado en grafos: SLAM Toolbox}
+\section{SLAM basado en grafos}
 \label{sec:slam}
 
 La odometría pura acumula deriva, por lo que se requiere SLAM para estimar
@@ -437,21 +438,19 @@ estructura.
 {Grafo de poses: nodos, restricciones relativas y cierre de lazo.}
 {fig:grafo_poses}
 
+El procesamiento asíncrono de los barridos, la detección de cierre de lazo y
+un consumo compatible con computadores embebidos son las características que
+hacen viable esta técnica en plataformas de bajo costo. La herramienta
+concreta empleada en este trabajo y su configuración se presentan en la
+Sec.~\ref{sec:slam_ch9}.
 
-La técnica específica utilizada en este trabajo es SLAM Toolbox
-\citep{macenski2021slamtoolbox}, un sistema de SLAM 2D por grafos de poses
-diseñado para \gls{ROS2}. Procesa los barridos de forma asíncrona, lo que
-evita bloquear el sistema cuando la carga computacional crece, incorpora
-detección de cierre de lazo y mantiene un consumo compatible con
-computadores embebidos, razón por la cual resulta adecuado para la
-arquitectura distribuida de este prototipo.
-
-\section{Localización en mapas conocidos mediante AMCL}
+\section{Localización en mapas conocidos}
+\label{sec:localizacion_marco}
 
 Una vez construido y almacenado el mapa del entorno, la estimación de la pose
-puede realizarse sin volver a ejecutar el proceso de mapeo. Para este propósito,
-Nav2 incorpora AMCL (\textit{Adaptive Monte Carlo Localization}), un método de
-localización probabilística basado en un filtro de partículas
+puede realizarse sin volver a ejecutar el proceso de mapeo. Para este propósito
+se emplea la localización de Monte Carlo adaptativa, un método de localización
+probabilística basado en un filtro de partículas
 \citep{thrun2005probabilistic}.
 
 Cada partícula representa una hipótesis de pose del robot en el mapa. Estas
@@ -460,10 +459,12 @@ concordancia entre los barridos del \gls{LIDAR} y el mapa de ocupación
 previamente almacenado. Posteriormente, el remuestreo concentra las partículas
 en las regiones de mayor probabilidad.
 
-AMCL estima la transformación entre los marcos \texttt{map} y \texttt{odom},
-mientras que la odometría mantiene la transformación entre \texttt{odom} y el
-marco base del robot. A diferencia de \texttt{slam\_toolbox}, AMCL no construye
-ni modifica el mapa, sino que localiza el robot dentro de uno conocido.
+Este método estima la transformación entre el marco del mapa y el marco
+odométrico, mientras que la odometría mantiene la transformación entre este
+último y el marco base del robot. A diferencia del SLAM descrito en la
+Sec.~\ref{sec:slam}, la localización no construye ni modifica el mapa, sino
+que sitúa al robot dentro de uno ya conocido. El nodo utilizado y su
+configuración se detallan en la Sec.~\ref{sec:amcl_ch9}.
 
 \section{Planificación de rutas y control local}
 \label{sec:nav_marco}
@@ -498,14 +499,14 @@ de aceleración del robot, simula hacia adelante las trayectorias asociadas a
 cada candidato y las evalúa mediante una suma ponderada de criterios:
 
 \begin{equation}
-J_{\mathrm{DWB}}(v,\omega)
+J_{\mathrm{vd}}(v,\omega)
 =
 \sum_{c\in\mathcal{C}}
 S_c\,C_c(v,\omega),
-\label{eq:dwb_cost}
+\label{eq:costo_ctrl_local}
 \end{equation}
 
-\noindent donde $J_{\mathrm{DWB}}(v,\omega)$ es el puntaje total de una
+\noindent donde $J_{\mathrm{vd}}(v,\omega)$ es el puntaje total de una
 trayectoria candidata con velocidades lineal $v$ y angular $\omega$;
 $\mathcal{C}$ es el conjunto de criterios de evaluación, tales como
 proximidad a obstáculos, alineación con la ruta y avance hacia la meta,

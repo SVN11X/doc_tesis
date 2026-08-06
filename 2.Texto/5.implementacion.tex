@@ -810,7 +810,16 @@ Las capas de hardware, firmware, gemelo digital y control de bajo nivel fueron d
 \subsection{Mapeo con \texttt{slam\_toolbox}}
 \label{sec:slam_ch9}
 
-El robot construye el mapa del entorno mediante \texttt{slam\_toolbox} (fundamentos en Sec.~\ref{sec:slam}), en modo \texttt{online\_async}. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
+La técnica de SLAM por grafos de poses descrita en la Sec.~\ref{sec:slam} se
+materializa en este trabajo mediante SLAM Toolbox
+\citep{macenski2021slamtoolbox}, un sistema de SLAM 2D por grafos de poses
+diseñado para \gls{ROS2}. Procesa los barridos de forma asíncrona, lo que
+evita bloquear el sistema cuando la carga computacional crece, incorpora
+detección de cierre de lazo y mantiene un consumo compatible con computadores
+embebidos, razón por la cual resulta adecuado para la arquitectura distribuida
+de este prototipo.
+
+El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, en modo \texttt{online\_async}. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
 
 Las configuraciones de hardware y simulación comparten la estructura del
 algoritmo, pero emplean parámetros específicos para cada entorno; los valores
@@ -818,6 +827,14 @@ cargados se consolidan en la Tabla~\ref{tab:slam_params_ch9} del
 \ref{anx:nav2_slam_config}.
 
 \subsection{Localización sobre un mapa conocido con AMCL}
+\label{sec:amcl_ch9}
+
+La localización de Monte Carlo adaptativa presentada en la
+Sec.~\ref{sec:localizacion_marco} se implementa mediante AMCL
+(\textit{Adaptive Monte Carlo Localization}), el nodo que Nav2 incorpora para
+este propósito. AMCL estima la transformación entre los marcos \texttt{map} y
+\texttt{odom}, mientras que la odometría mantiene la transformación entre
+\texttt{odom} y el marco base del robot.
 
 Para la navegación sobre un mapa previamente guardado se dispone del nodo
 AMCL de Nav2, con archivos de configuración propios para hardware real y
@@ -866,7 +883,7 @@ las transformaciones asociadas residen en la Raspberry Pi~4
 
 La configuración de los planificadores global y local se resume en la
 Tabla~\ref{tab:nav2_componentes_ch9}. El controlador local evalúa las
-trayectorias candidatas mediante la Ec.~\eqref{eq:dwb_cost}.
+trayectorias candidatas mediante la Ec.~\eqref{eq:costo_ctrl_local}.
 
 \begin{table}[H]
 \centering

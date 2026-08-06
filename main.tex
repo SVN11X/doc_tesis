@@ -15,6 +15,58 @@
 
 \usepackage[defaultmathsizes]{mathastext}
 
+% Letras griegas en la misma tipografía del texto (Arial).
+% mathastext ya convierte las letras latinas; las griegas se redefinen aquí
+% para que no queden con la tipografía por defecto de LaTeX.
+\newfontfamily\utemgriega{Arial}
+
+\newcommand{\utemgrk}[1]{\ensuremath{\mathord{\text{\utemgriega #1}}}}
+
+% Se aplican al inicio del documento para que ningún paquete las sobrescriba.
+\AtBeginDocument{
+  \renewcommand{\alpha}{\utemgrk{α}}
+  \renewcommand{\beta}{\utemgrk{β}}
+  \renewcommand{\gamma}{\utemgrk{γ}}
+  \renewcommand{\delta}{\utemgrk{δ}}
+  \renewcommand{\epsilon}{\utemgrk{ε}}
+  \renewcommand{\varepsilon}{\utemgrk{ε}}
+  \renewcommand{\zeta}{\utemgrk{ζ}}
+  \renewcommand{\eta}{\utemgrk{η}}
+  \renewcommand{\theta}{\utemgrk{θ}}
+  \renewcommand{\vartheta}{\utemgrk{θ}}
+  \renewcommand{\iota}{\utemgrk{ι}}
+  \renewcommand{\kappa}{\utemgrk{κ}}
+  \renewcommand{\lambda}{\utemgrk{λ}}
+  \renewcommand{\mu}{\utemgrk{μ}}
+  \renewcommand{\nu}{\utemgrk{ν}}
+  \renewcommand{\xi}{\utemgrk{ξ}}
+  \renewcommand{\pi}{\utemgrk{π}}
+  \renewcommand{\varpi}{\utemgrk{π}}
+  \renewcommand{\rho}{\utemgrk{ρ}}
+  \renewcommand{\varrho}{\utemgrk{ρ}}
+  \renewcommand{\sigma}{\utemgrk{σ}}
+  \renewcommand{\varsigma}{\utemgrk{ς}}
+  \renewcommand{\tau}{\utemgrk{τ}}
+  \renewcommand{\upsilon}{\utemgrk{υ}}
+  \renewcommand{\phi}{\utemgrk{φ}}
+  \renewcommand{\varphi}{\utemgrk{φ}}
+  \renewcommand{\chi}{\utemgrk{χ}}
+  \renewcommand{\psi}{\utemgrk{ψ}}
+  \renewcommand{\omega}{\utemgrk{ω}}
+
+  \renewcommand{\Gamma}{\utemgrk{Γ}}
+  \renewcommand{\Delta}{\utemgrk{Δ}}
+  \renewcommand{\Theta}{\utemgrk{Θ}}
+  \renewcommand{\Lambda}{\utemgrk{Λ}}
+  \renewcommand{\Xi}{\utemgrk{Ξ}}
+  \renewcommand{\Pi}{\utemgrk{Π}}
+  \renewcommand{\Sigma}{\utemgrk{Σ}}
+  \renewcommand{\Upsilon}{\utemgrk{Υ}}
+  \renewcommand{\Phi}{\utemgrk{Φ}}
+  \renewcommand{\Psi}{\utemgrk{Ψ}}
+  \renewcommand{\Omega}{\utemgrk{Ω}}
+}
+
 \numberwithin{equation}{chapter}
 
 \usepackage{geometry}
