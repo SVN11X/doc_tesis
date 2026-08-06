@@ -130,17 +130,34 @@ medición. La incorporación de una IMU se plantea como mejora futura.
 \section{Evaluación del controlador PID}
 \label{sec:resultados_pid}
 
-La respuesta en lazo cerrado de la
-Fig.~\ref{fig:respuesta_escalon_final} se adquirió sobre el robot real con
-una referencia de 0.13~m/s. El protocolo de captura se conserva en el
+El seguimiento en lazo cerrado se verificó en dos momentos del procedimiento
+de sintonización descrito en la Sec.~\ref{sec:sintonizacion_pso}: con las
+ganancias sugeridas por PSO y con las ganancias definitivas obtenidas tras el
+refinamiento. Ambas capturas se realizaron sobre el robot real, con una
+referencia de 0.13~m/s y el mismo protocolo, conservado en el
 \ref{anx:captura_lazo_cerrado}.
 
+\utemFigurePropia{2.Texto/Imag/respuesta_escalon_final_pso.png}{0.82\textwidth}
+{Respuesta en lazo cerrado del robot real con las ganancias sugeridas por PSO,
+antes del refinamiento experimental (referencia de 0.13~m/s).}
+{fig:respuesta_escalon_pso}
+
+Con las ganancias del PSO, ninguna de las dos ruedas sostiene la referencia
+durante todo el ensayo. La rueda izquierda se estabiliza en 0.12~m/s y solo
+alcanza los 0.13~m/s de forma intermitente, manteniendo un error estacionario
+cercano a 0.01~m/s. La rueda derecha sube por tramos, con una detención en
+torno a 0.11~m/s antes de continuar, y recién se mantiene en la referencia
+después de los 6~s. En ambos casos la subida es más lenta que la obtenida con
+las ganancias definitivas.
+
 \utemFigurePropia{2.Texto/Imag/respuesta_escalon_final.png}{0.82\textwidth}
-{Respuesta experimental en lazo cerrado del robot real con referencia de
-0.13~m/s.}
+{Respuesta experimental en lazo cerrado del robot real con las ganancias
+definitivas y referencia de 0.13~m/s.}
 {fig:respuesta_escalon_final}
 
-En ambas ruedas, la velocidad medida converge hacia la referencia de
+Con las ganancias definitivas desaparece el error estacionario de la rueda
+izquierda y la detención intermedia de la derecha, y la referencia se alcanza
+cerca de un segundo antes. En ambas ruedas, la velocidad medida converge hacia la referencia de
 0.13~m/s. La rueda derecha presenta una respuesta más uniforme, mientras que
 la izquierda muestra pequeñas variaciones discretas alrededor del valor
 objetivo. La figura constituye una verificación cualitativa del seguimiento

@@ -767,7 +767,36 @@ en el \ref{anx:pso_detalle}.
 
 Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}), hasta obtener los valores definitivos de la Tabla~\ref{tab:ganancias_pid}.
 
-La salida de la ejecución utilizada como punto de partida, incluidos los
+La ejecución empleada como punto de partida entregó $K_p=12.48$,
+$K_d=34.69$ y $K_i=1\times10^{-5}$ para la rueda izquierda, y $K_p=10.10$,
+$K_d=36.70$ y $K_i=1\times10^{-5}$ para la rueda derecha. Al cargar esas
+ganancias en el firmware y aplicar un escalón de 0.13~m/s sobre el robot se
+observaron dos comportamientos que el modelo FOPDT no anticipa y que
+motivaron el ajuste posterior (Fig.~\ref{fig:respuesta_escalon_pso}).
+
+El primero es un error estacionario persistente. La acción integral sugerida
+es prácticamente nula, de modo que la rueda izquierda se estabiliza un escalón
+de cuantización por debajo de la referencia y no lo corrige durante el resto
+del ensayo. Para eliminarlo se aumentó $K_i$ hasta 0.075 en esa rueda. La
+rueda derecha sí converge por sí sola, por lo que su ganancia integral se
+mantuvo en un valor mínimo de 0.001, suficiente para cerrar el error residual
+sin acumular acción innecesaria.
+
+El segundo es un arranque lento con detención intermedia. Con la ganancia
+proporcional sugerida, la rueda derecha se estanca cerca de 0.11~m/s antes de
+continuar subiendo, comportamiento asociado a la zona muerta del driver
+descrita en la Sec.~\ref{sec:motores_marco}, que el modelo de primer orden
+no representa. La ganancia proporcional se aumentó a 16.00 y 16.42 para
+acelerar la subida y atravesar ese tramo.
+
+El aumento de la ganancia proporcional, sobre una medición de velocidad
+cuantizada por los encoders, volvió excesiva la acción derivativa sugerida:
+amplificaba las diferencias entre muestras consecutivas en lugar de amortiguar
+la respuesta. Por ello $K_d$ se redujo desde valores cercanos a 35 hasta 20.30
+y 20.05. El efecto conjunto de los tres ajustes se aprecia al comparar las
+Figs.~\ref{fig:respuesta_escalon_pso} y~\ref{fig:respuesta_escalon_final}.
+
+La salida completa de la ejecución utilizada como punto de partida, incluidos los
 parámetros FOPDT identificados y las ganancias sugeridas por PSO, se conserva
 en la Tabla~\ref{tab:pso_resultados} del
 \ref{anx:resultados_pso_ejecucion}, junto con sus condiciones de

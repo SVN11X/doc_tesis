@@ -5,8 +5,9 @@ Este capítulo describe, de forma general, la solución diseñada antes de entra
 al detalle teórico y de implementación. A partir de las alternativas revisadas
 en el Capítulo~\ref{ch:estado_arte}, se propone un robot móvil diferencial de
 bajo costo que integra percepción láser 2D, odometría por encoders y control
-PID embebido, con ganancias previas obtenidas mediante la optimización por enjambre de
-partículas (PSO), sobre una arquitectura distribuida en dos entornos: robot y
+PID embebido, cuyas ganancias se determinaron combinando optimización por
+enjambre de partículas (PSO) y refinamiento experimental sobre el robot, sobre
+una arquitectura distribuida en dos entornos: robot y
 estación de trabajo, comunicados mediante \gls{ROS2}. El objetivo es que el
 sistema sea capaz de mapear, navegar y explorar entornos interiores de forma
 autónoma.
@@ -32,9 +33,10 @@ y el \gls{LIDAR} 2D percibe el entorno; son las dos fuentes de información del
 sistema.
 \item[Control de bajo nivel.] El \gls{Arduino} lee los encoders y ejecuta el
 control PID de velocidad de cada rueda, accionando los motores DC de tracción
-diferencial. Las ganancias de ese PID no se ajustaron manualmente por completo: se
-obtuvieron muestras previas mediante PSO sobre un modelo identificado de cada rueda, según
-se detalla más adelante.
+diferencial. Las ganancias de ese PID se determinaron en dos etapas: PSO
+entregó un primer conjunto a partir de un modelo identificado de cada rueda, y
+ese conjunto se refinó luego sobre el robot real hasta llegar a los valores
+definitivos.
 \item[Sistema computacional del robot.] La Raspberry Pi~4 integra \gls{ROS2},
 estima la odometría a partir de las velocidades de rueda y actúa de puente
 entre el hardware embebido y la estación de trabajo.
@@ -78,11 +80,16 @@ en lugar de los métodos de muestreo o predictivos, orientados a otros
 escenarios y de mayor carga de cálculo \citep{hart1968astar,macenski2023desks}.
 
 La sintonización del control de bajo nivel también se resolvió como una
-decisión de diseño. En lugar de ajustar las ganancias PID por prueba y error,
-se identificó un modelo de primer orden con retardo para cada rueda y sobre él
+decisión de diseño. En lugar de buscar las tres ganancias PID por prueba y
+error desde cero, se identificó un modelo de primer orden con retardo para cada
+rueda y sobre él
 se aplicó PSO, un método de optimización que no requiere derivadas ni un
 modelo exacto de la planta y que permite buscar las tres ganancias de forma
-simultánea.
+simultánea. El resultado de esa búsqueda se adoptó como punto de partida y no
+como valor final: las ganancias definitivas se alcanzaron ajustando ese punto
+de partida sobre el robot real, donde intervienen efectos que el modelo no
+recoge, como la zona muerta del driver, la cuantización de los encoders y la
+asimetría entre ambas ruedas.
 
 Para la exploración autónoma se compararon los enfoques de la misma
 Sec.~\ref{sec:exploracion}. Se eligió la exploración basada en fronteras por su
