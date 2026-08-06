@@ -313,7 +313,7 @@ el \ref{anx:implementacion_diffdrive}.
 \gets\Call{ActualizarEstadoRueda}{c_j[k],\Delta t_k}$
 \EndFor
 \State Exportar $(\widehat{\omega}_L,\phi_L,\widehat{\omega}_R,\phi_R)$.
-\State \Call{ActualizarControladorDiferencial}{}
+\State \Call{ActualizarControladorDiferencial}{}.
 \Statex
 \If{el puerto serial está cerrado}
 \State \Return \texttt{ERROR}
@@ -402,6 +402,16 @@ documenta en el \ref{anx:implementacion_diffdrive}.
 
 La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el protocolo serial textual del enlace descrito en la Sec.~\ref{chap:robot_real}. El conjunto de comandos implementado incluye lectura de encoders, referencias de velocidad, carga de ganancias y accionamiento directo en lazo abierto, y se presenta en la Tabla~\ref{tab:protocolo_serial} del \ref{anx:protocolo_serial}.
 
+La lectura de los encoders no ocurre dentro del bucle principal. Cada cambio
+de nivel en los canales de un encoder dispara una interrupción de cambio de
+pin, cuya rutina actualiza el contador de esa rueda. De este modo el conteo
+avanza en paralelo a la ejecución del programa principal, sin depender de su
+tiempo de ciclo, y ningún flanco se pierde aunque el bucle esté ocupado
+resolviendo el protocolo serial o el control PID. El programa principal solo
+lee el valor acumulado cuando lo necesita: en cada ciclo del PID para calcular
+la velocidad de cada rueda, y al responder el comando de lectura de encoders,
+a partir del cual la Raspberry Pi estima la odometría.
+
 Los conteos recibidos por el enlace serial se interpretan mediante la
 resolución efectiva $N_e$ (Tabla~\ref{tab:parametros_modelo}). El
 tratamiento de la lectura no atómica de los contadores se conserva en el
@@ -411,7 +421,7 @@ tratamiento de la lectura no atómica de los contadores se conserva en el
 \label{sec:motorcontrol_pid}
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano, con la referencia y la medición expresadas en ticks/frame. Como se señaló en la Sec.~\ref{sec:pid}, la forma continua del PID se utiliza únicamente como
-referencia conceptual
+referencia conceptual.
 
 En la práctica el controlador no se evalúa de forma continua, sino a intervalos
 regulares en el microcontrolador. Por ello la ley se implementa en tiempo
@@ -523,14 +533,14 @@ El bucle principal atiende el parser serial, programa la ejecución del PID y ev
 \label{sec:sintonizacion_pso}
 
 Las ganancias PID se determinaron mediante el procedimiento híbrido
-descrito en la Sec.~\ref{sec:sintonizacion}: identificación FODT,
+descrito en la Sec.~\ref{sec:sintonizacion}: identificación FOPDT,
 optimización por PSO y refinamiento experimental, formalizado en el
 Alg.~\ref{alg:sintonizacion}. La configuración del enjambre, las escalas, las
 cotas y las funciones de costo se conservan en el
 \ref{anx:protocolos_sintonizacion}.
 
 \begin{algorithm}[H]
-\caption{Sintonización híbrida del PID mediante identificación FODT y PSO}
+\caption{Sintonización híbrida del PID mediante identificación FOPDT y PSO}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
 \Require Datos de lazo abierto por rueda; período $T_{\mathrm{cap}}$; configuración del PSO.
@@ -551,7 +561,7 @@ cotas y las funciones de costo se conservan en el
 
 El procedimiento encadena tres etapas. Las dos primeras se ejecutan para cada
 rueda: primero suaviza la velocidad medida en lazo abierto y ajusta el modelo
-FODT $(K_m,\tau,L_d)$ minimizando el costo de identificación $J_{\mathrm{ID}}$
+FOPDT $(K_m,\tau,L_d)$ minimizando el costo de identificación $J_{\mathrm{ID}}$
 con PSO; luego, sobre ese modelo, busca, también mediante PSO, las ganancias
 $(K_p,K_d,K_i)$ que minimizan el costo de control $J_{\mathrm{PID}}$. En la
 tercera etapa, las ganancias resultantes se ajustan sobre el robot real y se
@@ -660,9 +670,9 @@ válido y deja constancia de la advertencia; al final de cada paso espera el
 tiempo restante para respetar el período $T_{\mathrm{cap}}$. Al terminar, detiene
 los motores y entrega las series por rueda que alimentan la identificación.
 
-\subsubsection{Identificación FODT y optimización PID}
+\subsubsection{Identificación FOPDT y optimización PID}
 
-La identificación FODT ajusta $(K_m,\tau,L_d)$ por PSO sobre la
+La identificación FOPDT ajusta $(K_m,\tau,L_d)$ por PSO sobre la
 respuesta en lazo abierto y utiliza el modelo obtenido para simular el
 controlador. La señal medida se suaviza antes del ajuste. Las aproximaciones
 numéricas de la planta y del controlador, que difieren de algunos detalles
@@ -742,7 +752,7 @@ la atracción hacia su mejor posición personal y la atracción hacia la global;
 luego actualiza su posición, reevalúa el costo y modifica los mejores personal
 y global cuando corresponde. Al finalizar, la mejor posición global se transforma en el
 vector de parámetros de salida $\theta^{\mathrm{out}}$, que corresponde al modelo
-FODT o a las ganancias PID según el modo de ejecución.
+FOPDT o a las ganancias PID según el modo de ejecución.
 
 Las operaciones principales de los Alg.~\ref{alg:pso_nucleo}
 y~\ref{alg:pso_bucle} siguen la formulación de la
@@ -758,7 +768,7 @@ en el \ref{anx:pso_detalle}.
 Las ganancias obtenidas por PSO se usaron como punto de partida y luego se ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}), hasta obtener los valores definitivos de la Tabla~\ref{tab:ganancias_pid}.
 
 La salida de la ejecución utilizada como punto de partida, incluidos los
-parámetros FODT identificados y las ganancias sugeridas por PSO, se conserva
+parámetros FOPDT identificados y las ganancias sugeridas por PSO, se conserva
 en la Tabla~\ref{tab:pso_resultados} del
 \ref{anx:resultados_pso_ejecucion}, junto con sus condiciones de
 reproducibilidad.

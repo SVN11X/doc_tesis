@@ -143,7 +143,14 @@ multipolar solidario al eje del motor induce pulsos en dos sensores
 desfasados, generando dos canales en cuadratura (desfasados 90$^\circ$). El
 orden de los flancos entre ambos canales indica el sentido de giro, y contar
 los flancos de ambos canales cuadruplica la resolución básica del sensor
-(decodificación~$\times$4). Cuando el encoder está montado en el eje del
+(decodificación~$\times$4). La Fig.~\ref{fig:cuadratura_encoder} muestra ambos
+canales, el desfase entre ellos y los flancos contabilizados.
+
+\utemFigurePropia{2.Texto/Imag/fig_cuadratura_encoder.png}{0.85\textwidth}
+{Canales en cuadratura de un encoder incremental y decodificación $\times$4.}
+{fig:cuadratura_encoder}
+
+Cuando el encoder está montado en el eje del
 motor y este acciona la rueda a través de una caja reductora, cada vuelta de
 la rueda corresponde a $N_g$ vueltas del motor, por lo que la resolución
 teórica en el eje de salida es:
@@ -282,11 +289,11 @@ secuencia de lectura ejecutada por la interfaz de hardware se desarrollan en
 el Capítulo~\ref{ch:implementacion} y en el
 \ref{anx:implementacion_diffdrive}.
 
-\section{Identificación FODT}
+\section{Identificación FOPDT}
 \label{sec:fodt}
 
 Para obtener un modelo destinado a la sintonización del controlador se
-identifica, para cada rueda, una estructura de primer orden con retardo FODT
+identifica, para cada rueda, una estructura de primer orden con retardo FOPDT
 (\textit{First Order Plus Dead Time}) a partir de la respuesta experimental
 ante un escalón de \gls{PWM} \citep{maxim2023fopdt}:
 
@@ -312,6 +319,15 @@ empleadas por los scripts se documentan en el
 
 \section{Control PID}
 \label{sec:pid}
+
+El control de velocidad de cada rueda se organiza como un lazo cerrado: la
+velocidad medida por el encoder se compara con la referencia, y la diferencia
+alimenta al controlador, que ajusta la tensión media entregada al motor. La
+Fig.~\ref{fig:lazo_pid} resume esta estructura.
+
+\utemFigurePropia{2.Texto/Imag/fig_lazo_pid.png}{0.95\textwidth}
+{Lazo de control de velocidad de una rueda con controlador PID.}
+{fig:lazo_pid}
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID solo se utiliza como referencia conceptual:
 
@@ -339,7 +355,7 @@ desarrollan en la Sec.~\ref{sec:motorcontrol_pid} y en el
 \label{sec:sintonizacion}
 
 Las ganancias del PID se obtienen mediante un procedimiento híbrido:
-identificación FODT por rueda (Sec.~\ref{sec:fodt}), búsqueda de ganancias
+identificación FOPDT por rueda (Sec.~\ref{sec:fodt}), búsqueda de ganancias
 iniciales mediante optimización por enjambre de partículas y refinamiento
 experimental posterior sobre el hardware. Como referencia analítica
 complementaria se emplea además la sintonía Lambda, cuyo desarrollo y
@@ -414,7 +430,13 @@ robot vuelve a observar una zona ya visitada se agrega una restricción de
 \emph{cierre de lazo}, y la optimización del grafo, un problema de mínimos
 cuadrados no lineales, redistribuye el error acumulado a lo largo de toda
 la trayectoria, corrigiendo el mapa y la transformación entre el marco del
-mapa y el marco odométrico.
+mapa y el marco odométrico. La Fig.~\ref{fig:grafo_poses} representa esta
+estructura.
+
+\utemFigurePropia{2.Texto/Imag/fig_grafo_poses.png}{0.80\textwidth}
+{Grafo de poses: nodos, restricciones relativas y cierre de lazo.}
+{fig:grafo_poses}
+
 
 La técnica específica utilizada en este trabajo es SLAM Toolbox
 \citep{macenski2021slamtoolbox}, un sistema de SLAM 2D por grafos de poses

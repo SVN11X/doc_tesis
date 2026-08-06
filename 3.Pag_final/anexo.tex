@@ -150,7 +150,7 @@ El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación
 \texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. & Adaptado de terceros \\
 \texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. & Adaptado de terceros \\
 \texttt{explore\_lite} & Exploración autónoma basada en fronteras (proyecto \texttt{m-explore}). & Adaptado de terceros \\
-\texttt{pid\_config} & Scripts de captura, identificación FODT y sintonización PSO. & Adaptado de terceros \\
+\texttt{pid\_config} & Scripts de captura, identificación FOPDT y sintonización PSO. & Adaptado de terceros \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -417,7 +417,7 @@ A partir del factor $2\pi/N_e$ de la Ec.~\eqref{eq:posicion_rueda_encoder}, la c
 \label{anx:comparacion_pso_lambda}
 \label{anx:lambda_detalle}
 
-Ese script vuelve a identificar un modelo FODT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del firmware reutilizando la misma rutina de planta, referencia interpolada y cuantización formalizada en las Ecs.~\eqref{eq:fodt_lazo_cerrado}--\eqref{eq:medicion_simulada_ticks}, con banda muerta 2 para ambas ruedas. Además,\texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm(255\cdot50)=\pm12750$, límite que no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
+Ese script vuelve a identificar un modelo FOPDT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del firmware reutilizando la misma rutina de planta, referencia interpolada y cuantización formalizada en las Ecs.~\eqref{eq:fodt_lazo_cerrado}--\eqref{eq:medicion_simulada_ticks}, con banda muerta 2 para ambas ruedas. Además,\texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm(255\cdot50)=\pm12750$, límite que no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
 
 La referencia analítica Lambda se calcula a partir de esa nueva identificación.
 El retardo utilizado por el cálculo Lambda se reemplaza por:
@@ -507,7 +507,7 @@ ello, las curvas y métricas corresponden al script comparativo ejecutado y no
 a una validación de controladores equivalentes en hardware.
 
 \utemFigurePropia{2.Texto/Imag/comparacion_pso_vs_lambda.png}{1.0\textwidth}
-{Identificación de los modelos FODT de ambas ruedas en lazo abierto y comparación simulada de las respuestas en lazo cerrado obtenidas con las ganancias finales asociadas al procedimiento PSO y con la sintonización Lambda.}
+{Identificación de los modelos FOPDT de ambas ruedas en lazo abierto y comparación simulada de las respuestas en lazo cerrado obtenidas con las ganancias finales asociadas al procedimiento PSO y con la sintonización Lambda.}
 {fig:anx_comparacion_pso_vs_lambda}
 
 \subsection{Protocolo de comunicación serial}
@@ -706,7 +706,7 @@ Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
 resume en el Alg.~\ref{alg:pid_firmware}.
 
-\subsection{Procesamiento FODT usado por los scripts}
+\subsection{Procesamiento FOPDT usado por los scripts}
 \label{anx:fodt_scripts}
 
 Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$
@@ -866,7 +866,7 @@ Después de sumar la velocidad, el núcleo solo aplica una cota inferior:
 &=
 \begin{cases}
 \left(0.01\xi_{i,1},\,2.0\xi_{i,2},\,0.5\xi_{i,3}\right),
-& \text{identificación FODT},\\[2pt]
+& \text{identificación FOPDT},\\[2pt]
 \left(40\xi_{i,1}^{\mathrm{eval}},\,25\xi_{i,2}^{\mathrm{eval}},\,0.05\xi_{i,3}^{\mathrm{eval}}\right),
 & \text{sintonización PID}.
 \end{cases}
@@ -1000,7 +1000,7 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 =
 \begin{cases}
 \left(0.01G_1^{\mathrm{final}},\,2.0G_2^{\mathrm{final}},\,0.5G_3^{\mathrm{final}}\right),
-& \text{identificación FODT},\\[2pt]
+& \text{identificación FOPDT},\\[2pt]
 \left(40G_1^{\mathrm{final}},\,25G_2^{\mathrm{final}},\,0.05G_3^{\mathrm{final}}\right),
 & \text{sintonización PID}.
 \end{cases}
@@ -1019,7 +1019,7 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \small
 \begin{tabular}{p{5.2cm} p{4.3cm} p{4.3cm}}
 \toprule
-\textbf{Parámetro} & \textbf{Etapa 1: Identificación FODT} & \textbf{Etapa 2: Sintonización PID} \\
+\textbf{Parámetro} & \textbf{Etapa 1: Identificación FOPDT} & \textbf{Etapa 2: Sintonización PID} \\
 \midrule
 Variables optimizadas & $(K_m,\tau,L_d)$ & $(K_p,K_d,K_i)$ \\
 Dimensión del espacio & 3 & 3 \\
@@ -1061,14 +1061,14 @@ v_j^{\mathrm{med}}[k]
 
 \begin{table}[H]
 \centering
-\caption{Salida registrada de una ejecución de \texttt{SintonizacionAutomatica.py}: modelo FODT identificado y ganancias sugeridas por PSO.}
+\caption{Salida registrada de una ejecución de \texttt{SintonizacionAutomatica.py}: modelo FOPDT identificado y ganancias sugeridas por PSO.}
 \label{tab:pso_resultados}
 \small
 \begin{tabular}{l S[table-format=1.4] S[table-format=1.4]}
 \toprule
 \textbf{Resultado} & {\textbf{Rueda izq.}} & {\textbf{Rueda der.}} \\
 \midrule
-\multicolumn{3}{l}{\textit{Modelo FODT identificado (Etapa 1)}} \\
+\multicolumn{3}{l}{\textit{Modelo FOPDT identificado (Etapa 1)}} \\
 $K_m$ [(m/s)/PWM] & 0.000913 & 0.000890 \\
 $\tau$ [s]        & 0.3291   & 0.3485 \\
 $L_d$ [s]         & 0.0215   & 0.0001 \\ \addlinespace
@@ -1580,7 +1580,7 @@ $m_j^{\mathrm{int}}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[
 $m_j^{cmd}[k]$ & Referencia de velocidad de rueda enviada al firmware & ticks/frame \\
 $v_j^{cmd}[k]$ & Velocidad lineal de rueda comandada & m/s \\
 $\omega_j^{cmd}[k]$ & Velocidad angular de rueda comandada & rad/s \\
-$u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FODT & PWM \\
+$u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FOPDT & PWM \\
 $e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & ticks/frame \\
 $e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta &
 ticks/frame \\
@@ -1594,9 +1594,9 @@ $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Gana
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
 $\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]$ & Referencia entera generada por \texttt{DiffDriveArduino} al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ a ticks/frame (Ec.~\eqref{eq:mps_to_ticks}) & ticks/frame \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s), Ecs.~\eqref{eq:fodt_lazo_cerrado} y~\eqref{eq:lambda_conversion} & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado (Ec.~\eqref{eq:medicion_simulada_ticks}) & ticks/frame \\
 \midrule
-\multicolumn{3}{l}{\textit{Identificación FODT}}\\
+\multicolumn{3}{l}{\textit{Identificación FOPDT}}\\
 $s$ & Variable compleja de Laplace & s$^{-1}$ \\
-$G_j(s)$ & Función de transferencia FODT de la rueda $j\in\{R,L\}$ & (m/s)/PWM \\
+$G_j(s)$ & Función de transferencia FOPDT de la rueda $j\in\{R,L\}$ & (m/s)/PWM \\
 $K_{m,j}$ & Ganancia estática del modelo de la rueda $j$ &
 (m/s)/PWM \\
 $\tau_j$ & Constante de tiempo del modelo de la rueda $j$ & s \\
@@ -1731,7 +1731,7 @@ en \path{articubot_one/config/}.
 \path{motor_driver.h}, \path{motor_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Accionamiento del L298N. \\
 \path{ControlLazoAbierto.py} & \path{arduino_firmware/pid_config/} & Captura de la respuesta en lazo abierto. \\
 \path{ControlLazoCerrado.py} & \path{arduino_firmware/pid_config/} & Captura experimental en lazo cerrado. \\
-\path{SintonizacionAutomatica.py} & \path{arduino_firmware/pid_config/} & Identificación FODT y búsqueda PSO inicial. \\
+\path{SintonizacionAutomatica.py} & \path{arduino_firmware/pid_config/} & Identificación FOPDT y búsqueda PSO inicial. \\
 \path{SintonizacionLambda.py} & \path{arduino_firmware/pid_config/} & Comparación simulada con sintonía Lambda. \\
 \path{pyPso.py} & \path{arduino_firmware/pid_config/} & Implementación de la clase PSO. \\
 \path{resultados_pso.tex}, \path{resultados_lambda.tex} & \path{arduino_firmware/pid_config/} & Salidas LaTeX generadas por los scripts de sintonización. \\

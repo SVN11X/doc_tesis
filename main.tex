@@ -1,103 +1,47 @@
-% =========================================================================================
-% DATOS DEL DOCUMENTO
-% =========================================================================================
-% Autor: Sebastián Alexis Valderas Neculqueo
-% Carrera: Ingeniería Civil en Electrónica
-% Universidad: Universidad Tecnológica Metropolitana (UTEM)
-% Documento: Trabajo de titulación
-% Normativa:
-% https://biblioteca.utem.cl/wp-content/uploads/2019/10/Tesis_Normalizacion_04092019.pdf
-%
-% IMPORTANTE:
-% Este documento utiliza fontspec y la fuente Arial, por lo que debe compilarse
-% con XeLaTeX o LuaLaTeX. No debe compilarse con pdfLaTeX.
-% =========================================================================================
-
-% =========================================================================================
-% 1. CLASE DEL DOCUMENTO
-% =========================================================================================
-% Documento tipo report, tamaño carta y letra base de 12 puntos.
 \documentclass[letterpaper,12pt]{report}
 
-% Si fuera necesario fijar una versión específica de PDF, se puede activar:
-% \pdfminorversion=7
-
-% =========================================================================================
-% 2. TIPOGRAFÍA, IDIOMA Y MATEMÁTICAS
-% =========================================================================================
-
-% Seguimiento del idioma utilizado por algunos paquetes.
 \usepackage[english]{tracklang}
 
-% Configuración del idioma principal del documento.
 \usepackage[spanish,activeacute,es-lcroman]{babel}
 
-% Fuente principal del documento.
-% La opción no-math evita que fontspec modifique directamente las matemáticas,
-% permitiendo que mathastext use la misma fuente del texto en las ecuaciones.
 \usepackage[no-math]{fontspec}
 \setmainfont{Arial}
 
-% Símbolos de texto adicionales y mejoras tipográficas.
 \usepackage{textcomp}
 \usepackage{microtype}
 
-% Herramientas matemáticas.
 \usepackage{amsmath}
 \usepackage{amssymb}
 
-% Usa la fuente principal del texto también para letras y números matemáticos.
-% Deja las variables latinas en estilo recto, sin cursiva matemática.
 \usepackage[defaultmathsizes]{mathastext}
 
-% Numeración de ecuaciones por capítulo: (1.1), (1.2), etc.
 \numberwithin{equation}{chapter}
 
-% =========================================================================================
-% 3. DISEÑO DE PÁGINA Y PÁRRAFOS
-% =========================================================================================
-
-% Márgenes exigidos para el documento.
 \usepackage{geometry}
 \geometry{
-  top=4cm,
-  bottom=2.5cm,
-  left=4cm,
-  right=2.5cm
+top=4cm,
+bottom=2.5cm,
+left=4cm,
+right=2.5cm
 }
 
-% Interlineado y separación de párrafos.
 \usepackage{setspace}
 \onehalfspacing
 \setlength{\parindent}{1.25cm}
 \setlength{\parskip}{1.0\baselineskip}
 
-% Evita desbordamientos pequeños en líneas extensas.
 \emergencystretch=2em
 
-% =========================================================================================
-% 4. COLORES, IMÁGENES, FIGURAS Y DIBUJOS
-% =========================================================================================
-
-% Colores; la opción table permite usar colores dentro de tablas.
 \usepackage[table,xcdraw]{xcolor}
 
-% Inserción de imágenes y control de flotantes.
 \usepackage{graphicx}
 \usepackage{float}
 
-% Dibujos y diagramas vectoriales.
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc}
 
-% Cajas de contenido.
 \usepackage{tcolorbox}
 
-% =========================================================================================
-% 5. TABLAS
-% =========================================================================================
-
-% Herramientas generales para tablas.
 \usepackage{array}
 \usepackage{tabularx}
 \usepackage{booktabs}
@@ -108,58 +52,28 @@
 \usepackage{threeparttablex}
 \usepackage{siunitx}
 
-% Tipos de columna personalizados.
-% P: párrafo alineado a la izquierda con ancho fijo.
-% L: columna verticalmente centrada y alineada a la izquierda.
 \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}m{#1}}
 
-% =========================================================================================
-% 6. LISTAS Y UTILIDADES GENERALES
-% =========================================================================================
-
-% Personalización de listas.
 \usepackage{enumitem}
 \setlist[itemize]{leftmargin=*,align=parleft}
 
-% Comandos y herramientas auxiliares.
 \usepackage{xparse}
 \usepackage{ragged2e}
 \usepackage{etoolbox}
 \usepackage{xstring}
 
-% Control de advertencias específicas.
 \usepackage{silence}
 \WarningFilter{latex}{Command \showhyphens has changed}
-% \showhyphens es un comando interno de LaTeX. Algunos paquetes relacionados
-% con idioma o microtipografía pueden redefinirlo; esta línea oculta únicamente
-% esa advertencia conocida.
 
-% =========================================================================================
-% 7. PSEUDOCÓDIGOS Y ALGORITMOS
-% =========================================================================================
-
-% Entorno flotante de algoritmos y sintaxis de pseudocódigo.
 \usepackage{algorithm}
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
 
-% Necesario para usar \AtBeginEnvironment.
 \usepackage{etoolbox}
 
-% Nombre en español del entorno flotante.
 \floatname{algorithm}{Algoritmo}
 
-% -----------------------------------------------------------------------------
-% TIPOGRAFÍA DEL PSEUDOCÓDIGO
-% -----------------------------------------------------------------------------
-% Mantiene:
-% - La fuente principal del documento: Arial.
-% - El mismo tamaño de los párrafos: \normalsize.
-% - La letra recta como estilo predeterminado.
-% - Las negritas de las palabras clave y de los textos marcados con \textbf.
-%
-% Solo se neutralizan cursivas y énfasis.
 \AtBeginEnvironment{algorithmic}{
 \normalsize
 \normalfont
@@ -169,439 +83,344 @@
 \let\emph\textnormal
 }
 
-% -----------------------------------------------------------------------------
-% NÚMEROS DE LÍNEA
-% -----------------------------------------------------------------------------
-% Usa Arial, tamaño normal y estilo recto.
-\algrenewcommand\alglinenumber[1]{%
-  \normalfont\normalsize #1:
+\algrenewcommand\alglinenumber[1]{
+\normalfont\normalsize #1:
 }
 
-% -----------------------------------------------------------------------------
-% NOMBRES DE PROCEDIMIENTOS
-% -----------------------------------------------------------------------------
-% Evita que algpseudocode use versalitas en los nombres de procedimientos.
-% Las negritas escritas manualmente siguen funcionando.
 \algrenewcommand\textproc{\textnormal}
 
-% -----------------------------------------------------------------------------
-% NUMERACIÓN POR CAPÍTULO
-% -----------------------------------------------------------------------------
-% Resultado: Algoritmo 5.1, Algoritmo 5.2, etc.
 \makeatletter
 \@addtoreset{algorithm}{chapter}
 \makeatother
 
-\renewcommand{\thealgorithm}{%
-  \thechapter.\arabic{algorithm}%
+\renewcommand{\thealgorithm}{
+\thechapter.\arabic{algorithm}
 }
-% =========================================================================================
-% 8. CÓDIGO FUENTE
-% =========================================================================================
 
-% Presentación de fragmentos de código.
 \usepackage{listings}
 
-% Configuración general de listings.
 \lstset{
-  breaklines=true,             % Divide automáticamente las líneas largas.
-  breakatwhitespace=false,     % Permite cortar en cualquier carácter.
-  basicstyle=\small\ttfamily, % Código en fuente monoespaciada y tamaño pequeño.
-  postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+breaklines=true,
+breakatwhitespace=false,
+basicstyle=\small\ttfamily,
+postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
 }
 
-% =========================================================================================
-% 9. TÍTULOS, ÍNDICES Y LEYENDAS
-% =========================================================================================
-
-% Formato de títulos y entradas de índices.
 \usepackage{titlesec}
 \usepackage{titletoc}
 
-% Leyendas de figuras, tablas, subfiguras y algoritmos.
 \usepackage{caption}
 \usepackage{subcaption}
 
-% Leyendas de algoritmos
 \captionsetup[algorithm]{
-  labelfont=bf,
-  textfont=normalfont,
-  font=normalsize,
-  justification=centering,
-  singlelinecheck=false
+labelfont=bf,
+textfont=normalfont,
+font=normalsize,
+justification=centering,
+singlelinecheck=false
 }
 
-% Formato de títulos numerados de capítulos.
 \titleformat{\chapter}[display]
-  {\normalfont\bfseries\centering}
-  {\Large CAPÍTULO \thechapter}
-  {0.1em}
-  {\Large\MakeUppercase}
+{\normalfont\bfseries\centering}
+{\Large CAPÍTULO \thechapter}
+{0.1em}
+{\Large\MakeUppercase}
 
 \titlespacing*{\chapter}{0pt}{-40pt}{30pt}
 
-% Sangrías y puntos guía del índice general.
 \contentsmargin{0cm}
 
 \titlecontents{chapter}
-  [0pt]
-  {\addvspace{6pt}}
-  {CAPÍTULO \thecontentslabel\quad}
-  {}
-  {\dotfill\contentspage}
+[0pt]
+{\addvspace{6pt}}
+{CAPÍTULO \thecontentslabel\quad}
+{}
+{\dotfill\contentspage}
 
 \titlecontents{section}
-  [28pt]
-  {\addvspace{1pt}}
-  {\thecontentslabel\quad}
-  {}
-  {\dotfill\contentspage}
+[28pt]
+{\addvspace{1pt}}
+{\thecontentslabel\quad}
+{}
+{\dotfill\contentspage}
 
 \titlecontents{subsection}
-  [48pt]
-  {\addvspace{0pt}}
-  {\thecontentslabel\quad}
-  {}
-  {\dotfill\contentspage}
+[48pt]
+{\addvspace{0pt}}
+{\thecontentslabel\quad}
+{}
+{\dotfill\contentspage}
 
-% Nombres utilizados en español.
 \addto\captionsspanish{
-  \renewcommand{\figurename}{Figura}
-  \renewcommand{\contentsname}{TABLA DE CONTENIDO}
-  \renewcommand{\listfigurename}{ÍNDICE DE ILUSTRACIONES}
-  \renewcommand{\listtablename}{ÍNDICE DE TABLAS}
-  \renewcommand{\tablename}{TABLA}
+\renewcommand{\figurename}{Figura}
+\renewcommand{\contentsname}{TABLA DE CONTENIDO}
+\renewcommand{\listfigurename}{ÍNDICE DE ILUSTRACIONES}
+\renewcommand{\listtablename}{ÍNDICE DE TABLAS}
+\renewcommand{\tablename}{TABLA}
 }
 
-% Ancho reservado para el número de página dentro de los índices.
 \makeatletter
 \renewcommand{\@pnumwidth}{4.5em}
 \makeatother
 
-% Encabezado “Página” alineado a la derecha en los índices.
-\newcommand{\UTEMPaginaHeader}{%
-  \noindent\makebox[\linewidth][r]{\textit{Página}}%
+\newcommand{\UTEMPaginaHeader}{
+\noindent\makebox[\linewidth][r]{\textit{Página}}
 }
 
-% Redefinición compacta y multipágina de los índices.
 \makeatletter
 
-% Tabla de contenido.
-\renewcommand{\tableofcontents}{%
-  \clearpage
-  {\centering\normalfont\normalsize\bfseries \contentsname\par}
-  \vspace{1ex}
-  \UTEMPaginaHeader\par\vspace{1ex}
-  \begingroup
-    \singlespacing
-    \setlength{\parskip}{0pt}
-    \setlength{\parindent}{0pt}
-    \@afterheading
-    \@starttoc{toc}
-  \endgroup
-  \clearpage
+\renewcommand{\tableofcontents}{
+\clearpage
+{\centering\normalfont\normalsize\bfseries \contentsname\par}
+\vspace{1ex}
+\UTEMPaginaHeader\par\vspace{1ex}
+\begingroup
+\singlespacing
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+\@afterheading
+\@starttoc{toc}
+\endgroup
+\clearpage
 }
 
-% Índice de ilustraciones.
-\renewcommand{\listoffigures}{%
-  \clearpage
-  {\centering\normalfont\normalsize\bfseries \listfigurename\par}
-  \vspace{1ex}
-  \UTEMPaginaHeader\par\vspace{1ex}
-  \begingroup
-    \singlespacing
-    \setlength{\parskip}{0pt}
-    \setlength{\parindent}{0pt}
-    \@afterheading
-    \@starttoc{lof}
-  \endgroup
-  \clearpage
+\renewcommand{\listoffigures}{
+\clearpage
+{\centering\normalfont\normalsize\bfseries \listfigurename\par}
+\vspace{1ex}
+\UTEMPaginaHeader\par\vspace{1ex}
+\begingroup
+\singlespacing
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+\@afterheading
+\@starttoc{lof}
+\endgroup
+\clearpage
 }
 
-% Índice de tablas.
-\renewcommand{\listoftables}{%
-  \clearpage
-  {\centering\normalfont\normalsize\bfseries \listtablename\par}
-  \vspace{1ex}
-  \UTEMPaginaHeader\par\vspace{1ex}
-  \begingroup
-    \singlespacing
-    \setlength{\parskip}{0pt}
-    \setlength{\parindent}{0pt}
-    \@afterheading
-    \@starttoc{lot}
-  \endgroup
-  \clearpage
+\renewcommand{\listoftables}{
+\clearpage
+{\centering\normalfont\normalsize\bfseries \listtablename\par}
+\vspace{1ex}
+\UTEMPaginaHeader\par\vspace{1ex}
+\begingroup
+\singlespacing
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+\@afterheading
+\@starttoc{lot}
+\endgroup
+\clearpage
+}
+
+\renewcommand{\listofalgorithms}{
+\clearpage
+{\centering\normalfont\normalsize\bfseries ÍNDICE DE ALGORITMOS\par}
+\vspace{1ex}
+\UTEMPaginaHeader\par\vspace{1ex}
+\begingroup
+\singlespacing
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{0pt}
+\@afterheading
+\@starttoc{loa}
+\endgroup
+\clearpage
 }
 
 \makeatother
 
-% Formato de leyendas de figuras.
 \DeclareCaptionLabelFormat{utemfig}{Figura~#2}
 \captionsetup[figure]{
-  labelformat=utemfig,
-  labelsep=colon,
-  labelfont=bf,
-  textfont=normalfont,
-  justification=centering,
-  singlelinecheck=false,
-  position=below
+labelformat=utemfig,
+labelsep=colon,
+labelfont=bf,
+textfont=normalfont,
+justification=centering,
+singlelinecheck=false,
+position=below
 }
 
-% Formato de leyendas de tablas.
 \DeclareCaptionLabelFormat{utemtab}{TABLA~#2}
 \captionsetup[table]{
-  labelformat=utemtab,
-  labelsep=colon,
-  labelfont=bf,
-  textfont=normalfont
+labelformat=utemtab,
+labelsep=colon,
+labelfont=bf,
+textfont=normalfont
 }
-
-% =========================================================================================
-% 10. ENCABEZADOS Y PIES DE PÁGINA
-% =========================================================================================
 
 \usepackage{fancyhdr}
 
-% Estilo general.
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[R]{\thepage}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 
-% Estilo utilizado automáticamente en páginas iniciales de capítulos.
 \fancypagestyle{plain}{
-  \fancyhf{}
-  \fancyfoot[R]{\thepage}
-  \renewcommand{\headrulewidth}{0pt}
-  \renewcommand{\footrulewidth}{0pt}
+\fancyhf{}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
 }
 
-% =========================================================================================
-% 11. ANEXOS, URL E HIPERVÍNCULOS
-% =========================================================================================
-
-% Herramientas para anexos.
 \usepackage{appendix}
 
-% Permite cortar URL extensas.
 \usepackage{xurl}
 \urlstyle{same}
 
-% Hipervínculos sin marcos ni colores visibles.
-% Se carga cerca del final para reducir incompatibilidades con otros paquetes.
 \usepackage[hidelinks]{hyperref}
-
-% =========================================================================================
-% 12. GLOSARIO
-% =========================================================================================
 
 \usepackage[toc]{glossaries}
 \makeglossaries
 \loadglsentries{3.Pag_final/3.glosario.tex}
 \renewcommand{\glossaryname}{GLOSARIO}
 
-% =========================================================================================
-% 13. BIBLIOGRAFÍA
-% =========================================================================================
-
-% Gestión correcta de comillas según el idioma.
 \usepackage{csquotes}
 
-% Bibliografía APA procesada con Biber.
 \usepackage[
-  backend=biber,
-  style=apa,
-  natbib=true,
-  sortcites=true,
-  maxcitenames=2,
-  giveninits=true,
-  doi=true,
-  isbn=false,
-  eprint=false,
-  url=true
+backend=biber,
+style=apa,
+natbib=true,
+sortcites=true,
+maxcitenames=2,
+giveninits=true,
+doi=true,
+isbn=false,
+eprint=false,
+url=true
 ]{biblatex}
 
 \addbibresource{referencias.bib}
 \DeclareLanguageMapping{spanish}{spanish-apa}
 
-% Entorno de bibliografía numerada.
 \defbibenvironment{bibnum}
-  {\begin{enumerate}[
-    label=\arabic*.,
-    leftmargin=*,
-    itemsep=0pt,
-    topsep=0pt,
-    align=left
-  ]}
-  {\end{enumerate}}
-  {\item}
+{\begin{enumerate}[
+label=\arabic*.,
+leftmargin=*,
+itemsep=0pt,
+topsep=0pt,
+align=left
+]}
+{\end{enumerate}}
+{\item}
 
-% =========================================================================================
-% 14. MACROS PARA FIGURAS CON FORMATO UTEM
-% =========================================================================================
-
-% -----------------------------------------------------------------------------------------
-% Figura con fuente bibliográfica.
-% Uso:
-% \utemFigure{ruta/imagen.png}{0.8\textwidth}{Título}{claveBib}{fig:etiqueta}
-% -----------------------------------------------------------------------------------------
 \newcommand{\utemFigure}[5]{
-  \begin{figure}[H]
-    \centering
+\begin{figure}[H]
+\centering
 
-    \setlength{\fboxsep}{6pt}
-    \fbox{%
-      \includegraphics[width=#2]{#1}%
-    }
-
-    \vspace{4pt}
-
-    \caption{#3}
-    \label{#5}
-
-    \vspace{2pt}
-
-    {\footnotesize\textit{Fuente: \citep{#4}.}}
-  \end{figure}
+\setlength{\fboxsep}{6pt}
+\fbox{
+\includegraphics[width=#2]{#1}
 }
 
-% -----------------------------------------------------------------------------------------
-% Figura de elaboración propia.
-% Uso:
-% \utemFigurePropia{ruta/imagen.png}{0.8\textwidth}{Título}{fig:etiqueta}
-% -----------------------------------------------------------------------------------------
+\vspace{4pt}
+
+\caption{#3}
+\label{#5}
+
+\vspace{2pt}
+
+{\footnotesize\textit{Fuente: \citep{#4}.}}
+\end{figure}
+}
+
 \newcommand{\utemFigurePropia}[4]{
-  \begin{figure}[H]
-    \centering
+\begin{figure}[H]
+\centering
 
-    \setlength{\fboxsep}{6pt}
-    \fbox{%
-      \includegraphics[width=#2]{#1}%
-    }
-
-    \vspace{4pt}
-
-    \caption{#3}
-    \label{#4}
-
-    \vspace{2pt}
-
-    {\footnotesize\textit{Fuente: Elaboración propia.}}
-  \end{figure}
+\setlength{\fboxsep}{6pt}
+\fbox{
+\includegraphics[width=#2]{#1}
 }
 
-% -----------------------------------------------------------------------------------------
-% Varias imágenes con fuentes bibliográficas.
-% Uso:
-% \begin{utemMultiFigure}{Título general}{fig:etiqueta}
-%   \addutem{0.45}{ruta/img1.png}{Título 1}{claveBib1}
-%   \hfill
-%   \addutem{0.45}{ruta/img2.png}{Título 2}{claveBib2}
-% \end{utemMultiFigure}
-% -----------------------------------------------------------------------------------------
+\vspace{4pt}
+
+\caption{#3}
+\label{#4}
+
+\vspace{2pt}
+
+{\footnotesize\textit{Fuente: Elaboración propia.}}
+\end{figure}
+}
+
 \newenvironment{utemMultiFigure}[2]{
-  \def\utemMFcapt{#1}%
-  \def\utemMFlab{#2}%
-  \begin{figure}[H]
-    \centering
-    \setlength{\fboxsep}{6pt}
-    \providecommand{\addutem}{}
-    \renewcommand{\addutem}[4]{
-      \begin{subfigure}[b]{##1\textwidth}
-        \centering
-        \fbox{%
-          \includegraphics[width=\textwidth]{##2}%
-        }
-        \caption{##3}
-        \vspace{2pt}
+\def\utemMFcapt{#1}
+\def\utemMFlab{#2}
+\begin{figure}[H]
+\centering
+\setlength{\fboxsep}{6pt}
+\providecommand{\addutem}{}
+\renewcommand{\addutem}[4]{
+\begin{subfigure}[b]{##1\textwidth}
+\centering
+\fbox{
+\includegraphics[width=\textwidth]{##2}
+}
+\caption{##3}
+\vspace{2pt}
 
-        {\footnotesize\textit{Fuente: \citep{##4}.}}
-      \end{subfigure}
-    }
+{\footnotesize\textit{Fuente: \citep{##4}.}}
+\end{subfigure}
+}
 }{
-    \vspace{4pt}
-    \caption{\utemMFcapt}
-    \label{\utemMFlab}
-  \end{figure}
+\vspace{4pt}
+\caption{\utemMFcapt}
+\label{\utemMFlab}
+\end{figure}
 }
 
-% -----------------------------------------------------------------------------------------
-% Varias imágenes de elaboración propia.
-% Uso:
-% \begin{utemMultiFigurePropia}{Título general}{fig:etiqueta}
-%   \addutem{0.45}{ruta/img1.png}{Título 1}
-%   \hfill
-%   \addutem{0.45}{ruta/img2.png}{Título 2}
-% \end{utemMultiFigurePropia}
-% -----------------------------------------------------------------------------------------
 \newenvironment{utemMultiFigurePropia}[2]{
-  \def\utemMFcapt{#1}%
-  \def\utemMFlab{#2}%
-  \begin{figure}[H]
-    \centering
-    \setlength{\fboxsep}{6pt}
-    \providecommand{\addutem}{}
-    \renewcommand{\addutem}[3]{
-      \begin{subfigure}[b]{##1\textwidth}
-        \centering
-        \fbox{%
-          \includegraphics[width=\textwidth]{##2}%
-        }
-        \caption{##3}
-      \end{subfigure}
-    }
+\def\utemMFcapt{#1}
+\def\utemMFlab{#2}
+\begin{figure}[H]
+\centering
+\setlength{\fboxsep}{6pt}
+\providecommand{\addutem}{}
+\renewcommand{\addutem}[3]{
+\begin{subfigure}[b]{##1\textwidth}
+\centering
+\fbox{
+\includegraphics[width=\textwidth]{##2}
+}
+\caption{##3}
+\end{subfigure}
+}
 }{
-    \vspace{4pt}
-    \caption{\utemMFcapt}
-    \label{\utemMFlab}
+\vspace{4pt}
+\caption{\utemMFcapt}
+\label{\utemMFlab}
 
-    \vspace{2pt}
+\vspace{2pt}
 
-    {\footnotesize\textit{Fuente: Elaboración propia.}}
-  \end{figure}
+{\footnotesize\textit{Fuente: Elaboración propia.}}
+\end{figure}
 }
 
-% =========================================================================================
-% 15. CONTADOR PARA OBJETIVOS ESPECÍFICOS
-% =========================================================================================
-
-% Genera etiquetas OE1, OE2, OE3, etc.
 \newcounter{objEsp}
-\newcommand{\ObEsp}{%
-  \refstepcounter{objEsp}%
-  OE\theobjEsp%
+\newcommand{\ObEsp}{
+\refstepcounter{objEsp}
+OE\theobjEsp
 }
 
-% Nombre utilizado por \autoref para este contador.
 \providecommand*{\objEspautorefname}{OE}
 
-% =========================================================================================
-% 16. INICIO DEL DOCUMENTO
-% =========================================================================================
-
-% Relaja el ajuste horizontal para reducir desbordamientos de texto.
 \sloppy
 
 \begin{document}
 
-% =========================================================================================
-% PÁGINAS PRELIMINARES
-% =========================================================================================
-
 \include{1-PagPreliminar/portada.tex}
 
-% Numeración romana para las páginas preliminares.
 \pagenumbering{roman}
-\setcounter{page}{2} % La portada corresponde conceptualmente a la página i.
+\setcounter{page}{2}
 
 \include{1-PagPreliminar/derecho_autor.tex}
 \include{1-PagPreliminar/Nota.tex}
 \include{1-PagPreliminar/dedicatoria.tex}
 \include{1-PagPreliminar/agradecimiento.tex}
 
-% Índices.
 \clearpage
 \tableofcontents
 \clearpage
@@ -609,13 +428,10 @@
 \clearpage
 \listoffigures
 \clearpage
+\listofalgorithms
+\clearpage
 
-% Resumen y abstract.
 \include{1-PagPreliminar/resumen.tex}
-
-% =========================================================================================
-% TEXTO PRINCIPAL
-% =========================================================================================
 
 \cleardoublepage
 \pagenumbering{arabic}
@@ -628,31 +444,24 @@
 \include{2.Texto/6.resultados.tex}
 \include{2.Texto/99.conclusion.tex}
 
-% =========================================================================================
-% PÁGINAS FINALES
-% =========================================================================================
-
-% Bibliografía con interlineado doble.
 \begingroup
-  \doublespacing
-  \printbibliography[
-    heading=bibintoc,
-    title={BIBLIOGRAFÍA},
-    env=bibnum
-  ]
+\doublespacing
+\printbibliography[
+heading=bibintoc,
+title={BIBLIOGRAFÍA},
+env=bibnum
+]
 \endgroup
 
-% Glosario.
 \printglossary[
-  title={GLOSARIO},
-  toctitle={GLOSARIO}
+title={GLOSARIO},
+toctitle={GLOSARIO}
 ]
 
-% Anexos con interlineado simple y sin espacio adicional entre párrafos.
 \begingroup
-  \singlespacing
-  \setlength{\parskip}{0pt}
-  \include{3.Pag_final/anexo.tex}
+\singlespacing
+\setlength{\parskip}{0pt}
+\include{3.Pag_final/anexo.tex}
 \endgroup
 
 \end{document}
