@@ -911,11 +911,11 @@ Nav2 utiliza dos mapas de costos. El \texttt{global\_costmap} entrega la represe
 
 En hardware real ambos mapas de costos emplean un radio de inflación de 0.15~m, valor inferior al configurado en simulación; sus implicancias sobre la navegación en un recinto reducido se discuten en la Sec.~\ref{sec:resultados_nav2}. La geometría completa de los costmaps se presenta en el \ref{anx:nav2_slam_config}.
 
-La Fig.~\ref{fig:esquema_costmap_inflacion} ilustra el uso del mapa de costos
+La Fig.~\ref{fig:mapa_costos_ejecucion} ilustra el uso del mapa de costos
 global durante una ejecución de navegación y exploración autónomas, desde la
 detección de fronteras hasta la cobertura alcanzada del recinto.
 
-\begin{utemMultiFigurePropia}{Representación conceptual de la huella del robot y la capa de inflación del mapa de costos.}{fig:esquema_costmap_inflacion}
+\begin{utemMultiFigurePropia}{Evolución del mapa de costos global durante una ejecución de navegación y exploración autónomas.}{fig:mapa_costos_ejecucion}
 \addutem{0.42}{2.Texto/Imag/fig_mapa_en_formacion_part1.PNG}{Fronteras detectadas en la fase inicial.}
 \hfill
 \addutem{0.42}{2.Texto/Imag/fig_mapa_en_formacion_part2.PNG}{Ruta planificada por Nav2 hacia una meta.}
