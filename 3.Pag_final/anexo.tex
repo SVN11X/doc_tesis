@@ -241,47 +241,12 @@ Ec.~\eqref{eq:posicion_rueda_encoder} y en velocidad angular por diferencias
 finitas, según la Ec.~\eqref{eq:w_ruedas}, empleando como denominador el
 intervalo $\Delta t_k$ definido a continuación.
 
-\noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el buffer de entrada. Si $t_{\mathrm{cfg}}$ es ese instante y $t_{\mathrm{read},k}$ el instante medido al comenzar la llamada $k$ a \texttt{read()}, el denominador ejecutado es:
-
-\begin{equation}
-\Delta t_k
-=
-\begin{cases}
-t_{\mathrm{read},0}-t_{\mathrm{cfg}}, & k=0,\\
-t_{\mathrm{read},k}-t_{\mathrm{read},k-1}, & k\geq1.
-\end{cases}
-\label{eq:intervalo_diffdrive}
-\end{equation}
-
-\noindent Por tanto, la primera muestra de velocidad incluye el tiempo consumido por la configuración posterior a la asignación de \texttt{time\_}, incluida la espera serial de 3000~ms; desde la segunda llamada, $\Delta t_k$ corresponde al intervalo efectivo entre lecturas consecutivas. La velocidad de estado entregada a \texttt{ros2\_control} no utiliza un valor fijo $1/30$~s.
+\noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el buffer de entrada. Por eso el denominador $\Delta t_k$ que divide las diferencias finitas no es un valor fijo: en la primera lectura ($k=0$) es el tiempo transcurrido entre esa inicialización de \texttt{time\_} y el comienzo de la primera llamada a \texttt{read()}, e incluye la espera serial de 3000~ms; desde la segunda lectura ($k\geq1$) es el intervalo real medido entre dos llamadas consecutivas a \texttt{read()}. En consecuencia, la primera muestra de velocidad arrastra el tiempo de configuración, y la velocidad de estado entregada a \texttt{ros2\_control} no utiliza un valor fijo $1/30$~s.
 
 La igualdad numérica de las frecuencias configuradas no implica sincronización temporal. El \texttt{controller\_manager} y el parámetro \texttt{loop\_rate} se configuran nominalmente en 30~Hz, mientras que el firmware programa un incremento entero de $33$~ms sobre \texttt{nextPID} (\texttt{PID\_INTERVAL}). Este intervalo corresponde a la
 planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
 
-En la fase de escritura de la interfaz, la velocidad angular de rueda se
-convierte en una referencia entera de \textit{ticks/frame} antes de enviar el
-comando serial:
-
-\begin{equation}
-m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]
-=
-\operatorname{trunc}_{0}
-\left(
-\frac{N_e}{2\pi f_{\mathrm{loop}}}\,\omega_j^{\mathrm{cmd}}[k]
-\right)
-=
-\operatorname{trunc}_{0}
-\left(
-\frac{N_e}{2\pi r f_{\mathrm{loop}}}\,v_j^{\mathrm{cmd}}[k]
-\right),
-\label{eq:mps_to_ticks}
-\end{equation}
-
-\noindent donde $\omega_j^{\mathrm{cmd}}[k]$ y
-$v_j^{\mathrm{cmd}}[k]$ son las consignas angular [rad/s] y lineal [m/s] de
-la rueda $j$; $\operatorname{trunc}_{0}()$ representa el truncamiento hacia
-cero asociado al argumento entero del comando serial; y
-$m_{j,\mathrm{ROS}}^{\mathrm{cmd}}$ se expresa en \textit{ticks/frame}.
+En la fase de escritura de la interfaz, la velocidad angular de rueda $\omega_j^{\mathrm{cmd}}$ [rad/s] se convierte en una referencia entera de \textit{ticks/frame} antes de enviar el comando serial: se multiplica por el factor $N_e/(2\pi f_{\mathrm{loop}})$ —equivalente a multiplicar la consigna lineal $v_j^{\mathrm{cmd}}$ [m/s] por $N_e/(2\pi r f_{\mathrm{loop}})$— y se trunca hacia cero al entero que admite el comando serial.
 
 \subsection{Identificadores de código de los parámetros del cuerpo}
 \label{anx:identificadores}
@@ -497,29 +462,9 @@ Ocho valores \\
 
 \noindent La implementación utiliza una ley discreta acumulativa con derivada sobre la medición, variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
 
-En cada actualización se leen primero ambos encoders. El incremento de conteo se almacena en una variable de tipo \texttt{int}:
+En cada actualización se leen primero ambos encoders. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~ticks/frame). El incremento de salida se calcula en punto flotante a partir de los términos proporcional, derivativo sobre la medición e integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
 
-\begin{equation}
-m_j^{\mathrm{int}}[k]
-=
-\operatorname{int}
-\left(c_j[k]-c_j[k-1]\right),
-\qquad j\in\{R,L\},
-\label{eq:medicion_pid_entera}
-\end{equation}
-
-\noindent donde $m_j^{\mathrm{int}}[k]$ es el incremento de conteo de la rueda $j$ almacenado en un entero y la conversión a \texttt{int} conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~ticks/frame). El incremento de salida se calcula en punto flotante a partir de los términos proporcional, derivativo sobre la medición e integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
-
-El término integral se almacena en un \texttt{int}. La operación compuesta \texttt{ITerm += Ki*Perror} vuelve a convertir el resultado al tipo entero:
-
-\begin{equation}
-I_j^{\mathrm{int}}[k+1]
-=
-\operatorname{trunc}_{0}\left(I_j^{\mathrm{int}}[k]+K_{i,j}e_j^{\mathrm{db}}[k]\right),
-\label{eq:integrador_condicional}
-\end{equation}
-
-\noindent El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$); en caso contrario conserva su valor, evitando el \textit{windup}. Por el truncamiento entero, además, puede permanecer sin cambios cuando el incremento $K_{i,j}e_j^{\mathrm{db}}[k]$ no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
+El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$); en caso contrario conserva su valor, evitando el \textit{windup}. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
 
 Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
@@ -528,51 +473,11 @@ resume en el Alg.~\ref{alg:pid_firmware}.
 \subsection{Procesamiento FOPDT usado por los scripts}
 \label{anx:fodt_scripts}
 
-Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$
-segundos, el retardo se cuantiza a un número entero de muestras y el sistema
-de primer orden se discretiza mediante el método de Euler:
-
-\begin{equation}
-n_{d,j}
-=
-\operatorname{trunc}\left(\frac{L_{d,j}}{T_{\mathrm{cap}}}\right),
-\label{eq:retardo_muestras}
-\end{equation}
-
-\noindent con entrada retardada $u_{j,d}[k]=u_j[\max(k-n_{d,j},0)]$. La velocidad estimada se actualiza como:
-
-\begin{equation}
-\widehat{v}_j[k]
-=
-\widehat{v}_j[k-1]
-+
-\frac{T_{\mathrm{cap}}}{\tau_j}
-\left(
-K_{m,j}u_{j,d}[k]-\widehat{v}_j[k-1]
-\right),
-\qquad \widehat{v}_j[0]=0.
-\label{eq:fodt_discreto}
-\end{equation}
-
-\noindent donde $u_j[k]$ es la entrada \gls{PWM} aplicada,
-$u_{j,d}[k]$ la entrada retardada y $\widehat{v}_j[k]$ la velocidad lineal
-estimada por el modelo para la rueda $j$ (m/s). Esta formulación corresponde
-al procedimiento de identificación; las diferencias de la planta usada
-durante la sintonización se describen más adelante.
+Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$ segundos, el retardo se cuantiza a un número entero de muestras $n_{d,j}$ truncando el cociente $L_{d,j}/T_{\mathrm{cap}}$, y la entrada se toma retardada como $u_{j,d}[k]=u_j[\max(k-n_{d,j},\,0)]$. El sistema de primer orden se integra por el método de Euler explícito: en cada paso, la velocidad estimada $\widehat{v}_j[k]$ parte de su valor anterior y le suma la fracción $T_{\mathrm{cap}}/\tau_j$ de la diferencia entre la respuesta estática $K_{m,j}\,u_{j,d}[k]$ y esa misma estimación previa, con condición inicial $\widehat{v}_j[0]=0$. Aquí $u_j[k]$ es la entrada \gls{PWM} aplicada y $\widehat{v}_j[k]$ la velocidad lineal estimada por el modelo para la rueda $j$ (m/s). Esta formulación corresponde al procedimiento de identificación; las diferencias de la planta usada durante la sintonización se describen más adelante.
 
 La velocidad medida $v_j^{\mathrm{med}}[k]$ se procesa fuera de línea con \texttt{scipy.ndimage.uniform\_filter1d} (\texttt{size=5}, modo \texttt{reflect}): un filtro uniforme centrado de cinco muestras —no causal, pues usa muestras anteriores y posteriores— del que se obtiene la velocidad filtrada $v_j^{\mathrm{filt}}[k]$.
 
-La función de costo de identificación ejecutada por el script es:
-
-\begin{equation}
-J_{\mathrm{ID}}
-=
-\frac{1}{N}\sum_{k=1}^{N}
-\left(v_j^{\mathrm{filt}}[k]-\widehat{v}_j[k]\right)^2,
-\label{eq:costo_identificacion}
-\end{equation}
-
-\noindent donde $J_{\mathrm{ID}}$ es el costo de identificación y $N$ el número de muestras; si $\tau_j<0.01$~s o $\widehat{v}_j$ contiene valores no finitos, el costo se fija en $10^{6}$.
+La función de costo de identificación ejecutada por el script es el error cuadrático medio entre la velocidad filtrada $v_j^{\mathrm{filt}}[k]$ y la estimada por el modelo $\widehat{v}_j[k]$, promediado sobre las $N$ muestras. Si $\tau_j<0.01$~s o $\widehat{v}_j$ contiene valores no finitos, el costo se fija en $10^{6}$.
 
 \subsection{Planta utilizada durante la sintonización PID}
 
@@ -581,42 +486,9 @@ Con los parámetros identificados, el script simula una planta discreta FOPDT si
 \subsection{Particularidades de la implementación PSO}
 \label{anx:pso_detalle}
 
-Después de sumar la velocidad, el núcleo solo aplica una cota inferior:
+Después de sumar la velocidad a la posición, el núcleo aplica únicamente una cota inferior de $10^{-4}$ a cada componente del estado almacenado $\xi_{i,d}$; no aplica ninguna cota superior. Para evaluar cada partícula, sus componentes se recortan a $[10^{-4},1]$ y se escalan a los parámetros físicos $\boldsymbol{\theta}_i^{\mathrm{eval}}$ según la etapa: $(K_m,\tau,L_d)$ en la identificación FOPDT y $(K_p,K_d,K_i)$ en la sintonización PID. El recorte superior a 1 existe solo dentro de la función de costo PID.
 
-\begin{equation}
-\xi_{i,d}^{g+1}
-=
-\max
-\left(
-\xi_{i,d}^{g}+V_{i,d}^{g+1},
-10^{-4}
-\right).
-\label{eq:pso_pos_marco_teorico}
-\end{equation}
-
-\noindent No se aplica una cota superior al estado almacenado $\xi_{i,d}$. Para evaluar cada partícula, sus componentes se recortan a $[10^{-4},1]$ y se escalan a los parámetros físicos $\boldsymbol{\theta}_i^{\mathrm{eval}}$ según la etapa: $(K_m,\tau,L_d)$ en la identificación FOPDT y $(K_p,K_d,K_i)$ en la sintonización PID. El recorte superior a 1 existe solo dentro de la función de costo PID.
-
-La función de costo PID utiliza el máximo de la señal de referencia como
-objetivo y combina el error cuadrático medio con una penalización cuadrática
-por sobreimpulso, ponderados por $w_{\mathrm{mse}}$ y $w_{\mathrm{OS}}$.
-Además, el script asigna una penalización fija cuando la simulación genera una
-excepción o cuando la respuesta contiene valores no finitos:
-
-\begin{equation}
-J_{\mathrm{PID}}
-=
-w_{\mathrm{mse}}\,\frac{1}{N}\sum_{k=1}^{N}\left(v_j^{\mathrm{ref}}-\widehat{v}_j[k]\right)^2
-+
-w_{\mathrm{OS}}\left[\max\left(0,\ \max_{1\leq k\leq N}\widehat{v}_j[k]-v_j^{\mathrm{ref}}\right)\right]^2,
-\label{eq:costo_pso}
-\end{equation}
-
-\noindent donde $J_{\mathrm{PID}}$ es el costo de sintonización asignado al
-candidato evaluado para la rueda $j$; $w_{\mathrm{mse}}$ y $w_{\mathrm{OS}}$
-son los pesos del error cuadrático medio y de la penalización por
-sobreimpulso, respectivamente; y el valor $10^{6}$ corresponde a la
-penalización fija aplicada cuando la simulación no entrega una respuesta
-válida. Ambos pesos no se calculan: son constantes de diseño definidas
+La función de costo PID, asignada al candidato evaluado para la rueda $j$, toma como objetivo el máximo de la señal de referencia $v_j^{\mathrm{ref}}$ y combina dos términos: el error cuadrático medio respecto de esa referencia, ponderado por $w_{\mathrm{mse}}$, más una penalización por sobreimpulso —el cuadrado de cuánto excede la respuesta a la referencia, cuando la excede— ponderada por $w_{\mathrm{OS}}$. Si la simulación genera una excepción o la respuesta contiene valores no finitos, se asigna en su lugar una penalización fija de $10^{6}$. Ambos pesos no se calculan: son constantes de diseño definidas
 localmente en la función \texttt{costFunction\_PID()} de
 \path{arduino_firmware/pid_config/SintonizacionAutomatica.py}, con
 $w_{\mathrm{mse}}=1.0$ actuando como escala identidad del MSE y
@@ -634,21 +506,7 @@ Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de constricció
 
 La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que su costo histórico. El almacenamiento global presenta una particularidad: el costo global $J^{*}$ se toma como el mínimo de los costos históricos $J_i^{\mathrm{best}}$, pero la posición global $G$ se copia desde la posición actual de la partícula de menor costo histórico —no desde su posición personal $P_{i^*}$—, de modo que $J^{*}$ y $G$ pueden corresponder a vectores distintos. Esta diferencia se mantiene porque representa el código ejecutado.
 
-Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recorte superior:
-
-\begin{equation}
-\boldsymbol{\theta}^{\mathrm{out}}
-=
-\begin{cases}
-\left(0.01G_1^{\mathrm{final}},\,2.0G_2^{\mathrm{final}},\,0.5G_3^{\mathrm{final}}\right),
-& \text{identificación FOPDT},\\[2pt]
-\left(40G_1^{\mathrm{final}},\,25G_2^{\mathrm{final}},\,0.05G_3^{\mathrm{final}}\right),
-& \text{sintonización PID}.
-\end{cases}
-\label{eq:pso_salida}
-\end{equation}
-
-\noindent donde $\boldsymbol{\theta}^{\mathrm{out}}$ es el vector de parámetros informado al finalizar el PSO y $G_d^{\mathrm{final}}$ es la componente $d$ de la posición global almacenada al término de la última generación. En la etapa PID, $\boldsymbol{\theta}^{\mathrm{out}}$ puede superar los valores de escala 40, 25 y 0.05, aunque el costo se haya evaluado con una copia recortada de la posición. Por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
+Al finalizar, los parámetros informados se obtienen escalando la posición global final $G^{\mathrm{final}}$ componente a componente, sin aplicar un nuevo recorte superior. En la etapa de identificación FOPDT, las tres componentes se multiplican por 0.01, 2.0 y 0.5 (para $K_m$, $\tau$ y $L_d$, respectivamente); en la etapa de sintonización PID, se multiplican por 40, 25 y 0.05 (para $K_p$, $K_d$ y $K_i$). Como en este paso no hay recorte superior, en la etapa PID la salida puede superar los valores de escala 40, 25 y 0.05 aunque el costo se haya evaluado con una copia recortada de la posición; por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
 
 \subsection{Protocolos de captura, identificación y sintonización}
 \label{anx:protocolos_sintonizacion}
@@ -664,7 +522,7 @@ Al finalizar, los parámetros informados se calculan sin aplicar un nuevo recort
 \midrule
 Variables optimizadas & $(K_m,\tau,L_d)$ & $(K_p,K_d,K_i)$ \\
 Dimensión del espacio & 3 & 3 \\
-Función de costo & Ec.~\eqref{eq:costo_identificacion} & Ec.~\eqref{eq:costo_pso} \\
+Función de costo & MSE de identificación (\ref{anx:fodt_scripts}) & MSE + penalización por sobreimpulso (\ref{anx:pso_detalle}) \\
 Vector de escala $s_{\mathrm{esc}}$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
 Cota superior del estado $\xi$ & No aplicada & No aplicada \\
 Recorte superior durante la evaluación & No aplicado & Solo dentro de la función de costo PID (copia evaluada recortada a $[10^{-4},1]$) \\
@@ -681,21 +539,7 @@ Entrada o referencia & Escalón PWM $=143$ & Referencia obtenida del promedio de
 \end{tabular}
 \end{table}
 
-Al combinar las Ecs.~\eqref{eq:posicion_rueda_encoder}
-y~\eqref{eq:w_ruedas}, y considerar el período nominal de captura
-$T_{\mathrm{cap}}$, el script calcula directamente la velocidad lineal de
-cada rueda mediante la siguiente forma operativa:
-
-\begin{equation}
-v_j^{\mathrm{med}}[k]
-=
-\frac{\Delta c_j[k]}{N_e}
-\frac{2\pi r}{T_{\mathrm{cap}}},
-\qquad j\in\{R,L\}.
-\label{eq:vel_lazo_abierto}
-\end{equation}
-
-\noindent donde $\Delta c_j[k]=c_j[k]-c_j[k-1]$ es el incremento de conteo y $v_j^{\mathrm{med}}[k]$ la velocidad lineal medida de la rueda $j$ [m/s]. En el script de captura \path{arduino_firmware/pid_config/ControlLazoAbierto.py}, $T_{\mathrm{cap}}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
+Combinando las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas} con el período nominal de captura $T_{\mathrm{cap}}$, el script calcula directamente la velocidad lineal medida de cada rueda $v_j^{\mathrm{med}}[k]$ [m/s] como el incremento de conteo $\Delta c_j[k]=c_j[k]-c_j[k-1]$ dividido por $N_e$ y multiplicado por $2\pi r/T_{\mathrm{cap}}$. En el script de captura \path{arduino_firmware/pid_config/ControlLazoAbierto.py}, $T_{\mathrm{cap}}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
 
 \subsection{Resultados de la ejecución PSO empleada}
 \label{anx:resultados_pso_ejecucion}
@@ -724,7 +568,7 @@ $K_i$ & 0.00001 & 0.00001 \\
 \parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales (tras refinamiento experimental) se reportan en la Tabla~\ref{tab:ganancias_pid}; el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.}
 \end{table}
 
-\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, $n_{d,j}=0$ muestras según la Ec.~\eqref{eq:retardo_muestras}. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
+\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, cero muestras de retardo ($n_{d,j}=0$) en la cuantización descrita en el \ref{anx:fodt_scripts}. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
 
 \subsection{Captura de la respuesta en lazo cerrado}
 \label{anx:captura_lazo_cerrado}
@@ -787,13 +631,7 @@ exploración descritas en la Sec.~\ref{sec:resultados_slam}.
 \subsection{Geometría del costmap e inflación}
 \label{anx:costmap_inflacion}
 
-Los mapas de costo real utilizan el siguiente \textit{footprint} rectangular, expresado respecto de \texttt{base\_link}:
-
-\begin{equation*}
-\left[(0.20,0.13),(-0.08,0.13),(-0.08,-0.13),(0.20,-0.13)\right]\ \mathrm{m}.
-\end{equation*}
-
-La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, correspondiente al borde posterior. Con radio de inflación $r_{\mathrm{inflacion}}=0.15$~m y factor de decaimiento $\beta=5.0$~m$^{-1}$ (\texttt{cost\_scaling\_factor}), la capa asigna un costo entero de 254 en la celda del obstáculo (letal), 253 dentro del radio inscrito, un valor con decaimiento exponencial en la distancia $d_o$ entre el radio inscrito y el de inflación, y 0 más allá del radio de inflación.
+Los mapas de costo real utilizan un \textit{footprint} rectangular respecto de \texttt{base\_link}, con vértices en $(0.20,\,0.13)$, $(-0.08,\,0.13)$, $(-0.08,\,-0.13)$ y $(0.20,\,-0.13)$~m. La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, correspondiente al borde posterior. Con radio de inflación $r_{\mathrm{inflacion}}=0.15$~m y factor de decaimiento $\beta=5.0$~m$^{-1}$ (\texttt{cost\_scaling\_factor}), la capa asigna un costo entero de 254 en la celda del obstáculo (letal), 253 dentro del radio inscrito, un valor con decaimiento exponencial en la distancia $d_o$ entre el radio inscrito y el de inflación, y 0 más allá del radio de inflación.
 
 \subsection{Acciones de recuperación de Nav2}
 \label{anx:recovery_nav2}
@@ -869,12 +707,12 @@ Fin de la secuencia antes del reintento &
 \texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & Costmap usado para detectar fronteras \\
 \texttt{planner\_frequency} & 0.3~Hz & Valor configurado; período efectivo de 3333~ms ($\approx0.30003$~Hz) \\
 \texttt{progress\_timeout} & 10.0~s & Tiempo máximo sin progreso \\
-\texttt{gain\_scale} & 1.0 & Peso de ganancia de información (Ec.~\ref{eq:frontier_cost}) \\
-\texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera (Ec.~\ref{eq:frontier_cost}) \\
+\texttt{gain\_scale} & 1.0 & Peso de ganancia de información en el costo de frontera (\ref{anx:explore_impl}) \\
+\texttt{potential\_scale} & 3.0 & Peso de distancia a la frontera en el costo de frontera (\ref{anx:explore_impl}) \\
 \texttt{orientation\_scale} & 0.0 & Parámetro cargado, pero no utilizado por \texttt{FrontierSearch} en el código ejecutado \\
 \texttt{min\_frontier\_size} & 0.05~m & Tamaño mínimo de una frontera válida \\
 \texttt{return\_to\_init} & \texttt{false} (valor por defecto) & No se carga en \texttt{explore.yaml}; no se ejecuta el retorno a la pose inicial \\
-\texttt{resolution} (costmap) & 0.05~m/celda & Resolución del costmap, $\rho_{\mathrm{map}}$ en la Ec.~\ref{eq:frontier_cost} \\
+\texttt{resolution} (costmap) & 0.05~m/celda & Resolución del costmap, $\rho_{\mathrm{map}}$ en el costo de frontera (\ref{anx:explore_impl}) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -884,30 +722,9 @@ Fin de la secuencia antes del reintento &
 
 El detector inicia la búsqueda desde una celda libre próxima al robot. Al expandir una celda de la BFS, el código incorpora un vecino de cuatro conexiones únicamente cuando todavía no fue visitado y se cumple \texttt{map\_[nbr] <= map\_[idx]}; si esa condición no se cumple, evalúa el vecino como posible celda de frontera. Una celda desconocida constituye una celda de frontera cuando posee al menos un vecino de cuatro conexiones clasificado como espacio libre. Las celdas de frontera contiguas mediante ocho conexiones se agrupan en una misma frontera.
 
-La construcción implementada inicializa el tamaño de la frontera en uno para representar la celda inicial, pero esa celda no se incorpora a la suma empleada para calcular el punto denominado \texttt{centroid}. Si $p_0$ es la celda inicial y $F_{\mathrm{add}}$ el conjunto de celdas añadidas posteriormente, el punto enviado como centroide se obtiene como:
+La construcción implementada inicializa el tamaño de la frontera en uno para representar la celda inicial $p_0$, pero esa celda no se incorpora a la suma que calcula el punto denominado \texttt{centroid}: el punto enviado como centroide es la suma de las coordenadas de las celdas añadidas después de $p_0$ dividida por $1+|F_{\mathrm{add}}|$, donde $|F_{\mathrm{add}}|$ es el número de esas celdas añadidas. Por incluir la celda inicial en el divisor pero no en la suma, el punto almacenado $p_F^{\mathrm{impl}}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}.
 
-\begin{equation}
-p_F^{\mathrm{impl}}
-=
-\frac{1}{1+|F_{\mathrm{add}}|}
-\sum_{p\in F_{\mathrm{add}}}p.
-\label{eq:centroide_frontera_impl}
-\end{equation}
-
-\noindent donde $p_F^{\mathrm{impl}}$ es el punto almacenado por la implementación como centroide de la frontera, $|F_{\mathrm{add}}|$ es el número de celdas añadidas después de la celda inicial y $p$ representa el vector de coordenadas de cada celda añadida. Por tanto, $p_F^{\mathrm{impl}}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}.
-
-La variable \texttt{frontier.min\_distance} se calcula después de convertir las celdas añadidas a coordenadas del mundo, por lo que ya se encuentra en metros. No obstante, la función de costo implementada vuelve a multiplicarla por la resolución del costmap:
-
-\begin{equation}
-U(F)
-=
-w_{\mathrm{pot}}\,d_{\mathrm{min}}^{\mathrm{world}}(F)\,\rho_{\mathrm{map}}
--
-w_{\mathrm{gain}}\,|F|\,\rho_{\mathrm{map}}.
-\label{eq:frontier_cost}
-\end{equation}
-
-\noindent donde $U(F)$ es el puntaje asignado a la frontera $F$, $d_{\mathrm{min}}^{\mathrm{world}}(F)$ la distancia mínima euclidiana entre la posición de referencia y una celda de la frontera [m], $|F|$ el número de celdas almacenado, $\rho_{\mathrm{map}}$ la resolución [m/celda], y $w_{\mathrm{pot}}$ y $w_{\mathrm{gain}}$ los pesos de distancia y ganancia. Los valores configurados de ambos pesos y del tamaño mínimo de frontera corresponden a la Tabla~\ref{tab:explore_params_ch9}. A diferencia de una formulación que convertiría una distancia en celdas a metros, aquí la multiplicación por $\rho_{\mathrm{map}}$ se aplica a una distancia ya métrica. En consecuencia, el primer término queda escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
+La variable \texttt{frontier.min\_distance} se calcula después de convertir las celdas añadidas a coordenadas del mundo, por lo que ya se encuentra en metros. Aun así, la función de costo implementada asigna a cada frontera $F$ un puntaje $U(F)$ restando a un término de distancia un término de ganancia: toma esa distancia mínima ya métrica $d_{\mathrm{min}}^{\mathrm{world}}(F)$ [m], la vuelve a multiplicar por la resolución del costmap $\rho_{\mathrm{map}}$ [m/celda] y la pondera por $w_{\mathrm{pot}}$; y le resta el número de celdas almacenado $|F|$ multiplicado también por $\rho_{\mathrm{map}}$ y ponderado por $w_{\mathrm{gain}}$. Los valores configurados de ambos pesos y del tamaño mínimo de frontera corresponden a la Tabla~\ref{tab:explore_params_ch9}. Como la distancia ya estaba en metros, esa segunda multiplicación por $\rho_{\mathrm{map}}$ deja el primer término escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
 
 El ordenamiento, la selección y el envío de la meta se formalizan en el Alg.~\ref{alg:exploracion_fronteras}. Con resolución 0.05~m/celda y \texttt{min\_frontier\_size}=0.05~m, el criterio $|F|\rho_{\mathrm{map}}\geq0.05$ admite desde un tamaño almacenado de una celda. Si una frontera no incorpora vecinos después de la celda inicial, conserva $|F|=1$, $p_F^{\mathrm{impl}}=(0,0)$ y $d_{\mathrm{min}}^{\mathrm{world}}=\infty$, porque la celda inicial no se suma ni se utiliza para actualizar la distancia. Por tanto, su costo es infinito; aun así, puede permanecer como candidata si no existe otra frontera seleccionable. Dos objetivos se consideran iguales cuando su distancia euclidiana es inferior a 0.01~m.
 
@@ -1202,7 +1019,7 @@ $I_j^{\mathrm{int}}[k]$ & Término integral acumulado de la rueda $j$, almacenad
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
-$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]$ & Referencia entera generada por \texttt{DiffDriveArduino} al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ a ticks/frame (Ec.~\eqref{eq:mps_to_ticks}) & ticks/frame \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado & ticks/frame \\
+$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]$ & Referencia entera generada por \texttt{DiffDriveArduino} al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ a ticks/frame (conversión descrita en el \ref{anx:implementacion_diffdrive}) & ticks/frame \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado & ticks/frame \\
 \midrule
 \multicolumn{3}{l}{\textit{Identificación FOPDT}}\\
 $s$ & Variable compleja de Laplace & s$^{-1}$ \\

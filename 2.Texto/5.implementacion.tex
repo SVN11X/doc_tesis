@@ -261,11 +261,10 @@ frecuencia $f_{\mathrm{ctrl}}$ indicada en la
 Tabla~\ref{tab:parametros_modelo}.
 
 En la fase de escritura, las consignas de rueda se convierten a
-\textit{ticks/frame} mediante la Ec.~\eqref{eq:mps_to_ticks}; en la fase de
+\textit{ticks/frame}; en la fase de
 lectura, los conteos acumulados $c_j[k]$ se convierten en posición y
 velocidad angular mediante las Ecs.~\eqref{eq:posicion_rueda_encoder}
-y~\eqref{eq:w_ruedas}, para $j\in\{R,L\}$, con el intervalo $\Delta t_k$ de
-la Ec.~\eqref{eq:intervalo_diffdrive}. Las interfaces expuestas y el
+y~\eqref{eq:w_ruedas}, para $j\in\{R,L\}$, con el intervalo $\Delta t_k$. Las interfaces expuestas y el
 desarrollo de ambas conversiones se conservan en el
 \ref{anx:implementacion_diffdrive}.
 
@@ -338,8 +337,8 @@ con el firmware.
 
 Dentro del ciclo, cada iteración comienza midiendo el intervalo real
 transcurrido $\Delta t_k$ entre lecturas, en lugar de asumir un período fijo de
-$1/f_{\mathrm{ctrl}}$, según la definición de la
-Ec.~\eqref{eq:intervalo_diffdrive}. En la fase de lectura, la interfaz solicita
+$1/f_{\mathrm{ctrl}}$, según se detalla en el
+\ref{anx:implementacion_diffdrive}. En la fase de lectura, la interfaz solicita
 al firmware los conteos de ambos encoders mediante el comando serial \texttt{e},
 los interpreta como enteros y, con ellos y con $\Delta t_k$, reconstruye la
 posición $\phi_j$ y la velocidad angular $\widehat{\omega}_j$ de cada rueda.
@@ -460,8 +459,7 @@ permitido.
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
 Las ecuaciones exactas y sus tipos de datos se conservan en el
-\ref{anx:pid_ecuaciones},
-Ecs.~\eqref{eq:medicion_pid_entera}--\eqref{eq:integrador_condicional}. Las
+\ref{anx:pid_ecuaciones}. Las
 ganancias definitivas se presentan en la Tabla~\ref{tab:ganancias_pid}; el orden
 de ejecución, los reinicios y la saturación se detallan en el
 Alg.~\ref{alg:pid_firmware}.
@@ -548,9 +546,9 @@ cotas y las funciones de costo se conservan en el
 \State Cargar las señales de entrada, velocidad y tiempo.
 \For{$j\in\{L,R\}$}
 \State $v_j^{\mathrm{filt}}\gets\Call{FiltrarVelocidad}{v_j^{\mathrm{med}}}$
-\State Definir $J_{\mathrm{ID}}$ mediante la Ec.~\eqref{eq:costo_identificacion}.
+\State Definir $J_{\mathrm{ID}}$ como el MSE de identificación (\ref{anx:fodt_scripts}).
 \State $(K_{m,j},\tau_j,L_{d,j})\gets\Call{PSO}{J_{\mathrm{ID}}}$
-\State Definir $J_{\mathrm{PID}}$ mediante la Ec.~\eqref{eq:costo_pso}.
+\State Definir $J_{\mathrm{PID}}$ como el costo MSE + sobreimpulso (\ref{anx:pso_detalle}).
 \State $(K_{p,j},K_{d,j},K_{i,j})\gets\Call{PSO}{J_{\mathrm{PID}}}$
 \EndFor
 \State Refinar las ganancias sobre el robot real.
@@ -574,7 +572,7 @@ La prueba aplica un escalón de PWM en lazo abierto y registra los conteos de
 encoder cada $T_{\mathrm{cap}}=0.1$~s durante 10~s. El procedimiento
 reproducible se formaliza en el Alg.~\ref{alg:captura_lazo_abierto}; el valor
 del escalón y el tratamiento del período de muestreo se conservan en el
-\ref{anx:protocolos_sintonizacion}, Ec.~\eqref{eq:vel_lazo_abierto}.
+\ref{anx:protocolos_sintonizacion}.
 
 \begin{algorithm}[H]
 \caption{Captura de la respuesta al escalón en lazo abierto}
@@ -629,7 +627,7 @@ para $j\in\{R,L\}$.
 \gets c_j[k]-c_j[k-1]$
 
 \State Calcular $v_j^{\mathrm{med}}[k]$
-mediante la Ec.~\eqref{eq:vel_lazo_abierto}.
+según el \ref{anx:protocolos_sintonizacion}.
 
 \State Registrar
 $(u_j[k],v_j^{\mathrm{med}}[k])$.
@@ -758,8 +756,7 @@ Las operaciones principales de los Alg.~\ref{alg:pso_nucleo}
 y~\ref{alg:pso_bucle} siguen la formulación de la
 Sec.~\ref{sec:pso_marco}, incluida la actualización de velocidad e inercia
 de las Ecs.~\eqref{eq:pso_vel_marco_teorico} y~\eqref{eq:pso_inercia}. Las cotas,
-el escalado y la transformación de salida
-(Ecs.~\eqref{eq:pso_pos_marco_teorico}--\eqref{eq:pso_salida}) se documentan
+el escalado y la transformación de salida se documentan
 en el \ref{anx:pso_detalle}.
 
 \subsubsection{Refinamiento experimental}
@@ -956,7 +953,7 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 \State $q\gets\Call{ObtenerPoseRobot}{}$
 \State $\mathcal{F}\gets\Call{DetectarFronteras}{C,q}$
 \For{cada frontera $F\in\mathcal{F}$}
-\State Calcular $p_F^{\mathrm{impl}}$ y $U(F)$ mediante las Ecs.~\eqref{eq:centroide_frontera_impl} y~\eqref{eq:frontier_cost}.
+\State Calcular $p_F^{\mathrm{impl}}$ y $U(F)$ según el \ref{anx:explore_impl}.
 \EndFor
 \State Eliminar las fronteras menores que \texttt{min\_frontier\_size}.
 \State Ordenar $\mathcal{F}$ por costo ascendente.

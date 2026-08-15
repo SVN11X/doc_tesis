@@ -120,14 +120,14 @@ La Fig.~\ref{fig:esquema_nodos} ilustra este patrón: uno o más nodos publican 
 \begin{figure}[H]
 \centering
 \setlength{\fboxsep}{6pt}
-\shorthandoff{<>}%
-\fbox{%
+\shorthandoff{<>}
+\fbox{
 \begin{tikzpicture}[
-  >={Stealth[]},
-  nodo/.style={draw, rounded corners=2pt, minimum width=20mm, minimum height=9mm, align=center, font=\small},
-  topico/.style={draw, rounded corners=5pt, fill=gray!12, minimum width=18mm, minimum height=9mm, align=center, font=\small},
-  arista/.style={->, thick},
-  etiqueta/.style={font=\footnotesize}
+>={Stealth[]},
+nodo/.style={draw, rounded corners=2pt, minimum width=20mm, minimum height=9mm, align=center, font=\small},
+topico/.style={draw, rounded corners=5pt, fill=gray!12, minimum width=18mm, minimum height=9mm, align=center, font=\small},
+arista/.style={->, thick},
+etiqueta/.style={font=\footnotesize}
 ]
 \node[nodo] (p1) {Nodo\\ publicador};
 \node[nodo, below=8mm of p1] (p2) {Nodo\\ publicador};
@@ -138,9 +138,9 @@ La Fig.~\ref{fig:esquema_nodos} ilustra este patrón: uno o más nodos publican 
 \draw[arista] (p2) -- node[etiqueta, below, sloped]{publica} (t);
 \draw[arista] (t) -- node[etiqueta, above, sloped]{se suscribe} (s1);
 \draw[arista] (t) -- node[etiqueta, below, sloped]{se suscribe} (s2);
-\end{tikzpicture}%
-}%
-\shorthandon{<>}%
+\end{tikzpicture}
+}
+\shorthandon{<>}
 
 \vspace{4pt}
 
@@ -368,7 +368,7 @@ Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error
 cuadrático entre la respuesta medida y la respuesta del modelo. La
 discretización, la cuantización del retardo y las aproximaciones numéricas
 empleadas por los scripts se documentan en el
-\ref{anx:fodt_scripts}, Ecs.~\eqref{eq:retardo_muestras}--\eqref{eq:fodt_discreto}.
+\ref{anx:fodt_scripts}.
 
 \section{Control PID}
 \label{sec:pid}
