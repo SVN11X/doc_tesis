@@ -66,6 +66,22 @@ separación entre ruedas se definan una sola vez y se reutilicen en todo el
 modelo; la estructura concreta del modelo desarrollado se presenta en el
 Capítulo~\ref{ch:implementacion}.
 
+El Algoritmo~\ref{alg:urdf_estructura} resume la organización modular de la
+descripción URDF/\texttt{xacro} desarrollada, en la que un archivo raíz
+compone el modelo a partir de módulos reutilizables que se seleccionan según
+el entorno de ejecución (hardware real o simulación).
+
+\begin{algorithm}[H]
+\caption{Estructura modular de la descripción URDF/\texttt{xacro} del robot.}
+\label{alg:urdf_estructura}
+\begin{algorithmic}[1]
+\State \textbf{Archivo raíz} (\texttt{robot.urdf.xacro}): declara los argumentos \texttt{use\_ros2\_control} y \texttt{sim\_mode}, y compone el modelo incluyendo los módulos siguientes según el entorno de ejecución.
+\State \textbf{Núcleo mecánico} (\texttt{robot\_core.xacro}): parámetros reutilizables (dimensiones y masas del chasis, radio y separación de las ruedas), materiales y los eslabones \texttt{base\_link}, \texttt{chassis}, \texttt{left\_wheel}, \texttt{right\_wheel} y \texttt{caster\_wheel} con su geometría, colisión e inercia, junto con sus articulaciones (fijas y continuas).
+\State \textbf{Sensor láser} (\texttt{lidar.xacro} / \texttt{lidar\_sim.xacro}): eslabón \texttt{laser\_frame} y su articulación fija; en simulación se añade el sensor láser de Gazebo.
+\State \textbf{Interfaz de control} (\texttt{ros2\_control.xacro} / \texttt{gazebo\_control.xacro}): interfaces de comando (velocidad) y de estado (velocidad y posición) de las ruedas, con el backend de hardware real (\texttt{diffdrive\_arduino}) o de simulación.
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Simulación robótica y Gazebo}
 \label{sec:simuladores_marco}
 
@@ -98,6 +114,41 @@ nodos se \emph{suscriben} para recibirlos. Este esquema de
 publicación--suscripción es anónimo y de muchos a muchos: cada nodo conoce
 solo el nombre y el tipo del tópico, lo que permite reemplazar un componente
 sin modificar el resto del sistema.
+
+La Fig.~\ref{fig:esquema_nodos} ilustra este patrón con un fragmento real del sistema desarrollado: el nodo del sensor láser publica el tópico \texttt{/scan}, al que se suscriben de forma independiente el nodo de SLAM y la pila de navegación, sin que el publicador conozca a sus suscriptores.
+
+\begin{figure}[H]
+\centering
+\setlength{\fboxsep}{6pt}
+\shorthandoff{<>}%
+\fbox{%
+\begin{tikzpicture}[
+  >={Stealth[]},
+  nodo/.style={draw, rounded corners=2pt, minimum width=20mm, minimum height=9mm, align=center, font=\small},
+  topico/.style={draw, rounded corners=5pt, fill=gray!12, minimum width=18mm, minimum height=9mm, align=center, font=\small},
+  arista/.style={->, thick},
+  etiqueta/.style={font=\footnotesize}
+]
+\node[nodo] (lidar) {Nodo del LIDAR\\ {\footnotesize\texttt{rplidar\_serial\_publisher}}};
+\node[topico, right=20mm of lidar] (scan) {\texttt{/scan}};
+\node[nodo, right=22mm of scan, yshift=9mm] (slam) {\texttt{slam\_toolbox}};
+\node[nodo, right=22mm of scan, yshift=-9mm] (nav) {Nav2\\ {\footnotesize(mapas de costo)}};
+\draw[arista] (lidar) -- node[etiqueta, above]{publica} (scan);
+\draw[arista] (scan) -- node[etiqueta, above, sloped]{se suscribe} (slam);
+\draw[arista] (scan) -- node[etiqueta, below, sloped]{se suscribe} (nav);
+\end{tikzpicture}%
+}%
+\shorthandon{<>}%
+
+\vspace{4pt}
+
+\caption{Fragmento del grafo de nodos: el nodo del sensor láser publica el tópico \texttt{/scan}, al que se suscriben de forma independiente \texttt{slam\_toolbox} y la navegación.}
+\label{fig:esquema_nodos}
+
+\vspace{2pt}
+
+{\footnotesize\textit{Fuente: Elaboración propia.}}
+\end{figure}
 
 La capa de transporte de \gls{ROS2} se basa en el estándar DDS (\textit{Data
 Distribution Service}), un middleware descentralizado que descubre
