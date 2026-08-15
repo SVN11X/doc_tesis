@@ -72,30 +72,13 @@ compone el modelo a partir de módulos reutilizables que se seleccionan según
 el entorno de ejecución (hardware real o simulación).
 
 \begin{algorithm}[H]
-\caption{Construcción del modelo URDF/\texttt{xacro} del robot.}
+\caption{Estructura modular de la descripción URDF/\texttt{xacro} del robot.}
 \label{alg:urdf_estructura}
 \begin{algorithmic}[1]
-\Require \texttt{sim\_mode},\ \texttt{use\_ros2\_control}
-\Procedure{DefinirRobot}{} \Comment{\texttt{robot.urdf.xacro}}
-    \State incluir \texttt{robot\_core.xacro} y \texttt{inertial\_macros.xacro}
-    \State $\mathcal{L} \gets \{\texttt{base\_link},\ \texttt{chassis},\ \texttt{left\_wheel},\ \texttt{right\_wheel},\ \texttt{caster\_wheel}\}$
-    \For{cada eslabón $\ell \in \mathcal{L}$}
-        \State definir geometría visual, colisión e inercia de $\ell$
-    \EndFor
-    \For{cada articulación $a$ (fija o continua) entre eslabones de $\mathcal{L}$}
-        \State conectar eslabón padre e hijo de $a$ y fijar su marco
-    \EndFor
-    \State definir \texttt{laser\_frame} y su articulación fija al chasis
-    \If{\texttt{sim\_mode}}
-        \State incluir \texttt{lidar\_sim.xacro},\ \texttt{gazebo\_control.xacro}
-    \Else
-        \State incluir \texttt{lidar.xacro},\ \texttt{ros2\_control.xacro}
-    \EndIf
-    \If{\texttt{use\_ros2\_control}}
-        \State declarar interfaces de las ruedas: comando (velocidad) y estado (velocidad y posición)
-    \EndIf
-    \State \Return modelo del robot
-\EndProcedure
+\State \textbf{Archivo raíz} (\texttt{robot.urdf.xacro}): argumentos e inclusión de los módulos.
+\State \textbf{Núcleo mecánico} (\texttt{robot\_core.xacro}): eslabones, articulaciones e inercias.
+\State \textbf{Sensor láser} (\texttt{lidar.xacro}): eslabón y montaje del LIDAR.
+\State \textbf{Interfaz de control} (\texttt{ros2\_control.xacro}): interfaces de comando y estado de las ruedas.
 \end{algorithmic}
 \end{algorithm}
 
@@ -538,52 +521,52 @@ configuración se detallan en la Sec.~\ref{sec:amcl_ch9}.
 
 \section{Planificación de rutas y control local}
 \label{sec:nav_marco}
- 
+
 La navegación autónoma opera sobre una representación del entorno en forma
 de rejilla de ocupación, donde cada celda clasifica el espacio como libre,
 ocupado o desconocido, y sobre mapas de costo que agregan a los obstáculos
 una zona de inflación que penaliza transitar cerca de ellos
 \citep{lavalle2006planning}.
- 
+
 El planificador global calcula una ruta desde la posición actual hasta la
 meta. El algoritmo A* \citep{hart1968astar} explora la rejilla expandiendo
 en cada paso el nodo más prometedor según la función de evaluación:
- 
+
 \begin{equation}
 f(n)=g(n)+h(n),
 \label{eq:astar}
 \end{equation}
- 
+
 \noindent donde $n$ es el nodo evaluado, $g(n)$ el costo acumulado desde el
 origen hasta $n$ y $h(n)$ una heurística que estima el costo restante hasta
 la meta; $f(n)$ es el costo total estimado de la ruta que pasa por $n$.
- 
+
 El costo acumulado se actualiza de forma incremental: al expandir el nodo
-$n$ hacia una celda sucesora $w$ (contigua a $n$),
+$n$ hacia una celda sucesora $\alpha$ (contigua a $n$),
 \begin{equation}
-g(w)=g(n)+c(n,w),
+g(\alpha)=g(n)+c(n,\alpha),
 \label{eq:astar_g}
 \end{equation}
- 
-\noindent donde $c(n,w)$ es el costo de transitar de la celda $n$ a la celda
-sucesora $w$, que combina la distancia geométrica recorrida y el costo de
+
+\noindent donde $c(n,\alpha)$ es el costo de transitar de la celda $n$ a la celda
+sucesora $\alpha$, que combina la distancia geométrica recorrida y el costo de
 ocupación que el mapa de costo asigna a la celda de destino (mayor cerca de
 los obstáculos por la zona de inflación).
- 
+
 Como heurística se emplea una distancia geométrica al objetivo, habitualmente
 la euclidiana:
 \begin{equation}
 h(n)=\lVert p(n)-p_{\mathrm{meta}}\rVert_{2},
 \label{eq:astar_h}
 \end{equation}
- 
+
 \noindent con $p(n)$ y $p_{\mathrm{meta}}$ las posiciones de la celda $n$ y de
 la meta. Esta heurística es admisible, pues cumple
 \begin{equation}
 h(n)\le h^{*}(n),
 \label{eq:astar_admisible}
 \end{equation}
- 
+
 \noindent donde $h^{*}(n)$ es el costo real mínimo restante hasta la meta. Al
 no sobreestimarlo, A* encuentra la ruta de costo mínimo expandiendo menos
 nodos que una búsqueda sin información, lo que lo hace adecuado para
