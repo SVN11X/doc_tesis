@@ -980,9 +980,11 @@ como números de metas únicas, intentos ni arribos.
 $r$ & Radio de rueda & m \\
 $D=2r$ & Diámetro de rueda (\texttt{WHEEL\_DIAMETER}) & m \\
 $b$ & Separación entre ruedas (\texttt{wheel\_separation}) & m \\
-$q_k=(x_k,y_k,\theta_k)$ & Pose del robot en el instante $k$ & m, m, rad \\
+$q_k=(x_k,y_k,\theta_k)$ & Pose del robot en el instante $k$ & m, m, rad \\ $R(\theta)$ & Matriz de rotación plana (Ec.~\eqref{eq:rotacion_plana}) & adim. \\
 $v[k]$ & Velocidad lineal del robot & m/s \\
 $\omega[k]$ & Velocidad angular del robot & rad/s \\
+$v^{\mathrm{cmd}}[k]$ & Consigna lineal del robot (Ec.~\eqref{eq:cinematica_inversa}) & m/s \\
+$\omega^{\mathrm{cmd}}[k]$ & Consigna angular del robot (Ec.~\eqref{eq:cinematica_inversa}) & rad/s \\
 $\omega_j[k]$ & Velocidad angular de rueda $j\in\{R,L\}$ & rad/s \\
 $\widehat{\omega}_j[k]$ & Velocidad angular exportada por \texttt{DiffDriveArduino}, calculada con el intervalo real $\Delta t_k$ & rad/s \\
 $\phi_j[k]$ & Ángulo acumulado de rueda $j$ & rad \\
@@ -1085,7 +1087,7 @@ $C_{\mathrm{libre}}$ & Índice de cobertura libre del mapa & \% \\
 $A_{\mathrm{libre}}$ & Área libre mapeada, calculada como $N_{\mathrm{libre}}\rho_{\mathrm{map}}^2$ & m$^2$ \\
 \midrule
 \multicolumn{3}{l}{\textit{Navegación y exploración}}\\
-$f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & No aplica \\
+$f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & No aplica \\ $n,\alpha$ & Nodo evaluado y celda sucesora en A\textsuperscript{*} & No aplica \\ $c(n,\alpha)$ & Costo de transición de $n$ a la sucesora $\alpha$ & No aplica \\ $p(n),p_{\mathrm{meta}}$ & Posiciones de la celda $n$ y de la meta & m \\ $h^{*}(n)$ & Costo real mínimo restante hasta la meta & No aplica \\
 $J_{\mathrm{DWB}}$ & Costo total del controlador local DWB & No aplica \\
 $C_c,S_c$ & Crítico $c$ del DWB y escala configurada para ese crítico & No aplica \\
 $d_o$ & Distancia al obstáculo & m \\
@@ -1094,7 +1096,7 @@ $\beta$ & Factor de decaimiento del costo (\texttt{cost\_scaling\_factor}) & 1/m
 $U(F)$ & Puntaje de costo de la frontera $F$ (heurístico, no homogéneo) & No aplica \\
 $d_{\min}^{\mathrm{world}}(F)$ & Distancia mínima calculada en coordenadas del mundo antes de aplicar el factor adicional de resolución & m \\
 $|F|$ & Contador de tamaño de la frontera; se inicializa en 1 y se incrementa por celdas vecinas incorporadas. Si no se añade ninguna, la frontera conserva tamaño 1 & celdas \\
-$\mathbf{p}_{F}^{\mathrm{impl}}$ & Centroide implementado: suma solo celdas vecinas y divide por $|F|$, que incluye la celda inicial. Para una frontera sin vecinos añadidos permanece en $(0,0)$ & m \\
+$p_{F}^{\mathrm{impl}}$ & Centroide implementado: suma solo celdas vecinas y divide por $|F|$, que incluye la celda inicial. Para una frontera sin vecinos añadidos permanece en $(0,0)$ & m \\
 $\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}); en este sistema 0.05, usada tanto en el área libre como en el costo de frontera & m/celda \\
 $w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
 $f_{\mathrm{exp}}$ & Frecuencia configurada de reevaluación del explorador (\texttt{planner\_frequency}) & Hz \\

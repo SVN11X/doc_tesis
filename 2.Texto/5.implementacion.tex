@@ -305,8 +305,8 @@ el \ref{anx:implementacion_diffdrive}.
 \State $t_k\gets\Call{TiempoActual}{}$
 \State $\Delta t_k\gets t_k-t_{\mathrm{prev}}$
 \State $t_{\mathrm{prev}}\gets t_k$
-\State $s\gets\Call{SolicitarSerial}{\texttt{e}}$
-\State $(c_L[k],c_R[k])\gets\Call{ConvertirEnteros}{s}$
+\State $\texttt{resp}\gets\Call{SolicitarSerial}{\texttt{e}}$
+\State $(c_L[k],c_R[k])\gets\Call{ConvertirEnteros}{\texttt{resp}}$
 \For{$j\in\{L,R\}$}
 \State $(\phi_j[k],\widehat{\omega}_j[k])
 \gets\Call{ActualizarEstadoRueda}{c_j[k],\Delta t_k}$
@@ -695,8 +695,8 @@ documentan en el \ref{anx:pso_detalle}.
 \For{$i=1,\ldots,N_p$}
 \State $\xi_i\sim\mathcal{U}[0,1]^3$
 \State $V_i\sim\mathcal{U}[0,1]^3$
-\State $\theta_i^{\mathrm{eval}}\gets\Call{Escalar}{\xi_i,\mathrm{modo}}$
-\State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+\State $\boldsymbol{\theta}_i^{\mathrm{eval}}\gets\Call{Escalar}{\xi_i,\mathrm{modo}}$
+\State $J_i\gets J(\boldsymbol{\theta}_i^{\mathrm{eval}})$
 \State $P_i\gets\xi_i$
 \State $J_i^{\mathrm{best}}\gets J_i$
 \EndFor
@@ -711,7 +711,7 @@ documentan en el \ref{anx:pso_detalle}.
 \label{alg:pso_bucle}
 \begin{algorithmic}[1]
 \Require Enjambre y mejor global inicializados (Alg.~\ref{alg:pso_nucleo}); generaciones $g_{\max}$; hiperparámetros de la Tabla~\ref{tab:pso_config}; modo ID o PID.
-\Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\theta^{\mathrm{out}}$.
+\Ensure Mejor costo $J^*$, posición global $G$ y parámetros $\boldsymbol{\theta}^{\mathrm{out}}$.
 \For{$g=1,\ldots,g_{\max}$}
 \State $w_{\mathrm{in}}^{g}
 \gets\Call{CalcularInercia}{g,g_{\max}}$
@@ -722,9 +722,9 @@ documentan en el \ref{anx:pso_detalle}.
 {V_i,\xi_i,P_i,G,w_{\mathrm{in}}^{g},
 c_1,c_2,\chi,\rho_1,\rho_2}$
 \State $\xi_i\gets\Call{ActualizarPosicion}{\xi_i,V_i}$
-\State $\theta_i^{\mathrm{eval}}
+\State $\boldsymbol{\theta}_i^{\mathrm{eval}}
 \gets\Call{EscalarCandidato}{\xi_i,\mathrm{modo}}$
-\State $J_i\gets J(\theta_i^{\mathrm{eval}})$
+\State $J_i\gets J(\boldsymbol{\theta}_i^{\mathrm{eval}})$
 \If{$J_i<J_i^{\mathrm{best}}$}
 \State $J_i^{\mathrm{best}}\gets J_i$
 \State $P_i\gets\xi_i$
@@ -737,9 +737,9 @@ c_1,c_2,\chi,\rho_1,\rho_2}$
 \State $J^*\gets J_{\mathrm{new}}^*$
 \EndIf
 \EndFor
-\State $\theta^{\mathrm{out}}
+\State $\boldsymbol{\theta}^{\mathrm{out}}
 \gets\Call{EscalarSalida}{G,\mathrm{modo}}$
-\State \Return $(J^*,G,\theta^{\mathrm{out}})$
+\State \Return $(J^*,G,\boldsymbol{\theta}^{\mathrm{out}})$
 \end{algorithmic}
 \end{algorithm}
 
@@ -752,7 +752,7 @@ inercia y, para cada partícula, actualiza su velocidad combinando la inercia,
 la atracción hacia su mejor posición personal y la atracción hacia la global;
 luego actualiza su posición, reevalúa el costo y modifica los mejores personal
 y global cuando corresponde. Al finalizar, la mejor posición global se transforma en el
-vector de parámetros de salida $\theta^{\mathrm{out}}$, que corresponde al modelo
+vector de parámetros de salida $\boldsymbol{\theta}^{\mathrm{out}}$, que corresponde al modelo
 FOPDT o a las ganancias PID según el modo de ejecución.
 
 Las operaciones principales de los Alg.~\ref{alg:pso_nucleo}
@@ -975,12 +975,12 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 \State Cancelar la meta activa.
 \Else
 \State Enviar $p^*$ a \texttt{NavigateToPose} con orientación identidad.
-\State $s\gets\Call{ObtenerEstadoMeta}{}$
-\If{$s=\texttt{SUCCEEDED}$}
+\State $\texttt{estado}\gets\Call{ObtenerEstadoMeta}{}$
+\If{$\texttt{estado}=\texttt{SUCCEEDED}$}
 \State Programar una nueva planificación.
-\ElsIf{$s=\texttt{ABORTED}$}
+\ElsIf{$\texttt{estado}=\texttt{ABORTED}$}
 \State $B\gets B\cup\{p^*\}$
-\ElsIf{$s=\texttt{CANCELED}$}
+\ElsIf{$\texttt{estado}=\texttt{CANCELED}$}
 \State Conservar $B$ sin cambios.
 \EndIf
 \EndIf
