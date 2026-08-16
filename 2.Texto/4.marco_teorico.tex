@@ -579,14 +579,14 @@ de aceleración del robot, simula hacia adelante las trayectorias asociadas a
 cada candidato y las evalúa mediante una suma ponderada de criterios:
 
 \begin{equation}
-J_{\mathrm{vd}}(v,\omega)
+J_{\mathrm{DWB}}(v,\omega)
 =
 \sum_{c\in\mathcal{C}}
 S_c\,C_c(v,\omega),
 \label{eq:costo_ctrl_local}
 \end{equation}
 
-\noindent donde $J_{\mathrm{vd}}(v,\omega)$ es el puntaje total de una
+\noindent donde $J_{\mathrm{DWB}}(v,\omega)$ es el puntaje total de una
 trayectoria candidata con velocidades lineal $v$ y angular $\omega$;
 $\mathcal{C}$ es el conjunto de criterios de evaluación, tales como
 proximidad a obstáculos, alineación con la ruta y avance hacia la meta,

@@ -532,7 +532,7 @@ Número de partículas del enjambre $N_p$ & \multicolumn{2}{c}{50} \\
 Generaciones $g_{\max}$ & \multicolumn{2}{c}{150} \\
 Coeficientes $c_1=c_2$ & \multicolumn{2}{c}{2.05} \\
 Factor de constricción $\chi$ & \multicolumn{2}{c}{0.7298} \\
-Cota inferior $X_{\min}$ & \multicolumn{2}{c}{$10^{-4}$} \\
+Cota inferior $\xi_{\min}$ & \multicolumn{2}{c}{$10^{-4}$} \\
 Tratamiento del costo & MSE con penalización $10^{6}$ si $\tau<0.01$~s o la respuesta contiene valores no finitos & MSE y sobreimpulso con $(w_{\mathrm{mse}},w_{\mathrm{OS}})=(1.0,3.0)$; penalización $10^{6}$ si la simulación genera una excepción o la respuesta contiene valores no finitos \\
 Entrada o referencia & Escalón PWM $=143$ & Referencia obtenida del promedio de la respuesta en lazo abierto ($t\geq7$~s), tabulada a 0.1~s e interpolada linealmente a $T_{\mathrm{sim}}$ \\
 \bottomrule
@@ -915,7 +915,7 @@ $50<p<230$; las celdas restantes se clasifican como ocupadas y no participan
 en el cálculo del índice de cobertura. Las diferencias de lectura y redondeo
 entre los distintos scripts de análisis se originan en esta clasificación.
 
-\noindent El script de análisis \path{test/slam/analizar_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_M=0.05$~m/celda y redondea el resultado a dos decimales.
+\noindent El script de análisis \path{test/slam/analizar_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_{\mathrm{map}}=0.05$~m/celda y redondea el resultado a dos decimales.
 
 \subsection{Comparación cualitativa de mapas}
 
@@ -1004,9 +1004,9 @@ $\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lect
 \midrule
 \multicolumn{3}{l}{\textit{Conversión y control de firmware}}\\
 $m_j^{\mathrm{int}}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[k-1]$, almacenada en \texttt{PrevInput} & ticks/frame \\
-$m_j^{cmd}[k]$ & Referencia de velocidad de rueda enviada al firmware & ticks/frame \\
-$v_j^{cmd}[k]$ & Velocidad lineal de rueda comandada & m/s \\
-$\omega_j^{cmd}[k]$ & Velocidad angular de rueda comandada & rad/s \\
+$m_j^{\mathrm{cmd}}[k]$ & Referencia entera en ticks/frame enviada al firmware; \texttt{DiffDriveArduino} la genera al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ (conversión descrita en el \ref{anx:implementacion_diffdrive}) & ticks/frame \\
+$v_j^{\mathrm{cmd}}[k]$ & Velocidad lineal de rueda comandada & m/s \\
+$\omega_j^{\mathrm{cmd}}[k]$ & Velocidad angular de rueda comandada & rad/s \\
 $u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FOPDT & PWM \\
 $e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & ticks/frame \\
 $e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta &
@@ -1019,7 +1019,7 @@ $I_j^{\mathrm{int}}[k]$ & Término integral acumulado de la rueda $j$, almacenad
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
-$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $m_{j,\mathrm{ROS}}^{\mathrm{cmd}}[k]$ & Referencia entera generada por \texttt{DiffDriveArduino} al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ a ticks/frame (conversión descrita en el \ref{anx:implementacion_diffdrive}) & ticks/frame \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado & ticks/frame \\
+$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado & ticks/frame \\
 \midrule
 \multicolumn{3}{l}{\textit{Identificación FOPDT}}\\
 $s$ & Variable compleja de Laplace & s$^{-1}$ \\
@@ -1036,7 +1036,7 @@ $\hat{v}_j[k]$ & Velocidad lineal estimada por el modelo de la rueda $j$ &
 m/s \\
 $v_j^{\mathrm{med}}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto &
 m/s \\
-$\mathrm{e}$ & Número de Euler & No aplica \\ $v_j^{\mathrm{filt}}[k]$ & Velocidad medida tras el filtro uniforme centrado & m/s \\ $q$ & Desplazamiento entero respecto de la muestra central en el filtro uniforme & muestras \\ \midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}}\\ $\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\ $L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ & s \\ $K_{m,j}^{\mathrm{norm}}$ & Ganancia de planta normalizada por el PWM nominal ($K_{m,j}^{\mathrm{norm}}=143\,K_{m,j}$) & m/s \\ $K_{c,j}'$ & Ganancia de la forma serie (interactuante) de Lambda & esc.\ script \\ $T_{i,j}',\,T_{d,j}'$ & Tiempos integral y derivativo de la forma serie & s \\ $K_{p,j}^{\mathrm{std}},\,K_{i,j}^{\mathrm{std}},\,K_{d,j}^{\mathrm{std}}$ & Ganancias de la forma paralela estándar de Lambda & esc.\ script \\ $T_{i,j}^{\mathrm{std}},\,T_{d,j}^{\mathrm{std}}$ & Tiempos integral y derivativo equivalentes de la forma estándar & s \\ $f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ & esc.\ script \\ $K_{p,j}^{\mathrm{fw}},\,K_{d,j}^{\mathrm{fw}},\,K_{i,j}^{\mathrm{fw}}$ & Ganancias Lambda expresadas en la escala de firmware del script & esc.\ fw \\
+$\mathrm{e}$ & Número de Euler & No aplica \\ $v_j^{\mathrm{filt}}[k]$ & Velocidad medida tras el filtro uniforme centrado & m/s \\ \midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}}\\ $\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\ $L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ & s \\ $K_{m,j}^{\mathrm{norm}}$ & Ganancia de planta normalizada por el PWM nominal ($K_{m,j}^{\mathrm{norm}}=143\,K_{m,j}$) & m/s \\ $K_{c,j}'$ & Ganancia de la forma serie (interactuante) de Lambda & esc.\ script \\ $T_{i,j}',\,T_{d,j}'$ & Tiempos integral y derivativo de la forma serie & s \\ $K_{p,j}^{\mathrm{std}},\,K_{i,j}^{\mathrm{std}},\,K_{d,j}^{\mathrm{std}}$ & Ganancias de la forma paralela estándar de Lambda & esc.\ script \\ $T_{i,j}^{\mathrm{std}},\,T_{d,j}^{\mathrm{std}}$ & Tiempos integral y derivativo equivalentes de la forma estándar & s \\ $f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ & esc.\ script \\ $K_{p,j}^{\mathrm{fw}},\,K_{d,j}^{\mathrm{fw}},\,K_{i,j}^{\mathrm{fw}}$ & Ganancias Lambda expresadas en la escala de firmware del script & esc.\ fw \\
 \midrule
 \multicolumn{3}{l}{\textit{Optimización por enjambre (PSO)}}\\
 $\xi_{i,d},V_{i,d}$ & Posición y velocidad de búsqueda de la partícula $i$, dimensión $d$ & adim. \\
@@ -1082,8 +1082,7 @@ celdas \\
 $N_{\mathrm{desconocido}}$ & Número de celdas clasificadas como
 desconocidas & celdas \\
 $C_{\mathrm{libre}}$ & Índice de cobertura libre del mapa & \% \\
-$A_{\mathrm{libre}}$ & Área libre mapeada, calculada como $N_{\mathrm{libre}}\rho_M^2$ & m$^2$ \\
-$\rho_M$ & Resolución utilizada para convertir celdas del mapa en área; \texttt{run\_explore.sh} usa el valor fijo 0.05 & m/celda \\
+$A_{\mathrm{libre}}$ & Área libre mapeada, calculada como $N_{\mathrm{libre}}\rho_{\mathrm{map}}^2$ & m$^2$ \\
 \midrule
 \multicolumn{3}{l}{\textit{Navegación y exploración}}\\
 $f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & No aplica \\
@@ -1096,7 +1095,7 @@ $U(F)$ & Puntaje de costo de la frontera $F$ (heurístico, no homogéneo) & No a
 $d_{\min}^{\mathrm{world}}(F)$ & Distancia mínima calculada en coordenadas del mundo antes de aplicar el factor adicional de resolución & m \\
 $|F|$ & Contador de tamaño de la frontera; se inicializa en 1 y se incrementa por celdas vecinas incorporadas. Si no se añade ninguna, la frontera conserva tamaño 1 & celdas \\
 $\mathbf{p}_{F}^{\mathrm{impl}}$ & Centroide implementado: suma solo celdas vecinas y divide por $|F|$, que incluye la celda inicial. Para una frontera sin vecinos añadidos permanece en $(0,0)$ & m \\
-$\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}) & m/celda \\
+$\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}); en este sistema 0.05, usada tanto en el área libre como en el costo de frontera & m/celda \\
 $w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
 $f_{\mathrm{exp}}$ & Frecuencia configurada de reevaluación del explorador (\texttt{planner\_frequency}) & Hz \\
 $T_{\mathrm{exp,sched}}$ & Período entero del temporizador del explorador; para 0.3~Hz vale 3333~ms & s \\

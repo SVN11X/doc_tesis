@@ -427,33 +427,36 @@ regulares en el microcontrolador. Por ello la ley se implementa en tiempo
 discreto, con una forma incremental y derivada sobre la medición. El incremento
 de control, la actualización del integrador y la salida saturada se resumen
 como:
+
 \begin{align*}
-\Delta u_j[k]
+\Delta u_j^{\mathrm{long}}[k]
 &=
 \frac{
-K_{p,j}e_j[k]
+K_{p,j}e_j^{\mathrm{db}}[k]
 -
-K_{d,j}\bigl(m_j[k]-m_j[k-1]\bigr)
+K_{d,j}\bigl(m_j^{\mathrm{int}}[k]-m_j^{\mathrm{int}}[k-1]\bigr)
 +
-I_j[k]
+I_j^{\mathrm{int}}[k]
 }{
 K_o
 },\\
-I_j[k+1]
+I_j^{\mathrm{int}}[k+1]
 &=
-I_j[k]+K_{i,j}e_j[k],\\
+I_j^{\mathrm{int}}[k]+K_{i,j}e_j^{\mathrm{db}}[k],\\
 u_j[k]
 &=
 \operatorname{sat}_{[-255,255]}
-\bigl(u_j[k-1]+\Delta u_j[k]\bigr).
+\bigl(u_j[k-1]+\Delta u_j^{\mathrm{long}}[k]\bigr).
 \end{align*}
+
 \noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias proporcional,
-integral y derivativa discretas de la rueda $j$; $e_j[k]$ es el error discreto
-de velocidad; $m_j[k]$ la medición de velocidad en la escala interna del
-firmware; $I_j[k]$ el estado integral, que acumula $K_{i,j}e_j[k]$ en cada
-ciclo; $\Delta u_j[k]$ el incremento de control; $u_j[k]$ la salida acumulada;
-$K_o$ el divisor de escalamiento de la salida, común a ambas ruedas; y
-$\operatorname{sat}_{[-255,255]}(\cdot)$ la saturación al intervalo PWM
+integral y derivativa discretas de la rueda $j$; $e_j^{\mathrm{db}}[k]$ es el
+error discreto de velocidad tras la banda muerta; $m_j^{\mathrm{int}}[k]$ la
+medición de velocidad en la escala interna del firmware; $I_j^{\mathrm{int}}[k]$
+el estado integral, que acumula $K_{i,j}e_j^{\mathrm{db}}[k]$ en cada ciclo;
+$\Delta u_j^{\mathrm{long}}[k]$ el incremento de control; $u_j[k]$ la salida
+acumulada saturada; $K_o$ el divisor de escalamiento de la salida, común a ambas
+ruedas; y $\operatorname{sat}_{[-255,255]}(\cdot)$ la saturación al intervalo PWM
 permitido.
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
