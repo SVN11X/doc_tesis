@@ -1024,8 +1024,8 @@ $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$
 $\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado & ticks/frame \\
 \midrule
 \multicolumn{3}{l}{\textit{Identificación FOPDT}}\\
-$s$ & Variable compleja de Laplace & s$^{-1}$ \\
-$G_j(s)$ & Función de transferencia FOPDT de la rueda $j\in\{R,L\}$ & (m/s)/PWM \\
+$S$ & Variable compleja de Laplace (en mayúscula para no confundirla con el segundo, s) & No aplica \\
+$G_j(S)$ & Función de transferencia FOPDT de la rueda $j\in\{R,L\}$ & (m/s)/PWM \\
 $K_{m,j}$ & Ganancia estática del modelo de la rueda $j$ &
 (m/s)/PWM \\
 $\tau_j$ & Constante de tiempo del modelo de la rueda $j$ & s \\

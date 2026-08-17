@@ -351,18 +351,20 @@ identifica, para cada rueda, una estructura de primer orden con retardo FOPDT
 ante un escalón de \gls{PWM} \citep{maxim2023fopdt}:
 
 \begin{equation}
-G_j(s)
+G_j(S)
 =
-\frac{K_{m,j}}{1+\tau_j s}\,
-\mathrm{e}^{-L_{d,j}s},
+\frac{K_{m,j}}{1+\tau_j S}\,
+\mathrm{e}^{-L_{d,j}S},
 \qquad j\in\{R,L\}.
 \label{eq:fodt}
 \end{equation}
 
-\noindent donde $G_j(s)$ es la función de transferencia identificada para la
-rueda $j$, $K_{m,j}$ la ganancia estática, $\tau_j$ la constante
-de tiempo (s) y $s$ la variable de Laplace (s$^{-1}$); $L_{d,j}$ corresponde
-al retardo definido en la convención inicial.
+\noindent donde $G_j(S)$ es la función de transferencia identificada para la
+rueda $j$, $K_{m,j}$ la ganancia estática [(m/s)/PWM], $\tau_j$ la constante
+de tiempo (s) y $L_{d,j}$ el retardo puro o tiempo muerto (s). La variable
+compleja de Laplace se denota con mayúscula, $S$, para distinguirla a simple
+vista del segundo (s), unidad de tiempo escrita en redonda; los productos
+$\tau_j S$ y $L_{d,j}\,S$ son adimensionales.
 
 Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error
 cuadrático entre la respuesta medida y la respuesta del modelo. La
