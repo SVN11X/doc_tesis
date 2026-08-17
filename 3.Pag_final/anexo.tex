@@ -907,15 +907,21 @@ El script define \texttt{TOLERANCIA\_SIM=0.25}~m y \texttt{TOLERANCIA\_REAL=0.22
 
 \subsection{Procedencia de los indicadores de mapeo}
 
-\noindent La clasificación de celdas empleada en la
-Ec.~\eqref{eq:cobertura_libre} se realiza sobre la imagen PGM del mapa de
-ocupación. Siendo $M$ dicha imagen y $p$ la intensidad de cada celda, se
-consideran libres las celdas con $p\geq230$ y desconocidas las celdas con
-$50<p<230$; las celdas restantes se clasifican como ocupadas y no participan
-en el cálculo del índice de cobertura. Las diferencias de lectura y redondeo
-entre los distintos scripts de análisis se originan en esta clasificación.
+La clasificación de celdas empleada en la
+Ec.~\eqref{eq:cobertura_libre} se realiza sobre la imagen PGM del mapa de ocupación. ocupación. Siendo $M$ el conjunto de intensidades $p$ de las celdas de dicha
+imagen PGM, los conteos empleados en la Ec.~\eqref{eq:cobertura_libre} se
+obtienen mediante la función indicadora $\mathbf{1}[\cdot]$, que vale $1$ cuando
+la condición entre corchetes se cumple y $0$ en caso contrario:
+\begin{equation}
+N_{\mathrm{libre}}=\sum_{p\in M}\mathbf{1}\!\left[p\geq230\right],
+\qquad
+N_{\mathrm{desconocido}}=\sum_{p\in M}\mathbf{1}\!\left[50<p<230\right].
+\label{eq:conteos_cobertura}
+\end{equation}
+Las celdas restantes ($p\leq50$) se clasifican como ocupadas y no participan
+en el cálculo del índice de cobertura.
 
-\noindent El script de análisis \path{test/slam/analizar_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_{\mathrm{map}}=0.05$~m/celda y redondea el resultado a dos decimales.
+Las diferencias de lectura y redondeo entre los distintos scripts de análisis se originan en esta clasificación. El script de análisis \path{test/slam/analizar_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_{\mathrm{map}}=0.05$~m/celda y redondea el resultado a dos decimales.
 
 \subsection{Comparación cualitativa de mapas}
 
@@ -957,6 +963,64 @@ Además, los resúmenes guardados presentan un contador nulo de metas generadas
 junto con coincidencias de éxito y fallo. En consecuencia, estos contadores se
 mantienen solo como salidas diagnósticas del script y no deben interpretarse
 como números de metas únicas, intentos ni arribos.
+
+\section{Convención de rutas y localización del software}
+\label{anx:rutas_software}
+
+Las rutas de código citadas en la tesis son relativas al directorio raíz
+\path{src/} del repositorio. En el cuerpo del documento se indica la ruta
+completa en la primera mención relevante y, en las menciones posteriores, se
+conserva solo el nombre del archivo cuando no existe ambigüedad. Las copias
+almacenadas bajo \path{test/sesiones_mapeo/} corresponden a instantáneas de
+cada ensayo; salvo indicación expresa, la configuración fuente es la ubicada
+en \path{articubot_one/config/}.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{p{4.5cm} p{4.0cm} p{5.0cm}}
+\caption{Localización y función de los archivos citados en el documento.}
+\label{tab:rutas_software}\\
+\toprule
+\textbf{Archivo} & \textbf{Directorio padre relativo a \texttt{src/}} & \textbf{Contexto de uso} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Archivo} & \textbf{Directorio padre relativo a \texttt{src/}} & \textbf{Contexto de uso} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\path{robot.urdf.xacro} & \path{articubot_one/description/} & Modelo principal URDF/\texttt{xacro}. \\
+\path{robot_core.xacro} & \path{articubot_one/description/} & Geometría, eslabones y articulaciones. \\
+\path{lidar.xacro}, \path{lidar_sim.xacro} & \path{articubot_one/description/} & Sensor real y modelo simulado del LiDAR. \\
+\path{gazebo_control.xacro} & \path{articubot_one/description/} & Backend alternativo no seleccionado. \\
+\path{ros2_control.xacro} & \path{articubot_one/description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
+\path{launch_robot.launch.py} & \path{articubot_one/launch/} & Arranque del robot físico y controladores. \\
+\path{launch_sim.launch.py} & \path{articubot_one/launch/} & Arranque del gemelo digital en Gazebo. \\
+\path{my_controllers.yaml} & \path{articubot_one/config/} & Geometría y límites del controlador diferencial. \\
+\path{nav2_params.yaml}, \path{nav2_params_sim.yaml} & \path{articubot_one/config/} & Configuración Nav2 real y simulada. \\
+\path{mapper_params_online_async.yaml}, \path{mapper_params_online_async_sim.yaml} & \path{articubot_one/config/} & Configuración de \texttt{slam\_toolbox} real y simulada. \\
+\path{explore.yaml} & \path{articubot_one/config/} & Parámetros del explorador de fronteras. \\
+\path{obstacles.world} & \path{articubot_one/worlds/} & Mundo empleado en las pruebas de mapeo simulado. \\
+\path{ROSArduinoBridge.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Ciclo principal y protocolo serial del firmware. \\
+\path{commands.h} & \path{arduino_firmware/ROSArduinoBridge/} & Identificadores de comandos seriales. \\
+\path{diff_controller.h} & \path{arduino_firmware/ROSArduinoBridge/} & PID discreto y ganancias finales. \\
+\path{encoder_driver.h}, \path{encoder_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Lectura de encoders. \\
+\path{motor_driver.h}, \path{motor_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Accionamiento del L298N. \\
+\path{ControlLazoAbierto.py} & \path{arduino_firmware/pid_config/} & Captura de la respuesta en lazo abierto. \\
+\path{ControlLazoCerrado.py} & \path{arduino_firmware/pid_config/} & Captura experimental en lazo cerrado. \\
+\path{SintonizacionAutomatica.py} & \path{arduino_firmware/pid_config/} & Identificación FOPDT y búsqueda PSO inicial. \\
+\path{SintonizacionLambda.py} & \path{arduino_firmware/pid_config/} & Comparación simulada con sintonía Lambda. \\
+\path{pyPso.py} & \path{arduino_firmware/pid_config/} & Implementación de la clase PSO. \\
+\path{resultados_pso.tex}, \path{resultados_lambda.tex} & \path{arduino_firmware/pid_config/} & Salidas LaTeX generadas por los scripts de sintonización. \\
+\path{prueba_giro.py} & \path{test/prueba_giro/} & Ejecución de la prueba angular en hardware. \\
+\path{prueba_giro_sim.py} & \path{test/prueba_giro_sim/} & Ejecución de la prueba angular en simulación. \\
+\path{run_explore.sh} & \path{test/exploracion/} & Ejecución y registro de exploración. \\
+\path{run_prueba_nav.sh} & \path{test/navegacion/} & Protocolo por escenarios de navegación. \\
+\path{analizar_slam.py} & \path{test/slam/} & Cálculo de métricas de mapeo. \\
+\end{longtable}
+\endgroup
 
 \section{Nomenclatura}
 \label{anx:nomenclatura}
@@ -1076,7 +1140,7 @@ medida & \% \\
 $\Delta\theta_{360}$ & Referencia nominal fija de $360^\circ$ utilizada por los scripts de giro & grados \\
 $\Delta\theta_{\mathrm{obs}}$ & Giro observado: acumulación de \texttt{/odom} en simulación o medición física en hardware real & grados \\
 $E_{\theta,360}$ & Desviación angular normalizada respecto de $\Delta\theta_{360}$; no corresponde a error odométrico angular ni a seguimiento de una consigna efectiva sin limitación & \% \\
-$M$ & Imagen PGM o conjunto de celdas del mapa analizado & No aplica \\
+$M$ & Conjunto de intensidades de celda de la imagen PGM del mapa analizado & No aplica \\
 $p$ & Intensidad de una celda de la imagen PGM & nivel de gris \\
 $\mathbf{1}[\cdot]$ & Función indicadora de una condición lógica & adim. \\
 $N_{\mathrm{libre}}$ & Número de celdas clasificadas como espacio libre &
@@ -1113,62 +1177,5 @@ $N^{-1}\sum_{k=1}^{N}\varepsilon_j[k]^2$
 \end{longtable}
 }
 
-\section{Convención de rutas y localización del software}
-\label{anx:rutas_software}
-
-Las rutas de código citadas en la tesis son relativas al directorio raíz
-\path{src/} del repositorio. En el cuerpo del documento se indica la ruta
-completa en la primera mención relevante y, en las menciones posteriores, se
-conserva solo el nombre del archivo cuando no existe ambigüedad. Las copias
-almacenadas bajo \path{test/sesiones_mapeo/} corresponden a instantáneas de
-cada ensayo; salvo indicación expresa, la configuración fuente es la ubicada
-en \path{articubot_one/config/}.
-
-\begingroup
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{longtable}{p{4.5cm} p{4.0cm} p{5.0cm}}
-\caption{Localización y función de los archivos citados en el documento.}
-\label{tab:rutas_software}\\
-\toprule
-\textbf{Archivo} & \textbf{Directorio padre relativo a \texttt{src/}} & \textbf{Contexto de uso} \\
-\midrule
-\endfirsthead
-\toprule
-\textbf{Archivo} & \textbf{Directorio padre relativo a \texttt{src/}} & \textbf{Contexto de uso} \\
-\midrule
-\endhead
-\bottomrule
-\endfoot
-\path{robot.urdf.xacro} & \path{articubot_one/description/} & Modelo principal URDF/\texttt{xacro}. \\
-\path{robot_core.xacro} & \path{articubot_one/description/} & Geometría, eslabones y articulaciones. \\
-\path{lidar.xacro}, \path{lidar_sim.xacro} & \path{articubot_one/description/} & Sensor real y modelo simulado del LiDAR. \\
-\path{gazebo_control.xacro} & \path{articubot_one/description/} & Backend alternativo no seleccionado. \\
-\path{ros2_control.xacro} & \path{articubot_one/description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
-\path{launch_robot.launch.py} & \path{articubot_one/launch/} & Arranque del robot físico y controladores. \\
-\path{launch_sim.launch.py} & \path{articubot_one/launch/} & Arranque del gemelo digital en Gazebo. \\
-\path{my_controllers.yaml} & \path{articubot_one/config/} & Geometría y límites del controlador diferencial. \\
-\path{nav2_params.yaml}, \path{nav2_params_sim.yaml} & \path{articubot_one/config/} & Configuración Nav2 real y simulada. \\
-\path{mapper_params_online_async.yaml}, \path{mapper_params_online_async_sim.yaml} & \path{articubot_one/config/} & Configuración de \texttt{slam\_toolbox} real y simulada. \\
-\path{explore.yaml} & \path{articubot_one/config/} & Parámetros del explorador de fronteras. \\
-\path{obstacles.world} & \path{articubot_one/worlds/} & Mundo empleado en las pruebas de mapeo simulado. \\
-\path{ROSArduinoBridge.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Ciclo principal y protocolo serial del firmware. \\
-\path{commands.h} & \path{arduino_firmware/ROSArduinoBridge/} & Identificadores de comandos seriales. \\
-\path{diff_controller.h} & \path{arduino_firmware/ROSArduinoBridge/} & PID discreto y ganancias finales. \\
-\path{encoder_driver.h}, \path{encoder_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Lectura de encoders. \\
-\path{motor_driver.h}, \path{motor_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Accionamiento del L298N. \\
-\path{ControlLazoAbierto.py} & \path{arduino_firmware/pid_config/} & Captura de la respuesta en lazo abierto. \\
-\path{ControlLazoCerrado.py} & \path{arduino_firmware/pid_config/} & Captura experimental en lazo cerrado. \\
-\path{SintonizacionAutomatica.py} & \path{arduino_firmware/pid_config/} & Identificación FOPDT y búsqueda PSO inicial. \\
-\path{SintonizacionLambda.py} & \path{arduino_firmware/pid_config/} & Comparación simulada con sintonía Lambda. \\
-\path{pyPso.py} & \path{arduino_firmware/pid_config/} & Implementación de la clase PSO. \\
-\path{resultados_pso.tex}, \path{resultados_lambda.tex} & \path{arduino_firmware/pid_config/} & Salidas LaTeX generadas por los scripts de sintonización. \\
-\path{prueba_giro.py} & \path{test/prueba_giro/} & Ejecución de la prueba angular en hardware. \\
-\path{prueba_giro_sim.py} & \path{test/prueba_giro_sim/} & Ejecución de la prueba angular en simulación. \\
-\path{run_explore.sh} & \path{test/exploracion/} & Ejecución y registro de exploración. \\
-\path{run_prueba_nav.sh} & \path{test/navegacion/} & Protocolo por escenarios de navegación. \\
-\path{analizar_slam.py} & \path{test/slam/} & Cálculo de métricas de mapeo. \\
-\end{longtable}
-\endgroup
 
 \end{appendices}
