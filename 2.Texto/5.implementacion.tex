@@ -327,7 +327,7 @@ el \ref{anx:implementacion_diffdrive}.
 \end{algorithmic}
 \end{algorithm}
 
-El algoritmo distingue una fase de inicialización, ejecutada una sola vez, y un
+El Alg. \ref{alg:ros2control_cycle} distingue una fase de inicialización, ejecutada una sola vez, y un
 ciclo permanente. En la inicialización se registra el instante inicial, se leen
 los parámetros de rueda y comunicación, y se calcula el paso angular por tick
 $\delta\phi=2\pi/N_e$, que traduce cada conteo de encoder en un incremento de
@@ -513,7 +513,7 @@ Las ganancias se aplican en la escala interna del firmware.
 \end{algorithmic}
 \end{algorithm}
 
-El algoritmo reúne dos rutinas. \texttt{resetPID} deja el controlador en un
+El Alg. \ref{alg:pid_firmware} reúne dos rutinas. \texttt{resetPID} deja el controlador en un
 estado conocido: recarga las ganancias por defecto de ambas ruedas, lee los
 conteos actuales de encoder y pone en cero la salida acumulada, la medición
 previa y el término integral. \texttt{updatePID} se ejecuta en cada ciclo de
@@ -662,7 +662,7 @@ para $j\in\{R,L\}$.
 \end{algorithmic}
 \end{algorithm}
 
-El algoritmo mantiene un muestreo de período fijo $T_{\mathrm{cap}}$: en cada
+El Alg. \ref{alg:captura_lazo_abierto} mantiene un muestreo de período fijo $T_{\mathrm{cap}}$: en cada
 paso aplica el PWM correspondiente (cero antes del instante $t_{\mathrm{step}}$
 y el escalón $u_{\mathrm{step}}$ a partir de él), lee los encoders, calcula la
 velocidad de cada rueda a partir del incremento de conteo y registra el par
@@ -823,8 +823,7 @@ El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, en modo 
 
 Las configuraciones de hardware y simulación comparten la estructura del
 algoritmo, pero emplean parámetros específicos para cada entorno; los valores
-cargados se consolidan en la Tabla~\ref{tab:slam_params_ch9} del
-\ref{anx:nav2_slam_config}.
+cargados se consolidan en la Tabla~\ref{tab:slam_params_ch9}.
 
 \subsection{Localización sobre un mapa conocido con AMCL}
 \label{sec:amcl_ch9}
@@ -932,7 +931,7 @@ El árbol ejecutado replanifica la ruta de forma periódica y aplica
 recuperaciones en dos niveles: ante fallos de planificación o seguimiento
 actúa sobre el costmap correspondiente; si falla la navegación completa,
 ejecuta una secuencia de recuperación configurada, detallada en la
-Tabla~\ref{tab:recovery_ch9} del \ref{anx:recovery_nav2}.
+Tabla~\ref{tab:recovery_ch9}.
 
 \subsection{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
@@ -989,7 +988,7 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 \end{algorithmic}
 \end{algorithm}
 
-El algoritmo arranca con una planificación inicial y programa planificaciones
+El Alg. \ref{alg:exploracion_fronteras} arranca con una planificación inicial y programa planificaciones
 periódicas; a partir de ahí, cada planificación repite el mismo ciclo mientras la
 exploración esté activa. Primero obtiene la pose del robot y detecta, sobre el
 costmap global, las fronteras entre el espacio libre conocido y las zonas no
@@ -1033,4 +1032,4 @@ capacidades del prototipo físico.
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_ch9}
 
-La implementación integra componentes accesibles: plataforma diferencial, encoders, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1, con una arquitectura de software basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permitió validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el hardware real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PID de ruedas —sintonizado mediante PSO y refinamiento experimental— y publicación de odometría, con auto-detención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en hardware real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.
+La implementación integra componentes accesibles: plataforma diferencial, encoders, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1, con una arquitectura de software basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permitió validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el hardware real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el plugin \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PID de ruedas (sintonizado mediante PSO y refinamiento experimental) y publicación de odometría, con auto-detención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en hardware real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.

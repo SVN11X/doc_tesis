@@ -274,8 +274,7 @@ El contraste cualitativo de los mapas obtenidos se documenta en la Tabla~\ref{ta
 \label{sec:resultados_nav2}
 
 La navegación dirigida se evalúa funcionalmente, mientras que la exploración
-se analiza mediante cobertura y área mapeada; el protocolo de evaluación por
-escenarios, no ejecutado, se describe en el \ref{anx:protocolo_nav}.
+se analiza mediante cobertura y área mapeada.
 
 La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada por iteración se consignan en la Tabla~\ref{tab:slam_real_indicadores}, calculándose el área mediante la Ec.~\eqref{eq:area_libre_mapeada}. La exploración activa promedió 1.1~min por iteración ($\sigma=0.6$) y no requirió intervenciones manuales. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico.
 
@@ -289,9 +288,9 @@ real, mientras que la cobertura alcanzada se cuantifica en la
 Tabla~\ref{tab:slam_real_indicadores}.
 
 \begin{utemMultiFigurePropia}{Ejecución de navegación autónoma y exploración por fronteras sobre hardware real: avance desde un mapa parcial hasta una representación de mayor cobertura, con la ruta planificada por Nav2 (trazo verde).}{fig:nav_exploracion_real}
-\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Mapa parcial en una etapa temprana de la exploración.}
+\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Mapa parcial en una etapa temprana de la exploración.}
 \hfill
-\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Mayor cobertura con ruta planificada hacia la frontera seleccionada.}
+\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Mayor cobertura con ruta planificada hacia la frontera seleccionada.}
 \end{utemMultiFigurePropia}
 
 La mejor iteración alcanzó un índice de cobertura libre de 82.9\%. El
@@ -300,10 +299,8 @@ radio de inflación de 0.15~m aplicado en un recinto reducido
 ensayos verifican la integración funcional y cuantifican la cobertura, pero
 no permiten establecer una tasa válida de éxito para metas de navegación
 dirigida. La finalización correcta de las cinco iteraciones se refiere a la
-generación de un mapa válido, no a una tasa de metas cumplidas: los
-contadores de metas del explorador no son fiables (\ref{anx:resultados_metodologia})
-y el protocolo de navegación dirigida por escenarios no se ejecutó
-(\ref{anx:protocolo_nav}). La Tabla~\ref{tab:estado_validacion} sintetiza el
+generación de un mapa válido, no a una tasa de metas cumplidas dado que los
+contadores de metas del explorador no son fiables (\ref{anx:resultados_metodologia}). La Tabla~\ref{tab:estado_validacion} sintetiza el
 estado de validación alcanzado por cada subsistema.
 
 \begin{table}[H]

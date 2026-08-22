@@ -72,13 +72,30 @@ compone el modelo a partir de módulos reutilizables que se seleccionan según
 el entorno de ejecución (hardware real o simulación).
 
 \begin{algorithm}[H]
-\caption{Estructura modular de la descripción URDF/\texttt{xacro} del robot.}
+\caption{Construcción del modelo URDF/\texttt{xacro} del robot.}
 \label{alg:urdf_estructura}
 \begin{algorithmic}[1]
-\State \textbf{Archivo raíz} (\texttt{robot.urdf.xacro}): argumentos e inclusión de los módulos.
-\State \textbf{Núcleo mecánico} (\texttt{robot\_core.xacro}): eslabones, articulaciones e inercias.
-\State \textbf{Sensor láser} (\texttt{lidar.xacro}): eslabón y montaje del LIDAR.
-\State \textbf{Interfaz de control} (\texttt{ros2\_control.xacro}): interfaces de comando y estado de las ruedas.
+\Require \texttt{sim\_mode},\ \texttt{use\_ros2\_control}
+\Procedure{DefinirRobot}{} \Comment{\texttt{robot.urdf.xacro}}
+    \State incluir \texttt{robot\_core.xacro} y \texttt{inertial\_macros.xacro}
+    \State $\mathcal{L} \gets \{\texttt{base\_link},\ \texttt{chassis},\ \texttt{left\_wheel},\ \texttt{right\_wheel},\ \texttt{caster\_wheel}\}$
+    \For{cada eslabón $\ell \in \mathcal{L}$}
+        \State definir geometría visual, colisión e inercia de $\ell$
+    \EndFor
+    \For{cada articulación $a$ (fija o continua) entre eslabones de $\mathcal{L}$}
+        \State conectar eslabón padre e hijo de $a$ y fijar su marco
+    \EndFor
+    \State definir \texttt{laser\_frame} y su articulación fija al chasis
+    \If{\texttt{sim\_mode}}
+        \State incluir \texttt{lidar\_sim.xacro},\ \texttt{gazebo\_control.xacro}
+    \Else
+        \State incluir \texttt{lidar.xacro},\ \texttt{ros2\_control.xacro}
+    \EndIf
+    \If{\texttt{use\_ros2\_control}}
+        \State declarar interfaces de las ruedas: comando (velocidad) y estado (velocidad y posición)
+    \EndIf
+    \State \Return modelo del robot
+\EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
@@ -184,8 +201,7 @@ de costo de navegación. Sus limitaciones principales son la incapacidad de
 detectar objetos fuera del plano de barrido y la degradación ante
 superficies muy absorbentes o reflectantes. El sensor empleado en este
 trabajo, RPLidar A1, opera por triangulación con un alcance nominal de
-12~m y cobertura de 360$^\circ$ \citep{SlamtecA1Datasheet}; su selección se
-justifica en la Sec.~\ref{sec:sensores}.
+12~m y cobertura de 360$^\circ$ \citep{SlamtecA1Datasheet}.
 
 \subsection{Encoders incrementales de cuadratura}
 \label{sec:encoders_marco}
@@ -337,7 +353,7 @@ consecutivas:
 
 \noindent donde $\widehat{\omega}_j[k]$ es la velocidad angular estimada de
 la rueda $j$ (rad/s) y $\Delta t_k$ el tiempo real transcurrido entre las
-lecturas empleadas [s]. La definición por casos de $\Delta t_k$ y la
+lecturas empleadas en segundos. La definición por casos de $\Delta t_k$ y la
 secuencia de lectura ejecutada por la interfaz de hardware se desarrollan en
 el Capítulo~\ref{ch:implementacion} y en el
 \ref{anx:implementacion_diffdrive}.

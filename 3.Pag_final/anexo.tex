@@ -54,7 +54,7 @@ Tolerancia de ensamblaje & 0.2--0.4~mm \\
 
 La organización de los archivos del modelo se describe en la
 Sec.~\ref{sec:atribucion}. Como trazabilidad adicional, el lanzamiento
-\path{articubot_one/launch/launch_sim.launch.py} fija
+\texttt{articubot\_one/launch/launch\_sim.launch.py} fija
 \texttt{use\_ros2\_control=true} y \texttt{sim\_mode=true}; por ello,
 instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo
 \texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por
@@ -892,15 +892,6 @@ La Fig.~\ref{fig:anx_nav_exploracion_secuencia} muestra la secuencia completa de
 \hfill
 \addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Mayor cobertura alcanzada al cierre de la exploración.}
 \end{utemMultiFigurePropia}
-
-\subsection{Navegación autónoma con Nav2}
-\label{anx:protocolo_nav}
-
-El script de protocolo \path{test/navegacion/run_prueba_nav.sh} define tres escenarios y cinco repeticiones por escenario. En simulación envía una meta mediante la acción \texttt{NavigateToPose}; en hardware real solicita al operador que envíe la meta desde RViz. El tiempo se mide con el reloj de pared y se escribe una fila CSV por repetición. El tipo de fallo, la recuperación atribuida y el éxito de esa recuperación se ingresan manualmente por el operador; no se obtienen automáticamente del árbol de comportamiento.
-
-La clasificación del resultado utiliza coincidencias del texto producido por \texttt{ros2 action send\_goal} en simulación y mensajes del tópico de estados en hardware real. El script no almacena ni compara el UUID de la meta. En la rama de simulación, la presencia conjunta de \texttt{Goal accepted} y \texttt{Result:} se clasifica como éxito antes de comprobar las cadenas de aborto o cancelación. En la rama real, la lectura y el sondeo del tópico de estados tampoco vinculan el estado observado con la meta enviada en esa repetición. Por ello, el procedimiento actual no garantiza una asociación unívoca entre meta y resultado y no sustenta por sí solo una tasa cuantitativa de éxito.
-
-El script define \texttt{TOLERANCIA\_SIM=0.25}~m y \texttt{TOLERANCIA\_REAL=0.22}~m, pero estas variables solo se escriben como metadato en la salida LaTeX: no se transmiten a Nav2 ni se utilizan para calcular la distancia final. La configuración realmente cargada utiliza \texttt{xy\_goal\_tolerance}=0.25~m en simulación y 0.10~m en hardware, según la Tabla~\ref{tab:anx_nav2_dwb_params}. En consecuencia, la anotación de 0.22~m que produciría el script para hardware no representa la tolerancia ejecutada por el \texttt{goal\_checker}. No se entregaron resultados generados por este script; la validación cuantitativa de navegación dirigida permanece pendiente.
 
 \section{Procedencia y limitaciones de las métricas complementarias}
 \label{anx:resultados_metodologia}
