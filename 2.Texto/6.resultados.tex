@@ -109,6 +109,8 @@ Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \end{tabular}
 \end{table}
 
+Esta métrica no es un error odométrico angular aislado. Mide cuánto se aparta el giro acumulado de \texttt{/odom} al final de un ensayo de duración fija respecto de la referencia nominal de 360~grados. Lo que domina el valor es la combinación de la duración del ensayo y el límite de velocidad angular, no la deriva odométrica. Por eso la desviación en simulación supera a la de hardware, ya que la velocidad angular efectiva difiere entre ambos backends. Un giro comandado a un ángulo fijo y controlado, planteado como trabajo futuro, entregaría un error angular directo.
+
 El desglose por repetición de ambos protocolos (trayectoria rectilínea y
 protocolo angular, en simulación y hardware real) se presenta en la
 Fig.~\ref{fig:resultados_odometria_repeticiones}.
@@ -194,6 +196,12 @@ criterio de establecimiento dentro del horizonte evaluado.
 La comparación completa entre las ganancias del firmware y la referencia
 analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}, con carácter ilustrativo.
 
+La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. Esta diferencia responde a la banda muerta asimétrica del firmware, de 2~ticks/trama en la rueda izquierda y 1 en la derecha. Dentro de la banda muerta el error se fija en cero, de modo que no se acumula acción integral. La rueda izquierda ignora así un rango de error mayor y requiere una ganancia integral más alta para eliminar el error estacionario residual una vez fuera de esa banda. Este comportamiento es coherente con la respuesta obtenida con las ganancias sugeridas por PSO, en la que la rueda izquierda mantenía un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El refinamiento experimental fijó la ganancia integral izquierda para corregir ese sesgo.
+
+El PSO entregó un punto de partida heurístico para las tres ganancias. El refinamiento experimental ajustó ese punto de partida, de forma moderada en $K_p$ y $K_d$ y de forma más marcada en $K_i$, hasta lograr el seguimiento de la referencia sobre el robot real. Por tanto, el aporte del PSO fue el de una semilla de búsqueda y no el de un ajuste final validado por sí solo.
+
+El retardo identificado resultó menor que el período de captura, por lo que no introduce un desplazamiento temporal efectivo en el modelo discreto. En la práctica el modelo se comporta como uno de primer orden. El detalle se conserva en el \ref{anx:fodt_scripts}.
+
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
@@ -243,19 +251,19 @@ alcance se documentan en el \ref{anx:resultados_metodologia}.
 \small
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{ccccccc}
+\begin{tabular}{ccccc}
 \toprule
-\textbf{Iter.} & \makecell{\textbf{Dur.}\\\textbf{(min)}} & \makecell{\textbf{Dist.}\\\textbf{odom. (m)}} & \makecell{\textbf{Cobertura}\\\textbf{(\%)}} & \makecell{\textbf{Área libre}\\\textbf{(m$^2$)}} & \textbf{Nodos}\tnote{a} & \makecell{\textbf{Cierre}\\\textbf{lazo}\tnote{a}} \\
+\textbf{Iter.} & \makecell{\textbf{Dur.}\\\textbf{(min)}} & \makecell{\textbf{Dist.}\\\textbf{odom. (m)}} & \makecell{\textbf{Cobertura}\\\textbf{(\%)}} & \makecell{\textbf{Área libre}\\\textbf{(m$^2$)}} \\
 \midrule
-1 & 3.45 & 6.305 & 82.9 & 3.510 & --- & No detectado \\
-2 & \multicolumn{6}{c}{Incompleta (sin mapa)} \\
-3 & 2.16 & 3.536 & 53.5 & 3.540 & --- & No detectado \\
-4 & 2.27 & 4.144 & 54.2 & 3.478 & --- & No detectado \\
-5 & 2.50 & 3.850 & 67.1 & 3.483 & --- & No detectado \\
-6 & 2.30 & 4.066 & 53.4 & 3.478 & --- & No detectado \\
+1 & 3.45 & 6.305 & 82.9 & 3.510 \\
+2 & \multicolumn{4}{c}{Incompleta (sin mapa)} \\
+3 & 2.16 & 3.536 & 53.5 & 3.540 \\
+4 & 2.27 & 4.144 & 54.2 & 3.478 \\
+5 & 2.50 & 3.850 & 67.1 & 3.483 \\
+6 & 2.30 & 4.066 & 53.4 & 3.478 \\
 \midrule
-$\mu$ & 2.54 & 4.38 & 62.22 & 3.50 & --- & --- \\
-$\sigma$ & 0.53 & 1.10 & 12.94 & 0.03 & --- & --- \\
+$\mu$ & 2.54 & 4.38 & 62.22 & 3.50 \\
+$\sigma$ & 0.53 & 1.10 & 12.94 & 0.03 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
@@ -270,22 +278,21 @@ libre mapeada de las cinco iteraciones válidas de exploración.
 
 El contraste cualitativo de los mapas obtenidos se documenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
 
+El índice de cobertura libre se calcula sobre la imagen de ocupación completa, cuyos límites no están anclados al recinto físico. Por eso es un indicador interno relativo y no una fracción absoluta del área del recinto. Esto explica que el área libre mapeada se mantenga casi constante entre iteraciones mientras el índice de cobertura varía de forma amplia, ya que este último depende de cuántas celdas desconocidas quedan dentro de la imagen. Por su mayor estabilidad, el área libre mapeada y el resultado de las metas de la Tabla~\ref{tab:anx_explore_metas} se toman como evidencia principal de la exploración, y el índice de cobertura como indicador complementario.
+
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
 La navegación dirigida se evalúa funcionalmente, mientras que la exploración
 se analiza mediante cobertura y área mapeada.
 
-La exploración basada en fronteras se ejecutó y registró en cinco iteraciones válidas sobre el espacio interior disponible. Las métricas de cobertura y área libre mapeada por iteración se consignan en la Tabla~\ref{tab:slam_real_indicadores}, calculándose el área mediante la Ec.~\eqref{eq:area_libre_mapeada}. La exploración activa promedió 1.1~min por iteración ($\sigma=0.6$) y no requirió intervenciones manuales. El protocolo y la iteración excluida se presentan en el \ref{anx:protocolo_resultados}. Los registros muestran ejecución del explorador, publicación de comandos y desplazamiento odométrico.
+La exploración por fronteras se ejecutó de forma autónoma en cinco iteraciones válidas. El nodo explorador seleccionó fronteras y despachó metas de navegación a Nav2 mediante la acción \texttt{NavigateToPose}. Los contadores de texto de \texttt{run\_explore.sh} no distinguen metas únicas, por eso informaban cero metas generadas. Para obtener una medida fiable, cada meta se reconstruyó por su identificador único a partir del flujo de estado de la acción registrado en cada sesión, según la Tabla~\ref{tab:anx_explore_metas} del \ref{anx:protocolo_resultados}.
 
-Los registros documentan el avance desde un mapa parcial, en el que
-permanecen regiones por explorar, hasta una representación de mayor cobertura:
-el explorador selecciona una meta, Nav2 genera una ruta y el mapa se actualiza
-con la nueva información adquirida por el LIDAR. Este comportamiento respalda
-la integración funcional de exploración, navegación y SLAM. La
-Fig.~\ref{fig:nav_exploracion_real} ilustra este avance sobre el hardware
-real, mientras que la cobertura alcanzada se cuantifica en la
-Tabla~\ref{tab:slam_real_indicadores}.
+En total se generaron 60 metas de navegación. De ellas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera. El resultado predominante fue el aborto, con 54 metas abortadas y una sola meta completada con éxito. Las metas abortadas tuvieron una vida mediana de entre 20 y 61 segundos según la iteración, de modo que corresponden a intentos reales de navegación y no a reemplazos inmediatos de meta.
+
+Este patrón es coherente con el recinto reducido y el radio de inflación de 0.15~m, que dejan poco margen para completar rutas hacia fronteras cercanas a las paredes. El comportamiento se corrobora con once avisos de lista de fronteras agotada emitidos por el nodo explorador, que vacía y reintenta la lista negra. En la implementación empleada una frontera entra en la lista negra únicamente cuando su meta retorna aborto, por lo que esos avisos confirman abortos reales.
+
+En conjunto, estos registros demuestran el mecanismo autónomo completo. El explorador elige una frontera, envía la meta, Nav2 la ejecuta y el mapa crece con la información nueva del LIDAR. La baja tasa de metas completadas queda documentada como una limitación cuantificada del entorno de pruebas y no como una falla del mecanismo.
 
 \begin{utemMultiFigurePropia}{Ejecución de navegación autónoma y exploración por fronteras sobre hardware real: avance desde un mapa parcial hasta una representación de mayor cobertura, con la ruta planificada por Nav2 (trazo verde).}{fig:nav_exploracion_real}
 \addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Mapa parcial en una etapa temprana de la exploración.}
@@ -316,8 +323,8 @@ Odometría & Validada cuantitativamente & Simulación y hardware real \\
 Control PID & Evaluado mediante datos experimentales y simulación &
 Respuesta experimental graficada; las métricas de la Tabla~\ref{tab:pid_performance} provienen de simulación \\
 SLAM & Validado cuantitativamente en hardware real & Cobertura y área libre cuantificadas en cinco iteraciones válidas de exploración; alineación de paredes evaluada por inspección visual \\
-Nav2 & Verificada funcionalmente & Sin tasa de éxito por meta; véase Sec.~\ref{sec:resultados_nav2} \\
-Exploración & Verificada funcionalmente; cobertura cuantificada & Cobertura media en 5 iteraciones; véase Tabla~\ref{tab:slam_real_indicadores} \\
+Nav2 & Verificada funcionalmente; resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}); protocolo de navegación dirigida con metas fijas pendiente \\
+Exploración & Validada a nivel de meta & 60 metas autónomas generadas en 5 iteraciones, 54 abortos y 1 éxito; cobertura y área cuantificadas \\
 \bottomrule
 \end{tabular}
 \end{table}

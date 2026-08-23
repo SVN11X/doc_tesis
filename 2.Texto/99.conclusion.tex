@@ -22,11 +22,7 @@ Tabla~\ref{tab:pid_performance} corresponden a la evaluación simulada de las
 ganancias finales. Los estados internos, la temporalidad y las aproximaciones
 numéricas se documentan en los anexos de implementación y sintonización.
 
-El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en
-simulación y hardware real. En simulación se obtuvo un índice de cobertura
-libre de 95.6\%. En hardware real se obtuvieron mapas utilizables y se
-cuantificaron la cobertura libre y el área mapeada durante las iteraciones de
-exploración.
+El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. Los indicadores de cobertura libre y de área mapeada se cuantificaron sobre hardware real durante las iteraciones de exploración.
 
 La navegación con Nav2 quedó integrada mediante planificación global,
 control local, mapas de costo y acciones de recuperación. La exploración por
@@ -43,9 +39,9 @@ El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
 \item[\autoref{oe2} -- Control de bajo nivel:] \textit{Cumplido.} Se implementaron la lectura de encoders y el control PID en el firmware; la posición y velocidad de rueda se exportan mediante \texttt{DiffDriveArduino}, y la odometría se integra en \texttt{diff\_drive\_controller}.
 
-\item[\autoref{oe3} -- Mapeo y navegación:] \textit{Cumplido parcialmente.} El mapeo fue validado cuantitativamente en simulación y verificado en hardware. Nav2 quedó integrado y verificado funcionalmente, pero no se obtuvo una tasa cuantitativa de metas únicas con los registros existentes.
+\item[\autoref{oe3} -- Mapeo y navegación:] \textit{Cumplido parcialmente.} El mapeo se validó cuantitativamente en hardware real en cinco iteraciones y se verificó en simulación. Nav2 quedó integrado y verificado funcionalmente, con el resultado de las metas de exploración cuantificado. La validación cuantitativa de navegación dirigida con metas fijas permanece pendiente.
 
-\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras fue integrado y su cobertura fue cuantificada. Los contadores disponibles no permiten cuantificar metas únicas alcanzadas o fallidas.
+\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras se integró y ejecutó de forma autónoma. Se generaron y despacharon 60 metas de navegación en cinco iteraciones, reconstruidas por identificador único, con 54 abortos y una meta completada. La cobertura y el área libre se cuantificaron. La baja tasa de metas completadas se atribuye al recinto reducido.
 \end{description}
 
 En consecuencia, el objetivo general se alcanzó en diseño, construcción, control y mapeo. La navegación y la exploración quedaron integradas funcionalmente y su cobertura fue cuantificada; el éxito de navegación por metas permanece sin cuantificar.
@@ -61,6 +57,7 @@ En consecuencia, el objetivo general se alcanzó en diseño, construcción, cont
 \item \textbf{Métricas PID:} la figura experimental y las métricas simuladas provienen de procedimientos distintos y no deben interpretarse como una única prueba.
 \item \textbf{Fidelidad de la simulación:} Gazebo no reproduce completamente fricción, zona muerta del driver, ruido sensorial ni latencias reales.
 \item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.
+\item \textbf{Validez externa:} los resultados provienen de un único recinto de aproximadamente 3.5~m$^2$ y de cinco iteraciones, por lo que no se generalizan a entornos mayores o de geometría distinta.
 \end{itemize}
 
 \section*{Trabajo futuro}
