@@ -531,7 +531,7 @@ Recorte superior durante la evaluación & No aplicado & Solo dentro de la funci�
 Número de partículas del enjambre $N_p$ & \multicolumn{2}{c}{50} \\
 Generaciones $g_{\max}$ & \multicolumn{2}{c}{150} \\
 Coeficientes $c_1=c_2$ & \multicolumn{2}{c}{2.05} \\
-Factor de constricción $\chi$ & \multicolumn{2}{c}{0.7298} \\
+Factor de constricción $\zeta$ & \multicolumn{2}{c}{0.7298} \\
 Cota inferior $\xi_{\min}$ & \multicolumn{2}{c}{$10^{-4}$} \\
 Tratamiento del costo & MSE con penalización $10^{6}$ si $\tau<0.01$~s o la respuesta contiene valores no finitos & MSE y sobreimpulso con $(w_{\mathrm{mse}},w_{\mathrm{OS}})=(1.0,3.0)$; penalización $10^{6}$ si la simulación genera una excepción o la respuesta contiene valores no finitos \\
 Entrada o referencia & Escalón PWM $=143$ & Referencia obtenida del promedio de la respuesta en lazo abierto ($t\geq7$~s), tabulada a 0.1~s e interpolada linealmente a $T_{\mathrm{sim}}$ \\
@@ -1013,7 +1013,8 @@ en \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/}.
 $r$ & Radio de rueda & m \\
 $D=2r$ & Diámetro de rueda (\texttt{WHEEL\_DIAMETER}) & m \\
 $b$ & Separación entre ruedas (\texttt{wheel\_separation}) & m \\
-$q_k=(x_k,y_k,\theta_k)$ & Pose del robot en el instante $k$ & m, m, rad \\ $R(\theta)$ & Matriz de rotación plana (Ec.~\eqref{eq:rotacion_plana}) & adim. \\
+$q_k=(x_k,y_k,\theta_k)$ & Pose del robot en el instante $k$ & m, m, rad \\
+$R(\theta)$ & Matriz de rotación plana (Ec.~\eqref{eq:rotacion_plana}) & adim. \\
 $v[k]$ & Velocidad lineal del robot & m/s \\
 $\omega[k]$ & Velocidad angular del robot & rad/s \\
 $v^{\mathrm{cmd}}[k]$ & Consigna lineal del robot (Ec.~\eqref{eq:cinematica_inversa}) & m/s \\
@@ -1029,14 +1030,13 @@ $N_{\mathrm{Hall}}$ & Pulsos por vuelta del sensor Hall en el eje del motor & pu
 $c_q$ & Factor de decodificación en cuadratura & adim. \\
 $N_g$ & Relación de reducción del motorreductor (nominal $46{:}1$) & adim. \\
 $\bar{N}_R,\bar{N}_L$ & Promedio experimental de ticks por vuelta (rueda derecha/izquierda) & ticks/vuelta \\
-$N_{R(i)},N_{L(i)}$ & Ticks por vuelta medidos en la repetición $i$ & ticks/vuelta \\
 $f_{\mathrm{ctrl}}$ & Frecuencia nominal del ciclo \texttt{read()}--\texttt{update()}--\texttt{write()}, configurada mediante \texttt{controller\_manager.update\_rate} & Hz \\
 $f_{\mathrm{loop}}$ & Frecuencia nominal usada por \texttt{DiffDriveArduino} en la conversión de rad/s a ticks/frame, configurada mediante \texttt{loop\_rate} & Hz \\
 $f_{\mathrm{PID,nom}}$ & Frecuencia nominal declarada por \texttt{PID\_RATE} en el firmware & Hz \\
 $T_{\mathrm{PID,sched}}$ & Incremento del programador del firmware, igual a 33~ms por división entera & s \\
 $T_{\mathrm{cap}}$ & Período de captura en lazo abierto & s \\
-$\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lectura se mide desde la asignación de \texttt{time\_} al inicio de \texttt{configure()}, antes de la espera serial de 3000~ms; desde la segunda, entre llamadas consecutivas a \texttt{read()} & s \\ $T_k$ & Intervalo entre las muestras $k$ y $k+1$ del modelo cinemático general (Ecs.~\eqref{eq:pose_x}--\eqref{eq:pose_theta}); distinto del intervalo ejecutado $\Delta t_k$ & s \\
-\midrule
+$\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lectura se mide desde la asignación de \texttt{time\_} al inicio de \texttt{configure()}, antes de la espera serial de 3000~ms; desde la segunda, entre llamadas consecutivas a \texttt{read()} & s \\
+$T_k$ & Intervalo entre las muestras $k$ y $k+1$ del modelo cinemático general (Ecs.~\eqref{eq:pose_x}--\eqref{eq:pose_theta}); distinto del intervalo ejecutado $\Delta t_k$ & s \\
 \multicolumn{3}{l}{\textit{Conversión y control de firmware}}\\
 $m_j^{\mathrm{int}}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[k-1]$, almacenada en \texttt{PrevInput} & ticks/frame \\
 $m_j^{\mathrm{cmd}}[k]$ & Referencia entera en ticks/frame enviada al firmware; \texttt{DiffDriveArduino} la genera al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ (conversión descrita en el \ref{anx:implementacion_diffdrive}) & ticks/frame \\
@@ -1044,60 +1044,49 @@ $v_j^{\mathrm{cmd}}[k]$ & Velocidad lineal de rueda comandada & m/s \\
 $\omega_j^{\mathrm{cmd}}[k]$ & Velocidad angular de rueda comandada & rad/s \\
 $u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FOPDT & PWM \\
 $e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & ticks/frame \\
-$e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta &
-ticks/frame \\
+$e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta & ticks/frame \\
 $\Delta u_j^{\mathrm{long}}[k]$ & Incremento de la salida calculado por el controlador discreto y asignado al tipo \texttt{long} & PWM \\
 $u_j^{\mathrm{raw}}[k]$ & Salida acumulada antes de aplicar la saturación & PWM \\
-$e_{db,j}$ & Banda muerta por rueda ($e_{db,R}=1$, $e_{db,L}=2$) & ticks/frame \\
-$u_{\max},u_{\min}$ & Límites de saturación de la salida PID ($\pm255$, \texttt{MAX\_PWM}) & PWM \\
 $I_j^{\mathrm{int}}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \texttt{int}; posee la misma escala interna que $K_{p,j}e_j^{\mathrm{db}}[k]$ & esc.\ fw \\
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
-$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\ $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\ $\widetilde{m}_j[k]$ & Medición cuantizada a ticks/frame que ingresa al PID simulado & ticks/frame \\
-\midrule
+$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
+$T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\
 \multicolumn{3}{l}{\textit{Identificación FOPDT}}\\
 $S$ & Variable compleja de Laplace (en mayúscula para no confundirla con el segundo, s) & No aplica \\
 $G_j(S)$ & Función de transferencia FOPDT de la rueda $j\in\{R,L\}$ & (m/s)/PWM \\
-$K_{m,j}$ & Ganancia estática del modelo de la rueda $j$ &
-(m/s)/PWM \\
+$K_{m,j}$ & Ganancia estática del modelo de la rueda $j$ & (m/s)/PWM \\
 $\tau_j$ & Constante de tiempo del modelo de la rueda $j$ & s \\
 $L_{d,j}$ & Retardo puro estimado para la rueda $j$ & s \\
-$n_{d,j}$ & Retardo entero aplicado en la discretización de la rueda $j$ &
-muestras \\
-$u_{j,d}[k]$ & Entrada PWM retardada utilizada en el modelo discreto &
-PWM \\
-$\hat{v}_j[k]$ & Velocidad lineal estimada por el modelo de la rueda $j$ &
-m/s \\
-$v_j^{\mathrm{med}}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto &
-m/s \\
-$\mathrm{e}$ & Número de Euler & No aplica \\ $v_j^{\mathrm{filt}}[k]$ & Velocidad medida tras el filtro uniforme centrado & m/s \\ \midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}}\\ $\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\ $L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ & s \\ $K_{m,j}^{\mathrm{norm}}$ & Ganancia de planta normalizada por el PWM nominal ($K_{m,j}^{\mathrm{norm}}=143\,K_{m,j}$) & m/s \\ $K_{c,j}'$ & Ganancia de la forma serie (interactuante) de Lambda & esc.\ script \\ $T_{i,j}',\,T_{d,j}'$ & Tiempos integral y derivativo de la forma serie & s \\ $K_{p,j}^{\mathrm{std}},\,K_{i,j}^{\mathrm{std}},\,K_{d,j}^{\mathrm{std}}$ & Ganancias de la forma paralela estándar de Lambda & esc.\ script \\ $T_{i,j}^{\mathrm{std}},\,T_{d,j}^{\mathrm{std}}$ & Tiempos integral y derivativo equivalentes de la forma estándar & s \\ $f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ & esc.\ script \\ $K_{p,j}^{\mathrm{fw}},\,K_{d,j}^{\mathrm{fw}},\,K_{i,j}^{\mathrm{fw}}$ & Ganancias Lambda expresadas en la escala de firmware del script & esc.\ fw \\
-\midrule
+$n_{d,j}$ & Retardo entero aplicado en la discretización de la rueda $j$ & muestras \\
+$u_{j,d}[k]$ & Entrada PWM retardada utilizada en el modelo discreto & PWM \\
+$\hat{v}_j[k]$ & Velocidad lineal estimada por el modelo de la rueda $j$ & m/s \\
+$v_j^{\mathrm{med}}[k]$ & Velocidad lineal medida de la rueda $j$ en lazo abierto & m/s \\
+$\mathrm{e}$ & Número de Euler & No aplica \\
+$v_j^{\mathrm{filt}}[k]$ & Velocidad medida tras el filtro uniforme centrado & m/s \\
+\midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}} \\
+$\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\
+$L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ & s \\
+$f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ & esc.\ script \\
 \multicolumn{3}{l}{\textit{Optimización por enjambre (PSO)}}\\
 $\xi_{i,d},V_{i,d}$ & Posición y velocidad de búsqueda de la partícula $i$, dimensión $d$ & adim. \\
 $\xi_{\min}$ & Límite inferior aplicado al estado de partícula ($10^{-4}$); el estado no tiene límite superior & adim. \\
-$\xi_{i,d}^{\mathrm{eval}}$ & Componente de la posición recortada a $[10^{-4},1]$ solo durante la evaluación del costo PID & adim. \\
 $P_{i,d},G_d$ & Mejor posición individual y vector de posición global almacenado & adim. \\
 $J^*$ & Mejor costo global almacenado; puede no corresponder a $G_d$ por la actualización implementada & varias \\
-$\chi$ & Factor de constricción ($\approx0.7298$) & adim. \\
+$\zeta$ & Factor de constricción ($\approx0.7298$) & adim. \\
 $w_{\mathrm{in}}^{g}$ & Peso de inercia (decreciente con la generación $g$) & adim. \\
 $c_1,c_2$ & Coeficientes cognitivo y social & adim. \\
 $\psi$ & Suma de coeficientes cognitivo y social ($\psi=c_1+c_2=4.1$) & adim. \\
-
 $\rho_1,\rho_2$ & Coeficientes aleatorios $\sim\mathcal{U}[0,1]$ & adim. \\
 $\mathcal{U}[a,b]$ & Distribución uniforme continua en el intervalo $[a,b]$: todos sus valores son igual de probables. El exponente indica la dimensión del vector sorteado; por ejemplo, $\mathcal{U}[0,1]^3$ denota tres componentes muestreadas de forma independiente en $[0,1]$ & No aplica \\
 $g,g_{\max}$ & Generación actual y generación máxima & No aplica \\
 $N_p$ & Número de partículas del enjambre & No aplica \\
-$s_{\mathrm{esc},d}$ & Factor de escala de la dimensión $d$ del PSO (columnas ID y PID de la Tabla~\ref{tab:pso_config}) & varias \\
 $\boldsymbol{\theta}_i^{\mathrm{eval}}$ & Vector de parámetros físicos usado para evaluar el candidato de la partícula $i$ & varias \\
 $\boldsymbol{\theta}^{\mathrm{out}}$ & Vector de parámetros informado al finalizar el PSO, escalado desde la posición global almacenada sin aplicar un nuevo recorte superior & varias \\
 $J$ & Función de costo & varias \\
 $w_{\mathrm{mse}},w_{\mathrm{OS}}$ & Pesos de error cuadrático y de sobreimpulso & adim. \\
-$\lVert\boldsymbol{\varepsilon}_j\rVert_2$ & Norma-2 (euclidiana) del vector de errores instantáneos $\varepsilon_j[k]$ & m/s \\
 $v_j^{\mathrm{ref}}$ & Velocidad de consigna estacionaria obtenida como media para $t\geq7$~s & m/s \\
-$r_j^{\mathrm{sim}}(t)$ & Referencia consumida por la simulación después de la interpolación lineal de \texttt{np.interp} & m/s \\
-$\operatorname{round}_{\mathrm{even}}(\cdot)$ & Redondeo al entero más próximo con desempate al entero par, usado por \texttt{round()} de Python & No aplica \\
-\midrule
 \multicolumn{3}{l}{\textit{Validación experimental y cobertura}}\\
 $d_{\mathrm{ref}}$ & Distancia comandada en la prueba rectilínea & m \\
 $d_{\mathrm{real}}$ & Distancia física medida o verdad de terreno & m \\
@@ -1112,37 +1101,29 @@ $E_{\theta,360}$ & Desviación angular normalizada respecto de $\Delta\theta_{36
 $M$ & Conjunto de intensidades de celda de la imagen PGM del mapa analizado & No aplica \\
 $p$ & Intensidad de una celda de la imagen PGM & nivel de gris \\
 $\mathbf{1}[\cdot]$ & Función indicadora de una condición lógica & adim. \\
-$N_{\mathrm{libre}}$ & Número de celdas clasificadas como espacio libre &
-celdas \\
+$N_{\mathrm{libre}}$ & Número de celdas clasificadas como espacio libre & celdas \\
 $N_{\mathrm{desconocido}}$ & Número de celdas clasificadas como
 desconocidas & celdas \\
 $C_{\mathrm{libre}}$ & Índice de cobertura libre del mapa & \% \\
 $A_{\mathrm{libre}}$ & Área libre mapeada, calculada como $N_{\mathrm{libre}}\rho_{\mathrm{map}}^2$ & m$^2$ \\
-\midrule
 \multicolumn{3}{l}{\textit{Navegación y exploración}}\\
-$f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & No aplica \\ $n,\alpha$ & Nodo evaluado y celda sucesora en A\textsuperscript{*} & No aplica \\ $c(n,\alpha)$ & Costo de transición de $n$ a la sucesora $\alpha$ & No aplica \\ $p(n),p_{\mathrm{meta}}$ & Posiciones de la celda $n$ y de la meta & m \\ $h^{*}(n)$ & Costo real mínimo restante hasta la meta & No aplica \\
+$f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & No aplica \\
+$n,\alpha$ & Nodo evaluado y celda sucesora en A\textsuperscript{*} & No aplica \\
+$c(n,\alpha)$ & Costo de transición de $n$ a la sucesora $\alpha$ & No aplica \\
+$p(n),p_{\mathrm{meta}}$ & Posiciones de la celda $n$ y de la meta & m \\
+$h^{*}(n)$ & Costo real mínimo restante hasta la meta & No aplica \\
 $J_{\mathrm{DWB}}$ & Costo total del controlador local DWB & No aplica \\
 $C_c,S_c$ & Crítico $c$ del DWB y escala configurada para ese crítico & No aplica \\
 $d_o$ & Distancia al obstáculo & m \\
-$r_{\mathrm{inscrito}},r_{\mathrm{inflacion}}$ & Radio inscrito del robot y radio de inflación & m \\
+$r_{\mathrm{inflacion}}$ & Radio de inflación & m \\
 $\beta$ & Factor de decaimiento del costo (\texttt{cost\_scaling\_factor}) & 1/m \\
 $U(F)$ & Puntaje de costo de la frontera $F$ (heurístico, no homogéneo) & No aplica \\
-$d_{\min}^{\mathrm{world}}(F)$ & Distancia mínima calculada en coordenadas del mundo antes de aplicar el factor adicional de resolución & m \\
 $|F|$ & Contador de tamaño de la frontera; se inicializa en 1 y se incrementa por celdas vecinas incorporadas. Si no se añade ninguna, la frontera conserva tamaño 1 & celdas \\
-$p_{F}^{\mathrm{impl}}$ & Centroide implementado: suma solo celdas vecinas y divide por $|F|$, que incluye la celda inicial. Para una frontera sin vecinos añadidos permanece en $(0,0)$ & m \\
 $\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}); en este sistema 0.05, usada tanto en el área libre como en el costo de frontera & m/celda \\
 $w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
 $f_{\mathrm{exp}}$ & Frecuencia configurada de reevaluación del explorador (\texttt{planner\_frequency}) & Hz \\
-$T_{\mathrm{exp,sched}}$ & Período entero del temporizador del explorador; para 0.3~Hz vale 3333~ms & s \\
-$t_{\mathrm{prog}}$ & Tiempo máximo sin progreso del explorador (\texttt{progress\_timeout}) & s \\
 $\varepsilon_j[k]$ & Error de seguimiento del modelo para la rueda $j$,
 $v_j^{\mathrm{ref}}-\hat{v}_j[k]$ & m/s \\
-$\boldsymbol{\varepsilon}_j$ & Vector de errores de seguimiento de la rueda $j$ & m/s \\
-$N$ & Número de muestras de $\boldsymbol{\varepsilon}_j$ & No aplica \\
-$\mathrm{MSE}(\boldsymbol{\varepsilon}_j)$ &
-Error cuadrático medio,
-$N^{-1}\sum_{k=1}^{N}\varepsilon_j[k]^2$
-& (m/s)$^2$ \\
 \end{longtable}
 }
 
