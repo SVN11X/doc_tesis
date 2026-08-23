@@ -18,7 +18,7 @@
 \numberwithin{figure}{section}
 \renewcommand{\thefigure}{A\arabic{section}.\arabic{figure}}
 
-\noindent\textbf{Convención de rutas.} Las rutas de código son relativas a \path{src/}; el inventario de archivos, directorios padre y funciones se presenta en el \ref{anx:rutas_software}.
+\noindent\textbf{Convención de rutas.} Las rutas de código son relativas a \texttt{src/}; el inventario de archivos, directorios padre y funciones se presenta en el \ref{anx:rutas_software}.
 
 \section{Construcción, componentes y montaje}
 \label{anx:componentes}
@@ -262,7 +262,7 @@ resolución efectiva $N_e$ se documenta en el \ref{anx:pid_data}.
 \caption{Correspondencia entre parámetros del cuerpo e identificadores del código.}
 \label{tab:anx_identificadores}
 \small
-\begin{tabular}{p{3.5cm} p{5.2cm} p{4.6cm}}
+\begin{tabular}{p{3.5cm} p{6.3cm} p{4.1cm}}
 \toprule
 \textbf{Parámetro} & \textbf{Identificador} & \textbf{Archivo} \\
 \midrule
@@ -362,7 +362,7 @@ A partir del factor $2\pi/N_e$ de la Ec.~\eqref{eq:posicion_rueda_encoder}, la c
 
 Ese script vuelve a identificar un modelo FOPDT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del firmware reutilizando la misma rutina de planta, referencia interpolada y cuantización descrita más arriba, con banda muerta 2 para ambas ruedas. Además,\texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm12750$, valor que resulta de multiplicar el PWM máximo (255) por el divisor de normalización de la salida (50); este límite no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
 
-La referencia analítica Lambda se calcula a partir de esa nueva identificación. Como retardo efectivo, $L_{ef,j}$, se toma el mayor entre el retardo puro identificado para la rueda, $L_{d,j}$, y dos períodos de control (2/30~s); y como constante de diseño, $\lambda_j$, se fija el triple de la constante de tiempo identificada $\tau_j$. A partir de ahí el script obtiene una forma serie, la convierte a la forma paralela estándar y la lleva a la escala de firmware mediante un factor de escalamiento $f_{\lambda}$; el detalle de estas conversiones se encuentra en \path{arduino_firmware/pid_config/SintonizacionLambda.py}.
+La referencia analítica Lambda se calcula a partir de esa nueva identificación. Como retardo efectivo, $L_{ef,j}$, se toma el mayor entre el retardo puro identificado para la rueda, $L_{d,j}$, y dos períodos de control (2/30~s); y como constante de diseño, $\lambda_j$, se fija el triple de la constante de tiempo identificada $\tau_j$. A partir de ahí el script obtiene una forma serie, la convierte a la forma paralela estándar y la lleva a la escala de firmware mediante un factor de escalamiento $f_{\lambda}$; el detalle de estas conversiones se encuentra en \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}SintonizacionLambda.\allowbreak{}py}.
 
 La comparación es únicamente ilustrativa: además de las aproximaciones
 señaladas, el simulador aplica banda muerta cero al controlador Lambda. Por
@@ -473,9 +473,9 @@ resume en el Alg.~\ref{alg:pid_firmware}.
 \subsection{Procesamiento FOPDT usado por los scripts}
 \label{anx:fodt_scripts}
 
-Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$ segundos (el período de captura), el retardo puro se cuantiza a un número entero de muestras, $n_{d,j}$, dividiendo el retardo identificado $L_{d,j}$ por el período de captura y truncando el resultado. La entrada retardada, $u_{j,d}[k]$, se obtiene tomando la muestra de PWM correspondiente a $n_{d,j}$ pasos antes del instante actual, o la primera muestra disponible cuando ese índice resultaría negativo. El sistema de primer orden se integra por el método de Euler explícito: en cada paso, la velocidad estimada por el modelo, $\widehat{v}_j[k]$, parte de su valor en el paso anterior y le suma una fracción de la diferencia entre la respuesta estática y esa misma estimación previa; la fracción es la razón entre el período de captura y la constante de tiempo $\tau_j$, y la respuesta estática es la ganancia estática $K_{m,j}$ multiplicada por la entrada retardada. La estimación arranca en cero. Aquí $u_j[k]$ es la entrada \gls{PWM} aplicada y $\widehat{v}_j[k]$ la velocidad lineal que el modelo estima para la rueda $j$ (m/s). Esta formulación corresponde al procedimiento de identificación; las diferencias de la planta usada durante la sintonización se describen más adelante.
+Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$ segundos (el período de captura), el retardo puro se cuantiza a un número entero de muestras, $n_{d,j}$, dividiendo el retardo identificado $L_{d,j}$ por el período de captura y truncando el resultado. La entrada retardada, $u_{j,d}[k]$, se obtiene tomando la muestra de PWM correspondiente a $n_{d,j}$ pasos antes del instante actual, o la primera muestra disponible cuando ese índice resultaría negativo. El sistema de primer orden se integra por el método de Euler explícito: en cada paso, la velocidad estimada por el modelo  $\widehat{v}_j[k]$, parte de su valor en el paso anterior y le suma una fracción de la diferencia entre la respuesta estática y esa misma estimación previa; la fracción es la razón entre el período de captura y la constante de tiempo $\tau_j$, y la respuesta estática es la ganancia estática $K_{m,j}$ multiplicada por la entrada retardada. La estimación arranca en cero. Aquí $u_j[k]$ es la entrada \gls{PWM} aplicada y $\widehat{v}_j[k]$ la velocidad lineal que el modelo estima para la rueda $j$ (m/s). Esta formulación corresponde al procedimiento de identificación; las diferencias de la planta usada durante la sintonización se describen más adelante.
 
-La velocidad medida $v_j^{\mathrm{med}}[k]$ se procesa fuera de línea con \texttt{scipy.ndimage.uniform\_filter1d} (\texttt{size=5}, modo \texttt{reflect}): un filtro uniforme centrado de cinco muestras —no causal, pues usa muestras anteriores y posteriores— del que se obtiene la velocidad filtrada $v_j^{\mathrm{filt}}[k]$.
+La velocidad medida $v_j^{\mathrm{med}}[k]$ se procesa fuera de línea con \texttt{scipy.ndimage.uniform\_filter1d} (\texttt{size=5}, modo \texttt{reflect}): un filtro uniforme centrado de cinco muestras; no causal ya que usa muestras anteriores y posteriores, del que se obtiene la velocidad filtrada $v_j^{\mathrm{filt}}[k]$.
 
 La función de costo de identificación ejecutada por el script es el error cuadrático medio entre la velocidad filtrada $v_j^{\mathrm{filt}}[k]$ y la estimada por el modelo $\widehat{v}_j[k]$, promediado sobre las $N$ muestras. Si $\tau_j<0.01$~s o $\widehat{v}_j$ contiene valores no finitos, el costo se fija en $10^{6}$.
 
@@ -488,9 +488,9 @@ Con los parámetros identificados, el script simula una planta discreta FOPDT si
 
 Después de sumar la velocidad a la posición, el núcleo aplica únicamente una cota inferior de $10^{-4}$ a cada componente del estado almacenado $\xi_{i,d}$; no aplica ninguna cota superior. Para evaluar cada partícula, sus componentes se recortan a $[10^{-4},1]$ y se escalan a los parámetros físicos $\boldsymbol{\theta}_i^{\mathrm{eval}}$ según la etapa: $(K_m,\tau,L_d)$ en la identificación FOPDT y $(K_p,K_d,K_i)$ en la sintonización PID. El recorte superior a 1 existe solo dentro de la función de costo PID.
 
-La función de costo PID, asignada al candidato evaluado para la rueda $j$, toma como objetivo el máximo de la señal de referencia $v_j^{\mathrm{ref}}$ y combina dos términos: el error cuadrático medio respecto de esa referencia, ponderado por $w_{\mathrm{mse}}$, más una penalización por sobreimpulso —el cuadrado de cuánto excede la respuesta a la referencia, cuando la excede— ponderada por $w_{\mathrm{OS}}$. Si la simulación genera una excepción o la respuesta contiene valores no finitos, se asigna en su lugar una penalización fija de $10^{6}$. Ambos pesos no se calculan: son constantes de diseño definidas
+La función de costo PID, asignada al candidato evaluado para la rueda $j$, toma como objetivo el máximo de la señal de referencia $v_j^{\mathrm{ref}}$ y combina dos términos: el error cuadrático medio respecto de esa referencia, ponderado por $w_{\mathrm{mse}}$, más una penalización por sobreimpulso; el cuadrado de cuánto excede la respuesta a la referencia, cuando la excede, ponderada por $w_{\mathrm{OS}}$. Si la simulación genera una excepción o la respuesta contiene valores no finitos, se asigna en su lugar una penalización fija de $10^{6}$. Ambos pesos no se calculan: son constantes de diseño definidas
 localmente en la función \texttt{costFunction\_PID()} de
-\path{arduino_firmware/pid_config/SintonizacionAutomatica.py}, con
+\texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}SintonizacionAutomatica.\allowbreak{}py}, con
 $w_{\mathrm{mse}}=1.0$ actuando como escala identidad del MSE y
 $w_{\mathrm{OS}}=3.0$ triplicando el peso relativo de cualquier excursión
 sobre la referencia, para orientar la búsqueda del enjambre hacia respuestas
@@ -504,7 +504,7 @@ final escalada se desarrollan a continuación.
 
 Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de constricción se obtiene mediante la expresión de Clerc a partir de la suma de los coeficientes cognitivo y social, $\psi$. El error que emplea el optimizador se define sobre la velocidad: es la diferencia entre la velocidad de referencia $v_j^{\mathrm{ref}}$ y la velocidad estimada por el modelo $\widehat{v}_j[k]$ para la rueda $j$, denotada $\varepsilon_j[k]$, y se resume por su norma-2 y su error cuadrático medio; no corresponde al error entero $e_j^{\mathrm{long}}$ que consume el firmware.
 
-La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que su costo histórico. El almacenamiento global presenta una particularidad: el costo global $J^{*}$ se toma como el mínimo de los costos históricos $J_i^{\mathrm{best}}$, pero la posición global $G$ se copia desde la posición actual de la partícula de menor costo histórico —no desde su posición personal $P_{i^*}$—, de modo que $J^{*}$ y $G$ pueden corresponder a vectores distintos. Esta diferencia se mantiene porque representa el código ejecutado.
+La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que su costo histórico. El almacenamiento global presenta una particularidad: el costo global $J^{*}$ se toma como el mínimo de los costos históricos $J_i^{\mathrm{best}}$, pero la posición global $G$ se copia desde la posición actual de la partícula de menor costo histórico (no desde su posición personal $P_{i^*}$), de modo que $J^{*}$ y $G$ pueden corresponder a vectores distintos. Esta diferencia se mantiene porque representa el código ejecutado.
 
 Al finalizar, los parámetros informados se obtienen escalando la posición global final $G^{\mathrm{final}}$ componente a componente, sin aplicar un nuevo recorte superior. En la etapa de identificación FOPDT, las tres componentes se multiplican por 0.01, 2.0 y 0.5 (para $K_m$, $\tau$ y $L_d$, respectivamente); en la etapa de sintonización PID, se multiplican por 40, 25 y 0.05 (para $K_p$, $K_d$ y $K_i$). Como en este paso no hay recorte superior, en la etapa PID la salida puede superar los valores de escala 40, 25 y 0.05 aunque el costo se haya evaluado con una copia recortada de la posición; por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
 
@@ -539,7 +539,7 @@ Entrada o referencia & Escalón PWM $=143$ & Referencia obtenida del promedio de
 \end{tabular}
 \end{table}
 
-Combinando las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas} con el período nominal de captura $T_{\mathrm{cap}}$, el script calcula directamente la velocidad lineal medida de cada rueda, $v_j^{\mathrm{med}}[k]$ [m/s]. Para ello toma el incremento de conteo del encoder en el intervalo —la diferencia entre el conteo actual y el anterior, $\Delta c_j[k]$—, lo divide por la resolución efectiva del encoder $N_e$ y lo multiplica por el cociente entre el perímetro de la rueda y el período de captura. En el script de captura \path{arduino_firmware/pid_config/ControlLazoAbierto.py}, $T_{\mathrm{cap}}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
+Combinando las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas} con el período nominal de captura $T_{\mathrm{cap}}$, el script calcula directamente la velocidad lineal medida de cada rueda, $v_j^{\mathrm{med}}[k]$ [m/s]. Para ello toma el incremento de conteo del encoder en el intervalo —la diferencia entre el conteo actual y el anterior, $\Delta c_j[k]$—, lo divide por la resolución efectiva del encoder $N_e$ y lo multiplica por el cociente entre el perímetro de la rueda y el período de captura. En el script de captura \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}ControlLazoAbierto.\allowbreak{}py}, $T_{\mathrm{cap}}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
 
 \subsection{Resultados de la ejecución PSO empleada}
 \label{anx:resultados_pso_ejecucion}
@@ -574,7 +574,7 @@ $K_i$ & 0.00001 & 0.00001 \\
 \label{anx:captura_lazo_cerrado}
 
 La respuesta experimental se adquirió mediante el script
-\path{arduino_firmware/pid_config/ControlLazoCerrado.py}. El script envía una referencia de 0.13~m/s
+\texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}ControlLazoCerrado.\allowbreak{}py}. El script envía una referencia de 0.13~m/s
 mediante el comando \texttt{k}, consulta la velocidad informada por el
 firmware mediante \texttt{j} y almacena muestras con un período nominal de
 0.1~s. La lectura serial se ejecuta en un hilo asíncrono y, después de solicitar
@@ -586,7 +586,7 @@ iteración.
 \section{Configuración complementaria de SLAM, Nav2 y exploración}
 \label{anx:nav2_slam_config}
 
-Las configuraciones fuente se mantienen en \path{articubot_one/config/}. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}; en hardware real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
+Las configuraciones fuente se mantienen en \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/}. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}; en hardware real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
 
 Los identificadores de \textit{plugin} cargados por los componentes resumidos
 en la Tabla~\ref{tab:nav2_componentes_ch9} son
@@ -641,7 +641,7 @@ Los mapas de costo real utilizan un \textit{footprint} rectangular respecto de \
 \caption{Acciones de recuperación configuradas en Nav2.}
 \label{tab:recovery_ch9}
 \small
-\begin{tabular}{p{3.2cm} p{4.8cm} p{5.2cm}}
+\begin{tabular}{p{3.6cm} p{4.8cm} p{5.2cm}}
 \toprule
 \textbf{Acción} &
 \textbf{Condición o alcance} &
@@ -729,28 +729,6 @@ La variable \texttt{frontier.min\_distance} se calcula después de convertir las
 El ordenamiento, la selección y el envío de la meta se formalizan en el Alg.~\ref{alg:exploracion_fronteras}. Con resolución 0.05~m/celda y \texttt{min\_frontier\_size}=0.05~m, el criterio $|F|\rho_{\mathrm{map}}\geq0.05$ admite desde un tamaño almacenado de una celda. Si una frontera no incorpora vecinos después de la celda inicial, conserva $|F|=1$, $p_F^{\mathrm{impl}}=(0,0)$ y $d_{\mathrm{min}}^{\mathrm{world}}=\infty$, porque la celda inicial no se suma ni se utiliza para actualizar la distancia. Por tanto, su costo es infinito; aun así, puede permanecer como candidata si no existe otra frontera seleccionable. Dos objetivos se consideran iguales cuando su distancia euclidiana es inferior a 0.01~m.
 
 El parámetro configurado es $f_{\mathrm{exp}}=0.3$~Hz, pero el temporizador se construye por conversión a milisegundos enteros sin redondeo, lo que da un período de 3333~ms, equivalente a una frecuencia efectiva de aproximadamente 0.30003~Hz. La gestión de la lista negra se formaliza en el Alg.~\ref{alg:exploracion_fronteras}; como particularidad de la implementación, la comprobación de pertenencia utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap.
-
-\section{Costos y comparación económica}
-\label{anx:costos}
-
-El costo total de materiales, considerando componentes principales, fijaciones, cableado y accesorios, se compara con plataformas educativas y comerciales de referencia en la Tabla~\ref{tab:anx_comparacion_costos}.
-
-\begin{table}[H]
-\centering
-\caption{Comparación económica resumida.}
-\label{tab:anx_comparacion_costos}
-\small
-\begin{tabular}{lrl}
-\toprule
-\textbf{Plataforma} & \textbf{Costo aprox.} & \textbf{Observación} \\
-\midrule
-Este prototipo & CLP~582.447 & Firmware adaptado e integración propia. \\
-TurtleBot 3 Burger & US\$~550 & Plataforma educativa de referencia. \\
-TurtleBot 3 Waffle Pi & US\$~1.800 & Incluye LiDAR y cámara. \\
-Clearpath Jackal & US\$~18.000 & Plataforma industrial. \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \section{Detalle de validación de odometría}
 \label{anx:odometria_detalle}
@@ -884,13 +862,13 @@ Los estadísticos agregados por iteración se presentan en la Tabla~\ref{tab:sla
 La Fig.~\ref{fig:anx_nav_exploracion_secuencia} muestra la secuencia completa de una ejecución representativa, desde el mapeo inicial de un pasillo estrecho hasta la mayor cobertura alcanzada, junto con la ruta planificada por Nav2 hacia las fronteras seleccionadas.
 
 \begin{utemMultiFigurePropia}{Secuencia de una ejecución representativa de exploración por fronteras y navegación autónoma sobre hardware real (vista de RViz y cámara cenital del recinto).}{fig:anx_nav_exploracion_secuencia}
-\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Etapa temprana: pasillo estrecho.}
+\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Etapa temprana: pasillo estrecho.}
 \hfill
-\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte2.png}{Mapa parcial en expansión.}
+\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte2.png}{Mapa parcial en expansión.}
 \\[0.4cm]
-\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte3.png}{Cobertura amplia con ruta planificada activa.}
+\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte3.png}{Cobertura amplia con ruta planificada activa.}
 \hfill
-\addutem{0.48}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Mayor cobertura alcanzada al cierre de la exploración.}
+\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Mayor cobertura alcanzada al cierre de la exploración.}
 \end{utemMultiFigurePropia}
 
 \section{Procedencia y limitaciones de las métricas complementarias}
@@ -912,7 +890,7 @@ N_{\mathrm{desconocido}}=\sum_{p\in M}\mathbf{1}\!\left[50<p<230\right].
 Las celdas restantes ($p\leq50$) se clasifican como ocupadas y no participan
 en el cálculo del índice de cobertura.
 
-Las diferencias de lectura y redondeo entre los distintos scripts de análisis se originan en esta clasificación. El script de análisis \path{test/slam/analizar_slam.py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_{\mathrm{map}}=0.05$~m/celda y redondea el resultado a dos decimales.
+Las diferencias de lectura y redondeo entre los distintos scripts de análisis se originan en esta clasificación. El script de análisis \texttt{test/\allowbreak{}slam/\allowbreak{}analizar\_\allowbreak{}slam.\allowbreak{}py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_{\mathrm{map}}=0.05$~m/celda y redondea el resultado a dos decimales.
 
 \subsection{Comparación cualitativa de mapas}
 
@@ -959,12 +937,12 @@ como números de metas únicas, intentos ni arribos.
 \label{anx:rutas_software}
 
 Las rutas de código citadas en la tesis son relativas al directorio raíz
-\path{src/} del repositorio. En el cuerpo del documento se indica la ruta
+\texttt{src/} del repositorio. En el cuerpo del documento se indica la ruta
 completa en la primera mención relevante y, en las menciones posteriores, se
 conserva solo el nombre del archivo cuando no existe ambigüedad. Las copias
-almacenadas bajo \path{test/sesiones_mapeo/} corresponden a instantáneas de
+almacenadas bajo \texttt{test/\allowbreak{}sesiones\_\allowbreak{}mapeo/} corresponden a instantáneas de
 cada ensayo; salvo indicación expresa, la configuración fuente es la ubicada
-en \path{articubot_one/config/}.
+en \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/}.
 
 \begingroup
 \small
@@ -982,34 +960,34 @@ en \path{articubot_one/config/}.
 \endhead
 \bottomrule
 \endfoot
-\path{robot.urdf.xacro} & \path{articubot_one/description/} & Modelo principal URDF/\texttt{xacro}. \\
-\path{robot_core.xacro} & \path{articubot_one/description/} & Geometría, eslabones y articulaciones. \\
-\path{lidar.xacro}, \path{lidar_sim.xacro} & \path{articubot_one/description/} & Sensor real y modelo simulado del LiDAR. \\
-\path{gazebo_control.xacro} & \path{articubot_one/description/} & Backend alternativo no seleccionado. \\
-\path{ros2_control.xacro} & \path{articubot_one/description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
-\path{launch_robot.launch.py} & \path{articubot_one/launch/} & Arranque del robot físico y controladores. \\
-\path{launch_sim.launch.py} & \path{articubot_one/launch/} & Arranque del gemelo digital en Gazebo. \\
-\path{my_controllers.yaml} & \path{articubot_one/config/} & Geometría y límites del controlador diferencial. \\
-\path{nav2_params.yaml}, \path{nav2_params_sim.yaml} & \path{articubot_one/config/} & Configuración Nav2 real y simulada. \\
-\path{mapper_params_online_async.yaml}, \path{mapper_params_online_async_sim.yaml} & \path{articubot_one/config/} & Configuración de \texttt{slam\_toolbox} real y simulada. \\
-\path{explore.yaml} & \path{articubot_one/config/} & Parámetros del explorador de fronteras. \\
-\path{obstacles.world} & \path{articubot_one/worlds/} & Mundo empleado en las pruebas de mapeo simulado. \\
-\path{ROSArduinoBridge.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Ciclo principal y protocolo serial del firmware. \\
-\path{commands.h} & \path{arduino_firmware/ROSArduinoBridge/} & Identificadores de comandos seriales. \\
-\path{diff_controller.h} & \path{arduino_firmware/ROSArduinoBridge/} & PID discreto y ganancias finales. \\
-\path{encoder_driver.h}, \path{encoder_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Lectura de encoders. \\
-\path{motor_driver.h}, \path{motor_driver.ino} & \path{arduino_firmware/ROSArduinoBridge/} & Accionamiento del L298N. \\
-\path{ControlLazoAbierto.py} & \path{arduino_firmware/pid_config/} & Captura de la respuesta en lazo abierto. \\
-\path{ControlLazoCerrado.py} & \path{arduino_firmware/pid_config/} & Captura experimental en lazo cerrado. \\
-\path{SintonizacionAutomatica.py} & \path{arduino_firmware/pid_config/} & Identificación FOPDT y búsqueda PSO inicial. \\
-\path{SintonizacionLambda.py} & \path{arduino_firmware/pid_config/} & Comparación simulada con sintonía Lambda. \\
-\path{pyPso.py} & \path{arduino_firmware/pid_config/} & Implementación de la clase PSO. \\
-\path{resultados_pso.tex}, \path{resultados_lambda.tex} & \path{arduino_firmware/pid_config/} & Salidas LaTeX generadas por los scripts de sintonización. \\
-\path{prueba_giro.py} & \path{test/prueba_giro/} & Ejecución de la prueba angular en hardware. \\
-\path{prueba_giro_sim.py} & \path{test/prueba_giro_sim/} & Ejecución de la prueba angular en simulación. \\
-\path{run_explore.sh} & \path{test/exploracion/} & Ejecución y registro de exploración. \\
-\path{run_prueba_nav.sh} & \path{test/navegacion/} & Protocolo por escenarios de navegación. \\
-\path{analizar_slam.py} & \path{test/slam/} & Cálculo de métricas de mapeo. \\
+\texttt{robot.\allowbreak{}urdf.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Modelo principal URDF/\texttt{xacro}. \\
+\texttt{robot\_\allowbreak{}core.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Geometría, eslabones y articulaciones. \\
+\texttt{lidar.\allowbreak{}xacro}, \texttt{lidar\_\allowbreak{}sim.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Sensor real y modelo simulado del LiDAR. \\
+\texttt{gazebo\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Backend alternativo no seleccionado. \\
+\texttt{ros2\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
+\texttt{launch\_\allowbreak{}robot.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del robot físico y controladores. \\
+\texttt{launch\_\allowbreak{}sim.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del gemelo digital en Gazebo. \\
+\texttt{my\_\allowbreak{}controllers.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Geometría y límites del controlador diferencial. \\
+\texttt{nav2\_\allowbreak{}params.\allowbreak{}yaml}, \texttt{nav2\_\allowbreak{}params\_\allowbreak{}sim.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Configuración Nav2 real y simulada. \\
+\texttt{mapper\_\allowbreak{}params\_\allowbreak{}online\_\allowbreak{}async.\allowbreak{}yaml}, \texttt{mapper\_\allowbreak{}params\_\allowbreak{}online\_\allowbreak{}async\_\allowbreak{}sim.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Configuración de \texttt{slam\_toolbox} real y simulada. \\
+\texttt{explore.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Parámetros del explorador de fronteras. \\
+\texttt{obstacles.\allowbreak{}world} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}worlds/} & Mundo empleado en las pruebas de mapeo simulado. \\
+\texttt{ROSArduinoBridge.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Ciclo principal y protocolo serial del firmware. \\
+\texttt{commands.\allowbreak{}h} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Identificadores de comandos seriales. \\
+\texttt{diff\_\allowbreak{}controller.\allowbreak{}h} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & PID discreto y ganancias finales. \\
+\texttt{encoder\_\allowbreak{}driver.\allowbreak{}h}, \texttt{encoder\_\allowbreak{}driver.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Lectura de encoders. \\
+\texttt{motor\_\allowbreak{}driver.\allowbreak{}h}, \texttt{motor\_\allowbreak{}driver.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Accionamiento del L298N. \\
+\texttt{ControlLazoAbierto.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Captura de la respuesta en lazo abierto. \\
+\texttt{ControlLazoCerrado.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Captura experimental en lazo cerrado. \\
+\texttt{SintonizacionAutomatica.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Identificación FOPDT y búsqueda PSO inicial. \\
+\texttt{SintonizacionLambda.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Comparación simulada con sintonía Lambda. \\
+\texttt{pyPso.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Implementación de la clase PSO. \\
+\texttt{resultados\_\allowbreak{}pso.\allowbreak{}tex}, \texttt{resultados\_\allowbreak{}lambda.\allowbreak{}tex} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Salidas LaTeX generadas por los scripts de sintonización. \\
+\texttt{prueba\_\allowbreak{}giro.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro/} & Ejecución de la prueba angular en hardware. \\
+\texttt{prueba\_\allowbreak{}giro\_\allowbreak{}sim.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro\_\allowbreak{}sim/} & Ejecución de la prueba angular en simulación. \\
+\texttt{run\_\allowbreak{}explore.\allowbreak{}sh} & \texttt{test/\allowbreak{}exploracion/} & Ejecución y registro de exploración. \\
+\texttt{run\_\allowbreak{}prueba\_\allowbreak{}nav.\allowbreak{}sh} & \texttt{test/\allowbreak{}navegacion/} & Protocolo por escenarios de navegación. \\
+\texttt{analizar\_\allowbreak{}slam.\allowbreak{}py} & \texttt{test/\allowbreak{}slam/} & Cálculo de métricas de mapeo. \\
 \end{longtable}
 \endgroup
 
