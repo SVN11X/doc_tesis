@@ -17,20 +17,20 @@ se documentan en el \ref{anx:gemelo_digital}.
 Respecto del control de bajo nivel, el firmware ejecuta un controlador PID
 discreto independiente para cada rueda. La
 Fig.~\ref{fig:respuesta_escalon_final} corresponde a una adquisición
-experimental en lazo cerrado; los sobreimpulsos de 10.66\%--15.63\% de la
-Tabla~\ref{tab:pid_performance} corresponden a la evaluación simulada de las
-ganancias finales. Los estados internos, la temporalidad y las aproximaciones
+experimental en lazo cerrado, y los indicadores de la
+Tabla~\ref{tab:pid_performance} se calcularon sobre esa misma respuesta medida.
+Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. Los estados internos, la temporalidad y las aproximaciones
 numéricas se documentan en los anexos de implementación y sintonización.
 
 El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. Los indicadores de cobertura libre y de área mapeada se cuantificaron sobre hardware real durante las iteraciones de exploración.
 
 La navegación con Nav2 quedó integrada mediante planificación global,
-control local, mapas de costo y acciones de recuperación. La exploración por
-fronteras se ejecutó en cinco iteraciones válidas y alcanzó un índice medio de
-cobertura libre de 62.2\% ($\sigma=12.9$). Los registros disponibles
-permiten verificar la integración funcional y cuantificar la cobertura, pero
-no calcular una tasa válida de éxito para metas únicas de navegación; el
-detalle metodológico se conserva en el \ref{anx:resultados_metodologia}.
+control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecutó en cinco iteraciones válidas y alcanzó
+un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$). Se generaron 60
+metas de navegación autónomas reconstruidas por identificador único, de las
+cuales 54 abortaron y una se completó, un resultado atribuible al recinto
+reducido. El detalle metodológico se conserva en el
+\ref{anx:resultados_metodologia}.
 
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 

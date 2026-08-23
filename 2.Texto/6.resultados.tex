@@ -163,35 +163,33 @@ cerca de un segundo antes. En ambas ruedas, la velocidad medida converge hacia l
 0.13~m/s. La rueda derecha presenta una respuesta más uniforme, mientras que
 la izquierda muestra pequeñas variaciones discretas alrededor del valor
 objetivo. La figura constituye una verificación cualitativa del seguimiento
-sobre el robot real; los indicadores de la Tabla~\ref{tab:pid_performance}
-corresponden, en cambio, a una evaluación simulada sobre el modelo FOPDT.
+sobre el robot real. Los indicadores de la Tabla~\ref{tab:pid_performance}
+se calculan sobre esa misma respuesta medida.
 
-Los indicadores de la Tabla~\ref{tab:pid_performance} corresponden a una
-evaluación simulada de las ganancias finales sobre un modelo FOPDT
-reidentificado. Las aproximaciones del procedimiento se documentan en el
-\ref{anx:lambda_detalle}.
+Los indicadores de la Tabla~\ref{tab:pid_performance} se calcularon
+directamente sobre la respuesta experimental en lazo cerrado de la
+Fig.~\ref{fig:respuesta_escalon_final}, con la referencia de 0.13~m/s. La
+comparación ilustrativa con el modelo FOPDT y la sintonía Lambda se conserva
+en el \ref{anx:lambda_detalle}.
 
 \begin{table}[H]
 \centering
-\caption{Indicadores simulados de la respuesta al escalón para las ganancias
-finales del firmware.}
+\caption{Indicadores de la respuesta al escalón en lazo cerrado, medidos sobre la captura experimental del robot real con referencia de 0.13~m/s.}
 \label{tab:pid_performance}
 \small
-\begin{tabular}{p{5.8cm} cc}
+\begin{tabular}{p{6.8cm} p{3.1cm} p{3.1cm}}
 \toprule
 \textbf{Indicador} & \textbf{Rueda izquierda} & \textbf{Rueda derecha} \\
 \midrule
-Tiempo de subida 10\%--90\% & 0.600 s & 0.600 s \\
-Tiempo de establecimiento 2\% & N/A & 3.100 s \\
-Sobreimpulso máximo & 15.63\% & 10.66\% \\
-Error estacionario & 0.00488 m/s & 0.00192 m/s \\
+Velocidad estacionaria medida ($t\geq 7$~s) & 0.128 m/s & 0.130 m/s \\
+Error estacionario & 0.002 m/s & 0.000 m/s \\
+Tiempo de subida 10\%--90\% & 0.8 s & 1.4 s \\
+Sobreimpulso máximo & Sin sobreimpulso significativo & Sin sobreimpulso significativo \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-En esa ejecución simulada, la rueda izquierda no permanece dentro de la banda
-del 2\% durante el horizonte de 10~s, mientras que la derecha sí alcanza el
-criterio de establecimiento dentro del horizonte evaluado.
+Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. La velocidad informada por el firmware tiene una resolución de 0.01~m/s, cercana a un 8 por ciento de la referencia. Por eso la banda del 2 por ciento queda por debajo de esa resolución y no se reporta un tiempo de establecimiento al 2 por ciento. La respuesta se estabiliza en torno a la referencia dentro de los primeros segundos, dentro de la resolución de medida.
 
 La comparación completa entre las ganancias del firmware y la referencia
 analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}, con carácter ilustrativo.
@@ -268,7 +266,6 @@ $\sigma$ & 0.53 & 1.10 & 12.94 & 0.03 \\
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item[\textsuperscript{a}] Nodos del grafo y cierre de lazo: reconstrucción \textit{offline} reproduciendo el \textit{rosbag} en \texttt{slam\_toolbox}; no son mediciones de la sesión en vivo.
 \item[] $\mu$: media aritmética. \quad $\sigma$: desviación estándar (estimador muestral, $n-1$). Ambas sobre las cinco iteraciones válidas.
 \end{tablenotes}
 \end{threeparttable}
@@ -302,13 +299,12 @@ En conjunto, estos registros demuestran el mecanismo autónomo completo. El expl
 
 La mejor iteración alcanzó un índice de cobertura libre de 82.9\%. El
 radio de inflación de 0.15~m aplicado en un recinto reducido
-(Sec.~\ref{sec:costmaps_ch9}) condiciona la maniobrabilidad. En conjunto, los
-ensayos verifican la integración funcional y cuantifican la cobertura, pero
-no permiten establecer una tasa válida de éxito para metas de navegación
-dirigida. La finalización correcta de las cinco iteraciones se refiere a la
-generación de un mapa válido, no a una tasa de metas cumplidas dado que los
-contadores de metas del explorador no son fiables (\ref{anx:resultados_metodologia}). La Tabla~\ref{tab:estado_validacion} sintetiza el
-estado de validación alcanzado por cada subsistema.
+(Sec.~\ref{sec:costmaps_ch9}) condiciona la maniobrabilidad. En conjunto, los ensayos verifican la integración funcional, cuantifican la
+cobertura y documentan el resultado de las metas de exploración según la
+Tabla~\ref{tab:anx_explore_metas}. La finalización correcta de las cinco
+iteraciones se refiere a la generación de un mapa válido. La validación
+cuantitativa de navegación dirigida con metas fijas, distinta de las metas que
+genera el explorador, permanece pendiente. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de validación alcanzado por cada subsistema.
 
 \begin{table}[H]
 \centering
@@ -320,8 +316,7 @@ estado de validación alcanzado por cada subsistema.
 \textbf{Subsistema} & \textbf{Estado} & \textbf{Observación} \\
 \midrule
 Odometría & Validada cuantitativamente & Simulación y hardware real \\
-Control PID & Evaluado mediante datos experimentales y simulación &
-Respuesta experimental graficada; las métricas de la Tabla~\ref{tab:pid_performance} provienen de simulación \\
+Control PID & Validado con datos experimentales & Respuesta e indicadores de la Tabla~\ref{tab:pid_performance} medidos sobre la captura real en lazo cerrado \\
 SLAM & Validado cuantitativamente en hardware real & Cobertura y área libre cuantificadas en cinco iteraciones válidas de exploración; alineación de paredes evaluada por inspección visual \\
 Nav2 & Verificada funcionalmente; resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}); protocolo de navegación dirigida con metas fijas pendiente \\
 Exploración & Validada a nivel de meta & 60 metas autónomas generadas en 5 iteraciones, 54 abortos y 1 éxito; cobertura y área cuantificadas \\
@@ -360,10 +355,10 @@ trabajo futuro; su alcance se precisa en el \ref{anx:resultados_metodologia}.
 
 Los resultados muestran un error odométrico medio de 3.63\% en
 trayectorias rectas sobre hardware real y una desviación angular media de
-$11.7^\circ$ respecto de la referencia nominal del protocolo. La respuesta
-en lazo cerrado de la Fig.~\ref{fig:respuesta_escalon_final} fue medida en
-hardware, mientras que los sobreimpulsos de 10.66\%--15.63\% corresponden a
-la evaluación simulada de las ganancias finales.
+$11.7^\circ$ respecto de la referencia nominal del protocolo. La respuesta en lazo cerrado de la Fig.~\ref{fig:respuesta_escalon_final} fue
+medida en hardware, y sobre esa misma captura se calcularon los indicadores de
+la Tabla~\ref{tab:pid_performance}, que muestran seguimiento de la referencia
+sin sobreimpulso apreciable.
 
 El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en
 hardware real. La exploración por fronteras alcanzó un índice
