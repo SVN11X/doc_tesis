@@ -253,8 +253,7 @@ Publicación de odometría & Habilitada & Publica \texttt{odom}$\rightarrow$\tex
 \end{table}
 
 La comunicación entre \texttt{diff\_drive\_controller} y el firmware se
-realiza mediante \texttt{DiffDriveArduino}, el plugin de hardware de
-\texttt{ros2\_control} que intercambia con el \gls{Arduino}, mediante el
+realiza mediante \texttt{DiffDriveArduino}, el plugin de hardware de \texttt{ros2\_control}~\citep{openrobotics2024ros2control} que intercambia con el \gls{Arduino}, mediante el
 enlace serial, las referencias de velocidad de rueda y las lecturas de
 encoder. Su ciclo de lectura--actualización--escritura se ejecuta con la
 frecuencia $f_{\mathrm{ctrl}}$ indicada en la
