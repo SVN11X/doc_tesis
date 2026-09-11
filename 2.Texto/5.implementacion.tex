@@ -444,6 +444,20 @@ acumulada saturada; $K_o$ el divisor de escalamiento de la salida, común a amba
 ruedas; y $\operatorname{sat}_{[-255,255]}(\cdot)$ la saturación al intervalo PWM
 permitido.
 
+La estructura anterior reproduce literalmente el controlador ejecutado en el
+firmware y no corresponde a la forma incremental estándar de un PID. En
+particular, el término $K_{p,j}e_j^{\mathrm{db}}[k]$ forma parte del incremento
+que posteriormente se suma a la salida anterior $u_j[k-1]$, por lo que su
+efecto también se acumula entre ciclos. Además, el estado
+$I_j^{\mathrm{int}}[k]$ acumula separadamente el término
+$K_{i,j}e_j^{\mathrm{db}}[k]$. En consecuencia, las ganancias reportadas en
+este trabajo caracterizan esta realización discreta específica heredada de
+\texttt{ROSArduinoBridge} y no deben interpretarse como ganancias de un PID
+incremental estándar. Esta estructura no se modificó durante los ensayos, por
+lo que los resultados experimentales del Capítulo~\ref{ch:resultados}
+corresponden al controlador efectivamente implementado.
+
+
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
 Las ecuaciones exactas y sus tipos de datos se conservan en el
