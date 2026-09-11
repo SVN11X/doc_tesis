@@ -409,7 +409,7 @@ referencia conceptual.
 
 En la práctica el controlador no se evalúa de forma continua, sino a intervalos
 regulares en el microcontrolador. Por ello la ley se implementa en tiempo
-discreto, con una forma incremental y derivada sobre la medición. El incremento
+discreto, con una forma incremental acumulativa en la que el término asociado a $K_{d,j}$ se calcula sobre la diferencia de la medición. El incremento
 de control, la actualización del integrador y la salida saturada se resumen
 como:
 
@@ -457,6 +457,22 @@ incremental estándar. Esta estructura no se modificó durante los ensayos, por
 lo que los resultados experimentales del Capítulo~\ref{ch:resultados}
 corresponden al controlador efectivamente implementado.
 
+Si se desprecian la saturación y los truncamientos enteros, y se parte de un
+reinicio con \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero, la
+salida acumulada puede escribirse sin incrementos:
+\begin{equation}
+u_j[k]=\frac{K_{p,j}\,S_j^{e}[k]-K_{d,j}\,m_j^{\mathrm{int}}[k]+S_j^{I}[k]}{K_o},
+\label{eq:pid_equivalente}
+\end{equation}
+\noindent donde $S_j^{e}[k]=S_j^{e}[k-1]+e_j^{\mathrm{db}}[k]$ es el error
+acumulado desde el reinicio y $S_j^{I}[k]=S_j^{I}[k-1]+I_j^{\mathrm{int}}[k]$
+la acumulación del estado integral, ambos con valor inicial cero. Esta forma
+muestra el efecto real de cada ganancia. $K_{p,j}$ multiplica el error
+acumulado, por lo que actúa como ganancia integral. $K_{d,j}$ multiplica la
+medición actual, por lo que actúa como ganancia proporcional sobre la medición
+y no como acción derivativa. $K_{i,j}$ actúa sobre una acumulación del estado
+integral, es decir, como una segunda integración. La ley ejecutada no contiene
+una acción derivativa efectiva.
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
