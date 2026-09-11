@@ -8,11 +8,13 @@ En relación con la plataforma física, se construyó un robot diferencial de ba
 
 El gemelo digital desarrollado en Gazebo permitió verificar la geometría,
 la cinemática, la cadena de transformaciones y la interfaz de control antes de
-operar el robot físico. En simulación, el error medio de seguimiento
-rectilíneo fue 3.39\% y la odometría coincidió con la verdad de terreno de
-Gazebo. En hardware real, el error odométrico medio fue 3.63\% y el error
-físico de seguimiento fue 7.18\%. La selección del backend y su trazabilidad
-se documentan en el \ref{anx:gemelo_digital}.
+operar el robot físico. En simulación, la desviación media respecto de la
+referencia nominal de 2~m fue 3.39\%, calculada con la propia odometría porque
+la pose verdadera de Gazebo no quedó registrada durante los ensayos. Ese valor
+no separa el error odométrico del error de seguimiento. En hardware real, el
+error odométrico medio fue 3.63\% y el error físico de seguimiento fue 7.18\%.
+La selección del backend y su trazabilidad se documentan en el
+\ref{anx:gemelo_digital}.
 
 Respecto del control de bajo nivel, el firmware ejecuta de forma independiente
 para cada rueda una ley de control discreta acumulativa, denominada PID en el

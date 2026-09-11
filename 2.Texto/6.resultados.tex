@@ -228,7 +228,7 @@ El retardo identificado resultó menor que el período de captura, por lo que no
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-El mapeo se evaluó sobre el hardware real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones produjeron un mapa válido. La inspección visual de los mapas obtenidos mostró paredes definidas y consistencia global. Esta valoración es cualitativa, y la reconstrucción offline de los rosbag no detectó cierres de lazo en las iteraciones válidas.
+El mapeo se evaluó sobre el hardware real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones produjeron un mapa válido. La inspección visual de los mapas obtenidos mostró paredes definidas y consistencia global. Esta valoración es cualitativa. El análisis \emph{post hoc} no incorpora una detección automática de cierre de lazo, por lo que ese indicador quedó registrado como no determinado en las cinco iteraciones válidas.
 
 La métrica utilizada corresponde al índice de cobertura libre, definido como
 la proporción de celdas observadas como libres respecto del total de celdas
@@ -294,10 +294,9 @@ $\sigma$ & 0.53 & 1.10 & 12.94 & 0.03 \\
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
-Su evaluación cuantitativa se presenta mediante el índice de cobertura libre y el área
-libre mapeada de las cinco iteraciones válidas de exploración.
 
-El contraste cualitativo de los mapas obtenidos se documenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
+Estos indicadores caracterizan el mapeo obtenido en las cinco iteraciones
+válidas de exploración y no constituyen una medida del error absoluto del mapa. El contraste cualitativo de los mapas obtenidos se documenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
 
 El índice de cobertura libre se calcula sobre la imagen de ocupación completa, cuyos límites no están anclados al recinto físico. Por eso es un indicador interno relativo y no una fracción absoluta del área del recinto. Esto explica que el área libre mapeada se mantenga casi constante entre iteraciones mientras el índice de cobertura varía de forma amplia, ya que este último depende de cuántas celdas desconocidas quedan dentro de la imagen. Por su mayor estabilidad, el área libre mapeada y el resultado de las metas de la Tabla~\ref{tab:anx_explore_metas} se toman como evidencia principal de la exploración, y el índice de cobertura como indicador complementario.
 
