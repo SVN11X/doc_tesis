@@ -22,8 +22,8 @@ Este proyecto se justifica por su aporte académico y tecnológico al integrar c
 
 Diseñar e implementar un prototipo de robot móvil de tracción diferencial de
 bajo costo, basado en ROS 2, capaz de construir un mapa 2D de su entorno
-mediante SLAM, navegar de forma autónoma hacia metas dentro del mapa y explorar
-autónomamente zonas no mapeadas.
+mediante SLAM y navegar de forma autónoma hacia destinos por explorar,
+generados automáticamente por una estrategia de exploración de fronteras.
 
 \section*{Objetivos específicos}
 \phantomsection
@@ -40,12 +40,22 @@ autónomamente zonas no mapeadas.
 
 \end{description}
 
-\section*{Alcances y limitaciones}
+\section{Alcances y limitaciones}
 \phantomsection
 \addcontentsline{toc}{section}{Alcances y limitaciones}
 \label{sec:alcances}
 
 El alcance del trabajo comprende el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial para interiores. El sistema opera sobre superficies planas, utiliza un \gls{LIDAR} 2D RPLidar A1 como sensor principal y emplea odometría por encoders para estimar el desplazamiento. La validación considera pruebas en simulación y en hardware real, abordando odometría, control, mapeo, navegación y exploración.
+
+La evaluación de la navegación se realiza sobre los destinos que genera la
+estrategia de exploración, que son los comprometidos en el objetivo general.
+No forma parte del alcance un protocolo de navegación dirigida con metas fijas
+definidas por el operador, con tasa de éxito y error de posición final medido
+respecto de marcas físicas del recinto. Ese protocolo exige un mapa
+previamente almacenado, localización con AMCL activa y puntos de referencia
+medidos en el entorno, condiciones que no se configuraron durante los ensayos.
+En consecuencia, este trabajo no informa tasa de éxito ni error de posición
+final para metas fijas, y ese ensayo se plantea como trabajo futuro.
 
 Entre sus limitaciones se considera que el prototipo no incorpora \gls{IMU}, cámara ni fusión sensorial, por lo que la odometría puede degradarse en trayectorias largas o giros acumulados. Además, el sistema no está orientado a exteriores, superficies irregulares ni obstáculos dinámicos rápidos. La implementación se desarrolla sobre \gls{ROS2} Foxy y Ubuntu 20.04 LTS, con simulación en Gazebo Classic 11; esta combinación se congela al inicio del proyecto para garantizar la compatibilidad de la cadena completa de paquetes sobre el hardware disponible. La migración a una distribución con soporte vigente se plantea como trabajo futuro.
 

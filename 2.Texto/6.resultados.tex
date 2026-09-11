@@ -346,9 +346,10 @@ radio de inflación de 0.15~m aplicado en un recinto reducido
 (Sec.~\ref{sec:costmaps_ch9}) condiciona la maniobrabilidad. En conjunto, los ensayos verifican la integración funcional, cuantifican la
 cobertura y documentan el resultado de las metas de exploración según la
 Tabla~\ref{tab:anx_explore_metas}. La finalización correcta de las cinco
-iteraciones se refiere a la generación de un mapa válido. La validación
-cuantitativa de navegación dirigida con metas fijas, distinta de las metas que
-genera el explorador, permanece pendiente. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de validación alcanzado por cada subsistema.
+iteraciones se refiere a la generación de un mapa válido. La navegación dirigida con metas fijas definidas por el operador, distinta de
+las metas que genera el explorador, queda fuera del alcance declarado en la
+Sec.~\ref{sec:alcances} y no se ensayó, por lo que este trabajo no informa
+tasa de éxito ni error de posición final para ese caso. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de validación alcanzado por cada subsistema.
 
 \begin{table}[H]
 \centering
@@ -365,7 +366,7 @@ SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
 Cobertura y área libre cuantificadas en cinco iteraciones válidas; la
 alineación de paredes se evaluó visualmente y no se dispuso de ground truth
 geométrico para validar el error absoluto del mapa \\
-Nav2 & Verificada funcionalmente; resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}); protocolo de navegación dirigida con metas fijas pendiente \\
+Nav2 & Verificada funcionalmente, resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}). El protocolo con metas fijas queda fuera del alcance (Sec.~\ref{sec:alcances}) \\
 Exploración & Verificada funcionalmente, resultado de metas cuantificado & 60 metas autónomas en 5 iteraciones, 54 abortadas, 1 exitosa y 5 sin estado terminal. Cobertura y área cuantificadas \\
 Localización AMCL & Implementada y configurada, no evaluada experimentalmente &
 El nodo y sus archivos de lanzamiento están disponibles para navegación sobre
@@ -416,5 +417,5 @@ El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en
 hardware real. La exploración por fronteras alcanzó un índice
 medio de cobertura libre de 62.2\% ($\sigma=12.9$) en cinco iteraciones, con
 un área libre mapeada media de 3.50~m$^2$. La integración funcional y la
-cobertura quedaron verificadas; la validación cuantitativa de navegación por
-metas permanece pendiente.
+cobertura quedaron verificadas. La navegación hacia metas fijas definidas por
+el operador queda fuera del alcance declarado.
