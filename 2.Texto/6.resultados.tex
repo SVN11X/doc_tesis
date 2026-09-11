@@ -317,7 +317,10 @@ genera el explorador, permanece pendiente. La Tabla~\ref{tab:estado_validacion} 
 \midrule
 Odometría & Validada cuantitativamente & Simulación y hardware real \\
 Control PID & Validado con datos experimentales & Respuesta e indicadores de la Tabla~\ref{tab:pid_performance} medidos sobre la captura real en lazo cerrado \\
-SLAM & Validado cuantitativamente en hardware real & Cobertura y área libre cuantificadas en cinco iteraciones válidas de exploración; alineación de paredes evaluada por inspección visual \\
+SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
+Cobertura y área libre cuantificadas en cinco iteraciones válidas; la
+alineación de paredes se evaluó visualmente y no se dispuso de ground truth
+geométrico para validar el error absoluto del mapa \\
 Nav2 & Verificada funcionalmente; resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}); protocolo de navegación dirigida con metas fijas pendiente \\
 Exploración & Validada a nivel de meta & 60 metas autónomas generadas en 5 iteraciones, 54 abortos y 1 éxito; cobertura y área cuantificadas \\
 \bottomrule
