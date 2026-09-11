@@ -11,10 +11,11 @@ La odometría se validó cuantitativamente en trayectorias rectas sobre hardware
 real, obteniéndose un error medio de 3.63\%. El mapeo se verificó
 funcionalmente y se caracterizó cuantitativamente mediante el índice de
 cobertura libre y el área libre mapeada, sin disponer de una referencia
-geométrica externa que permita cuantificar el error absoluto del mapa. El
-desempeño asociado a las ganancias finales del firmware se evaluó mediante
-simulación sobre un modelo FOPDT reidentificado, obteniéndose sobreimpulsos de
-10.7\%--15.6\%. La exploración basada en fronteras se ejecutó de extremo a
+geométrica externa que permita cuantificar el error absoluto del mapa. El control de velocidad se evaluó experimentalmente en lazo cerrado sobre el
+robot real con una referencia de 0.13~m/s. Las ruedas izquierda y derecha
+presentaron errores estacionarios de 0.002~m/s y 0.000~m/s,
+respectivamente, con tiempos de subida 10\%--90\% de 0.8~s y 1.4~s y sin
+sobreimpulso apreciable dentro de la resolución de la medición. La exploración basada en fronteras se ejecutó de extremo a
 extremo en hardware real y alcanzó un índice medio de cobertura libre de
 62.2\% en cinco iteraciones, con un área libre mapeada media de
 3.50~m$^2$. La integración funcional y la cobertura quedaron verificadas;

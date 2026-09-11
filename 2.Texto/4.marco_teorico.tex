@@ -488,34 +488,26 @@ una zona de inflación que penaliza transitar cerca de ellos
 \citep{lavalle2006planning}.
 
 El planificador global calcula una ruta desde la posición actual hasta la
-meta. El algoritmo A* \citep{hart1968astar} explora la rejilla expandiendo
-en cada paso el nodo más prometedor según la función de evaluación:
+meta. En este trabajo se utiliza NavFn configurado con
+\texttt{use\_astar=true}, por lo que la búsqueda global emplea el algoritmo
+A* sobre la rejilla derivada del mapa de costos. A* ordena la expansión de
+los nodos mediante la función de evaluación:
 
 \begin{equation}
 f(n)=g(n)+h(n),
 \label{eq:astar}
 \end{equation}
 
-\noindent donde $n$ es el nodo evaluado, $g(n)$ el costo acumulado desde el
-origen hasta $n$ y $h(n)$ una heurística que estima el costo restante hasta
-la meta; $f(n)$ es el costo total estimado de la ruta que pasa por $n$.
+\noindent donde $n$ es el nodo evaluado, $g(n)$ representa el costo acumulado
+desde el origen hasta dicho nodo y $h(n)$ una estimación del costo restante
+hasta la meta. La implementación concreta del planificador incorpora además
+los costos asociados a la representación utilizada por Nav2.
 
-El costo acumulado $g(\alpha)$ de una celda sucesora $\alpha$ contigua a $n$ se
-obtiene sumando a $g(n)$ el costo de transitar hasta $\alpha$, que combina la
-distancia recorrida y el costo de ocupación que el mapa asigna a la celda de
-destino, mayor cerca de los obstáculos por la zona de inflación. Como heurística
-$h(n)$ se emplea la distancia euclidiana de la celda a la meta, que es admisible
-porque no sobreestima el costo real restante:
-
-\begin{equation}
-h(n)\le h^{*}(n),
-\label{eq:astar_admisible}
-\end{equation}
-
-\noindent donde $h^{*}(n)$ es el costo real mínimo restante hasta la meta. Al
-no sobreestimarlo, A* encuentra la ruta de costo mínimo expandiendo menos
-nodos que una búsqueda sin información, lo que lo hace adecuado para
-replanificar periódicamente sobre mapas de costo.
+Dado que en este trabajo no se reconstruyó el escalamiento interno completo
+de dichos costos, no se utiliza la admisibilidad de la heurística ni la
+optimalidad matemática de la ruta como criterio de validación. Para este
+proyecto, la función relevante del planificador es generar una ruta global
+sobre el mapa de costos que pueda ser seguida por el controlador local.
 
 El control local convierte la ruta global en comandos de velocidad
 ejecutables. El enfoque de ventana dinámica considera únicamente las

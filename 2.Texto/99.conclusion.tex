@@ -41,10 +41,14 @@ El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
 \item[\autoref{oe2} -- Control de bajo nivel:] \textit{Cumplido.} Se implementaron la lectura de encoders y el control PID en el firmware; la posición y velocidad de rueda se exportan mediante \texttt{DiffDriveArduino}, y la odometría se integra en \texttt{diff\_drive\_controller}.
 
-\item[\autoref{oe3} -- Mapeo y navegación:] \textit{Cumplido parcialmente.} El mapeo se implementó y verificó funcionalmente en hardware real, y su
-cobertura y área libre fueron caracterizadas cuantitativamente en cinco
-iteraciones. No se realizó una validación geométrica del mapa respecto de una
-referencia externa. Nav2 quedó integrado y verificado funcionalmente, con el resultado de las metas de exploración cuantificado. La validación cuantitativa de navegación dirigida con metas fijas permanece pendiente.
+\item[\autoref{oe3} -- Localización, mapeo y navegación:]
+\textit{Cumplido parcialmente.} El mapeo se implementó y verificó
+funcionalmente en hardware real, con caracterización cuantitativa de cobertura
+y área libre. AMCL quedó implementado y configurado para localización sobre
+mapas almacenados, pero no fue evaluado mediante un protocolo experimental
+independiente. Nav2 quedó integrado y verificado funcionalmente mediante las
+metas generadas durante la exploración. La validación cuantitativa de
+navegación dirigida con metas fijas permanece pendiente.
 
 \item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras se integró y ejecutó de forma autónoma. Se generaron y despacharon 60 metas de navegación en cinco iteraciones, reconstruidas por identificador único, con 54 abortos y una meta completada. La cobertura y el área libre se cuantificaron. La baja tasa de metas completadas se atribuye al recinto reducido.
 \end{description}

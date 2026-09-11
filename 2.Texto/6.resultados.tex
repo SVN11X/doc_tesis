@@ -6,7 +6,7 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 \utemFigurePropia{2.Texto/Imag/entorno_experimental.jpg}{0.78\textwidth}
 {Entorno utilizado para las pruebas experimentales en hardware real.}{fig:entorno_experimental}
 
-\section{Validación de odometría y control diferencial}
+\section{Evaluación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
 La evaluación rectilínea utiliza una referencia de 2~m. En simulación, la distancia de odometría coincide con la posición verdadera entregada por el simulador en los registros disponibles; en hardware real, el error odométrico corresponde a la discrepancia entre la odometría de encoders y la medición física.
@@ -91,6 +91,21 @@ Desviación estándar de $E_{\mathrm{odom}}$ ($n=5$)
 \end{tabular}
 \end{table}
 
+En hardware real, el error medio de seguimiento de 7.18\% corresponde a una
+distancia física media de aproximadamente 1.856~m frente a los 2~m definidos
+por el protocolo. Este error debe distinguirse del error odométrico de 3.63\%:
+el primero caracteriza cuánto se apartó el desplazamiento físico de la
+referencia comandada, mientras que el segundo compara la estimación de
+odometría con la distancia realmente recorrida.
+
+Los datos disponibles no permiten atribuir experimentalmente el 7.18\% a un
+mecanismo individual. Efectos no representados completamente en simulación,
+como fricción, zona muerta del accionamiento, deslizamiento, cuantización y
+dinámica transitoria, pueden contribuir a la diferencia observada, pero no
+fueron aislados mediante ensayos independientes. Por ello, el valor se
+interpreta como una medida agregada del seguimiento físico del prototipo y no
+como una estimación de alguno de esos efectos por separado.
+
 Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref{tab:resumen_giro}; su comparación entre simulación y hardware se desarrolla en la Sec.~\ref{sec:comparacion_sim_real}.
 
 \begin{table}[H]
@@ -103,7 +118,7 @@ Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref
 \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
 Desviación angular media & $17.1^\circ$ & $11.7^\circ$ \\
-Error angular medio normalizado $E_{\theta,360}$ & $4.74\%$ & $3.24\%$ \\
+Desviación angular normalizada $E_{\theta,360}$ & $4.74\%$ & $3.24\%$ \\
 Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \bottomrule
 \end{tabular}
@@ -237,8 +252,7 @@ N_{\mathrm{libre}}\,\rho_{\mathrm{map}}^2,
 \noindent donde $A_{\mathrm{libre}}$ es el área libre mapeada [m$^2$] y
 $\rho_{\mathrm{map}}$ la resolución del mapa [m/celda]. La
 Tabla~\ref{tab:slam_real_indicadores} consolida los indicadores de mapeo
-obtenidos en las cinco iteraciones válidas sobre hardware real, recuperados
-post-hoc del \textit{rosbag} y del mapa PGM de cada sesión; su procedencia y
+obtenidos en las cinco iteraciones válidas sobre hardware real, recuperados \emph{post hoc} del \textit{rosbag} y del mapa PGM de cada sesión; su procedencia y
 alcance se documentan en el \ref{anx:resultados_metodologia}.
 
 \begin{table}[H]
@@ -287,9 +301,29 @@ La exploración por fronteras se ejecutó de forma autónoma en cinco iteracione
 
 En total se generaron 60 metas de navegación. De ellas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera. El resultado predominante fue el aborto, con 54 metas abortadas y una sola meta completada con éxito. Las metas abortadas tuvieron una vida mediana de entre 20 y 61 segundos según la iteración, de modo que corresponden a intentos reales de navegación y no a reemplazos inmediatos de meta.
 
-Este patrón es coherente con el recinto reducido y el radio de inflación de 0.15~m, que dejan poco margen para completar rutas hacia fronteras cercanas a las paredes. El comportamiento se corrobora con once avisos de lista de fronteras agotada emitidos por el nodo explorador, que vacía y reintenta la lista negra. En la implementación empleada una frontera entra en la lista negra únicamente cuando su meta retorna aborto, por lo que esos avisos confirman abortos reales.
+De las 60 metas generadas, 54 finalizaron con estado abortado, una con éxito y
+cinco quedaron sin estado terminal al finalizar sus respectivos registros. Por
+tanto, la fracción de metas exitosas respecto del total generado fue de
+$1/60\approx1.7\%$, mientras que entre las 55 metas con resultado terminal fue
+de $1/55\approx1.8\%$. Estos valores muestran que la cadena
+explorador--Nav2 se ejecutó, pero también evidencian un desempeño operacional
+limitado para completar las metas seleccionadas en el entorno utilizado.
 
-En conjunto, estos registros demuestran el mecanismo autónomo completo. El explorador elige una frontera, envía la meta, Nav2 la ejecuta y el mapa crece con la información nueva del LIDAR. La baja tasa de metas completadas queda documentada como una limitación cuantificada del entorno de pruebas y no como una falla del mecanismo.
+Los once mensajes de lista de fronteras agotada no representan once abortos ni
+deben compararse directamente con las 54 metas abortadas. En el código
+ejecutado, una frontera puede incorporarse a la lista negra cuando una acción
+de navegación retorna \texttt{ABORTED} o cuando se supera
+\texttt{progress\_timeout}. El mensaje de lista agotada aparece únicamente
+cuando todas las fronteras candidatas del instante coinciden con elementos de
+la lista negra, momento en que esta se vacía para permitir nuevos intentos.
+Por ello, ambos contadores describen eventos diferentes.
+
+En conjunto, los ensayos verifican la integración funcional del proceso de
+exploración: se detectaron fronteras, se generaron metas y Nav2 intentó
+ejecutarlas mientras el mapa continuó actualizándose. Sin embargo, la elevada
+proporción de metas abortadas impide interpretar estos ensayos como evidencia
+de navegación robusta hacia las fronteras. El resultado se conserva como una
+limitación cuantificada del desempeño obtenido en el entorno experimental.
 
 \begin{utemMultiFigurePropia}{Ejecución de navegación autónoma y exploración por fronteras sobre hardware real: avance desde un mapa parcial hasta una representación de mayor cobertura, con la ruta planificada por Nav2 (trazo verde).}{fig:nav_exploracion_real}
 \addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Mapa parcial en una etapa temprana de la exploración.}
@@ -323,6 +357,10 @@ alineación de paredes se evaluó visualmente y no se dispuso de ground truth
 geométrico para validar el error absoluto del mapa \\
 Nav2 & Verificada funcionalmente; resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}); protocolo de navegación dirigida con metas fijas pendiente \\
 Exploración & Validada a nivel de meta & 60 metas autónomas generadas en 5 iteraciones, 54 abortos y 1 éxito; cobertura y área cuantificadas \\
+Localización AMCL & Implementada y configurada, no evaluada experimentalmente &
+El nodo y sus archivos de lanzamiento están disponibles para navegación sobre
+mapas almacenados, pero AMCL no se ejecutó durante los ensayos de mapeo y
+exploración ni se realizó un protocolo independiente de localización \\
 \bottomrule
 \end{tabular}
 \end{table}
