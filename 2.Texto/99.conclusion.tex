@@ -30,8 +30,7 @@ La navegación con Nav2 quedó integrada mediante planificación global,
 control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecutó en cinco iteraciones válidas y alcanzó
 un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$). Se generaron 60
 metas de navegación autónomas reconstruidas por identificador único, de las
-cuales 54 abortaron y una se completó, un resultado atribuible al recinto
-reducido. El detalle metodológico se conserva en el
+cuales 54 abortaron y una se completó. El recinto reducido y el radio de inflación de 0.15~m son posibles causas, pero no se aislaron experimentalmente. El detalle metodológico se conserva en el
 \ref{anx:resultados_metodologia}.
 
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
@@ -50,7 +49,7 @@ independiente. Nav2 quedó integrado y verificado funcionalmente mediante las
 metas generadas durante la exploración. La validación cuantitativa de
 navegación dirigida con metas fijas permanece pendiente.
 
-\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras se integró y ejecutó de forma autónoma. Se generaron y despacharon 60 metas de navegación en cinco iteraciones, reconstruidas por identificador único, con 54 abortos y una meta completada. La cobertura y el área libre se cuantificaron. La baja tasa de metas completadas se atribuye al recinto reducido.
+\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras se integró y ejecutó de forma autónoma. Se generaron y despacharon 60 metas de navegación en cinco iteraciones, reconstruidas por identificador único, con 54 abortos y una meta completada. La cobertura y el área libre se cuantificaron. La baja tasa de metas completadas, 1 de 55 metas con resultado terminal, constituye una limitación del desempeño obtenido cuya causa no se aisló experimentalmente.
 \end{description}
 
 En consecuencia, el objetivo general se alcanzó en diseño, construcción, control y mapeo. La navegación y la exploración quedaron integradas funcionalmente y su cobertura fue cuantificada; el éxito de navegación por metas permanece sin cuantificar.
@@ -62,11 +61,13 @@ En consecuencia, el objetivo general se alcanzó en diseño, construcción, cont
 \begin{itemize}
 \item \textbf{Deriva odométrica:} la odometría basada solo en encoders acumula error, especialmente en giros y trayectorias largas.
 \item \textbf{Espacio de pruebas reducido:} el recinto disponible limita la ejecución de recorridos extensos y condiciona la geometría de los mapas de costo.
-\item \textbf{Registro de navegación:} los contadores disponibles no identifican metas únicas y no sustentan una tasa de éxito de Nav2.
-\item \textbf{Métricas PID:} la figura experimental y las métricas simuladas provienen de procedimientos distintos y no deben interpretarse como una única prueba.
+\item \textbf{Registro de navegación:} los contadores de texto de \texttt{run\_explore.sh} no identifican metas únicas, por lo que el resultado de las metas de exploración se reconstruyó a posteriori desde el flujo de estado de la acción. No se ejecutó un protocolo de navegación dirigida con metas fijas, por lo que no se dispone de tasa de éxito ni de error de posición final para ese caso.
+\item \textbf{Métricas PID:} los indicadores de la Tabla~\ref{tab:pid_performance} provienen de la captura experimental en hardware real, mientras que los sobreimpulsos de 10.7\% a 15.6\% provienen de una simulación ilustrativa sobre un modelo FOPDT reidentificado. No deben interpretarse como una única prueba.
 \item \textbf{Fidelidad de la simulación:} Gazebo no reproduce completamente fricción, zona muerta del driver, ruido sensorial ni latencias reales.
 \item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.
 \item \textbf{Validez externa:} los resultados provienen de un único recinto de aproximadamente 3.5~m$^2$ y de cinco iteraciones, por lo que no se generalizan a entornos mayores o de geometría distinta.
+\item \textbf{Ley de control de bajo nivel:} el firmware ejecuta la ley acumulativa heredada de \texttt{ROSArduinoBridge}, en la que $K_p$ actúa como ganancia integral, $K_d$ como ganancia proporcional sobre la medición y $K_i$ como segunda integración (Ec.~\eqref{eq:pid_equivalente}). No se realizó un análisis de estabilidad de esta ley ni una comparación con un PID incremental estándar.
+\item \textbf{Particularidades de implementación conservadas:} la lectura no atómica de los encoders, la posición global del PSO copiada desde la posición actual y sin semilla fija, y el costo de fronteras no homogéneo en unidades se documentan tal como se ejecutaron. Su efecto sobre los resultados no se cuantificó.
 \end{itemize}
 
 \section*{Trabajo futuro}
@@ -79,4 +80,8 @@ En consecuencia, el objetivo general se alcanzó en diseño, construcción, cont
 \item Migrar el sistema a una distribución mantenida de \gls{ROS2}.
 \item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
 \item Evaluar la exploración con un protocolo que distinga selección de frontera, envío de meta, resultado de la acción y cobertura obtenida.
+\item Reemplazar la ley acumulativa del firmware por un PID incremental estándar con lectura atómica de encoders, y repetir los ensayos de control y odometría.
+\item Evaluar la localización con AMCL sobre un mapa almacenado, comparando la pose estimada con posiciones marcadas físicamente en el recinto.
+\item Repetir el protocolo angular con un giro controlado a un ángulo fijo y verificar la velocidad angular efectiva registrada en \texttt{/odom}.
+\item Registrar la pose verdadera de Gazebo en los ensayos simulados para separar el error odométrico del error de seguimiento en simulación.
 \end{enumerate}

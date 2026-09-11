@@ -460,7 +460,7 @@ Ocho valores \\
 \subsection{Ecuaciones y estados internos del PID embebido}
 \label{anx:pid_ecuaciones}
 
-\noindent La implementación utiliza una ley discreta acumulativa con derivada sobre la medición, variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
+\noindent La implementación utiliza una ley discreta acumulativa con un término calculado sobre la diferencia de la medición, variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
 
 En cada actualización se leen primero ambos encoders. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~ticks/frame). El incremento de salida se calcula en punto flotante a partir de los términos proporcional, derivativo sobre la medición e integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
 
@@ -742,10 +742,7 @@ empleada por los scripts de análisis. Sin embargo, la configuración del
 controlador satura la velocidad angular en 0.35~rad/s
 (Tabla~\ref{tab:diff_drive_params}); bajo ese límite, mantenido de forma
 ideal y constante, el giro teórico alcanzable es
-$0.35\,(2\pi/0.4)$~rad, equivalente a $315^\circ$. Por lo tanto, las
-desviaciones informadas en la Sec.~\ref{sec:resultados_odometria} se miden
-respecto de una referencia nominal y no respecto de una consigna de giro
-completo efectivamente aplicada.
+$0.35\,(2\pi/0.4)$~rad, equivalente a $315^\circ$. Sin embargo, todos los giros registrados superan ese valor, tanto el giro acumulado de \texttt{/odom} en simulación (Tabla~\ref{tab:odom_giro_sim}) como el giro físico medido en hardware (Tabla~\ref{tab:odom_giro}). Esto indica que la velocidad angular efectiva no quedó limitada de forma ideal a 0.35~rad/s durante los ensayos. Los registros \textit{rosbag} de cada prueba contienen \texttt{/odom}, cuya velocidad angular permitiría verificar la velocidad efectivamente aplicada sin repetir los ensayos.
 
 En simulación, la interpretación del error rectilíneo y la condición del protocolo angular corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
 
@@ -753,19 +750,18 @@ En simulación, la interpretación del error rectilíneo y la condición del pro
 
 \begin{table}[H]
 \centering
-\caption{Error de seguimiento en trayectoria rectilínea de 2~m en
-simulación (Gazebo).}
+\caption{Desviación de la odometría simulada respecto de la referencia nominal de 2~m (Gazebo). La pose verdadera de Gazebo no quedó registrada.}
 \label{tab:odom_recta_sim}
 \small
-\begin{tabular}{ccccc}
+\begin{tabular}{cccc}
 \toprule
-\textbf{Prueba} & \textbf{Dist.\ teórica (m)} & \textbf{Dist.\ odom.\ (m)} & \textbf{Dist.\ real GT (m)} & \textbf{$E_{\mathrm{seg}}$ (\%)} \\
+\textbf{Prueba} & \textbf{Dist.\ teórica (m)} & \textbf{Dist.\ odom.\ (m)} & \textbf{Desviación (\%)} \\
 \midrule
-1 & 2.00 & 1.866 & 1.866 & 6.69\% \\
-2 & 2.00 & 1.954 & 1.954 & 2.28\% \\
-3 & 2.00 & 1.946 & 1.946 & 2.72\% \\
-4 & 2.00 & 1.923 & 1.923 & 3.83\% \\
-5 & 2.00 & 1.972 & 1.972 & 1.40\% \\
+1 & 2.00 & 1.866 & 6.69\% \\
+2 & 2.00 & 1.954 & 2.28\% \\
+3 & 2.00 & 1.946 & 2.72\% \\
+4 & 2.00 & 1.923 & 3.83\% \\
+5 & 2.00 & 1.972 & 1.40\% \\
 
 \bottomrule
 \end{tabular}

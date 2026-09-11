@@ -9,7 +9,7 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 \section{Evaluación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
-La evaluación rectilínea utiliza una referencia de 2~m. En simulación, la distancia de odometría coincide con la posición verdadera entregada por el simulador en los registros disponibles; en hardware real, el error odométrico corresponde a la discrepancia entre la odometría de encoders y la medición física.
+La evaluación rectilínea utiliza una referencia nominal de 2~m. El script publica una velocidad lineal de 0.13~m/s durante $2/0.13\approx15.4$~s y luego detiene el robot, por lo que la referencia no es una consigna de posición sino el producto de la velocidad comandada por la duración del comando. En hardware real, la distancia física se midió con cinta métrica y el error odométrico corresponde a la discrepancia entre la odometría de encoders y esa medición. En simulación, la consulta de la pose verdadera a Gazebo no entregó datos durante los ensayos y el script registró la propia odometría como distancia de respaldo. Por ello, en simulación no se dispone de una verdad de terreno independiente.
 
 Las pruebas angulares se analizaron respecto de una referencia nominal de
 $360^\circ$ definida por el protocolo, que no corresponde a una consigna
@@ -80,15 +80,17 @@ obtenidas en la trayectoria rectilínea de 2~m.
 \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
 Error medio de seguimiento $E_{\mathrm{seg}}$
-& 3.39\% & 7.18\% \\
+& 3.39\%$^{*}$ & 7.18\% \\
 Desviación estándar de $E_{\mathrm{seg}}$ ($n=5$)
-& 2.04\% & 0.43\% \\
+& 2.04\%$^{*}$ & 0.43\% \\
 Error medio odométrico $E_{\mathrm{odom}}$
-& 0.00\% & 3.63\% \\
+& NA & 3.63\% \\
 Desviación estándar de $E_{\mathrm{odom}}$ ($n=5$)
-& 0.00\% & 0.44\% \\
+& NA & 0.44\% \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\parbox{0.85\linewidth}{\footnotesize $^{*}$ En simulación se calcula con la distancia de odometría, porque la pose verdadera de Gazebo no quedó registrada.}
 \end{table}
 
 En hardware real, el error medio de seguimiento de 7.18\% corresponde a una
@@ -98,13 +100,21 @@ el primero caracteriza cuánto se apartó el desplazamiento físico de la
 referencia comandada, mientras que el segundo compara la estimación de
 odometría con la distancia realmente recorrida.
 
-Los datos disponibles no permiten atribuir experimentalmente el 7.18\% a un
-mecanismo individual. Efectos no representados completamente en simulación,
-como fricción, zona muerta del accionamiento, deslizamiento, cuantización y
-dinámica transitoria, pueden contribuir a la diferencia observada, pero no
-fueron aislados mediante ensayos independientes. Por ello, el valor se
-interpreta como una medida agregada del seguimiento físico del prototipo y no
-como una estimación de alguno de esos efectos por separado.
+Los registros permiten separar el 7.18\% en dos partes, aunque no aislar sus
+causas físicas. La odometría media de las cinco repeticiones fue 1.924~m, es
+decir, los encoders registraron un avance 3.8\% menor que los 2~m nominales.
+Esta parte ya está presente en la medición de los encoders y es compatible con
+el tiempo de subida de las ruedas (Tabla~\ref{tab:pid_performance}), porque la
+referencia se define por tiempo y no por posición. La simulación, que no
+reproduce la zona muerta del driver, presenta una desviación del mismo orden
+(3.39\%). La parte restante, 0.067~m o 3.4\% de la referencia, corresponde a la
+sobreestimación de la distancia por la odometría, que expresada respecto de la
+distancia real es el error odométrico de 3.63\%. Su baja dispersión (0.44\%)
+indica un sesgo sistemático, compatible con un error de escala en el radio
+efectivo de rueda o con deslizamiento persistente. Estos efectos no se
+separaron mediante ensayos independientes. El valor $N_e=1980$ no explica el
+sesgo, porque su diferencia con los promedios medidos haría que la odometría
+subestimara la distancia entre 0.2\% y 0.6\%.
 
 Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref{tab:resumen_giro}; su comparación entre simulación y hardware se desarrolla en la Sec.~\ref{sec:comparacion_sim_real}.
 
@@ -124,7 +134,7 @@ Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \end{tabular}
 \end{table}
 
-Esta métrica no es un error odométrico angular aislado. Mide cuánto se aparta el giro acumulado de \texttt{/odom} al final de un ensayo de duración fija respecto de la referencia nominal de 360~grados. Lo que domina el valor es la combinación de la duración del ensayo y el límite de velocidad angular, no la deriva odométrica. Por eso la desviación en simulación supera a la de hardware, ya que la velocidad angular efectiva difiere entre ambos backends. Un giro comandado a un ángulo fijo y controlado, planteado como trabajo futuro, entregaría un error angular directo.
+Esta métrica no es un error odométrico angular aislado. En simulación, el giro observado es el giro acumulado de \texttt{/odom} al final de un ensayo de duración fija. En hardware real, es el giro físico medido al final del ensayo. En ambos casos se compara con la referencia nominal de 360~grados y no con el giro efectivamente comandado. Los giros observados, entre $335.9^\circ$ y $347.4^\circ$ en simulación y entre $340^\circ$ y $380^\circ$ en hardware real, superan los $315^\circ$ que se obtendrían si el límite de 0.35~rad/s actuara de forma ideal y constante durante todo el ensayo (\ref{anx:odometria_detalle}). Por tanto, los registros no son coherentes con esa hipótesis y la causa de la diferencia no se determinó. Un giro comandado a un ángulo fijo y controlado, planteado como trabajo futuro, entregaría un error angular directo.
 
 El desglose por repetición de ambos protocolos (trayectoria rectilínea y
 protocolo angular, en simulación y hardware real) se presenta en la
@@ -185,7 +195,7 @@ Los indicadores de la Tabla~\ref{tab:pid_performance} se calcularon
 directamente sobre la respuesta experimental en lazo cerrado de la
 Fig.~\ref{fig:respuesta_escalon_final}, con la referencia de 0.13~m/s. La
 comparación ilustrativa con el modelo FOPDT y la sintonía Lambda se conserva
-en el \ref{anx:lambda_detalle}.
+en el \ref{anx:lambda_detalle}. En esa simulación, las ganancias finales producen sobreimpulsos de 10.7\% a 15.6\%. Esos valores provienen de un modelo que no reproduce la zona muerta del driver, las bandas muertas asimétricas ni los tipos enteros del firmware, por lo que no se comparan directamente con la Tabla~\ref{tab:pid_performance}.
 
 \begin{table}[H]
 \centering
@@ -209,16 +219,16 @@ Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. La velocidad in
 La comparación completa entre las ganancias del firmware y la referencia
 analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}, con carácter ilustrativo.
 
-La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. Esta diferencia responde a la banda muerta asimétrica del firmware, de 2~ticks/trama en la rueda izquierda y 1 en la derecha. Dentro de la banda muerta el error se fija en cero, de modo que no se acumula acción integral. La rueda izquierda ignora así un rango de error mayor y requiere una ganancia integral más alta para eliminar el error estacionario residual una vez fuera de esa banda. Este comportamiento es coherente con la respuesta obtenida con las ganancias sugeridas por PSO, en la que la rueda izquierda mantenía un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El refinamiento experimental fijó la ganancia integral izquierda para corregir ese sesgo.
+La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fijó durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantenía un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero de \texttt{ITerm} (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~ticks/frame, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~ticks/frame, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~ticks/frame, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
 
-El PSO entregó un punto de partida heurístico para las tres ganancias. El refinamiento experimental ajustó ese punto de partida, de forma moderada en $K_p$ y $K_d$ y de forma más marcada en $K_i$, hasta lograr el seguimiento de la referencia sobre el robot real. Por tanto, el aporte del PSO fue el de una semilla de búsqueda y no el de un ajuste final validado por sí solo.
+El PSO entregó un punto de partida heurístico para las tres ganancias. El refinamiento experimental ajustó ese punto de partida, con aumentos de $K_p$ de 28\% y 63\%, reducciones de $K_d$ de 41\% y 45\% y un aumento de varios órdenes de magnitud en $K_i$, hasta lograr el seguimiento de la referencia sobre el robot real. Por tanto, el aporte del PSO fue el de una semilla de búsqueda y no el de un ajuste final validado por sí solo.
 
 El retardo identificado resultó menor que el período de captura, por lo que no introduce un desplazamiento temporal efectivo en el modelo discreto. En la práctica el modelo se comporta como uno de primer orden. El detalle se conserva en el \ref{anx:fodt_scripts}.
 
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-El mapeo se evaluó sobre el hardware real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones produjeron un mapa válido. Los mapas obtenidos presentaron paredes definidas, buena consistencia global e inspección visual satisfactoria de la alineación de paredes.
+El mapeo se evaluó sobre el hardware real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones produjeron un mapa válido. La inspección visual de los mapas obtenidos mostró paredes definidas y consistencia global. Esta valoración es cualitativa, y la reconstrucción offline de los rosbag no detectó cierres de lazo en las iteraciones válidas.
 
 La métrica utilizada corresponde al índice de cobertura libre, definido como
 la proporción de celdas observadas como libres respecto del total de celdas
@@ -309,8 +319,9 @@ de $1/55\approx1.8\%$. Estos valores muestran que la cadena
 explorador--Nav2 se ejecutó, pero también evidencian un desempeño operacional
 limitado para completar las metas seleccionadas en el entorno utilizado.
 
-Los once mensajes de lista de fronteras agotada no representan once abortos ni
-deben compararse directamente con las 54 metas abortadas. En el código
+Los diecisiete mensajes de lista de fronteras agotada registrados en las cinco
+iteraciones válidas, once de ellos en la iteración~1, no representan diecisiete
+abortos ni deben compararse directamente con las 54 metas abortadas. En el código
 ejecutado, una frontera puede incorporarse a la lista negra cuando una acción
 de navegación retorna \texttt{ABORTED} o cuando se supera
 \texttt{progress\_timeout}. El mensaje de lista agotada aparece únicamente
@@ -349,14 +360,14 @@ genera el explorador, permanece pendiente. La Tabla~\ref{tab:estado_validacion} 
 \toprule
 \textbf{Subsistema} & \textbf{Estado} & \textbf{Observación} \\
 \midrule
-Odometría & Validada cuantitativamente & Simulación y hardware real \\
-Control PID & Validado con datos experimentales & Respuesta e indicadores de la Tabla~\ref{tab:pid_performance} medidos sobre la captura real en lazo cerrado \\
+Odometría & Validada cuantitativamente en hardware real (recta de 2~m, $n=5$) & En simulación no se registró verdad de terreno independiente. El protocolo angular no mide error odométrico angular \\
+Control PID & Evaluado experimentalmente & Indicadores de la Tabla~\ref{tab:pid_performance} calculados sobre la captura real en lazo cerrado a 0.13~m/s \\
 SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
 Cobertura y área libre cuantificadas en cinco iteraciones válidas; la
 alineación de paredes se evaluó visualmente y no se dispuso de ground truth
 geométrico para validar el error absoluto del mapa \\
 Nav2 & Verificada funcionalmente; resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}); protocolo de navegación dirigida con metas fijas pendiente \\
-Exploración & Validada a nivel de meta & 60 metas autónomas generadas en 5 iteraciones, 54 abortos y 1 éxito; cobertura y área cuantificadas \\
+Exploración & Verificada funcionalmente, resultado de metas cuantificado & 60 metas autónomas en 5 iteraciones, 54 abortadas, 1 exitosa y 5 sin estado terminal. Cobertura y área cuantificadas \\
 Localización AMCL & Implementada y configurada, no evaluada experimentalmente &
 El nodo y sus archivos de lanzamiento están disponibles para navegación sobre
 mapas almacenados, pero AMCL no se ejecutó durante los ensayos de mapeo y
@@ -368,12 +379,13 @@ exploración ni se realizó un protocolo independiente de localización \\
 \section{Coherencia entre simulación y hardware}
 \label{sec:comparacion_sim_real}
 
-En la trayectoria rectilínea de 2~m, el error medio de seguimiento aumenta de
-3.39\% en simulación a 7.18\% en hardware real
-(Tabla~\ref{tab:resumen_odometria}). El error odométrico solo se separa del
-error de seguimiento en hardware real, donde alcanza 3.63\%, porque en
-simulación la odometría coincide con la posición verdadera entregada por el
-simulador.
+En la trayectoria rectilínea de 2~m, la desviación respecto de la referencia
+nominal fue 3.39\% en simulación, calculada con la odometría, y 7.18\% en
+hardware real, calculada con la distancia física medida
+(Tabla~\ref{tab:resumen_odometria}). Por ello ambos valores no miden la misma
+magnitud. El error odométrico solo se separa del error de seguimiento en
+hardware real, donde alcanza 3.63\%, porque en simulación la pose verdadera de
+Gazebo no quedó registrada.
 
 En el protocolo angular, la desviación media respecto de la referencia
 nominal de $360^\circ$ es mayor en simulación ($17.1^\circ$) que en hardware
