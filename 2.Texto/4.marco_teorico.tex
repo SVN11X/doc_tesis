@@ -95,7 +95,10 @@ el entorno de ejecución (hardware real o simulación).
 \subsection{Simulación robótica y Gazebo Classic}
 \label{sec:simuladores_marco}
 
-Un simulador robótico integra un motor de física, la simulación de sensores y un entorno tridimensional configurable, lo que permite verificar la geometría, la cinemática y la lógica de control antes de operar el hardware. Gazebo Classic, el simulador empleado, se integra de forma nativa con \gls{ROS2}: el modelo URDF se carga en el mundo simulado y los sensores publican datos con las mismas interfaces que sus contrapartes físicas \citep{koenig2004gazebo,openrobotics2024gazebo}. La brecha simulación--realidad, es decir fricción, zonas muertas, ruido sensorial y latencias, se considera al interpretar los resultados del Capítulo~\ref{ch:resultados}.
+Un simulador robótico integra un motor de física, la simulación de sensores y un entorno tridimensional configurable, lo que permite verificar la geometría, la cinemática y la lógica de control antes de operar el hardware. Gazebo Classic, el simulador empleado, se integra de forma nativa con \gls{ROS2}
+mediante los paquetes de puente del ecosistema: el modelo URDF se carga en el
+mundo simulado y los sensores publican datos con las mismas interfaces que sus
+contrapartes físicas \citep{osrf2025gazeboclassic}. La brecha simulación--realidad, es decir fricción, zonas muertas, ruido sensorial y latencias, se considera al interpretar los resultados del Capítulo~\ref{ch:resultados}.
 
 \section{ROS 2: nodos, tópicos y comunicación}
 \label{sec:ros2_marco}
@@ -470,12 +473,10 @@ Cada partícula representa una hipótesis de pose. Las hipótesis se propagan co
 \section{Planificación de rutas y control local}
 \label{sec:nav_marco}
 
-La navegación autónoma opera sobre una representación del entorno en forma
-de rejilla de ocupación, donde cada celda clasifica el espacio como libre,
-ocupado o desconocido, y sobre mapas de costo que agregan a los obstáculos
-una zona de inflación que penaliza transitar cerca de ellos
-\citep{lavalle2006planning}.
-Sobre esta representación, el planificador global calcula una ruta desde la posición actual hasta la
+La navegación autónoma opera sobre una representación del entorno en forma de
+rejilla de ocupación, donde cada celda clasifica el espacio como libre, ocupado
+o desconocido \citep{lavalle2006planning}. Sobre esa rejilla se construyen mapas de costo que agregan a los obstáculos una zona de inflación que penaliza
+transitar cerca de ellos \citep{nav2_doc}. Sobre esta representación, el planificador global calcula una ruta desde la posición actual hasta la
 meta. En este trabajo la búsqueda global se resuelve mediante el algoritmo A$^*$ sobre la rejilla derivada del mapa de costos. El planificador empleado y la opción de configuración que habilita esta búsqueda se presentan en el
 Capítulo~\ref{ch:implementacion}. A$^*$ ordena la expansión de
 los nodos mediante la función de evaluación:
@@ -521,9 +522,9 @@ Capítulo~\ref{ch:implementacion}.
 \label{sec:exploracion_marco}
 
 La exploración autónoma permite que el robot seleccione sus propias metas
-mientras construye el mapa. En el enfoque basado en fronteras
-\citep{liu2025frontier}, una \emph{celda de frontera} es una celda
-desconocida adyacente a espacio libre conocido; las celdas de frontera
+mientras construye el mapa. En el enfoque basado en fronteras, introducido por \citet{yamauchi1997frontier}
+y todavía vigente en formulaciones recientes \citep{liu2025frontier}, una
+\emph{celda de frontera} es una celda desconocida adyacente  a espacio libre conocido; las celdas de frontera
 contiguas se agrupan en fronteras, y cada frontera se caracteriza por un
 punto representativo, su tamaño y su distancia al robot. Las fronteras se
 ordenan mediante un puntaje que combina la distancia, privilegiando metas

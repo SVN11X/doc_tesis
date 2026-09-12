@@ -11,9 +11,7 @@ madurez.
 \section{Panorama general de la robótica móvil}
 \label{sec:panorama_robotica_movil}
 
-El desarrollo actual de robótica móvil abarca aplicaciones en logística,
-inspección, servicios, agricultura, educación e investigación
-\citep{macenski2023desks}. La diversidad de aplicaciones ha dado lugar a
+El desarrollo actual de robótica móvil abarca aplicaciones en dominios tan diversos como la logística, la agricultura y las flotas multirrobot, entre otros \citep{macenski2023desks}. La diversidad de aplicaciones ha dado lugar a
 robots con distintas arquitecturas de locomoción. Las plataformas
 diferenciales son frecuentes en interiores por su simplicidad y su capacidad
 de giro sobre el eje \citep{corke2023,ferreira2023differential}. Los
@@ -116,9 +114,8 @@ presentan en el Capítulo~\ref{ch:solucion}.
 En robots de interiores, las principales alternativas de percepción incluyen
 sensores \gls{LIDAR} 2D, cámaras RGB-D, sistemas de visión estéreo y sensores
 \gls{LIDAR} 3D. Las cámaras entregan mayor información visual y permiten
-incorporar reconocimiento de objetos, pero aumentan la carga de procesamiento y pueden verse afectadas por las condiciones de iluminación~\citep{tourani2022visual}. Los sensores
-\gls{LIDAR} 3D ofrecen una representación más completa del entorno, aunque su
-costo y su volumen de datos son mayores \citep{macenski2023desks}.
+incorporar reconocimiento de objetos, pero aumentan la carga de procesamiento y
+pueden verse afectadas por las condiciones de luminación~\citep{tourani2022visual}. Los sensores \gls{LIDAR} 3D ofrecen una representación más completa del entorno, porque no se limitan a un único plano de barrido, a cambio de un mayor volumen de datos que procesar. En robots de interiores, en cambio, el SLAM basado en \gls{LIDAR} 2D resulta más económico que su equivalente en 3D y constituye la alternativa predominante \citep{ran2025review2dlidar}.
 
 En relación con el mapeo, existen diferentes soluciones de SLAM 2D,
 entre ellas GMapping, Hector SLAM, Cartographer y
@@ -132,25 +129,24 @@ comparación general de estas alternativas.
 \caption{Comparación general de alternativas para SLAM 2D.}
 \label{tab:comparativa_slam}
 \small
-\begin{tabular}{P{2.4cm} P{4.3cm} P{6.9cm}}
+\begin{tabular}{P{2.4cm} P{5.3cm} P{5.9cm}}
 \toprule
 \textbf{Alternativa} &
 \textbf{Fortaleza principal} &
 \textbf{Limitación principal} \\
 \midrule
 
-GMapping &
-Bajo consumo y amplia utilización en plataformas educativas
-\citep{grisetti2007gmapping}. &
-Depende de una odometría consistente y su portabilidad a \gls{ROS2} es
-menor que la de las alternativas más recientes
-\citep{ngoc2023efficient,macenski2023desks}. \\
+GMapping & Técnica de mapeo por rejilla con filtro de partículas
+\citep{grisetti2007gmapping}, con buen desempeño en tiempo real y consumo de
+memoria acotado en escenas pequeñas \citep{ran2025review2dlidar}.
+& Depende de una odometría consistente y carece de detección de cierre de lazo,
+y su portabilidad a \gls{ROS2} es menor que la de las alternativas más recientes
+\citep{ran2025review2dlidar,ngoc2023efficient,macenski2023desks}. \\
 
-Hector SLAM &
-Puede operar con baja dependencia de la odometría de ruedas
-\citep{kohlbrecher2011hector}. &
-Requiere barridos frecuentes y entornos con características geométricas
-suficientes \citep{kohlbrecher2011hector}. \\
+Hector SLAM & Puede operar con baja dependencia de la odometría de ruedas
+\citep{kohlbrecher2011hector}. & Requiere un \gls{LIDAR} de alta tasa de barrido
+para contener la deriva, y presenta deriva en el cierre de lazo en escenas
+extensas \citep{ran2025review2dlidar}. \\
 
 Cartographer &
 Buena consistencia global y capacidad de cierre de lazo
