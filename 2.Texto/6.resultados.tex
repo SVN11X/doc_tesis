@@ -70,7 +70,7 @@ $\Delta\theta_{\mathrm{obs}}$ el giro observado. La
 Tabla~\ref{tab:resumen_odometria} consolida las métricas diferenciadas
 obtenidas en la trayectoria rectilínea de 2~m.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Métricas diferenciadas de seguimiento y odometría en la trayectoria rectilínea de 2~m.}
 \label{tab:resumen_odometria}
@@ -118,7 +118,7 @@ subestimara la distancia entre 0.2\% y 0.6\%.
 
 Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref{tab:resumen_giro}; su comparación entre simulación y hardware se desarrolla en la Sec.~\ref{sec:comparacion_sim_real}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Desviación angular y error medio respecto de la referencia nominal de $360^\circ$ (5 repeticiones por entorno).}
 \label{tab:resumen_giro}
@@ -192,7 +192,7 @@ se calcularon sobre la captura de la Fig.~\ref{fig:respuesta_escalon_final}, con
 comparación ilustrativa con el modelo FOPDT y la sintonía Lambda se conserva
 en el \ref{anx:lambda_detalle}. En esa simulación, las ganancias finales producen sobreimpulsos de 10.7\% a 15.6\%. Esos valores provienen de un modelo que no reproduce la zona muerta del driver, las bandas muertas asimétricas ni los tipos enteros del firmware, por lo que no se comparan directamente con la Tabla~\ref{tab:pid_performance}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Indicadores de la respuesta al escalón en lazo cerrado, medidos sobre la captura experimental del robot real con referencia de 0.13~m/s.}
 \label{tab:pid_performance}
@@ -256,7 +256,7 @@ Tabla~\ref{tab:slam_real_indicadores} consolida los indicadores de mapeo
 obtenidos en las cinco iteraciones válidas sobre hardware real, recuperados \emph{post hoc} del \textit{rosbag} y del mapa PGM de cada sesión; su procedencia y
 alcance se documentan en el \ref{anx:resultados_metodologia}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Indicadores de mapeo en hardware real por iteración (resolución $0.05$~m/celda).}
 \label{tab:slam_real_indicadores}
@@ -335,7 +335,7 @@ las metas que genera el explorador, queda fuera del alcance declarado en la
 \hyperref[sec:alcances]{Alcances y limitaciones} y no se ensayó, por lo que este trabajo no informa
 tasa de éxito ni error de posición final para ese caso. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de validación alcanzado por cada subsistema.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Estado de validación por subsistema.}
 \label{tab:estado_validacion}

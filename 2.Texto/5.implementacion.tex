@@ -43,7 +43,7 @@ y la correspondencia entre cada parámetro y su identificador en el código se
 consolidan en el \ref{anx:implementacion_diffdrive} y en el
 \ref{anx:identificadores}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Parámetros físicos y temporales empleados en la implementación.}
 \label{tab:parametros_modelo}
@@ -149,7 +149,7 @@ Tabla~\ref{tab:xacro_args_backend}. La interfaz empleada en el robot real se
 describe en la Sec.~\ref{sec:diff_drive_params}; la trazabilidad completa de
 la selección se conserva en el \ref{anx:gemelo_digital}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Plugin de \texttt{ros2\_control} según entorno de ejecución.}
 \label{tab:xacro_args_backend}
@@ -228,7 +228,7 @@ La cadena de transformaciones mantiene la misma convención usada en simulación
 El controlador diferencial recibe comandos de velocidad lineal y angular, y los convierte en velocidades de rueda mediante el modelo cinemático descrito en el Capítulo~\ref{marco_teorico}. Su geometría corresponde al radio de rueda $r$ y a la separación entre ruedas $b$ (Tabla~\ref{tab:parametros_modelo}). Los parámetros principales configurados en el controlador diferencial se
 resumen en la Tabla~\ref{tab:diff_drive_params}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Parámetros principales del controlador diferencial.}
 \label{tab:diff_drive_params}
@@ -274,7 +274,7 @@ firmware las nuevas referencias de velocidad. Las conversiones y el intervalo
 $\Delta t_k$ empleados se describen en la Sec.~\ref{sec:diff_drive_params} y en
 el \ref{anx:implementacion_diffdrive}.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}.}
 \label{alg:ros2control_cycle}
 \begin{algorithmic}[1]
@@ -451,7 +451,7 @@ ganancias definitivas se presentan en la Tabla~\ref{tab:ganancias_pid}; el orden
 de ejecución, los reinicios y la saturación se detallan en el
 Alg.~\ref{alg:pid_firmware}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Ganancias PID definitivas codificadas en el firmware.}
 \label{tab:ganancias_pid}
@@ -470,7 +470,7 @@ $K_o$ & 50 & 50 \\
 \parbox{0.85\linewidth}{\footnotesize Las ganancias se aplican en la escala interna del firmware.}
 \end{table}
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware.}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
@@ -517,7 +517,7 @@ Alg.~\ref{alg:sintonizacion}. La configuración del enjambre, las escalas, las
 cotas y las funciones de costo se conservan en el
 \ref{anx:protocolos_sintonizacion}.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Sintonización híbrida del PID mediante identificación FOPDT y PSO.}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
@@ -652,7 +652,7 @@ La configuración de los planificadores global y local se resume en la
 Tabla~\ref{tab:nav2_componentes_ch9}. El controlador local evalúa las
 trayectorias candidatas mediante la Ec.~\eqref{eq:costo_ctrl_local}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Configuración de los planificadores global y local utilizados.}
 \label{tab:nav2_componentes_ch9}
@@ -707,7 +707,7 @@ Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo
 de detección, selección, envío de metas y gestión de la lista negra se resume
 en el Alg.~\ref{alg:exploracion_fronteras}.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Integración operativa de \texttt{explore\_lite} con Nav2.}
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
