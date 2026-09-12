@@ -94,7 +94,7 @@ asociado al valor unificado se conservan en el \ref{anx:pid_data}.
 
 Sobre la base del propósito de validación expuesto en la
 Sec.~\ref{sec:gemelo_digital}, el gemelo digital se implementa en
-\gls{ROS2} Foxy mediante URDF/\texttt{xacro} y Gazebo. El radio de rueda y
+\gls{ROS2} Foxy mediante URDF/\texttt{xacro} y Gazebo Classic 11.11.0. El radio de rueda y
 la separación entre ruedas de la Tabla~\ref{tab:parametros_modelo} se
 emplean como referencia geométrica común en el robot físico, el modelo
 digital y \texttt{diff\_drive\_controller}. El backend
@@ -104,7 +104,7 @@ planificador PID del firmware. La Fig.~\ref{fig:robot_sim} muestra el modelo
 cargado en Gazebo.
 
 \utemFigurePropia{2.Texto/Imag/fig_robot_sim.PNG}{0.55\textwidth}
-{Modelo del robot (gemelo digital) cargado en Gazebo.}
+{Modelo del robot (gemelo digital) cargado en Gazebo Classic.}
 {fig:robot_sim}
 
 \subsection{Arquitectura del modelo digital}
@@ -159,7 +159,7 @@ la selección se conserva en el \ref{anx:gemelo_digital}.
 \textbf{Entorno} & \textbf{Plugin de hardware} & \textbf{Fuente de los estados} \\
 \midrule
 Hardware real & \texttt{DiffDriveArduino} & Conteos de encoder recibidos desde el \gls{Arduino} mediante el enlace serial. \\
-Simulación & \texttt{GazeboSystem} & Estados de las articulaciones entregados directamente por Gazebo. \\
+Simulación & \texttt{GazeboSystem} & Estados de las articulaciones entregados directamente por Gazebo Classic. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -275,7 +275,7 @@ $\Delta t_k$ empleados se describen en la Sec.~\ref{sec:diff_drive_params} y en
 el \ref{anx:implementacion_diffdrive}.
 
 \begin{algorithm}[H]
-\caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}}
+\caption{Ciclo ejecutado por la interfaz \texttt{DiffDriveArduino}.}
 \label{alg:ros2control_cycle}
 \begin{algorithmic}[1]
 \Require Comandos $\omega_L^{\mathrm{cmd}},\omega_R^{\mathrm{cmd}}$; enlace serial; resolución $N_e$; frecuencia $f_{\mathrm{loop}}$.
@@ -471,7 +471,7 @@ $K_o$ & 50 & 50 \\
 \end{table}
 
 \begin{algorithm}[H]
-\caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware}
+\caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware.}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
 \Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; parámetros PID y límites de saturación definidos previamente.
@@ -497,7 +497,10 @@ $K_o$ & 50 & 50 \\
 \end{algorithmic}
 \end{algorithm}
 
-En el Alg.~\ref{alg:pid_firmware}, las operaciones internas de \texttt{doPID}, es decir banda muerta, saturación e integrador condicional, son las formalizadas en las ecuaciones anteriores.
+Las operaciones internas de la rutina de actualización, es decir banda
+muerta, saturación e integrador condicional, son las formalizadas en las
+ecuaciones anteriores y quedan detalladas en el
+Alg.~\ref{alg:pid_firmware}.
 
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
@@ -515,7 +518,7 @@ cotas y las funciones de costo se conservan en el
 \ref{anx:protocolos_sintonizacion}.
 
 \begin{algorithm}[H]
-\caption{Sintonización híbrida del PID mediante identificación FOPDT y PSO}
+\caption{Sintonización híbrida del PID mediante identificación FOPDT y PSO.}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
 \Require Datos de lazo abierto por rueda; período $T_{\mathrm{cap}}$; configuración del PSO.
@@ -705,7 +708,7 @@ de detección, selección, envío de metas y gestión de la lista negra se resum
 en el Alg.~\ref{alg:exploracion_fronteras}.
 
 \begin{algorithm}[H]
-\caption{Integración operativa de \texttt{explore\_lite} con Nav2}
+\caption{Integración operativa de \texttt{explore\_lite} con Nav2.}
 \label{alg:exploracion_fronteras}
 \begin{algorithmic}[1]
 \Require Costmap global $C$; lista negra $B$; tamaño mínimo de frontera; tiempo máximo sin progreso.

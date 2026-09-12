@@ -1,7 +1,9 @@
 \chapter{RESULTADOS EXPERIMENTALES}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evaluaron en simulación y en hardware real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evaluaron sobre el hardware real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}. El entorno físico en que se realizaron las pruebas sobre hardware real se muestra en la Fig.~\ref{fig:entorno_experimental}.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evaluaron en simulación y en hardware real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evaluaron sobre el hardware real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}. El equipamiento de la estación de trabajo y las versiones de sistema
+operativo, middleware y paquetes con que se ejecutaron todos los ensayos se
+consolidan en el \ref{anx:workspace}. El entorno físico en que se realizaron las pruebas sobre hardware real se muestra en la Fig.~\ref{fig:entorno_experimental}.
 
 \utemFigurePropia{2.Texto/Imag/entorno_experimental.jpg}{0.78\textwidth}
 {Entorno utilizado para las pruebas experimentales en hardware real.}{fig:entorno_experimental}
@@ -9,7 +11,7 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 \section{Evaluación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
-La evaluación rectilínea utiliza una referencia nominal de 2~m. El script publica una velocidad lineal de 0.13~m/s durante $2/0.13\approx15.4$~s y luego detiene el robot, por lo que la referencia no es una consigna de posición sino el producto de la velocidad comandada por la duración del comando. En hardware real, la distancia física se midió con cinta métrica y el error odométrico corresponde a la discrepancia entre la odometría de encoders y esa medición. En simulación, la consulta de la pose verdadera a Gazebo no entregó datos durante los ensayos y el script registró la propia odometría como distancia de respaldo. Por ello, en simulación no se dispone de una verdad de terreno independiente.
+La evaluación rectilínea utiliza una referencia nominal de 2~m. El script publica una velocidad lineal de 0.13~m/s durante $2/0.13\approx15.4$~s y luego detiene el robot, por lo que la referencia no es una consigna de posición sino el producto de la velocidad comandada por la duración del comando. En hardware real, la distancia física se midió con cinta métrica y el error odométrico corresponde a la discrepancia entre la odometría de encoders y esa medición. En simulación, la consulta de la pose verdadera a Gazebo Classic no entregó datos durante los ensayos y el script registró la propia odometría como distancia de respaldo. Por ello, en simulación no se dispone de una verdad de terreno independiente.
 
 Las pruebas angulares se analizaron respecto de una referencia nominal de
 $360^\circ$ definida por el protocolo, que no corresponde a una consigna
@@ -88,7 +90,7 @@ Desviación estándar de $E_{\mathrm{odom}}$ ($n=5$)
 \bottomrule
 \end{tabular}
 \vspace{3pt}
-\parbox{0.85\linewidth}{\footnotesize $^{*}$ En simulación se calcula con la distancia de odometría, porque la pose verdadera de Gazebo no quedó registrada.}
+\parbox{0.85\linewidth}{\footnotesize $^{*}$ En simulación se calcula con la distancia de odometría, porque la pose verdadera de Gazebo Classic no quedó registrada.}
 \end{table}
 
 En hardware real, el error medio de seguimiento de 7.18\% corresponde a una

@@ -76,7 +76,8 @@ brecha simulación--realidad señalada en la Sec.~\ref{sec:laser_sim}.
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
 
-La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF principal (Sec.~\ref{sec:tf-convenciones}). La geometría acotada del modelo, con las dimensiones de chasis, ruedas, rueda loca y sensor, se presenta en la Fig.~\ref{fig:anx_cotas}.
+La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF principal (Sec.~\ref{sec:tf-convenciones}). La geometría acotada del modelo, con las dimensiones de chasis, ruedas, rueda loca y sensor, se presenta en la Fig.~\ref{fig:anx_cotas}. Los elementos cinemáticos verificados en esa auditoría se resumen en la
+Tabla~\ref{tab:anx_urdf_evidencia}.
 
 \utemFigurePropia{2.Texto/Imag/fig_cotas_gemelo_digital.png}{0.9\textwidth}
 {Dimensiones del modelo del robot (gemelo digital): vistas lateral, frontal y en planta.}
@@ -118,7 +119,7 @@ publica en \texttt{/tf\_static}.
 \midrule
 Cadena TF completa & Marcos \texttt{odom}, \texttt{base\_link} y \texttt{laser\_frame} & Sin marcos sueltos \\
 Publicación de sensores & Tópicos \texttt{/scan} y \texttt{/odom} & Frecuencias estables \\
-Respuesta cinemática & Avance recto y giro en Gazebo & Movimiento coherente con el modelo diferencial \\
+Respuesta cinemática & Avance recto y giro en Gazebo Classic & Movimiento coherente con el modelo diferencial \\
 Paridad geométrica & Radio y separación de ruedas & Igualdad con parámetros del prototipo \\
 \bottomrule
 \end{tabular}
@@ -136,8 +137,7 @@ Este anexo documenta información complementaria sobre el entorno de ejecución,
 \subsection{Entorno de ejecución y workspace}
 \label{anx:workspace}
 
-El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación base como en la Raspberry Pi 4. La comunicación estación--robot se realiza mediante una red Wi-Fi dedicada, con IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Tabla~\ref{tab:anx_ws_roles} detalla los paquetes principales del workspace
-y su rol.
+La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en la Raspberry Pi 4. La comunicación entre ambas se realiza mediante una red Wi-Fi dedicada, con IP estáticas. La Tabla~\ref{tab:anx_ws_roles} detalla los paquetes principales del workspace y su rol.
 
 \begin{table}[H]
 \centering
@@ -158,6 +158,40 @@ y su rol.
 \end{table}
 
 \noindent Todos los paquetes provienen de bases de código de terceros (de código abierto)~\citep{amadi2024introduction}, modificadas y configuradas por el autor. El aporte propio sobre estos paquetes se describe en la Justificación de la Introducción.
+
+La Tabla~\ref{tab:anx_versiones_sw} registra el equipamiento de la estación
+de trabajo y las versiones exactas del entorno con las que se obtuvieron
+los resultados del Capítulo~\ref{ch:resultados}. El equipamiento embarcado
+en el robot se describe en la Sec.~\ref{ch:componentes}.
+
+\begin{table}[H]
+\centering
+\caption{Equipamiento de la estación de trabajo y versiones del entorno de ejecución.}
+\label{tab:anx_versiones_sw}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Elemento} & \textbf{Valor} \\
+\midrule
+\multicolumn{2}{l}{\textit{Estación de trabajo}}\\
+Procesador & Intel Core i7-10610U, 4 núcleos y 8 hilos, 4.90~GHz máx. \\
+Memoria RAM & 32~GB \\
+Arquitectura & x86-64 \\
+\midrule
+\multicolumn{2}{l}{\textit{Entorno de software}}\\
+Sistema operativo & Ubuntu 20.04.6 LTS \\
+Núcleo Linux & 5.15.0-139-generic \\
+Distribución \gls{ROS2} & Foxy Fitzroy (\texttt{ros-foxy-ros-core} 0.9.2) \\
+Middleware de comunicación & \texttt{rmw\_cyclonedds\_cpp} \\
+Dominio \gls{ROS2} & \texttt{ROS\_DOMAIN\_ID = 0} \\
+Simulador & Gazebo Classic 11.11.0 \\
+\texttt{gazebo\_ros\_pkgs} & 3.5.3 \\
+\texttt{slam\_toolbox} & 2.4.1 \\
+\texttt{nav2\_bringup} & 0.4.7 \\
+\texttt{ros2\_control} & 0.11.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Nodos del lanzamiento en hardware real}
 \label{anx:nodos_lanzamiento}
@@ -749,7 +783,7 @@ controlador satura la velocidad angular en 0.35~rad/s
 ideal y constante, el giro teórico alcanzable es
 $0.35\,(2\pi/0.4)$~rad, equivalente a $315^\circ$. Sin embargo, todos los giros registrados superan ese valor, tanto el giro acumulado de \texttt{/odom} en simulación (Tabla~\ref{tab:odom_giro_sim}) como el giro físico medido en hardware (Tabla~\ref{tab:odom_giro}). Esto indica que la velocidad angular efectiva no quedó limitada de forma ideal a 0.35~rad/s durante los ensayos. Los registros \textit{rosbag} de cada prueba contienen \texttt{/odom}, cuya velocidad angular permitiría verificar la velocidad efectivamente aplicada sin repetir los ensayos.
 
-En simulación, la interpretación del error rectilíneo y la condición del protocolo angular corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
+En simulación, la interpretación del error rectilíneo y la condición del protocolo angular corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo Classic por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
 
 \subsection{Trayectoria rectilínea de 2~m}
 
@@ -758,7 +792,7 @@ Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
 
 \begin{table}[H]
 \centering
-\caption{Desviación de la odometría simulada respecto de la referencia nominal de 2~m (Gazebo). La pose verdadera de Gazebo no quedó registrada.}
+\caption{Desviación de la odometría simulada respecto de la referencia nominal de 2~m (Gazebo Classic). La pose verdadera de Gazebo no quedó registrada.}
 \label{tab:odom_recta_sim}
 \small
 \begin{tabular}{cccc}
