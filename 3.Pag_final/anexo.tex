@@ -548,7 +548,7 @@ La actualización de los mejores valores sigue la clase
 \texttt{pso} ejecutada. Las particularidades de la posición global y la salida
 final escalada se desarrollan a continuación.
 
-Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de constricción se obtiene mediante la expresión de Clerc a partir de la suma de los coeficientes cognitivo y social, $\psi$. El error que emplea el optimizador se define sobre la velocidad: es la diferencia entre la velocidad de referencia $v_j^{\mathrm{ref}}$ y la velocidad estimada por el modelo $\widehat{v}_j[k]$ para la rueda $j$, denotada $\varepsilon_j[k]$, y se resume por su norma-2 y su error cuadrático medio; no corresponde al error entero $e_j^{\mathrm{long}}$ que consume el firmware.
+Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de constricción se obtiene mediante la expresión de Clerc y Kennedy \citep{clerc2002particle} a partir de la suma de los coeficientes cognitivo y social, $\psi$. El error que emplea el optimizador se define sobre la velocidad: es la diferencia entre la velocidad de referencia $v_j^{\mathrm{ref}}$ y la velocidad estimada por el modelo $\widehat{v}_j[k]$ para la rueda $j$, denotada $\varepsilon_j[k]$, y se resume por su norma-2 y su error cuadrático medio; no corresponde al error entero $e_j^{\mathrm{long}}$ que consume el firmware.
 
 La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que su costo histórico. El almacenamiento global presenta una particularidad: el costo global $J^{*}$ se toma como el mínimo de los costos históricos $J_i^{\mathrm{best}}$, pero la posición global $G$ se copia desde la posición actual de la partícula de menor costo histórico (no desde su posición personal $P_{i^*}$), de modo que $J^{*}$ y $G$ pueden corresponder a vectores distintos. Esta diferencia se mantiene porque representa el código ejecutado.
 
@@ -1169,6 +1169,5 @@ $\varepsilon_j[k]$ & Error de seguimiento del modelo para la rueda $j$,
 $v_j^{\mathrm{ref}}-\hat{v}_j[k]$ & m/s \\
 \end{longtable}
 }
-
 
 \end{appendices}

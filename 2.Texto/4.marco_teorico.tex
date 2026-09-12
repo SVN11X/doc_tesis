@@ -377,15 +377,21 @@ condiciones de comparación se documentan en el \ref{anx:lambda_detalle}.
 
 PSO (\textit{Particle Swarm Optimization}) es una metaheurística
 poblacional inspirada en el comportamiento colectivo de enjambres. En este
-trabajo se emplea la variante con factor de constricción, en la formulación
-aplicada a la sintonización de controladores PID en robótica móvil por
-\citet{gokcce2021particle}. Cada partícula $i$ representa un candidato de solución, en este caso, un
+trabajo, \citet{gokcce2021particle} se utiliza como antecedente de la
+aplicación de PSO a la sintonización de controladores PID en robótica móvil,
+pero no como fuente de la ecuación específica implementada. El script empleado
+combina el factor de constricción analizado por \citet{clerc2002particle} con
+un peso de inercia, mecanismo introducido en PSO por
+\citet{shi1998modified}. La combinación concreta utilizada aquí, incluido el
+factor global de constricción y la ley lineal del peso de inercia, corresponde
+a la implementación ejecutada en este trabajo.
+
+Cada partícula $i$ representa un candidato de solución, en este caso, un
 conjunto de ganancias PID, mediante una posición $\xi_{i,d}$ y una
 velocidad $V_{i,d}$, ambas adimensionales, con $d\in\{1,2,3\}$ asociado a
-las tres ganancias. En cada generación $g$, la
-velocidad de cada partícula se actualiza combinando su inercia, la atracción
-hacia su mejor posición personal y la atracción hacia la mejor posición
-global del enjambre:
+las tres ganancias. En cada generación $g$, la velocidad de cada partícula se
+actualiza combinando la velocidad previa, la atracción hacia su mejor posición
+personal y la atracción hacia la mejor posición global del enjambre:
 
 \begin{equation}
 V_{i,d}^{g+1}
@@ -405,10 +411,13 @@ w_{\mathrm{in}}^{g}V_{i,d}^{g}
 $G_d^{g}$ la componente del mejor global, $w_{\mathrm{in}}^{g}$ el peso de
 inercia, $c_1$ y $c_2$ los coeficientes cognitivo y social,
 $\rho_{1,i,d}^{g}$ y $\rho_{2,i,d}^{g}$ números aleatorios uniformes en
-$[0,1]$ y $\zeta$ el factor de constricción, que garantiza la convergencia
-del enjambre. Los valores utilizados para $c_1$, $c_2$ y $\zeta$ se consolidan
-en la Tabla~\ref{tab:pso_config}. El peso de inercia decrece linealmente con
-las generaciones:
+$[0,1]$ y $\zeta$ el factor de constricción. Los valores utilizados para
+$c_1$, $c_2$ y $\zeta$ se consolidan en la Tabla~\ref{tab:pso_config}. El
+empleo conjunto de constricción y peso de inercia en esta ecuación se
+documenta como una variante implementada en el proyecto y no se atribuye
+literalmente a una sola de las fuentes citadas.
+
+El peso de inercia decrece linealmente con las generaciones:
 
 \begin{equation}
 w_{\mathrm{in}}^{g}
@@ -419,14 +428,16 @@ g=1,\ldots,g_{\max},
 \label{eq:pso_inercia}
 \end{equation}
 
-\noindent donde $g_{\max}$ es el número máximo de generaciones; de esta
-forma el enjambre privilegia la exploración al inicio y la explotación al
-final. La función de costo empleada para la sintonización combina el error
-cuadrático medio de la velocidad respecto de la referencia con una
-penalización por sobreimpulso, favoreciendo respuestas rápidas pero
-amortiguadas. Las escalas de búsqueda, las cotas, la configuración del
-enjambre y las particularidades numéricas de la ejecución se presentan en el
-Capítulo~\ref{ch:implementacion} y en el \ref{anx:pso_detalle}.
+\noindent donde $g_{\max}$ es el número máximo de generaciones. La ley lineal
+específica de la Ec.~\eqref{eq:pso_inercia} corresponde a una decisión de
+implementación del script. Su efecto es reducir progresivamente el peso de la
+velocidad previa a medida que avanza la búsqueda. La función de costo empleada
+para la sintonización combina el error cuadrático medio de la velocidad
+respecto de la referencia con una penalización por sobreimpulso, favoreciendo
+respuestas rápidas pero amortiguadas. Las escalas de búsqueda, las cotas, la
+configuración del enjambre y las particularidades numéricas de la ejecución se
+presentan en el Capítulo~\ref{ch:implementacion} y en el
+\ref{anx:pso_detalle}.
 
 \section{SLAM basado en grafos}
 \label{sec:slam}
