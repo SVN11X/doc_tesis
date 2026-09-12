@@ -90,7 +90,7 @@ declarado.
 \begin{enumerate}
 \item Ejecutar el protocolo cuantitativo de navegación en un entorno de mayor superficie, registrando cada meta y su resultado de forma unívoca.
 \item Integrar una \gls{IMU} mediante \texttt{robot\_localization} para reducir la deriva angular.
-\item Migrar el sistema a una distribución mantenida de \gls{ROS2}.
+\item Migrar el sistema a una distribución mantenida de \gls{ROS2} y portar en el mismo paso el gemelo digital a una versión vigente de Gazebo, dado que Gazebo Classic ya no recibe soporte.
 \item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
 \item Evaluar la exploración con un protocolo que distinga selección de frontera, envío de meta, resultado de la acción y cobertura obtenida.
 \item Reemplazar la ley acumulativa del firmware por un PID incremental estándar con lectura atómica de encoders, y repetir los ensayos de control y odometría.

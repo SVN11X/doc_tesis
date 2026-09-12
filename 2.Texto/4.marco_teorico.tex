@@ -92,7 +92,7 @@ el entorno de ejecución (hardware real o simulación).
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Simulación robótica y Gazebo}
+\subsection{Simulación robótica y Gazebo Classic}
 \label{sec:simuladores_marco}
 
 Un simulador robótico integra un motor de física, la simulación de sensores y un entorno tridimensional configurable, lo que permite verificar la geometría, la cinemática y la lógica de control antes de operar el hardware. Gazebo Classic, el simulador empleado, se integra de forma nativa con \gls{ROS2}: el modelo URDF se carga en el mundo simulado y los sensores publican datos con las mismas interfaces que sus contrapartes físicas \citep{koenig2004gazebo,openrobotics2024gazebo}. La comparación entre simuladores y la justificación de esta elección se presentan en la Sec.~\ref{sec:gemelo_digital}. La brecha simulación--realidad, es decir fricción, zonas muertas, ruido sensorial y latencias, se considera al interpretar los resultados del Capítulo~\ref{ch:resultados}.

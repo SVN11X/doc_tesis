@@ -3,7 +3,7 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{RESUMEN}
 
-Este trabajo describe el diseño e implementación de un prototipo de robot móvil diferencial para mapeo 2D, navegación autónoma y exploración de interiores con \gls{ROS2} Foxy sobre Ubuntu 20.04 en una Raspberry Pi 4. El sistema integra un \gls{Arduino} Nano para el control de bajo nivel, un driver L298N, encoders de cuadratura, un RPLidar A1 y un gemelo digital en Gazebo.
+Este trabajo describe el diseño e implementación de un prototipo de robot móvil diferencial para mapeo 2D, navegación autónoma y exploración de interiores con \gls{ROS2} Foxy sobre Ubuntu 20.04 en una Raspberry Pi 4. El sistema integra un \gls{Arduino} Nano para el control de bajo nivel, un driver L298N, encoders de cuadratura, un RPLidar A1 y un gemelo digital en Gazebo Classic.
 
 El control diferencial se implementó sobre la infraestructura de control de \gls{ROS2}, y las ganancias PID del firmware se obtuvieron mediante optimización por enjambre de partículas (PSO) y refinamiento experimental sobre hardware real. El mapeo se realizó con SLAM Toolbox y la navegación con Nav2, incorporando además exploración autónoma basada en fronteras.
 
@@ -17,7 +17,7 @@ La odometría se validó cuantitativamente en trayectorias rectas sobre hardware
 \phantomsection
 \addcontentsline{toc}{chapter}{ABSTRACT}
 
-This thesis describes the design and implementation of a differential mobile robot prototype for 2D mapping, autonomous navigation, and indoor exploration using \gls{ROS2} Foxy on Ubuntu 20.04 on a Raspberry Pi 4. The system integrates an \gls{Arduino} Nano for low-level control, an L298N motor driver, quadrature encoders, an RPLidar A1, and a Gazebo-based digital twin.
+This thesis describes the design and implementation of a differential mobile robot prototype for 2D mapping, autonomous navigation, and indoor exploration using \gls{ROS2} Foxy on Ubuntu 20.04 on a Raspberry Pi 4. The system integrates an \gls{Arduino} Nano for low-level control, an L298N motor driver, quadrature encoders, an RPLidar A1, and a Gazebo Classic-based digital twin.
 
 Differential control was implemented on top of the \gls{ROS2} control infrastructure, and the firmware PID gains were obtained through Particle Swarm Optimization (PSO) and experimental refinement on real hardware. Mapping used SLAM Toolbox and navigation used Nav2, additionally incorporating frontier-based autonomous exploration.
 

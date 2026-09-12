@@ -67,7 +67,7 @@ Tabla~\ref{tab:xacro_args_backend} son
 El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. El marco base declarado en la configuración depende del entorno: en simulación, \texttt{slam\_toolbox} y AMCL emplean \texttt{base\_footprint}; en hardware real, ambos emplean \texttt{base\_link}. Los costmaps mantienen \texttt{base\_link} en ambos entornos.
 
 El sensor láser simulado se declara en \texttt{lidar\_sim.xacro} mediante el
-complemento de sensor de rango de Gazebo, con 360 muestras por barrido,
+complemento de sensor de rango de Gazebo Classic, con 360 muestras por barrido,
 apertura de $\pm3.14$~rad, tasa de actualización de 10~Hz y rango de 0.08~m a
 12~m. La declaración no incorpora un término de ruido y su rango mínimo es
 más permisivo que el del sensor físico; ambas diferencias corresponden a la
@@ -1001,7 +1001,7 @@ todos los archivos de código citados en el documento.
 \texttt{gazebo\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Backend alternativo no seleccionado. \\
 \texttt{ros2\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
 \texttt{launch\_\allowbreak{}robot.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del robot físico y controladores. \\
-\texttt{launch\_\allowbreak{}sim.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del gemelo digital en Gazebo. \\
+\texttt{launch\_\allowbreak{}sim.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del gemelo digital en Gazebo Classic. \\
 \texttt{my\_\allowbreak{}controllers.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Geometría y límites del controlador diferencial. \\
 \texttt{nav2\_\allowbreak{}params.\allowbreak{}yaml}, \texttt{nav2\_\allowbreak{}params\_\allowbreak{}sim.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Configuración Nav2 real y simulada. \\
 \texttt{mapper\_\allowbreak{}params\_\allowbreak{}online\_\allowbreak{}async.\allowbreak{}yaml}, \texttt{mapper\_\allowbreak{}params\_\allowbreak{}online\_\allowbreak{}async\_\allowbreak{}sim.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Configuración de \texttt{slam\_toolbox} real y simulada. \\
