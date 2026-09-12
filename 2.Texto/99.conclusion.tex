@@ -4,7 +4,12 @@
 
 El presente trabajo tuvo como objetivo diseñar e implementar un prototipo de robot móvil diferencial capaz de generar mapas 2D, ejecutar navegación autónoma y realizar exploración basada en fronteras mediante \gls{ROS2} Foxy. El desarrollo integró diseño mecánico, electrónica de potencia, firmware de bajo nivel, gemelo digital en Gazebo, mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración autónoma.
 
-En relación con la plataforma física, se construyó un robot diferencial de bajo costo con dos motores DC, encoders de cuadratura, driver L298N, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1. El \gls{Arduino} ejecuta la lectura de encoders y el control PID de cada rueda. La Raspberry Pi ejecuta la interfaz \texttt{DiffDriveArduino}, \texttt{diff\_drive\_controller}, la adquisición del \gls{LIDAR} y la comunicación con la estación de trabajo; esta última ejecuta SLAM, navegación, exploración y supervisión.
+En relación con la plataforma física, se construyó un robot diferencial de bajo
+costo con la configuración descrita en el Capítulo~\ref{ch:implementacion}, en
+la que el \gls{Arduino} ejecuta la lectura de encoders y el control de cada
+rueda, la Raspberry Pi ejecuta la interfaz de hardware, el controlador
+diferencial y la adquisición del \gls{LIDAR}, y la estación de trabajo ejecuta
+SLAM, navegación, exploración y supervisión.
 
 El gemelo digital desarrollado en Gazebo permitió verificar la geometría,
 la cinemática, la cadena de transformaciones y la interfaz de control antes de

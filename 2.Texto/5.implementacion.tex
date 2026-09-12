@@ -316,43 +316,32 @@ el \ref{anx:implementacion_diffdrive}.
 \end{algorithmic}
 \end{algorithm}
 
-El Alg.~\ref{alg:ros2control_cycle} tiene una inicialización que se ejecuta una
-sola vez, en la que se abre el puerto serial y se calcula el paso angular por
-tick $\delta\phi=2\pi/N_e$, y un ciclo permanente. En cada iteración la interfaz
-mide el intervalo real $\Delta t_k$ entre lecturas, solicita al firmware los
-conteos de ambos encoders con el comando serial \texttt{e}, reconstruye la
-posición y la velocidad de cada rueda, las exporta a \texttt{ros2\_control} y
-devuelve las nuevas referencias en \textit{ticks/frame} con el comando
-\texttt{m}. Las dos comprobaciones del puerto serial señalan un error y terminan
-el ciclo ante pérdida del enlace, y se complementan con la auto-detención de
-seguridad de la Sec.~\ref{sec:bucle_principal}. El intervalo $\Delta t_k$ y las
-conversiones se detallan en el \ref{anx:implementacion_diffdrive}.
+El Alg.~\ref{alg:ros2control_cycle} distingue una inicialización que se ejecuta una sola vez, donde se
+abre el puerto serial y se calcula el paso angular por tick
+$\delta\phi=2\pi/N_e$, de un ciclo permanente. Las dos comprobaciones del puerto
+señalan un error y terminan el ciclo ante pérdida del enlace, y se complementan
+con la auto-detención de seguridad de la Sec.~\ref{sec:bucle_principal}. El
+intervalo $\Delta t_k$ y las conversiones se detallan en el
+\ref{anx:implementacion_diffdrive}.
 
 \subsection{Teleoperación y multiplexación de comandos}
 
 La teleoperación permite conducir el robot de forma manual, tanto para pruebas
-de desplazamiento como para el mapeo teleoperado descrito en el
-Capítulo~\ref{ch:resultados}. Se realiza mediante un mando inalámbrico: un nodo
-lee el estado del mando y otro convierte la posición de sus palancas en comandos
-de velocidad lineal y angular para el robot.
-Como mecanismo de seguridad se emplea un \textit{dead-man switch}: el mando solo
-publica comandos mientras se mantiene presionado un botón de habilitación, de
-modo que al soltarlo el robot deja de recibir consignas y se detiene. Así se
-evitan desplazamientos accidentales ante una pérdida de atención o de la señal
-del mando.
+de desplazamiento como para el mapeo teleoperado del
+Capítulo~\ref{ch:resultados}. Se realiza con un mando inalámbrico cuyas
+palancas se convierten en comandos de velocidad lineal y angular. Como
+mecanismo de seguridad, el mando solo publica comandos mientras se mantiene
+presionado un botón de habilitación, de modo que al soltarlo el robot se
+detiene.
 
-El robot puede recibir comandos de velocidad de dos orígenes: la teleoperación
-manual y la navegación autónoma de Nav2. Por ello, ambos flujos se integran
-mediante el multiplexor \texttt{twist\_mux}, que selecciona una única fuente
-según un esquema de prioridades y descarta aquellas que dejan de emitir. La
-teleoperación manual tiene prioridad sobre los comandos autónomos, de modo que
-el operador puede retomar el control en cualquier momento. La salida del
-multiplexor se remapea a la entrada del controlador diferencial, enlazando con
-el control de bajo nivel de la Sec.~\ref{sec:diff_drive_params}; este mismo
-multiplexor forma parte de la arquitectura de navegación de la
-Sec.~\ref{sec:nav2_ch9} (Fig.~\ref{fig:interaccion_nav}). Los nodos utilizados,
-el esquema de prioridades y el remapeo del tópico de salida se documentan en el
-\ref{anx:hardware_ros2}.
+Los comandos manuales y los de Nav2 se integran mediante el multiplexor
+\texttt{twist\_mux}, que selecciona una única fuente según prioridades y
+descarta las que dejan de emitir. La teleoperación tiene prioridad, así el
+operador puede retomar el control en cualquier momento. La salida del
+multiplexor se remapea a la entrada del controlador diferencial
+(Sec.~\ref{sec:diff_drive_params}) y aparece en la arquitectura de navegación
+de la Fig.~\ref{fig:interaccion_nav}. Los nodos, las prioridades y el remapeo
+se documentan en el \ref{anx:hardware_ros2}.
 
 \section{Firmware de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
@@ -391,13 +380,7 @@ tratamiento de la lectura no atómica de los contadores se conserva en el
 \subsection{Control PID en el firmware}
 \label{sec:motorcontrol_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano, con la referencia y la medición expresadas en ticks/frame. Como se señaló en la Sec.~\ref{sec:pid}, la forma continua del PID se utiliza únicamente como
-referencia conceptual.
-En la práctica el controlador no se evalúa de forma continua, sino a intervalos
-regulares en el microcontrolador. Por ello la ley se implementa en tiempo
-discreto, con una forma incremental acumulativa en la que el término asociado a $K_{d,j}$ se calcula sobre la diferencia de la medición. El incremento
-de control, la actualización del integrador y la salida saturada se resumen
-como:
+El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano, con la referencia y la medición expresadas en ticks/frame. La ley se implementa en tiempo discreto con una forma incremental acumulativa, en la que el término asociado a $K_{d,j}$ se calcula sobre la diferencia de la medición. El incremento de control, la actualización del integrador y la salida saturada se resumen como:
 
 \begin{align*}
 \Delta u_j^{\mathrm{long}}[k]
@@ -514,14 +497,7 @@ $K_o$ & 50 & 50 \\
 \end{algorithmic}
 \end{algorithm}
 
-El Alg.~\ref{alg:pid_firmware} reúne dos rutinas. \texttt{resetPID} deja el
-controlador en un estado conocido, con la salida acumulada, la medición previa y
-el término integral en cero. \texttt{updatePID} se ejecuta en cada ciclo. Si no
-hay movimiento comandado reinicia una sola vez los estados, y en caso contrario
-ejecuta el cálculo PID de cada rueda con \texttt{doPID} y aplica las órdenes PWM
-resultantes. Las operaciones internas de \texttt{doPID}, banda muerta,
-saturación e integrador condicional, son las formalizadas en las ecuaciones
-anteriores.
+En el Alg.~\ref{alg:pid_firmware}, las operaciones internas de \texttt{doPID}, es decir banda muerta, saturación e integrador condicional, son las formalizadas en las ecuaciones anteriores.
 
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
@@ -557,13 +533,6 @@ cotas y las funciones de costo se conservan en el
 \State \Return $(K_{p,j},K_{d,j},K_{i,j})$, para $j\in\{L,R\}$.
 \end{algorithmic}
 \end{algorithm}
-
-El procedimiento encadena tres etapas. Las dos primeras se ejecutan por rueda.
-Primero se suaviza la velocidad medida en lazo abierto y se ajusta el modelo
-FOPDT $(K_m,\tau,L_d)$ minimizando el costo de identificación con PSO. Luego,
-sobre ese modelo, se buscan también por PSO las ganancias $(K_p,K_d,K_i)$ que
-minimizan el costo de control. En la tercera etapa esas ganancias se ajustan
-sobre el robot real y se registran en el firmware como valores definitivos.
 
 \subsubsection{Captura de respuesta en lazo abierto}
 \label{sec:captura_lazo_abierto}
@@ -666,15 +635,8 @@ diferencial de bajo nivel descrito en la Sec.~\ref{sec:diff_drive_params}.
 {Interacción entre los componentes de la navegación autónoma.}
 {fig:interaccion_nav}
 
-El flujo representado puede separarse en una cadena de percepción y otra de
-actuación. En la primera, los barridos láser y la información odométrica
-alimentan la estimación del mapa, las transformaciones y los mapas de costos.
-En la segunda, las metas introducidas por el operador o generadas por el
-explorador son procesadas por Nav2, convertidas en comandos de velocidad y
-arbitradas por \texttt{twist\_mux} antes de llegar a
-\texttt{ros2\_control}. La realimentación de los encoders cierra el control de
-velocidad de las ruedas y actualiza la odometría utilizada por los módulos
-superiores.
+La realimentación de los encoders cierra el control de velocidad de las ruedas
+y actualiza la odometría utilizada por los módulos superiores.
 El diagrama organiza los nodos según su rol dentro de la arquitectura
 \gls{ROS2} y no según el equipo que los ejecuta. En la configuración
 distribuida empleada, \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite}
@@ -787,20 +749,11 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 \end{algorithmic}
 \end{algorithm}
 
-El Alg.~\ref{alg:exploracion_fronteras} arranca con una planificación inicial y
-programa planificaciones periódicas. En cada una obtiene la pose del robot y
-detecta, sobre el costmap global, las fronteras entre el espacio libre conocido
-y las zonas no observadas. Para cada frontera calcula un punto representativo,
-que es su meta candidata, y un puntaje que combina distancia y tamaño, de modo
-que se prefieren las fronteras cercanas y las que prometen descubrir más
-entorno. Luego descarta las menores que \texttt{min\_frontier\_size} y ordena el
-resto por costo. Si no queda ninguna, la exploración termina y el entorno
-alcanzable se considera mapeado. En caso contrario elige la primera frontera
-fuera de la lista negra $B$, que evita reintentar metas improductivas, y la
-envía a Nav2 mediante \texttt{NavigateToPose} con orientación identidad, ya que
-solo importa la posición de la frontera. El ciclo reacciona según el resultado
-que devuelve Nav2. Si la meta se alcanza programa una nueva planificación, si se
-aborta añade la meta a $B$, y si se cancela mantiene $B$ sin cambios. El cálculo
+Dentro del Alg.~\ref{alg:exploracion_fronteras}, el puntaje de cada frontera combina distancia y tamaño, de modo que se
+prefieren las cercanas y las que prometen descubrir más entorno. La meta se
+envía con orientación identidad, porque solo importa la posición de la
+frontera, y la lista negra $B$ evita reintentar metas improductivas. Si no
+queda ninguna frontera, el entorno alcanzable se considera mapeado. El cálculo
 del punto representativo, el escalamiento de la distancia y la programación del
 temporizador se documentan en el \ref{anx:explore_impl}.
 

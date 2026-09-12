@@ -312,12 +312,10 @@ de navegación retorna \texttt{ABORTED} o cuando se supera
 cuando todas las fronteras candidatas del instante coinciden con elementos de
 la lista negra, momento en que esta se vacía para permitir nuevos intentos.
 Por ello, ambos contadores describen eventos diferentes.
-En conjunto, los ensayos verifican la integración funcional del proceso de
-exploración: se detectaron fronteras, se generaron metas y Nav2 intentó
-ejecutarlas mientras el mapa continuó actualizándose. Sin embargo, la elevada
-proporción de metas abortadas impide interpretar estos ensayos como evidencia
-de navegación robusta hacia las fronteras. El resultado se conserva como una
-limitación cuantificada del desempeño obtenido en el entorno experimental.
+La elevada proporción de metas abortadas impide interpretar estos ensayos como
+evidencia de navegación robusta hacia las fronteras. El resultado se conserva
+como una limitación cuantificada del desempeño obtenido en el entorno
+experimental.
 
 \begin{utemMultiFigurePropia}{Ejecución de navegación autónoma y exploración por fronteras sobre hardware real: avance desde un mapa parcial hasta una representación de mayor cobertura, con la ruta planificada por Nav2 (trazo verde).}{fig:nav_exploracion_real}
 \addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Mapa parcial en una etapa temprana de la exploración.}
@@ -363,27 +361,19 @@ exploración ni se realizó un protocolo independiente de localización \\
 \section{Coherencia entre simulación y hardware}
 \label{sec:comparacion_sim_real}
 
-En la trayectoria rectilínea de 2~m, la desviación respecto de la referencia
-nominal fue 3.39\% en simulación, calculada con la odometría, y 7.18\% en
-hardware real, calculada con la distancia física medida
-(Tabla~\ref{tab:resumen_odometria}). Por ello ambos valores no miden la misma
-magnitud. El error odométrico solo se separa del error de seguimiento en
-hardware real, donde alcanza 3.63\%, porque en simulación la pose verdadera de
-Gazebo no quedó registrada.
-En el protocolo angular, la desviación media respecto de la referencia
-nominal de $360^\circ$ es mayor en simulación ($17.1^\circ$) que en hardware
-real ($11.7^\circ$), con una dispersión menor ($5.8^\circ$ frente a
-$8.0^\circ$), según la Tabla~\ref{tab:resumen_giro}.
+En la trayectoria rectilínea de 2~m, las desviaciones de la
+Tabla~\ref{tab:resumen_odometria} no miden la misma magnitud en ambos entornos.
+La de simulación se calcula con la propia odometría y la de hardware real con
+la distancia física medida, de modo que el error odométrico solo puede
+separarse del error de seguimiento en hardware real. En el protocolo angular,
+la desviación media respecto de la referencia nominal es mayor en simulación
+que en hardware real, con una dispersión menor
+(Tabla~\ref{tab:resumen_giro}).
 
 El mapeo y la exploración se evaluaron únicamente sobre hardware real, por lo
-que no admiten un contraste directo simulación--hardware. En hardware real, el
-índice de cobertura libre promedió 62.2\% ($\sigma=12.9$) sobre las cinco
-iteraciones válidas, con un área libre mapeada media de 3.50~m$^2$ y una mejor
-iteración de 82.9\%. Las limitaciones metodológicas de cada ensayo se detallan
-en el \ref{anx:resultados_metodologia}.
-Por su parte, la caracterización cuantitativa del consumo energético y de la carga
-computacional no forma parte de los ensayos realizados y se plantea como
-trabajo futuro; su alcance se precisa en el \ref{anx:resultados_metodologia}.
+que no admiten un contraste directo entre simulación y hardware. Las
+limitaciones metodológicas de cada ensayo se detallan en el
+\ref{anx:resultados_metodologia}. Por su parte, la caracterización cuantitativa del consumo energético y de la carga computacional no forma parte de los ensayos realizados y se plantea como trabajo futuro; su alcance se precisa en el \ref{anx:resultados_metodologia}.
 
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_resultados}

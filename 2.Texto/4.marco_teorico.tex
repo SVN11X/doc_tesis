@@ -49,21 +49,15 @@ de marcos siguen las recomendaciones REP-103 y REP-105
 \subsection{Descripción del modelo mediante URDF}
 \label{sec:urdf_marco}
 
-El formato URDF (\textit{Unified Robot Description Format}) permite describir
-un robot como un árbol de eslabones y articulaciones mediante un documento
-estructurado. Para cada eslabón se declaran su geometría visual, su geometría
-de colisión y sus propiedades inerciales (masa, centro de masa y tensor de
-inercia); para cada articulación, su tipo (fija, de revolución o continua),
-sus límites y los marcos que conecta. Sobre esta descripción pueden
-declararse además sensores y extensiones de simulación. La misma descripción
-es utilizada por las herramientas de visualización, por el sistema de
-publicación de transformaciones entre marcos y por los simuladores, lo que
-garantiza que el robot real y su modelo digital compartan una única
-definición geométrica. La descripción puede organizarse de forma modular y
-parametrizada, de modo que dimensiones como el radio de rueda o la
-separación entre ruedas se definan una sola vez y se reutilicen en todo el
-modelo; la estructura concreta del modelo desarrollado se presenta en el
-Capítulo~\ref{ch:implementacion}.
+El formato URDF (\textit{Unified Robot Description Format}) describe al robot
+como un árbol de eslabones y articulaciones. Por cada eslabón se declaran su
+geometría visual, su geometría de colisión y sus propiedades inerciales, y por
+cada articulación su tipo, sus límites y los marcos que conecta, además de los
+sensores y las extensiones de simulación. La misma descripción alimenta la
+visualización, la publicación de transformaciones y el simulador, de modo que
+el robot real y su modelo digital comparten una única definición geométrica,
+parametrizada de forma que dimensiones como el radio de rueda se definan una
+sola vez.
 
 El Alg.~\ref{alg:urdf_estructura} resume la organización modular de la
 descripción URDF/\texttt{xacro} desarrollada, en la que un archivo raíz
@@ -108,16 +102,12 @@ Un simulador robótico integra un motor de física, la simulación de sensores y
 
 \gls{ROS2} es un conjunto de bibliotecas y herramientas de código abierto
 para construir sistemas robóticos de forma modular y distribuida
-\citep{macenski2022ros2}. La unidad básica de cómputo es el \emph{nodo}: un
-proceso que encapsula una función específica, como adquirir un sensor,
-estimar la odometría o planificar una ruta. Los nodos se comunican
-principalmente mediante \emph{tópicos}, canales con nombre sobre los cuales
-un nodo \emph{publica} mensajes con una estructura de datos definida y otros
-nodos se \emph{suscriben} para recibirlos. Este esquema de
-publicación--suscripción es anónimo y de muchos a muchos: cada nodo conoce
-solo el nombre y el tipo del tópico, lo que permite reemplazar un componente
-sin modificar el resto del sistema.
-La Fig.~\ref{fig:esquema_nodos} ilustra este patrón: uno o más nodos publican mensajes en un tópico y otros nodos se suscriben a él para recibirlos, sin que publicadores y suscriptores se conozcan entre sí.
+\citep{macenski2022ros2}. Su unidad básica es el \emph{nodo}, un proceso que
+encapsula una función específica, y la comunicación principal ocurre mediante
+\emph{tópicos}, canales con nombre en los que unos nodos publican mensajes y
+otros se suscriben para recibirlos. Cada nodo conoce solo el nombre y el tipo
+del tópico, lo que permite reemplazar un componente sin modificar el resto del
+sistema. La Fig.~\ref{fig:esquema_nodos} ilustra este patrón.
 
 \begin{figure}[H]
 \centering
@@ -154,7 +144,7 @@ etiqueta/.style={font=\footnotesize}
 {\footnotesize\textit{Fuente: Elaboración propia.}}
 \end{figure}
 
-La capa de transporte de \gls{ROS2} se basa en el estándar DDS (\textit{Data Distribution Service}), un middleware descentralizado que descubre los nodos de la red y negocia políticas de calidad de servicio \citep{macenski2022ros2}. Gracias a ello los nodos pueden distribuirse entre varios computadores de una red local sin un maestro central, como ocurre en este trabajo entre la Raspberry Pi~4 y la estación de trabajo. Además de los tópicos, \gls{ROS2} ofrece servicios, de solicitud y respuesta, y acciones, para tareas de larga duración con retroalimentación y cancelación, usadas por ejemplo para enviar metas de navegación. El árbol de transformaciones mantiene las relaciones espaciales entre los marcos de la Sec.~\ref{sec:robot_definicion}.
+El transporte se apoya en el estándar DDS (\textit{Data Distribution Service}), que descubre los nodos de la red y negocia políticas de calidad de servicio \citep{macenski2022ros2}. Gracias a ello los nodos pueden repartirse entre varios computadores sin un maestro central, como ocurre aquí entre la Raspberry Pi~4 y la estación de trabajo. \gls{ROS2} ofrece además servicios y acciones, estas últimas usadas para enviar metas de navegación. El árbol de transformaciones mantiene las relaciones espaciales entre los marcos de la Sec.~\ref{sec:robot_definicion}.
 
 \section{Principio de funcionamiento de sensores y actuadores}
 \label{sec:sensores_actuadores}
@@ -362,13 +352,11 @@ K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
 \end{equation}
 
 \noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{\mathrm{cont}}$, $K_{i,j}^{\mathrm{cont}}$ y $K_{d,j}^{\mathrm{cont}}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
-En la práctica, el controlador no se evalúa de forma continua, sino a
-intervalos regulares en el microcontrolador. Por ello se implementa en
-tiempo discreto mediante una ley incremental acumulativa, con derivada
-sobre la medición y saturación a la escala PWM. Su formulación discreta
-específica, la realización en el firmware y las ganancias definitivas se
-desarrollan en la Sec.~\ref{sec:motorcontrol_pid} y en el
-\ref{anx:pid_ecuaciones}.
+
+El controlador no se evalúa de forma continua, sino a intervalos regulares en
+el microcontrolador. Su formulación discreta específica, la realización en el
+firmware y las ganancias definitivas se desarrollan en la
+Sec.~\ref{sec:motorcontrol_pid} y en el \ref{anx:pid_ecuaciones}.
 
 \section{Sintonización del controlador PID mediante PSO}
 \label{sec:sintonizacion}
@@ -493,13 +481,7 @@ f(n)=g(n)+h(n),
 
 \noindent donde $n$ es el nodo evaluado, $g(n)$ representa el costo acumulado
 desde el origen hasta dicho nodo y $h(n)$ una estimación del costo restante
-hasta la meta. La implementación concreta del planificador incorpora además
-los costos asociados a la representación utilizada por Nav2.
-Dado que en este trabajo no se reconstruyó el escalamiento interno completo
-de dichos costos, no se utiliza la admisibilidad de la heurística ni la
-optimalidad matemática de la ruta como criterio de validación. Para este
-proyecto, la función relevante del planificador es generar una ruta global
-sobre el mapa de costos que pueda ser seguida por el controlador local.
+hasta la meta. La implementación de Nav2 incorpora además los costos de su propia representación, cuyo escalamiento interno no se reconstruyó en este trabajo. Por eso no se emplean la admisibilidad de la heurística ni la optimalidad de la ruta como criterio de validación, sino la capacidad de generar una ruta global que el controlador local pueda seguir.
 
 El control local convierte la ruta global en comandos de velocidad
 ejecutables. El enfoque de ventana dinámica considera únicamente las

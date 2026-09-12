@@ -163,6 +163,13 @@ postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
 \usepackage{caption}
 \usepackage{subcaption}
 
+\usepackage{float}
+\usepackage[section]{placeins}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+
 \captionsetup[algorithm]{
 labelfont=bf,
 textfont=normalfont,
@@ -380,7 +387,7 @@ align=left
 }
 
 \newcommand{\utemFigurePropia}[4]{
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 
 \setlength{\fboxsep}{6pt}
