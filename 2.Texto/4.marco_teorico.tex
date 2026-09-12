@@ -155,7 +155,7 @@ El transporte se apoya en el estándar DDS (\textit{Data Distribution Service}),
 \subsection{Sensor láser LIDAR 2D}
 \label{sec:lidar_marco}
 
-Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo la señal reflejada, por tiempo de vuelo o por triangulación óptica \citep{corke2023}. En un \gls{LIDAR} 2D, el emisor y el receptor giran sobre un eje vertical y entregan, en cada revolución, un barrido de pares ángulo y distancia en un plano horizontal, con el que se detectan paredes y obstáculos y se alimentan el SLAM y los mapas de costos \citep{ismail2022eslam}. Sus limitaciones principales son la incapacidad de detectar objetos fuera del plano de barrido y la degradación ante superficies muy absorbentes o reflectantes. El sensor empleado, RPLidar A1, opera por triangulación con alcance nominal de 12~m y cobertura de 360$^\circ$ \citep{SlamtecA1Datasheet}.
+Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo la señal reflejada, por tiempo de vuelo o por triangulación óptica \citep{corke2023}. En un \gls{LIDAR} 2D, el emisor y el receptor giran sobre un eje vertical y entregan, en cada revolución, un barrido de pares ángulo y distancia en un plano horizontal, con el que se detectan paredes y obstáculos y se alimentan el SLAM y los mapas de costos \citep{corke2023}. Sus limitaciones principales son la incapacidad de detectar objetos fuera del plano de barrido y la degradación ante superficies muy absorbentes o reflectantes. El sensor empleado, RPLidar A1, opera por triangulación con alcance nominal de 12~m y cobertura de 360$^\circ$ \citep{ismail2022eslam, SlamtecA1Datasheet}.
 
 \subsection{Encoders incrementales de cuadratura}
 \label{sec:encoders_marco}
