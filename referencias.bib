@@ -6,22 +6,23 @@ publisher = {{MIT} Press},
 address   = {Cambridge, {MA}}
 }
 
-@misc{SlamtecA1Datasheet,
+
+@online{SlamtecA1Datasheet,
 author       = {{Shanghai Slamtec Co., Ltd.}},
 title        = {{RPLIDAR A1} Low Cost 360 Degree Laser Range Scanner: Introduction and Datasheet},
-howpublished = {Datasheet, Rev. 3.0},
 year         = {2020},
 url          = {https://www.slamtec.com/en/lidar/a1spec},
 urldate      = {2025-09-22},
-note         = {Model: A1M8; document LD108}
+note         = {Hoja de datos rev.~3.0, documento LD108, modelo A1M8}
 }
 
-@misc{nav2_doc,
+
+@online{nav2_doc,
 author  = {{Nav2 Maintainers}},
 title   = {Navigation2 Stack ({Nav2}) Documentation},
 year    = {2025},
-url     = {https://navigation.ros.org/},
-urldate = {2025-08-01}
+url     = {https://docs.nav2.org/},
+urldate = {2026-09-12}
 }
 
 @inproceedings{koenig2004gazebo,
@@ -45,13 +46,15 @@ year    = {2023},
 doi     = {10.14569/IJACSA.2023.0141130}
 }
 
+
 @misc{amadi2024introduction,
 author = {Amadi, Chinedu A. and Mbanisi, Kenechukwu and Smit, Willie J.},
 title  = {An Introduction to the \texttt{ros2\_control} Framework Using a Low-Cost Differential Drive Robot},
 year   = {2024},
-note   = {Preprint},
+note   = {Preprint no arbitrado. La direccion corresponde al repositorio del robot Lidarbot descrito en el trabajo},
 url    = {https://github.com/TheNoobInventor/lidarbot}
 }
+
 
 @article{gokcce2021particle,
 author  = {G{\"o}k{\c{c}}e, Bar{\i}{\c{s}} and Koca, Yavuz Bahad{\i}r and Aslan, Y{\i}lmaz and G{\"o}k{\c{c}}e, Celal Onur},
@@ -87,12 +90,14 @@ isbn      = {978-0521862059},
 doi       = {10.1017/CBO9780511546877}
 }
 
+
 @online{rep103,
 author  = {Foote, Tully and Purvis, Mike},
 title   = {{REP} 103: Standard Units of Measure and Coordinate Conventions},
 year    = {2010},
 url     = {https://www.ros.org/reps/rep-0103.html},
-urldate = {2026-05-01}
+urldate = {2026-05-01},
+note    = {Norma vigente del ecosistema {ROS}, sin revision posterior}
 }
 
 @online{rep105,
@@ -100,8 +105,10 @@ author  = {Meeussen, Wim},
 title   = {{REP} 105: Coordinate Frames for Mobile Platforms},
 year    = {2010},
 url     = {https://www.ros.org/reps/rep-0105.html},
-urldate = {2026-05-01}
+urldate = {2026-05-01},
+note    = {Norma vigente del ecosistema {ROS}, sin revision posterior}
 }
+
 
 @online{marcuslanzoni2020vacuum,
 author       = {{marcuslanzoni}},
@@ -110,7 +117,7 @@ year         = {2020},
 month        = jun,
 url          = {https://www.thingiverse.com/thing:4459513},
 urldate      = {2025-09-22},
-note         = {Modelo tridimensional publicado en Thingiverse.}
+note         = {Modelo tridimensional publicado en Thingiverse}
 }
 
 @article{hart1968astar,
@@ -155,12 +162,15 @@ volume  = {168}, pages = {104493}, year = {2023},
 doi     = {10.1016/j.robot.2023.104493}
 }
 
-@misc{openrobotics2024gazebo,
+
+@online{openrobotics2024gazebo,
 author = {{Open Robotics}}, title = {Gazebo Simulator},
-year = {2024}, url = {https://gazebosim.org/}, urldate = {2025-09-22}
+year = {2024}, url = {https://gazebosim.org/}, urldate = {2025-09-22},
+note = {Sitio del Gazebo moderno, sucesor de Gazebo Classic}
 }
 
-@misc{openrobotics2024ros2control,
+
+@online{openrobotics2024ros2control,
 author = {{Open Robotics}}, title = {{ros2\_control}: A Framework for Real-Time Control},
 year = {2024}, url = {https://control.ros.org/}, urldate = {2025-09-22}
 }
@@ -180,13 +190,14 @@ journal = {Sensors}, volume = {22}, number = {23}, pages = {9297}, year = {2022}
 doi     = {10.3390/s22239297}
 }
 
-@misc{horner_mexplore,
+
+@online{horner_mexplore,
 author       = {Horner, Ji{\v r}{\'i}},
 title        = {{m-explore}: {ROS} packages for multi-robot exploration (\texttt{explore\_lite})},
 year         = {2017},
 url          = {https://github.com/hrnr/m-explore},
 urldate      = {2025-09-22},
-note         = {Paquete \texttt{explore\_lite}; se emplea su adaptaci\'on a ROS~2}
+note         = {Paquete \texttt{explore\_lite}. Se emplea su adaptaci\'on a ROS~2}
 }
 
 @article{maxim2023fopdt,
@@ -253,15 +264,18 @@ urldate = {2026-07-17},
 note    = {Documentaci\'on oficial}
 }
 
-@misc{osrf2025gazeboclassic,
+
+@online{osrf2025gazeboclassic,
 author = {{Open Source Robotics Foundation}},
 title = {Gazebo Classic},
 year = {2025},
 url = {https://classic.gazebosim.org/},
-urldate = {2026-09-12}
+urldate = {2026-09-12},
+note = {Sitio oficial de Gazebo Classic, con el aviso de fin de soporte de enero de 2025}
 }
 
-@misc{openrobotics2025gzmigration,
+
+@online{openrobotics2025gzmigration,
 author = {{Open Robotics}},
 title = {Gazebo Classic Migration},
 year = {2025},
@@ -349,7 +363,8 @@ doi       = {10.1109/IROS.2013.6696520},
 note      = {Actualmente distribuido como {CoppeliaSim}}
 }
 
-@misc{nvidia2025isaacsim,
+
+@online{nvidia2025isaacsim,
 author  = {{NVIDIA Corporation}},
 title   = {{NVIDIA Isaac Sim}},
 year    = {2025},
@@ -382,6 +397,7 @@ url     = {https://github.com/hbrobotics/ros_arduino_bridge},
 urldate = {2026-09-12},
 note    = {Firmware \texttt{ROSArduinoBridge} para encoders, motores y {PID}. Adaptado en este trabajo a partir de la bifurcaci\'on mantenida por Josh Newans}
 }
+
 
 @article{ran2025review2dlidar,
 author  = {Ran, Yingying and Xu, Xiaobin and Tan, Zhiying and Luo, Minzhou},
