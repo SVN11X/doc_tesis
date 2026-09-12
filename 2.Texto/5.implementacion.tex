@@ -48,7 +48,7 @@ consolidan en el \ref{anx:implementacion_diffdrive} y en el
 \caption{Parámetros físicos y temporales empleados en la implementación.}
 \label{tab:parametros_modelo}
 \small
-\begin{tabular}{c p{4.4cm} p{2.8cm} p{4.2cm}}
+\begin{tabular}{p{1.4cm} p{3.5cm} p{2.8cm} p{5.8cm}}
 \toprule
 \textbf{Símbolo} &
 \textbf{Parámetro} &
@@ -154,7 +154,7 @@ la selección se conserva en el \ref{anx:gemelo_digital}.
 \caption{Plugin de \texttt{ros2\_control} según entorno de ejecución.}
 \label{tab:xacro_args_backend}
 \small
-\begin{tabular}{p{2.5cm} p{5.0cm} p{6.0cm}}
+\begin{tabular}{p{2.5cm} p{4.0cm} p{7.0cm}}
 \toprule
 \textbf{Entorno} & \textbf{Plugin de hardware} & \textbf{Fuente de los estados} \\
 \midrule
@@ -191,7 +191,7 @@ La Fig.~\ref{fig:prototipo_planta} presenta la vista en planta del prototipo,
 donde se aprecian el montaje del RPLidar A1 y el panel de control con el
 interruptor de encendido y el visualizador de tensión y corriente.
 
-\utemFigurePropia{2.Texto/Imag/fig_prototipo_planta.jpg}{0.5\linewidth}
+\utemFigurePropia{2.Texto/Imag/fig_prototipo_planta.jpg}{0.4\linewidth}
 {Vista en planta del prototipo construido.}
 {fig:prototipo_planta}
 
@@ -233,7 +233,7 @@ resumen en la Tabla~\ref{tab:diff_drive_params}.
 \caption{Parámetros principales del controlador diferencial.}
 \label{tab:diff_drive_params}
 \small
-\begin{tabular}{llp{5.6cm}}
+\begin{tabular}{llp{6.7cm}}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Descripción} \\
 \midrule
@@ -483,9 +483,9 @@ $K_i$ & 0.075 & 0.001 \\
 $K_o$ & 50 & 50 \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\parbox{0.85\linewidth}{\footnotesize Las ganancias se aplican en la escala interna del firmware.}
 \end{table}
-
-Las ganancias se aplican en la escala interna del firmware.
 
 \begin{algorithm}[H]
 \caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el firmware}

@@ -186,11 +186,7 @@ cerca de un segundo antes. En ambas ruedas, la velocidad medida converge hacia l
 la izquierda muestra pequeñas variaciones discretas alrededor del valor
 objetivo. La figura constituye una verificación cualitativa del seguimiento
 sobre el robot real. Los indicadores de la Tabla~\ref{tab:pid_performance}
-se calculan sobre esa misma respuesta medida.
-
-Los indicadores de la Tabla~\ref{tab:pid_performance} se calcularon
-directamente sobre la respuesta experimental en lazo cerrado de la
-Fig.~\ref{fig:respuesta_escalon_final}, con la referencia de 0.13~m/s. La
+se calcularon sobre la captura de la Fig.~\ref{fig:respuesta_escalon_final}, con la referencia de 0.13~m/s. La
 comparación ilustrativa con el modelo FOPDT y la sintonía Lambda se conserva
 en el \ref{anx:lambda_detalle}. En esa simulación, las ganancias finales producen sobreimpulsos de 10.7\% a 15.6\%. Esos valores provienen de un modelo que no reproduce la zona muerta del driver, las bandas muertas asimétricas ni los tipos enteros del firmware, por lo que no se comparan directamente con la Tabla~\ref{tab:pid_performance}.
 
@@ -266,7 +262,13 @@ alcance se documentan en el \ref{anx:resultados_metodologia}.
 \small
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{ccccc}
+\begin{tabular}{
+>{\centering\arraybackslash}p{1.5cm}
+>{\centering\arraybackslash}p{2.5cm}
+>{\centering\arraybackslash}p{2.8cm}
+>{\centering\arraybackslash}p{2.8cm}
+>{\centering\arraybackslash}p{2.8cm}
+}
 \toprule
 \textbf{Iter.} & \makecell{\textbf{Dur.}\\\textbf{(min)}} & \makecell{\textbf{Dist.}\\\textbf{odom. (m)}} & \makecell{\textbf{Cobertura}\\\textbf{(\%)}} & \makecell{\textbf{Área libre}\\\textbf{(m$^2$)}} \\
 \midrule
@@ -299,15 +301,7 @@ La navegación dirigida se evalúa funcionalmente, mientras que la exploración
 se analiza mediante cobertura y área mapeada.
 La exploración por fronteras se ejecutó de forma autónoma en cinco iteraciones válidas. El nodo explorador seleccionó fronteras y despachó metas de navegación a Nav2 mediante la acción \texttt{NavigateToPose}. Los contadores de texto de \texttt{run\_explore.sh} no distinguen metas únicas, por eso informaban cero metas generadas. Para obtener una medida fiable, cada meta se reconstruyó por su identificador único a partir del flujo de estado de la acción registrado en cada sesión, según la Tabla~\ref{tab:anx_explore_metas} del \ref{anx:protocolo_resultados}.
 
-En total se generaron 60 metas de navegación. De ellas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera. El resultado predominante fue el aborto, con 54 metas abortadas y una sola meta completada con éxito. Las metas abortadas tuvieron una vida mediana de entre 20 y 61 segundos según la iteración, de modo que corresponden a intentos reales de navegación y no a reemplazos inmediatos de meta.
-
-De las 60 metas generadas, 54 finalizaron con estado abortado, una con éxito y
-cinco quedaron sin estado terminal al finalizar sus respectivos registros. Por
-tanto, la fracción de metas exitosas respecto del total generado fue de
-$1/60\approx1.7\%$, mientras que entre las 55 metas con resultado terminal fue
-de $1/55\approx1.8\%$. Estos valores muestran que la cadena
-explorador--Nav2 se ejecutó, pero también evidencian un desempeño operacional
-limitado para completar las metas seleccionadas en el entorno utilizado.
+En total se generaron 60 metas de navegación. De ellas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera. El resultado predominante fue el aborto, con 54 metas abortadas y una sola meta completada con éxito. Las metas abortadas tuvieron una vida mediana de entre 20 y 61 segundos según la iteración, de modo que corresponden a intentos reales de navegación y no a reemplazos inmediatos de meta. Otras cinco metas quedaron sin estado terminal al finalizar sus respectivos registros. Por tanto, la fracción de metas exitosas respecto del total generado fue de $1/60\approx1.7\%$, mientras que entre las 55 metas con resultado terminal fue de $1/55\approx1.8\%$. Estos valores muestran que la cadena explorador--Nav2 se ejecutó, pero también evidencian un desempeño operacional limitado para completar las metas seleccionadas en el entorno utilizado.
 
 Los diecisiete mensajes de lista de fronteras agotada registrados en las cinco
 iteraciones válidas, once de ellos en la iteración~1, no representan diecisiete
