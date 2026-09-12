@@ -372,14 +372,13 @@ El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto ho
 
 \subsection{Arquitectura modular y constantes físicas}
 
-El firmware se organiza en módulos independientes; su descomposición, junto
+El firmware se organiza en módulos independientes, cuya descomposición, junto
 con el inventario de archivos y rutas, se conserva en el \ref{anx:firmware}.
-
-El firmware utiliza la geometría y la resolución efectiva de encoders de
-la Tabla~\ref{tab:parametros_modelo} para expresar las referencias y
-mediciones en \textit{ticks/frame}. La temporalidad interna del controlador
-es independiente del ciclo de \texttt{ros2\_control}; su programación se
-documenta en el \ref{anx:implementacion_diffdrive}.
+Utiliza la geometría y la resolución efectiva de encoders de la
+Tabla~\ref{tab:parametros_modelo} para expresar las referencias y mediciones en
+\textit{ticks/frame}. La temporalidad interna del controlador es independiente
+del ciclo de \texttt{ros2\_control}, y su programación se documenta en el
+\ref{anx:implementacion_diffdrive}.
 
 \subsection{Comunicación serial y lectura de encoders}
 \label{sec:serial_firmware}
