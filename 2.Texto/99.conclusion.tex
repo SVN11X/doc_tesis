@@ -27,14 +27,12 @@ Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. Los estados int
 numéricas se documentan en los anexos de implementación y sintonización.
 
 El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. Los indicadores de cobertura libre y de área mapeada se cuantificaron sobre hardware real durante las iteraciones de exploración.
-
 La navegación con Nav2 quedó integrada mediante planificación global,
 control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecutó en cinco iteraciones válidas y alcanzó
 un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$). Se generaron 60
 metas de navegación autónomas reconstruidas por identificador único, de las
 cuales 54 abortaron y una se completó. El recinto reducido y el radio de inflación de 0.15~m son posibles causas, pero no se aislaron experimentalmente. El detalle metodológico se conserva en el
 \ref{anx:resultados_metodologia}.
-
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
 \begin{description}

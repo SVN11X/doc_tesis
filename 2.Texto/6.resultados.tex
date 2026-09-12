@@ -17,7 +17,6 @@ efectiva de vuelta completa; por ello, sus resultados expresan desviación
 respecto de ese valor nominal y no un error odométrico angular aislado. El
 desarrollo del protocolo y el límite que origina esta distinción se conservan
 en el \ref{anx:odometria_detalle}.
-
 Para distinguir ambos fenómenos se utilizaron las siguientes métricas:
 
 \begin{align}
@@ -43,7 +42,6 @@ d_{\mathrm{real}}
 $d_{\mathrm{odom}}$ la distancia calculada mediante odometría (m),
 $E_{\mathrm{seg}}$ el error de seguimiento (\%) y
 $E_{\mathrm{odom}}$ el error odométrico (\%).
-
 La desviación angular normalizada se expresa respecto de esa referencia nominal fija:
 
 \begin{equation}
@@ -135,7 +133,6 @@ Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \end{table}
 
 Esta métrica no es un error odométrico angular aislado. En simulación, el giro observado es el giro acumulado de \texttt{/odom} al final de un ensayo de duración fija. En hardware real, es el giro físico medido al final del ensayo. En ambos casos se compara con la referencia nominal de 360~grados y no con el giro efectivamente comandado. Los giros observados, entre $335.9^\circ$ y $347.4^\circ$ en simulación y entre $340^\circ$ y $380^\circ$ en hardware real, superan los $315^\circ$ que se obtendrían si el límite de 0.35~rad/s actuara de forma ideal y constante durante todo el ensayo (\ref{anx:odometria_detalle}). Por tanto, los registros no son coherentes con esa hipótesis y la causa de la diferencia no se determinó. Un giro comandado a un ángulo fijo y controlado, planteado como trabajo futuro, entregaría un error angular directo.
-
 El desglose por repetición de ambos protocolos (trayectoria rectilínea y
 protocolo angular, en simulación y hardware real) se presenta en la
 Fig.~\ref{fig:resultados_odometria_repeticiones}.
@@ -215,21 +212,18 @@ Sobreimpulso máximo & Sin sobreimpulso significativo & Sin sobreimpulso signifi
 \end{table}
 
 Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. La velocidad informada por el firmware tiene una resolución de 0.01~m/s, cercana a un 8 por ciento de la referencia. Por eso la banda del 2 por ciento queda por debajo de esa resolución y no se reporta un tiempo de establecimiento al 2 por ciento. La respuesta se estabiliza en torno a la referencia dentro de los primeros segundos, dentro de la resolución de medida.
-
 La comparación completa entre las ganancias del firmware y la referencia
 analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}, con carácter ilustrativo.
 
 La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fijó durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantenía un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero de \texttt{ITerm} (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~ticks/frame, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~ticks/frame, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~ticks/frame, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
 
 El PSO entregó un punto de partida heurístico para las tres ganancias. El refinamiento experimental ajustó ese punto de partida, con aumentos de $K_p$ de 28\% y 63\%, reducciones de $K_d$ de 41\% y 45\% y un aumento de varios órdenes de magnitud en $K_i$, hasta lograr el seguimiento de la referencia sobre el robot real. Por tanto, el aporte del PSO fue el de una semilla de búsqueda y no el de un ajuste final validado por sí solo.
-
 El retardo identificado resultó menor que el período de captura, por lo que no introduce un desplazamiento temporal efectivo en el modelo discreto. En la práctica el modelo se comporta como uno de primer orden. El detalle se conserva en el \ref{anx:fodt_scripts}.
 
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
 El mapeo se evaluó sobre el hardware real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones produjeron un mapa válido. La inspección visual de los mapas obtenidos mostró paredes definidas y consistencia global. Esta valoración es cualitativa. El análisis \emph{post hoc} no incorpora una detección automática de cierre de lazo, por lo que ese indicador quedó registrado como no determinado en las cinco iteraciones válidas.
-
 La métrica utilizada corresponde al índice de cobertura libre, definido como
 la proporción de celdas observadas como libres respecto del total de celdas
 susceptibles de ser exploradas:
@@ -249,7 +243,6 @@ $C_{\mathrm{libre}}$ el índice de cobertura libre (\%). Las celdas ocupadas no
 se incluyen en el denominador. La clasificación se realiza sobre la imagen de
 ocupación generada por \texttt{slam\_toolbox}, según los umbrales de
 intensidad indicados en el \ref{anx:resultados_metodologia}.
-
 El área libre mapeada se calcula a partir del número de celdas libres:
 
 \begin{equation}
@@ -297,7 +290,6 @@ $\sigma$ & 0.53 & 1.10 & 12.94 & 0.03 \\
 
 Estos indicadores caracterizan el mapeo obtenido en las cinco iteraciones
 válidas de exploración y no constituyen una medida del error absoluto del mapa. El contraste cualitativo de los mapas obtenidos se documenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
-
 El índice de cobertura libre se calcula sobre la imagen de ocupación completa, cuyos límites no están anclados al recinto físico. Por eso es un indicador interno relativo y no una fracción absoluta del área del recinto. Esto explica que el área libre mapeada se mantenga casi constante entre iteraciones mientras el índice de cobertura varía de forma amplia, ya que este último depende de cuántas celdas desconocidas quedan dentro de la imagen. Por su mayor estabilidad, el área libre mapeada y el resultado de las metas de la Tabla~\ref{tab:anx_explore_metas} se toman como evidencia principal de la exploración, y el índice de cobertura como indicador complementario.
 
 \section{Navegación autónoma y exploración}
@@ -305,7 +297,6 @@ El índice de cobertura libre se calcula sobre la imagen de ocupación completa,
 
 La navegación dirigida se evalúa funcionalmente, mientras que la exploración
 se analiza mediante cobertura y área mapeada.
-
 La exploración por fronteras se ejecutó de forma autónoma en cinco iteraciones válidas. El nodo explorador seleccionó fronteras y despachó metas de navegación a Nav2 mediante la acción \texttt{NavigateToPose}. Los contadores de texto de \texttt{run\_explore.sh} no distinguen metas únicas, por eso informaban cero metas generadas. Para obtener una medida fiable, cada meta se reconstruyó por su identificador único a partir del flujo de estado de la acción registrado en cada sesión, según la Tabla~\ref{tab:anx_explore_metas} del \ref{anx:protocolo_resultados}.
 
 En total se generaron 60 metas de navegación. De ellas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera. El resultado predominante fue el aborto, con 54 metas abortadas y una sola meta completada con éxito. Las metas abortadas tuvieron una vida mediana de entre 20 y 61 segundos según la iteración, de modo que corresponden a intentos reales de navegación y no a reemplazos inmediatos de meta.
@@ -327,7 +318,6 @@ de navegación retorna \texttt{ABORTED} o cuando se supera
 cuando todas las fronteras candidatas del instante coinciden con elementos de
 la lista negra, momento en que esta se vacía para permitir nuevos intentos.
 Por ello, ambos contadores describen eventos diferentes.
-
 En conjunto, los ensayos verifican la integración funcional del proceso de
 exploración: se detectaron fronteras, se generaron metas y Nav2 intentó
 ejecutarlas mientras el mapa continuó actualizándose. Sin embargo, la elevada
@@ -386,7 +376,6 @@ hardware real, calculada con la distancia física medida
 magnitud. El error odométrico solo se separa del error de seguimiento en
 hardware real, donde alcanza 3.63\%, porque en simulación la pose verdadera de
 Gazebo no quedó registrada.
-
 En el protocolo angular, la desviación media respecto de la referencia
 nominal de $360^\circ$ es mayor en simulación ($17.1^\circ$) que en hardware
 real ($11.7^\circ$), con una dispersión menor ($5.8^\circ$ frente a
@@ -398,8 +387,7 @@ que no admiten un contraste directo simulación--hardware. En hardware real, el
 iteraciones válidas, con un área libre mapeada media de 3.50~m$^2$ y una mejor
 iteración de 82.9\%. Las limitaciones metodológicas de cada ensayo se detallan
 en el \ref{anx:resultados_metodologia}.
-
-La caracterización cuantitativa del consumo energético y de la carga
+Por su parte, la caracterización cuantitativa del consumo energético y de la carga
 computacional no forma parte de los ensayos realizados y se plantea como
 trabajo futuro; su alcance se precisa en el \ref{anx:resultados_metodologia}.
 
@@ -412,8 +400,7 @@ $11.7^\circ$ respecto de la referencia nominal del protocolo. La respuesta en la
 medida en hardware, y sobre esa misma captura se calcularon los indicadores de
 la Tabla~\ref{tab:pid_performance}, que muestran seguimiento de la referencia
 sin sobreimpulso apreciable.
-
-El sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en
+Por su parte, el sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en
 hardware real. La exploración por fronteras alcanzó un índice
 medio de cobertura libre de 62.2\% ($\sigma=12.9$) en cinco iteraciones, con
 un área libre mapeada media de 3.50~m$^2$. La integración funcional y la

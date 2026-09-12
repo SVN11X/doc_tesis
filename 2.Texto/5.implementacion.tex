@@ -20,13 +20,11 @@ mientras que el driver L298N aplica las señales \gls{PWM} a los motores. La
 Raspberry Pi~4 ejecuta la interfaz de hardware, adquiere los barridos del
 RPLidar A1 y se comunica con la estación de trabajo, donde se ejecutan las
 funciones de mapeo, navegación y exploración.
-
 La arquitectura de alimentación y la distribución eléctrica se detallan en
 la Sec.~\ref{chap:robot_real}. El chasis y las cubiertas se fabricaron
 mediante impresión 3D FDM en PLA+, tomando como referencia una plataforma
 diferencial de código abierto
 \citep{marcuslanzoni2020vacuum}.
-
 En la Fig.~\ref{fig:prototipo} se muestra una vista lateral del prototipo
 construido, donde se distinguen el chasis impreso y el lidar.
 
@@ -113,7 +111,6 @@ cargado en Gazebo.
 \label{sec:atribucion}
 
 El modelo digital se organiza mediante una descripción \texttt{xacro} modular: la estructura mecánica se define una sola vez y el sensor láser se selecciona según el entorno de ejecución, de modo que hardware real y simulación comparten la misma geometría. El inventario de archivos, su función y su localización se consolidan en el \ref{anx:rutas_software}. La geometría del modelo se presenta acotada en la Fig.~\ref{fig:anx_cotas} del \ref{anx:validacion_urdf}.
-
 La contribución principal en esta etapa corresponde al diseño del modelo URDF/\texttt{xacro}, la parametrización geométrica del robot, la definición de marcos de referencia y la integración con los sistemas de control, SLAM y navegación. La atribución completa de paquetes propios, adaptados y externos se documenta en el \ref{anx:workspace}.
 
 \subsection{Estructura URDF/xacro y marcos de referencia}
@@ -127,7 +124,6 @@ este modelo se declara como un eslabón hijo fijo y coincidente con
 REP-103 y REP-105 descritas en la Sec.~\ref{sec:robot_definicion}
 \citep{rep103,rep105}, que fijan la orientación de los ejes y la jerarquía entre
 el marco del mapa, el odométrico y el de la base.
-
 La cadena de transformaciones principal es:
 
 \begin{center}
@@ -138,7 +134,6 @@ La cadena de transformaciones principal es:
 odométrico (continuo, con deriva) y \texttt{laser\_frame} el marco del sensor
 láser; de esta cadena cuelga, además, la rama fija
 \texttt{base\_link}$\rightarrow$\texttt{base\_footprint}.
-
 Sobre esta estructura, el marco que \texttt{slam\_toolbox} y AMCL declaran como
 base para localizar al robot (\texttt{base\_link} o \texttt{base\_footprint})
 no es el mismo en simulación que en hardware real. Esa asignación por entorno,
@@ -183,7 +178,6 @@ superficies visibles de los obstáculos, generando zonas de oclusión detrás de
 ellos. Esta respuesta permite verificar la coherencia entre la posición del
 sensor, su marco de referencia y la geometría del mundo simulado antes de
 utilizar los datos en los procesos de SLAM y navegación.
-
 Antes de usar el gemelo digital para pruebas de SLAM y navegación, se aplicaron los criterios de aceptación resumidos en la Tabla~\ref{tab:criterios_aceptacion_resumen} del \ref{anx:gemelo_digital}, donde también se conserva la evidencia estructural.
 
 \section{Construcción de hardware y comunicación con ROS 2}
@@ -207,7 +201,6 @@ mediante el driver L298N. A partir del mismo bus, un módulo reductor
 \textit{DC-DC Power Module} de 25 W genera un riel regulado de 5~V para
 alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los
 periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
-
 El dominio de comunicaciones conecta la Raspberry Pi con el
 \gls{Arduino} mediante un enlace serial USB para intercambiar referencias de
 velocidad y datos de encoders. El RPLidar A1 entrega los barridos utilizados
@@ -227,7 +220,6 @@ para publicar la descripción del robot, activar \texttt{ros2\_control} y
 cargar el controlador diferencial junto con el difusor de estados de
 articulación. El inventario de nodos y la responsabilidad de cada uno se
 documentan en el \ref{anx:nodos_lanzamiento}.
-
 La cadena de transformaciones mantiene la misma convención usada en simulación (Sec.~\ref{sec:tf-convenciones}): \texttt{slam\_toolbox} publica \texttt{map}$\rightarrow$\texttt{odom}, mientras que \texttt{diff\_drive\_controller} publica \texttt{odom}$\rightarrow$\texttt{base\_link} a partir de la odometría de encoders.
 
 \subsection{Control diferencial e interfaz de hardware}
@@ -258,7 +250,6 @@ enlace serial, las referencias de velocidad de rueda y las lecturas de
 encoder. Su ciclo de lectura--actualización--escritura se ejecuta con la
 frecuencia $f_{\mathrm{ctrl}}$ indicada en la
 Tabla~\ref{tab:parametros_modelo}.
-
 En la fase de escritura, las consignas de rueda se convierten a
 \textit{ticks/frame}; en la fase de
 lectura, los conteos acumulados $c_j[k]$ se convierten en posición y
@@ -266,7 +257,6 @@ velocidad angular mediante las Ecs.~\eqref{eq:posicion_rueda_encoder}
 y~\eqref{eq:w_ruedas}, para $j\in\{R,L\}$, con el intervalo $\Delta t_k$. Las interfaces expuestas y el
 desarrollo de ambas conversiones se conservan en el
 \ref{anx:implementacion_diffdrive}.
-
 Las ganancias PID no se transmiten en tiempo de ejecución: residen en el
 firmware con los valores obtenidos mediante el procedimiento descrito en la
 Sec.~\ref{sec:sintonizacion_pso}.
@@ -345,7 +335,6 @@ de desplazamiento como para el mapeo teleoperado descrito en el
 Capítulo~\ref{ch:resultados}. Se realiza mediante un mando inalámbrico: un nodo
 lee el estado del mando y otro convierte la posición de sus palancas en comandos
 de velocidad lineal y angular para el robot.
-
 Como mecanismo de seguridad se emplea un \textit{dead-man switch}: el mando solo
 publica comandos mientras se mantiene presionado un botón de habilitación, de
 modo que al soltarlo el robot deja de recibir consignas y se detiene. Así se
@@ -394,7 +383,6 @@ resolviendo el protocolo serial o el control PID. El programa principal solo
 lee el valor acumulado cuando lo necesita: en cada ciclo del PID para calcular
 la velocidad de cada rueda, y al responder el comando de lectura de encoders,
 a partir del cual la Raspberry Pi estima la odometría.
-
 Los conteos recibidos por el enlace serial se interpretan mediante la
 resolución efectiva $N_e$ (Tabla~\ref{tab:parametros_modelo}). El
 tratamiento de la lectura no atómica de los contadores se conserva en el
@@ -405,7 +393,6 @@ tratamiento de la lectura no atómica de los contadores se conserva en el
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano, con la referencia y la medición expresadas en ticks/frame. Como se señaló en la Sec.~\ref{sec:pid}, la forma continua del PID se utiliza únicamente como
 referencia conceptual.
-
 En la práctica el controlador no se evalúa de forma continua, sino a intervalos
 regulares en el microcontrolador. Por ello la ley se implementa en tiempo
 discreto, con una forma incremental acumulativa en la que el término asociado a $K_{d,j}$ se calcula sobre la diferencia de la medición. El incremento
@@ -639,9 +626,7 @@ evita bloquear el sistema cuando la carga computacional crece, incorpora
 detección de cierre de lazo y mantiene un consumo compatible con computadores
 embebidos, razón por la cual resulta adecuado para la arquitectura distribuida
 de este prototipo.
-
 El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, en modo \texttt{online\_async}. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
-
 Las configuraciones de hardware y simulación comparten la estructura del
 algoritmo, pero emplean parámetros específicos para cada entorno; los valores
 cargados se consolidan en la Tabla~\ref{tab:slam_params_ch9}.
@@ -655,11 +640,9 @@ Sec.~\ref{sec:localizacion_marco} se implementa mediante AMCL
 este propósito. AMCL estima la transformación entre los marcos \texttt{map} y
 \texttt{odom}, mientras que la odometría mantiene la transformación entre
 \texttt{odom} y el marco base del robot.
-
 Para la navegación sobre un mapa previamente guardado se dispone del nodo
 AMCL de Nav2, con archivos de configuración propios para hardware real y
 simulación; su lanzamiento se documenta en el \ref{anx:amcl_lanzamiento}.
-
 Debe distinguirse este modo de la exploración ejecutada durante el mapeo en
 línea. En las pruebas de mapeo y exploración documentadas en este trabajo,
 \texttt{slam\_toolbox} genera el mapa y estima la transformación
@@ -692,7 +675,6 @@ arbitradas por \texttt{twist\_mux} antes de llegar a
 \texttt{ros2\_control}. La realimentación de los encoders cierra el control de
 velocidad de las ruedas y actualiza la odometría utilizada por los módulos
 superiores.
-
 El diagrama organiza los nodos según su rol dentro de la arquitectura
 \gls{ROS2} y no según el equipo que los ejecuta. En la configuración
 distribuida empleada, \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite}
@@ -728,9 +710,7 @@ diferencial, junto con los identificadores completos de ambos
 \label{sec:costmaps_ch9}
 
 Nav2 utiliza dos mapas de costos. El \texttt{global\_costmap} entrega la representación usada por el planificador global, mientras que el \texttt{local\_costmap} se actualiza alrededor del robot y permite al controlador DWB reaccionar ante obstáculos cercanos. Ambos mapas incorporan una capa de inflación, necesaria para mantener una distancia de seguridad respecto de los obstáculos.
-
 En hardware real ambos mapas de costos emplean un radio de inflación de 0.15~m, valor inferior al configurado en simulación; sus implicancias sobre la navegación en un recinto reducido se discuten en la Sec.~\ref{sec:resultados_nav2}. La geometría completa de los costmaps se presenta en el \ref{anx:nav2_slam_config}.
-
 La Fig.~\ref{fig:mapa_costos_ejecucion} ilustra el uso del mapa de costos
 global durante una ejecución de navegación y exploración autónomas, desde la
 detección de fronteras hasta la cobertura alcanzada del recinto.
@@ -747,7 +727,6 @@ detección de fronteras hasta la cobertura alcanzada del recinto.
 \label{sec:bt_ch9}
 
 La navegación de alto nivel se organiza mediante el árbol de comportamiento descrito en la Sec.~\ref{sec:nav_marco}.
-
 El árbol ejecutado replanifica la ruta de forma periódica y aplica
 recuperaciones en dos niveles: ante fallos de planificación o seguimiento
 actúa sobre el costmap correspondiente; si falla la navegación completa,
@@ -758,7 +737,6 @@ Tabla~\ref{tab:recovery_ch9}.
 \label{sec:explore_ch9}
 
 Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}), que identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
-
 Los parámetros completos se conservan en la
 Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo
 de detección, selección, envío de metas y gestión de la lista negra se resume

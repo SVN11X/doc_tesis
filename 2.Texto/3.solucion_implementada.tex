@@ -11,7 +11,6 @@ una arquitectura distribuida en dos entornos: robot y
 estación de trabajo, comunicados mediante \gls{ROS2}. El objetivo es que el
 sistema sea capaz de mapear, navegar y explorar entornos interiores de forma
 autónoma.
-
 La Fig.~\ref{fig:arquitectura_alto_nivel} presenta el diagrama de bloques
 simplificado del sistema, organizado en cuatro dominios funcionales
 identificados por color.
@@ -24,7 +23,6 @@ Las flechas del diagrama representan el flujo lógico de mediciones, estados,
 metas y comandos entre los componentes. Por tanto, no todas corresponden a
 conexiones físicas directas, ya que parte del intercambio se realiza mediante
 tópicos, acciones y transformaciones de \gls{ROS2} a través de la red local.
-
 La función general de cada dominio es la siguiente:
 
 \begin{description}
@@ -53,7 +51,6 @@ Cada dominio del sistema se construyó eligiendo, entre las alternativas del
 Capítulo~\ref{ch:estado_arte}, la que mejor se ajusta a una plataforma
 diferencial de bajo costo orientada a interiores. A continuación se justifica
 cada decisión principal.
-
 El middleware de comunicación se eligió entre las alternativas de la
 Sec.~\ref{sec:alternativas_middleware}. Se adoptó \gls{ROS2} por su ecosistema
 amplio de paquetes de mapeo, navegación y exploración, y por su soporte vigente

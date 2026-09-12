@@ -16,7 +16,6 @@ cinemático cuya raíz es la base del robot \citep{corke2023}. En una
 plataforma diferencial, el árbol se compone del chasis, las dos ruedas
 motrices (articulaciones de revolución accionadas) y los elementos
 pasivos de apoyo, además de los sensores montados sobre el chasis.
-
 Para describir la posición y orientación del robot se asocia un marco de
 referencia a cada cuerpo de interés. La pose de un robot que se desplaza en
 el plano queda definida por el vector $q=(x,y,\theta)$, donde $x$ e $y$ son
@@ -118,7 +117,6 @@ nodos se \emph{suscriben} para recibirlos. Este esquema de
 publicación--suscripción es anónimo y de muchos a muchos: cada nodo conoce
 solo el nombre y el tipo del tópico, lo que permite reemplazar un componente
 sin modificar el resto del sistema.
-
 La Fig.~\ref{fig:esquema_nodos} ilustra este patrón: uno o más nodos publican mensajes en un tópico y otros nodos se suscriben a él para recibirlos, sin que publicadores y suscriptores se conozcan entre sí.
 
 \begin{figure}[H]
@@ -259,8 +257,7 @@ consignas de rueda, es:
 consignas lineal (m/s) y angular (rad/s) del robot, mientras que
 $\omega_R^{\mathrm{cmd}}$ y $\omega_L^{\mathrm{cmd}}$ son las consignas
 angulares de las ruedas (rad/s).
-
-Una discretización de Euler del modelo cinemático permite propagar la pose
+Además, una discretización de Euler del modelo cinemático permite propagar la pose
 entre muestras:
 
 \begin{align}
@@ -333,7 +330,6 @@ de tiempo (s) y $L_{d,j}$ el retardo puro o tiempo muerto (s). La variable
 compleja de Laplace se denota con mayúscula, $S$, para distinguirla a simple
 vista del segundo (s), unidad de tiempo escrita en redonda; los productos
 $\tau_j S$ y $L_{d,j}\,S$ son adimensionales.
-
 Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error
 cuadrático entre la respuesta medida y la respuesta del modelo. La
 discretización, la cuantización del retardo y las aproximaciones numéricas
@@ -366,7 +362,6 @@ K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
 \end{equation}
 
 \noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{\mathrm{cont}}$, $K_{i,j}^{\mathrm{cont}}$ y $K_{d,j}^{\mathrm{cont}}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
-
 En la práctica, el controlador no se evalúa de forma continua, sino a
 intervalos regulares en el microcontrolador. Por ello se implementa en
 tiempo discreto mediante una ley incremental acumulativa, con derivada
@@ -475,7 +470,6 @@ puede realizarse sin volver a ejecutar el proceso de mapeo. Para este propósito
 se emplea la localización de Monte Carlo adaptativa, un método de localización
 probabilística basado en un filtro de partículas
 \citep{thrun2005probabilistic}.
-
 Cada partícula representa una hipótesis de pose. Las hipótesis se propagan con la odometría y se ponderan según la concordancia entre los barridos del \gls{LIDAR} y el mapa de ocupación almacenado, y luego el remuestreo concentra las partículas en las regiones de mayor probabilidad. Este método estima la transformación entre el marco del mapa y el odométrico, mientras que la odometría mantiene la transformación entre este último y la base del robot. A diferencia del SLAM de la Sec.~\ref{sec:slam}, la localización no construye ni modifica el mapa, sino que sitúa al robot dentro de uno ya conocido. El nodo utilizado y su configuración se detallan en la Sec.~\ref{sec:amcl_ch9}.
 
 \section{Planificación de rutas y control local}
@@ -486,8 +480,7 @@ de rejilla de ocupación, donde cada celda clasifica el espacio como libre,
 ocupado o desconocido, y sobre mapas de costo que agregan a los obstáculos
 una zona de inflación que penaliza transitar cerca de ellos
 \citep{lavalle2006planning}.
-
-El planificador global calcula una ruta desde la posición actual hasta la
+Sobre esta representación, el planificador global calcula una ruta desde la posición actual hasta la
 meta. En este trabajo se utiliza NavFn configurado con
 \texttt{use\_astar=true}, por lo que la búsqueda global emplea el algoritmo
 A* sobre la rejilla derivada del mapa de costos. A* ordena la expansión de
@@ -502,7 +495,6 @@ f(n)=g(n)+h(n),
 desde el origen hasta dicho nodo y $h(n)$ una estimación del costo restante
 hasta la meta. La implementación concreta del planificador incorpora además
 los costos asociados a la representación utilizada por Nav2.
-
 Dado que en este trabajo no se reconstruyó el escalamiento interno completo
 de dichos costos, no se utiliza la admisibilidad de la heurística ni la
 optimalidad matemática de la ruta como criterio de validación. Para este

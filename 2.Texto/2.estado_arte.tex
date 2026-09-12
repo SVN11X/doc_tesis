@@ -8,7 +8,6 @@ exploración y simulación, considerando su nivel de integración con
 \gls{ROS2}, sus requerimientos computacionales y su pertinencia para una
 plataforma diferencial de bajo costo.
 
-%------------------------------------------------------------------
 \section{Panorama general de la robótica móvil}
 \label{sec:panorama_robotica_movil}
 
@@ -28,7 +27,6 @@ entorno. Por ejemplo, un robot logístico puede desplazarse entre estaciones
 conocidas; un robot de inspección puede recorrer una instalación y registrar
 mediciones; y una plataforma de investigación puede explorar un recinto
 desconocido mientras genera su mapa \citep{thrun2005probabilistic}.
-
 Desde el punto de vista computacional, estas funciones pueden concentrarse en
 un solo computador o distribuirse entre varios dispositivos. El control de
 los actuadores suele requerir una ejecución rápida y periódica, mientras que
@@ -37,7 +35,6 @@ procesamiento. Como resultado, en la robótica móvil coexisten arquitecturas
 centralizadas, sistemas distribuidos y soluciones híbridas adaptadas a los
 requerimientos de cada aplicación \citep{macenski2022ros2}.
 
-%------------------------------------------------------------------
 \section{Plataformas de software y middleware robótico}
 \label{sec:alternativas_middleware}
 
@@ -46,7 +43,6 @@ una plataforma robótica de propósito general, un middleware de comunicación o
 una arquitectura desarrollada específicamente para el sistema. Entre las
 alternativas más conocidas se encuentran ROS~1, ROS~2, YARP, Orocos RTT y
 LCM, además de soluciones propietarias utilizadas en plataformas comerciales.
-
 Estas alternativas no ofrecen exactamente el mismo nivel de funcionalidad.
 Algunas proporcionan bibliotecas, herramientas de visualización, gestión de
 paquetes y controladores de hardware, mientras que otras se concentran en la
@@ -112,7 +108,6 @@ grado de desarrollo propio que puede asumir el proyecto. La alternativa
 adoptada para el prototipo y su relación con los restantes componentes se
 presentan en el Capítulo~\ref{ch:solucion}.
 
-%------------------------------------------------------------------
 \section{Percepción y mapeo del entorno}
 \label{sec:sensores}
 
@@ -166,7 +161,7 @@ Su desempeño depende de la calidad de la odometría y de los datos láser. \\
 En consecuencia, la elección del sensor de percepción y de la herramienta de
 SLAM depende del costo, la carga computacional, la dependencia de la odometría
 y el grado de integración con \gls{ROS2}.
-%------------------------------------------------------------------
+
 \section{Navegación y exploración autónoma}
 \label{sec:exploracion}
 
@@ -200,8 +195,7 @@ Los métodos de planificación y control descritos no se ejecutan de forma
 aislada, sino a través de una plataforma que los integra y coordina. Para esto
 existen distintas alternativas, que van desde frameworks de navegación ya
 consolidados hasta arquitecturas desarrolladas de forma específica.
-
-Nav2 es el framework de navegación de referencia en \gls{ROS2}. Su estructura
+Por su parte, Nav2 es el framework de navegación de referencia en \gls{ROS2}. Su estructura
 modular permite combinar planificadores como NavFn y Smac con controladores
 como DWB, Regulated Pure Pursuit y MPPI, y orquestar la navegación mediante
 árboles de comportamiento \citep{nav2_doc}. Su predecesor en ROS~1,
@@ -226,7 +220,6 @@ propia ofrece mayor control a cambio de un mayor esfuerzo de desarrollo.
 Las estrategias de exploración pueden agruparse en enfoques basados en
 fronteras, métodos guiados por ganancia de información y propuestas de
 \textit{active SLAM}.
-
 La exploración basada en fronteras utiliza como candidatos las regiones que
 separan el espacio conocido de las zonas todavía no observadas. Herramientas
 como \texttt{explore\_lite} representan ejemplos de este enfoque. Su
@@ -243,14 +236,12 @@ cobertura del entorno, la incertidumbre de localización y la consistencia del
 mapa. En desarrollos recientes también se investigan métodos basados en
 muestreo, aprendizaje y coordinación de múltiples robots
 \citep{liu2025frontier,placed2023active}.
-
 Los enfoques basados en fronteras continúan siendo utilizados por su menor
 complejidad y facilidad de integración. En cambio, los métodos de ganancia de
 información y \textit{active SLAM} pueden generar decisiones más informadas,
 aunque demandan una representación más completa del estado del sistema y una
 mayor capacidad de procesamiento.
 
-%------------------------------------------------------------------
 \section{Simulación de robots móviles}
 \label{sec:gemelo_digital}
 
@@ -261,7 +252,6 @@ difieren en la precisión de sus modelos físicos, la representación de
 sensores, la integración con plataformas robóticas, los recursos
 computacionales requeridos y la facilidad para construir escenarios de
 prueba.
-
 Gazebo presenta una amplia utilización en proyectos académicos y de
 investigación debido a su integración con descripciones URDF, sensores
 simulados y herramientas del ecosistema robótico
@@ -278,7 +268,6 @@ aplicaciones que requieren percepción visual, interacción física detallada o
 entrenamiento de sistemas de aprendizaje pueden necesitar simuladores con
 mayor fidelidad.
 
-%------------------------------------------------------------------
 \section*{Conclusión del capítulo}
 
 La revisión muestra que las soluciones actuales para robótica móvil se
