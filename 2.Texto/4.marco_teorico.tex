@@ -446,9 +446,14 @@ estructura.
 
 El procesamiento asíncrono de los barridos, la detección de cierre de lazo y
 un consumo compatible con computadores embebidos son las características que
-hacen viable esta técnica en plataformas de bajo costo. La herramienta
-concreta empleada en este trabajo y su configuración se presentan en la
-Sec.~\ref{sec:slam_ch9}.
+hacen viable esta técnica en plataformas de bajo costo. La técnica utilizada
+en este trabajo es SLAM Toolbox, una realización del SLAM basado en grafos de
+poses que construye el mapa de ocupación de forma incremental durante la
+operación, mantiene y optimiza el grafo mientras el robot se desplaza, y
+permite almacenar el mapa resultante para reutilizarlo después en la
+localización \citep{macenski2021slamtoolbox}. La comparación con las demás
+alternativas de SLAM 2D se presenta en el Capítulo~\ref{ch:estado_arte}, y la
+configuración concreta empleada en la Sec.~\ref{sec:slam_ch9}.
 
 \section{Localización en mapas conocidos}
 \label{sec:localizacion_marco}
@@ -469,9 +474,8 @@ ocupado o desconocido, y sobre mapas de costo que agregan a los obstáculos
 una zona de inflación que penaliza transitar cerca de ellos
 \citep{lavalle2006planning}.
 Sobre esta representación, el planificador global calcula una ruta desde la posición actual hasta la
-meta. En este trabajo se utiliza NavFn configurado con
-\texttt{use\_astar=true}, por lo que la búsqueda global emplea el algoritmo
-A* sobre la rejilla derivada del mapa de costos. A* ordena la expansión de
+meta. En este trabajo la búsqueda global se resuelve mediante el algoritmo A* sobre la rejilla derivada del mapa de costos. El planificador empleado y la opción de configuración que habilita esta búsqueda se presentan en el
+Capítulo~\ref{ch:implementacion}. A* ordena la expansión de
 los nodos mediante la función de evaluación:
 
 \begin{equation}

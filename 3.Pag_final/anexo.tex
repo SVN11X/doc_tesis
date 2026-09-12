@@ -23,7 +23,8 @@
 \section{Construcción, componentes y montaje}
 \label{anx:componentes}
 
-Este anexo reúne información complementaria sobre los componentes, el montaje físico y la reproducción del prototipo.
+Este anexo reúne información complementaria sobre los componentes, el montaje físico y la reproducción del prototipo. La Tabla~\ref{tab:anx_print_params} reúne los parámetros generales utilizados
+en la fabricación de las piezas por impresión 3D.
 
 \subsection{Parámetros de impresión 3D}
 \label{anx:impresion3d}
@@ -135,7 +136,8 @@ Este anexo documenta información complementaria sobre el entorno de ejecución,
 \subsection{Entorno de ejecución y workspace}
 \label{anx:workspace}
 
-El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación base como en la Raspberry Pi 4. La comunicación estación--robot se realiza mediante una red Wi-Fi dedicada, con IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}.
+El sistema se ejecuta sobre \gls{ROS2} Foxy y Ubuntu 20.04 tanto en la estación base como en la Raspberry Pi 4. La comunicación estación--robot se realiza mediante una red Wi-Fi dedicada, con IP estáticas y \texttt{ROS\_DOMAIN\_ID=0}. La Tabla~\ref{tab:anx_ws_roles} detalla los paquetes principales del workspace
+y su rol.
 
 \begin{table}[H]
 \centering
@@ -199,6 +201,8 @@ Publica el estado de las articulaciones. \\
 
 \subsection{Asignación de pines y dispositivos}
 \label{anx:pinout_dispositivos}
+La Tabla~\ref{tab:anx_pinout_arduino_l298n} resume la asignación de pines
+entre el \gls{Arduino}, el driver L298N y los encoders.
 
 \begin{table}[H]
 \centering
@@ -327,7 +331,7 @@ Nano AVR, la lectura de 32~bits no está garantizada como una operación atómic
 por tanto, el conteo devuelto puede, en principio, ser modificado durante su
 copia. Esta condición se conserva porque corresponde al firmware ejecutado.
 
-Para determinar el número de ticks por revolución de rueda, se hizo girar cada rueda una vuelta completa y se repitió la medición diez veces; estas muestras sustentan el valor unificado $N_e$ adoptado (Tabla~\ref{tab:parametros_modelo}).
+Para determinar el número de ticks por revolución de rueda, se hizo girar cada rueda una vuelta completa y se repitió la medición diez veces; estas muestras sustentan el valor unificado $N_e$ adoptado (Tabla~\ref{tab:parametros_modelo}). Las muestras individuales se presentan en la Tabla~\ref{tab:anx_muestras_cuentas}.
 
 \begin{table}[H]
 \centering
@@ -591,7 +595,8 @@ Las configuraciones fuente se mantienen en \texttt{articubot\_\allowbreak{}one/\
 Los identificadores de \textit{plugin} cargados por los componentes resumidos
 en la Tabla~\ref{tab:nav2_componentes_ch9} son
 \texttt{nav2\_navfn\_planner/NavfnPlanner} para el planificador global y
-\texttt{dwb\_core::DWBLocalPlanner} para el controlador local.
+\texttt{dwb\_core::DWBLocalPlanner} para el controlador local. Los parámetros principales de ambos se consolidan en la
+Tabla~\ref{tab:anx_nav2_dwb_params}.
 
 \begin{table}[H]
 \centering
@@ -747,6 +752,9 @@ $0.35\,(2\pi/0.4)$~rad, equivalente a $315^\circ$. Sin embargo, todos los giros 
 En simulación, la interpretación del error rectilíneo y la condición del protocolo angular corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
 
 \subsection{Trayectoria rectilínea de 2~m}
+
+La Tabla~\ref{tab:odom_recta_sim} presenta los resultados en simulación y la
+Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
 
 \begin{table}[H]
 \centering
@@ -934,7 +942,8 @@ completa en la primera mención relevante y, en las menciones posteriores, se
 conserva solo el nombre del archivo cuando no existe ambigüedad. Las copias
 almacenadas bajo \texttt{test/\allowbreak{}sesiones\_\allowbreak{}mapeo/} corresponden a instantáneas de
 cada ensayo; salvo indicación expresa, la configuración fuente es la ubicada
-en \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/}.
+en \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/}. La Tabla~\ref{tab:rutas_software} consolida la localización y la función de
+todos los archivos de código citados en el documento.
 
 \begingroup
 \small

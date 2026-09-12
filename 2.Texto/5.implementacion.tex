@@ -427,8 +427,8 @@ lo que los resultados experimentales del Capítulo~\ref{ch:resultados}
 corresponden al controlador efectivamente implementado.
 
 Si se desprecian la saturación y los truncamientos enteros, y se parte de un
-reinicio con \texttt{output}, \texttt{PrevInput} e \texttt{ITerm} en cero, la
-salida acumulada puede escribirse sin incrementos:
+reinicio con la salida acumulada, la medición previa y el estado integral en
+cero, la salida acumulada puede escribirse sin incrementos:
 \begin{equation}
 u_j[k]=\frac{K_{p,j}\,S_j^{e}[k]-K_{d,j}\,m_j^{\mathrm{int}}[k]+S_j^{I}[k]}{K_o},
 \label{eq:pid_equivalente}
