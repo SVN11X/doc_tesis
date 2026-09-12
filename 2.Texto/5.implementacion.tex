@@ -701,7 +701,7 @@ Tabla~\ref{tab:recovery_ch9}.
 \subsection{Exploración autónoma de fronteras}
 \label{sec:explore_ch9}
 
-Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:exploracion} (\texttt{explore\_lite}), que identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
+Para mapear entornos desconocidos sin intervención manual continua, se integra el módulo de exploración por fronteras seleccionado en la Sec.~\ref{sec:seleccion_tecnologias} (\texttt{explore\_lite}), que identifica, sobre el costmap global, las fronteras entre espacio libre conocido y zonas no observadas, y envía metas de navegación a Nav2. De esta forma, se cierra el ciclo percepción--mapeo--navegación--exploración sobre la misma arquitectura.
 Los parámetros completos se conservan en la
 Tabla~\ref{tab:explore_params_ch9} del \ref{anx:nav2_slam_config}, y el flujo
 de detección, selección, envío de metas y gestión de la lista negra se resume

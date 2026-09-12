@@ -64,6 +64,11 @@ controlador local reactivo, adecuados a un mapa de ocupación 2D y de bajo costo
 computacional (Sec.~\ref{sec:exploracion})
 \citep{hart1968astar,macenski2023desks}.
 
+ La validación previa del diseño se apoyó en un gemelo digital construido
+en Gazebo Classic. Se optó por esa versión y no por el Gazebo actual porque
+es la compatible con \gls{ROS2} Foxy y con Ubuntu 20.04, que constituyen la
+base del sistema (Sec.~\ref{sec:gemelo_digital}).
+
 La sintonización del control de bajo nivel también se resolvió como una
 decisión de diseño. En lugar de buscar las tres ganancias PID por prueba y
 error desde cero, se identificó un modelo de primer orden con retardo para cada

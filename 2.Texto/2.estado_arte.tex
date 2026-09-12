@@ -3,10 +3,9 @@
 
 Este capítulo presenta una revisión general de las principales tecnologías
 utilizadas en robots móviles autónomos para interiores. El análisis se centra
-en las alternativas disponibles para percepción, mapeo, navegación,
-exploración y simulación, considerando su nivel de integración con
-\gls{ROS2}, sus requerimientos computacionales y su pertinencia para una
-plataforma diferencial de bajo costo.
+en las alternativas disponibles para plataformas de software, percepción, mapeo, navegación, exploración y simulación, considerando su grado de integración con las
+plataformas de software disponibles, sus requerimientos computacionales y
+su nivel de madurez.
 
 \section{Panorama general de la robótica móvil}
 \label{sec:panorama_robotica_movil}
@@ -130,7 +129,7 @@ comparación general de estas alternativas.
 \caption{Comparación general de alternativas para SLAM 2D.}
 \label{tab:comparativa_slam}
 \small
-\begin{tabular}{P{2.6cm} P{5.3cm} P{6.1cm}}
+\begin{tabular}{P{2.4cm} P{4.3cm} P{6.9cm}}
 \toprule
 \textbf{Alternativa} &
 \textbf{Fortaleza principal} &
@@ -140,20 +139,22 @@ comparación general de estas alternativas.
 GMapping &
 Bajo consumo y amplia utilización en plataformas educativas. &
 Menor integración nativa con \gls{ROS2} y dependencia de una odometría
-consistente. \\
+consistente \citep{grisetti2007gmapping}. \\
 
 Hector SLAM &
 Puede operar con baja dependencia de la odometría de ruedas. &
 Requiere barridos frecuentes y entornos con características geométricas
-suficientes. \\
+suficientes \citep{kohlbrecher2011hector}. \\
 
 Cartographer &
 Buena consistencia global y capacidad de cierre de lazo. &
-Mayor complejidad de configuración y procesamiento. \\
+Mayor complejidad de configuración y procesamiento
+\citep{hess2016cartographer}. \\
 
 \texttt{slam\_toolbox} &
 Integración con \gls{ROS2}, grafos de poses y almacenamiento de mapas. &
-Su desempeño depende de la calidad de la odometría y de los datos láser. \\
+Su desempeño depende de la calidad de la odometría y de los datos láser
+\citep{macenski2021slamtoolbox}. \\
 
 \bottomrule
 \end{tabular}
@@ -168,17 +169,17 @@ y el grado de integración con \gls{ROS2}.
 
 La navegación autónoma combina dos decisiones de diseño: qué planificador
 global calcula la ruta y qué controlador local la sigue evitando obstáculos.
-Para una plataforma diferencial de bajo costo que opera en interiores sobre un mapa de ocupación 2D, no todas las alternativas resultan igualmente
-pertinentes, y la elección responde principalmente a la representación del
-entorno y a la capacidad de cómputo disponible.
+Las alternativas disponibles para cada una difieren en la representación
+del entorno que requieren, en su costo computacional y en su respuesta ante
+obstáculos dinámicos.
 
 En la planificación global, los métodos de búsqueda sobre rejilla, como
 Dijkstra y A$^*$, son los más utilizados en mapas de ocupación 2D porque
 operan directamente sobre la rejilla y permiten replanificar de forma
-periódica con bajo costo computacional. Los métodos basados en muestreo, como RRT y RRT$^*$, se emplean sobre todo en espacios continuos de mayor dimensión o en sistemas con restricciones de movimiento, condiciones que no aplican a
-una base diferencial en 2D. Los métodos de optimización de trayectorias
-mejoran la suavidad y la factibilidad de la ruta, pero agregan un costo de
-cómputo que no se justifica en este tipo de plataforma
+periódica con bajo costo computacional. Los métodos basados en muestreo, como RRT y RRT$^*$, se emplean sobre todo en espacios continuos de mayor
+dimensión o en sistemas con restricciones de movimiento. Los métodos de
+optimización de trayectorias mejoran la suavidad y la factibilidad de la
+ruta, a cambio de un mayor costo de cómputo
 \citep{hart1968astar,lavalle2006planning}.
 
 En el control local coexisten tres familias. Los métodos reactivos, como el
@@ -191,6 +192,7 @@ futura de comandos considerando la dinámica del robot, a costa de una mayor
 carga computacional \citep{macenski2023desks}.
 
 \subsection{Plataformas para navegación autónoma}
+\label{sec:plataformas_nav}
 
 Los métodos de planificación y control descritos no se ejecutan de forma
 aislada, sino a través de una plataforma que los integra y coordina. Para esto
@@ -204,12 +206,13 @@ como DWB, Regulated Pure Pursuit y MPPI, y orquestar la navegación mediante
 a una distribución cuyo soporte ya finalizó \citep{ros_noetic_eol}. En un
 ámbito distinto, Autoware ofrece una pila de navegación orientada a vehículos
 autónomos, con mayores requerimientos de percepción y cómputo que los de una
-plataforma de interiores. También existen soluciones propietarias integradas en
+plataforma de interiores \citep{kato2018autoware}. También existen soluciones propietarias integradas en
 robots comerciales, cuyo funcionamiento interno no siempre es accesible.
 
 Como alternativa a estos frameworks, es posible desarrollar una arquitectura
-propia, apoyándose en bibliotecas de planificación de movimiento como OMPL o
-integrando los componentes mediante otros middleware robóticos. Los algoritmos
+propia, apoyándose en bibliotecas de planificación de movimiento como OMPL
+\citep{sucan2012ompl} o integrando los componentes mediante otros middleware
+robóticos. Los algoritmos
 de planificación y control pueden ser equivalentes, pero cambian las
 interfaces, las herramientas de supervisión y los mecanismos de comunicación.
 En términos generales, un framework consolidado reduce el esfuerzo de
@@ -217,13 +220,16 @@ integración y aporta componentes ya probados, mientras que una arquitectura
 propia ofrece mayor control a cambio de un mayor esfuerzo de desarrollo.
 
 \subsection{Exploración autónoma}
+\label{sec:exploracion_alternativas}
 
 Las estrategias de exploración pueden agruparse en enfoques basados en
 fronteras, métodos guiados por ganancia de información y propuestas de
 \textit{active SLAM}.
-La exploración basada en fronteras utiliza como candidatos las regiones que
+La exploración basada en fronteras, propuesta originalmente por
+\citet{yamauchi1997frontier}, utiliza como candidatos las regiones que
 separan el espacio conocido de las zonas todavía no observadas. Herramientas
-como \texttt{explore\_lite} representan ejemplos de este enfoque. Su
+como \texttt{explore\_lite} representan ejemplos de este enfoque
+\citep{horner_mexplore}. Su
 principal ventaja es la facilidad de integración con mapas de ocupación y
 sistemas de navegación ya existentes.
 
@@ -258,9 +264,10 @@ investigación debido a su integración con descripciones URDF, sensores
 simulados y herramientas del ecosistema robótico
 \citep{koenig2004gazebo,openrobotics2024gazebo}. Webots y CoppeliaSim también
 permiten modelar robots y entornos tridimensionales mediante interfaces
-propias, mientras que Isaac Sim incorpora capacidades avanzadas de
-representación gráfica, generación de datos sintéticos y simulación de
-sensores, aunque requiere una mayor capacidad de procesamiento.
+propias \citep{michel2004webots,rohmer2013coppeliasim}, mientras que Isaac
+Sim incorpora capacidades avanzadas de representación gráfica, generación de
+datos sintéticos y simulación de sensores, aunque requiere una mayor
+capacidad de procesamiento \citep{nvidia2025isaacsim}.
 
 Conviene precisar la nomenclatura, porque el nombre Gazebo designa
 actualmente a dos programas distintos. La familia de versiones numeradas,
