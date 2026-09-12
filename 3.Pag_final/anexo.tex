@@ -144,20 +144,28 @@ La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en 
 \caption{Paquetes principales del workspace.}
 \label{tab:anx_ws_roles}
 \small
-\begin{tabular}{p{3.2cm} p{8.1cm} p{2.6cm}}
+\begin{tabular}{p{3.2cm} p{6.1cm} p{4.7cm}}
 \toprule
 \textbf{Paquete} & \textbf{Rol en el sistema} & \textbf{Origen} \\
 \midrule
-\texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. & Adaptado de terceros \\
-\texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. & Adaptado de terceros \\
-\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. & Adaptado de terceros \\
-\texttt{explore\_lite} & Exploración autónoma basada en fronteras (proyecto \texttt{m-explore}). & Adaptado de terceros \\
-\texttt{pid\_config} & Scripts de captura, identificación FOPDT y sintonización PSO. & Adaptado de terceros \\
+\texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. & Adaptado de \citep{newans_articubot} \\
+\texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. & Adaptado de \citep{newans_diffdrive} \\
+\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. & Adaptado de \citep{hbrobotics_rosarduinobridge} \\
+\texttt{explore\_lite} & Exploración autónoma basada en fronteras (proyecto \texttt{m-explore}). & Adaptado de \citep{horner_mexplore} \\
+\texttt{pid\_config} & Scripts de captura, identificación FOPDT y sintonización PSO. & Elaboración propia \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent Todos los paquetes provienen de bases de código de terceros (de código abierto)~\citep{amadi2024introduction}, modificadas y configuradas por el autor. El aporte propio sobre estos paquetes se describe en la Justificación de la Introducción.
+\noindent Los paquetes \texttt{articubot\_one}, \texttt{diffdrive\_arduino},
+\texttt{ROSArduinoBridge} y \texttt{explore\_lite} provienen de bases de
+código abierto de terceros, cuyos repositorios de origen se indican en la
+última columna de la Tabla~\ref{tab:anx_ws_roles}. Todos fueron modificados
+y configurados por el autor para esta plataforma. El uso de
+\texttt{ros2\_control} sobre robots diferenciales de bajo costo cuenta con
+antecedentes documentados que orientaron esta integración
+\citep{amadi2024introduction}. El aporte propio sobre estos paquetes se
+describe en la Justificación de la Introducción.
 
 La Tabla~\ref{tab:anx_versiones_sw} registra el equipamiento de la estación
 de trabajo y las versiones exactas del entorno con las que se obtuvieron

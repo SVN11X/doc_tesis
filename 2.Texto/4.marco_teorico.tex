@@ -152,7 +152,7 @@ El transporte se apoya en el estándar DDS (\textit{Data Distribution Service}),
 \subsection{Sensor láser LIDAR 2D}
 \label{sec:lidar_marco}
 
-Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo la señal reflejada, por tiempo de vuelo o por triangulación óptica \citep{ismail2022eslam}. En un \gls{LIDAR} 2D, el emisor y receptor giran sobre un eje vertical y entregan, en cada revolución, un barrido de pares ángulo y distancia en un plano horizontal, con el que se detectan paredes y obstáculos y se alimentan el SLAM y los mapas de costos. Sus limitaciones principales son la incapacidad de detectar objetos fuera del plano de barrido y la degradación ante superficies muy absorbentes o reflectantes. El sensor empleado, RPLidar A1, opera por triangulación con alcance nominal de 12~m y cobertura de 360$^\circ$ \citep{SlamtecA1Datasheet}.
+Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo la señal reflejada, por tiempo de vuelo o por triangulación óptica \citep{corke2023}. En un \gls{LIDAR} 2D, el emisor y el receptor giran sobre un eje vertical y entregan, en cada revolución, un barrido de pares ángulo y distancia en un plano horizontal, con el que se detectan paredes y obstáculos y se alimentan el SLAM y los mapas de costos \citep{ismail2022eslam}. Sus limitaciones principales son la incapacidad de detectar objetos fuera del plano de barrido y la degradación ante superficies muy absorbentes o reflectantes. El sensor empleado, RPLidar A1, opera por triangulación con alcance nominal de 12~m y cobertura de 360$^\circ$ \citep{SlamtecA1Datasheet}.
 
 \subsection{Encoders incrementales de cuadratura}
 \label{sec:encoders_marco}
@@ -216,7 +216,8 @@ Considérese un robot diferencial con radio de rueda $r$, separación entre
 ruedas $b$ y la forma muestreada $q_k=(x_k,y_k,\theta_k)$ de la pose definida
 en la Sec.~\ref{sec:robot_definicion}, donde $k$ identifica la muestra
 discreta. La relación entre las velocidades angulares de rueda y las
-velocidades del robot es:
+velocidades del robot es la del modelo cinemático diferencial estándar
+\citep{corke2023,ferreira2023differential}:
 
 \begin{align}
 v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right),
@@ -260,8 +261,8 @@ y_{k+1} &= y_k + T_k\,v[k]\sin\theta_k,
 \end{align}
 
 \noindent donde $T_k$ es el intervalo temporal entre las muestras $k$ y
-$k+1$ (s). Estas ecuaciones expresan el modelo cinemático diferencial
-general; el integrador odométrico efectivamente ejecutado pertenece a la
+$k+1$ (s). Estas ecuaciones expresan la integración odométrica del modelo
+cinemático diferencial general \citep{ferreira2023differential}. El integrador odométrico efectivamente ejecutado pertenece a la
 capa de control descrita en el Capítulo~\ref{ch:implementacion}.
 
 \subsection{Estimación de estados de rueda a partir de encoders}
@@ -338,7 +339,7 @@ Fig.~\ref{fig:lazo_pid} resume esta estructura.
 {Lazo de control de velocidad de una rueda con controlador PID.}
 {fig:lazo_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID solo se utiliza como referencia conceptual:
+El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID, tomada de la formulación clásica de control realimentado \citep{corke2023}, solo se utiliza como referencia conceptual:
 
 \begin{equation}
 u_j(t)
@@ -372,9 +373,10 @@ condiciones de comparación se documentan en el \ref{anx:lambda_detalle}.
 \label{sec:pso_marco}
 
 PSO (\textit{Particle Swarm Optimization}) es una metaheurística
-poblacional inspirada en el comportamiento colectivo de enjambres, aplicada
-con éxito a la sintonización de controladores en robótica móvil
-\citep{gokcce2021particle}. Cada partícula $i$ representa un candidato de solución, en este caso, un
+poblacional inspirada en el comportamiento colectivo de enjambres. En este
+trabajo se emplea la variante con factor de constricción, en la formulación
+aplicada a la sintonización de controladores PID en robótica móvil por
+\citet{gokcce2021particle}. Cada partícula $i$ representa un candidato de solución, en este caso, un
 conjunto de ganancias PID, mediante una posición $\xi_{i,d}$ y una
 velocidad $V_{i,d}$, ambas adimensionales, con $d\in\{1,2,3\}$ asociado a
 las tres ganancias. En cada generación $g$, la

@@ -11,13 +11,15 @@ madurez.
 \section{Panorama general de la robótica móvil}
 \label{sec:panorama_robotica_movil}
 
-El desarrollo actual de robótica móvil abarca aplicaciones en logística, inspección, servicios, agricultura,
-educación e investigación. La diversidad de aplicaciones ha dado lugar a robots con distintas
-arquitecturas de locomoción. Las plataformas diferenciales son frecuentes en
-interiores por su simplicidad y capacidad de giro \citep{ferreira2023differential}; los vehículos con dirección
-tipo Ackermann se emplean cuando se requiere un movimiento semejante al de un
-automóvil; y las bases omnidireccionales permiten desplazamientos laterales
-en espacios reducidos. La elección depende de factores como el entorno, la
+El desarrollo actual de robótica móvil abarca aplicaciones en logística,
+inspección, servicios, agricultura, educación e investigación
+\citep{macenski2023desks}. La diversidad de aplicaciones ha dado lugar a
+robots con distintas arquitecturas de locomoción. Las plataformas
+diferenciales son frecuentes en interiores por su simplicidad y su capacidad
+de giro sobre el eje \citep{corke2023,ferreira2023differential}. Los
+vehículos con dirección tipo Ackermann se emplean cuando se requiere un
+movimiento semejante al de un automóvil. Las bases omnidireccionales
+permiten desplazamientos laterales en espacios reducidos. La elección depende de factores como el entorno, la
 carga transportada, la maniobrabilidad requerida y la complejidad del control \citep{corke2023}.
 
 También existen diferencias en el nivel de autonomía. Algunos sistemas siguen
@@ -58,7 +60,7 @@ La Tabla~\ref{tab:comparativa_middleware} presenta una comparación general.
 \toprule
 \textbf{Alternativa} &
 \textbf{Características generales} &
-\textbf{Consideraciones principales} \\
+\textbf{Alcance declarado por el proyecto} \\
 \midrule
 
 ROS~1 &
@@ -80,23 +82,23 @@ YARP &
 Middleware orientado a la comunicación entre módulos y a la abstracción de
 dispositivos; se utiliza en plataformas que requieren conectar componentes
 distribuidos. &
-Favorece la independencia entre módulos, pero dispone de un ecosistema de
-algoritmos móviles menos amplio que ROS.
-\citep{yarp_docs} \\
+El proyecto se define en torno a la comunicación entre módulos y la
+abstracción de dispositivos, sin declarar una pila propia de navegación
+móvil \citep{yarp_docs}. \\
 
 Orocos RTT &
 Entorno basado en componentes para control robótico y aplicaciones con
 requerimientos de tiempo real. &
-Resulta apropiado para control determinista, aunque requiere mayor desarrollo
-específico para incorporar funciones completas de navegación.
-\citep{orocos_rtt} \\
+El proyecto se orienta al control determinista por componentes y no
+distribuye módulos de mapeo ni de planificación de trayectorias
+\citep{orocos_rtt}.\\
 
 LCM &
 Sistema ligero de publicación y suscripción, orientado al intercambio de
 mensajes con baja latencia. &
-Simplifica la comunicación, pero no proporciona por sí solo una colección
-completa de herramientas de percepción, mapeo y navegación.
-\citep{lcm_docs} \\
+El proyecto se define como una biblioteca de mensajería de baja latencia y
+no incluye componentes de percepción, mapeo ni navegación
+\citep{lcm_docs}.\\
 
 \bottomrule
 \end{tabular}
@@ -116,7 +118,7 @@ sensores \gls{LIDAR} 2D, cámaras RGB-D, sistemas de visión estéreo y sensores
 \gls{LIDAR} 3D. Las cámaras entregan mayor información visual y permiten
 incorporar reconocimiento de objetos, pero aumentan la carga de procesamiento y pueden verse afectadas por las condiciones de iluminación~\citep{tourani2022visual}. Los sensores
 \gls{LIDAR} 3D ofrecen una representación más completa del entorno, aunque su
-costo y volumen de datos son mayores.
+costo y su volumen de datos son mayores \citep{macenski2023desks}.
 
 En relación con el mapeo, existen diferentes soluciones de SLAM 2D,
 entre ellas GMapping, Hector SLAM, Cartographer y
@@ -138,19 +140,23 @@ comparación general de estas alternativas.
 \midrule
 
 GMapping &
-Bajo consumo y amplia utilización en plataformas educativas. &
-Menor integración nativa con \gls{ROS2} y dependencia de una odometría
-consistente \citep{grisetti2007gmapping}. \\
+Bajo consumo y amplia utilización en plataformas educativas
+\citep{grisetti2007gmapping}. &
+Depende de una odometría consistente y su portabilidad a \gls{ROS2} es
+menor que la de las alternativas más recientes
+\citep{ngoc2023efficient,macenski2023desks}. \\
 
 Hector SLAM &
-Puede operar con baja dependencia de la odometría de ruedas. &
+Puede operar con baja dependencia de la odometría de ruedas
+\citep{kohlbrecher2011hector}. &
 Requiere barridos frecuentes y entornos con características geométricas
 suficientes \citep{kohlbrecher2011hector}. \\
 
 Cartographer &
-Buena consistencia global y capacidad de cierre de lazo. &
-Mayor complejidad de configuración y procesamiento
-\citep{hess2016cartographer}. \\
+Buena consistencia global y capacidad de cierre de lazo
+\citep{hess2016cartographer}. &
+Mayor complejidad de configuración y mayor carga de procesamiento en la
+comparación experimental sobre \gls{ROS2} \citep{ngoc2023efficient}. \\
 
 \texttt{slam\_toolbox} &
 Integración con \gls{ROS2}, grafos de poses y almacenamiento de mapas. &
@@ -174,14 +180,16 @@ Las alternativas disponibles para cada una difieren en la representación
 del entorno que requieren, en su costo computacional y en su respuesta ante
 obstáculos dinámicos.
 
-En la planificación global, los métodos de búsqueda sobre rejilla, como
-Dijkstra y A$^*$, son los más utilizados en mapas de ocupación 2D porque
-operan directamente sobre la rejilla y permiten replanificar de forma
-periódica con bajo costo computacional. Los métodos basados en muestreo, como RRT y RRT$^*$, se emplean sobre todo en espacios continuos de mayor
-dimensión o en sistemas con restricciones de movimiento. Los métodos de
-optimización de trayectorias mejoran la suavidad y la factibilidad de la
-ruta, a cambio de un mayor costo de cómputo
-\citep{hart1968astar,lavalle2006planning}.
+En la planificación global, los métodos de búsqueda sobre rejilla derivan de
+la formulación original de A$^*$ \citep{hart1968astar} y siguen siendo los
+más utilizados en mapas de ocupación 2D, porque operan directamente sobre la
+rejilla y permiten replanificar de forma periódica con bajo costo
+computacional \citep{macenski2023desks}. Los métodos basados en muestreo,
+como RRT y RRT$^*$, se emplean sobre todo en espacios continuos de mayor
+dimensión o en sistemas con restricciones de movimiento
+\citep{lavalle2006planning}. Los métodos de optimización de trayectorias
+mejoran la suavidad y la factibilidad de la ruta, a cambio de un mayor costo
+de cómputo \citep{macenski2023desks}.
 
 En el control local coexisten tres familias. Los métodos reactivos, como el
 enfoque de ventana dinámica, evalúan un conjunto reducido de velocidades
@@ -205,9 +213,11 @@ como DWB, Regulated Pure Pursuit y MPPI, y orquestar la navegación mediante
 árboles de comportamiento \citep{nav2_doc}. Su predecesor en ROS~1,
 \texttt{move\_base}, cumplió un rol equivalente durante años, pero quedó ligado
 a una distribución cuyo soporte ya finalizó \citep{ros_noetic_eol}. En un
-ámbito distinto, Autoware ofrece una pila de navegación orientada a vehículos
-autónomos, con mayores requerimientos de percepción y cómputo que los de una
-plataforma de interiores \citep{kato2018autoware}. También existen soluciones propietarias integradas en
+ámbito distinto, Autoware surgió como una pila de navegación orientada a
+vehículos autónomos, con requerimientos de percepción y cómputo muy
+superiores a los de una plataforma de interiores \citep{kato2018autoware}.
+El proyecto ha evolucionado desde entonces, pero su ámbito de aplicación
+sigue siendo distinto al de este trabajo. También existen soluciones propietarias integradas en
 robots comerciales, cuyo funcionamiento interno no siempre es accesible.
 
 Como alternativa a estos frameworks, es posible desarrollar una arquitectura
@@ -263,9 +273,9 @@ prueba.
 Gazebo Classic presenta una amplia utilización en proyectos académicos y de
 investigación debido a su integración con descripciones URDF, sensores
 simulados y herramientas del ecosistema robótico
-\citep{koenig2004gazebo,openrobotics2024gazebo}. Webots y CoppeliaSim también
-permiten modelar robots y entornos tridimensionales mediante interfaces
-propias \citep{michel2004webots,rohmer2013coppeliasim}, mientras que Isaac
+\citep{koenig2004gazebo,openrobotics2024gazebo}. Webots y CoppeliaSim, presentados originalmente
+en \citet{michel2004webots} y \citet{rohmer2013coppeliasim}, también permiten
+modelar robots y entornos tridimensionales mediante interfaces propias, mientras que Isaac
 Sim incorpora capacidades avanzadas de representación gráfica, generación de
 datos sintéticos y simulación de sensores, aunque requiere una mayor
 capacidad de procesamiento \citep{nvidia2025isaacsim}.

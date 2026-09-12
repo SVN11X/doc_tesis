@@ -87,15 +87,15 @@ isbn      = {978-0521862059},
 doi       = {10.1017/CBO9780511546877}
 }
 
-@misc{rep103,
-author  = {Meeussen, Wim},
+@online{rep103,
+author  = {Foote, Tully and Purvis, Mike},
 title   = {{REP} 103: Standard Units of Measure and Coordinate Conventions},
 year    = {2010},
 url     = {https://www.ros.org/reps/rep-0103.html},
 urldate = {2026-05-01}
 }
 
-@misc{rep105,
+@online{rep105,
 author  = {Meeussen, Wim},
 title   = {{REP} 105: Coordinate Frames for Mobile Platforms},
 year    = {2010},
@@ -103,20 +103,20 @@ url     = {https://www.ros.org/reps/rep-0105.html},
 urldate = {2026-05-01}
 }
 
-@misc{marcuslanzoni2020vacuum,
+@online{marcuslanzoni2020vacuum,
 author       = {{marcuslanzoni}},
 title        = {Vacuum Robot},
 year         = {2020},
 month        = jun,
-day          = {14},
 url          = {https://www.thingiverse.com/thing:4459513},
+urldate      = {2025-09-22},
 note         = {Modelo tridimensional publicado en Thingiverse.}
 }
 
 @article{hart1968astar,
 author  = {Hart, Peter E. and Nilsson, Nils J. and Raphael, Bertram},
 title   = {A Formal Basis for the Heuristic Determination of Minimum Cost Paths},
-journal = {IEEE Transactions on Systems Science and Cybernetics},
+journal = {{IEEE} Transactions on Systems Science and Cybernetics},
 volume  = {4},
 number  = {2},
 pages   = {100--107},
@@ -221,33 +221,36 @@ year    = {2022},
 doi     = {10.1126/scirobotics.abm6074}
 }
 
-@misc{ros_noetic_eol,
-author       = {{Open Robotics}},
-title        = {{ROS 1 Noetic Ninjemys Goes End-of-Life 2025-05-31}},
-year         = {2025},
-howpublished = {\url{https://www.ros.org/blog/noetic-eol/}},
-note         = {Consultado el 17 de julio de 2026}
+@online{ros_noetic_eol,
+author  = {{Open Robotics}},
+title   = {{ROS 1 Noetic Ninjemys Goes End-of-Life 2025-05-31}},
+year    = {2025},
+url     = {https://www.ros.org/blog/noetic-eol/},
+urldate = {2026-07-17}
 }
 
-@misc{yarp_docs,
-author       = {{YARP Developers}},
-title        = {{YARP: Yet Another Robot Platform}},
-howpublished = {\url{https://www.yarp.it/latest/what_is_yarp.html}},
-note         = {Documentación oficial. Consultado el 17 de julio de 2026}
+@online{yarp_docs,
+author  = {{YARP Developers}},
+title   = {{YARP: Yet Another Robot Platform}},
+url     = {https://www.yarp.it/latest/what_is_yarp.html},
+urldate = {2026-07-17},
+note    = {Documentaci\'on oficial}
 }
 
-@misc{orocos_rtt,
-author       = {{The Orocos Project}},
-title        = {{Orocos Project Documentation: Real-Time Toolkit}},
-howpublished = {\url{https://docs.orocos.org/}},
-note         = {Documentación oficial. Consultado el 17 de julio de 2026}
+@online{orocos_rtt,
+author  = {{The Orocos Project}},
+title   = {{Orocos Project Documentation: Real-Time Toolkit}},
+url     = {https://docs.orocos.org/},
+urldate = {2026-07-17},
+note    = {Documentaci\'on oficial}
 }
 
-@misc{lcm_docs,
-author       = {{LCM Project}},
-title        = {{LCM Documentation}},
-howpublished = {\url{https://lcm-proj.github.io/lcm/}},
-note         = {Documentación oficial. Consultado el 17 de julio de 2026}
+@online{lcm_docs,
+author  = {{LCM Project}},
+title   = {{LCM Documentation}},
+url     = {https://lcm-proj.github.io/lcm/},
+urldate = {2026-07-17},
+note    = {Documentaci\'on oficial}
 }
 
 @misc{osrf2025gazeboclassic,
@@ -352,4 +355,30 @@ title   = {{NVIDIA Isaac Sim}},
 year    = {2025},
 url     = {https://developer.nvidia.com/isaac/sim/},
 urldate = {2026-09-12}
+}
+
+@online{newans_articubot,
+author  = {Newans, Josh},
+title   = {\texttt{articubot\_one}: {ROS} 2 mobile robot package},
+year    = {2023},
+url     = {https://github.com/joshnewans/articubot_one},
+urldate = {2026-09-12},
+note    = {Proyecto \emph{Articulated Robotics}. Base del paquete de descripci\'on, control, SLAM y navegaci\'on adaptado en este trabajo}
+}
+
+@online{newans_diffdrive,
+author  = {Newans, Josh},
+title   = {\texttt{diffdrive\_arduino}: A {ros2\_control} hardware interface for differential drive robots},
+year    = {2023},
+url     = {https://github.com/joshnewans/diffdrive_arduino},
+urldate = {2026-09-12},
+note    = {Interfaz de hardware entre \texttt{diff\_drive\_controller} y un {Arduino} con firmware \texttt{ros\_arduino\_bridge}}
+}
+
+@online{hbrobotics_rosarduinobridge,
+author  = {{Home Brew Robotics Club}},
+title   = {\texttt{ros\_arduino\_bridge}: {ROS} + {Arduino} = Robot},
+url     = {https://github.com/hbrobotics/ros_arduino_bridge},
+urldate = {2026-09-12},
+note    = {Firmware \texttt{ROSArduinoBridge} para encoders, motores y {PID}. Adaptado en este trabajo a partir de la bifurcaci\'on mantenida por Josh Newans}
 }
