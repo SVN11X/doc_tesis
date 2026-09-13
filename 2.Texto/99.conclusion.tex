@@ -43,7 +43,15 @@ El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 \begin{description}
 \item[\autoref{oe1} -- Construcción y gemelo digital:] \textit{Cumplido.} Se diseñó y construyó la plataforma diferencial física y se verificó su gemelo digital con el backend de \texttt{ros2\_control} ejecutado en Gazebo Classic.
 
-\item[\autoref{oe2} -- Control de bajo nivel:] \textit{Cumplido.} Se implementaron la lectura de encoders y el control PID en el firmware; la posición y velocidad de rueda se exportan mediante \texttt{DiffDriveArduino}, y la odometría se integra en \texttt{diff\_drive\_controller}.
+\item[\autoref{oe2} -- Control de bajo nivel:]
+\textit{Cumplido parcialmente.} Se implementaron la lectura de encoders,
+la estimación de los estados de rueda y el control de velocidad en el firmware;
+la posición y velocidad de rueda se exportan mediante
+\texttt{DiffDriveArduino}, y la odometría se integra en
+\texttt{diff\_drive\_controller}. Sin embargo, la ley discreta heredada de
+\texttt{ROSArduinoBridge}, denominada PID en su implementación original, no
+corresponde a una realización PID estándar, como se detalla en la
+Sec.~\ref{sec:motorcontrol_pid}.
 
 \item[\autoref{oe3} -- Localización, mapeo y navegación:]
 \textit{Cumplido parcialmente.} El mapeo se implementó y verificó

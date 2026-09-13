@@ -67,7 +67,7 @@ Separación entre ruedas &
 Modelo cinemático diferencial. \\
 
 $N_e$ &
-Resolución efectiva calibrada &
+Resolución unificada utilizada &
 1980~ticks/vuelta &
 Firmware, interfaz de hardware y odometría. \\
 
@@ -390,7 +390,7 @@ resolución efectiva $N_e$ (Tabla~\ref{tab:parametros_modelo}). El
 tratamiento de la lectura no atómica de los contadores se conserva en el
 \ref{anx:pid_data}.
 
-\subsection{Control PID en el firmware}
+\subsection{Control de velocidad en el firmware}
 \label{sec:motorcontrol_pid}
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano, con la referencia y la medición expresadas en ticks/frame. La ley se implementa en tiempo discreto con una forma incremental acumulativa, en la que el término asociado a $K_{d,j}$ se calcula sobre la diferencia de la medición. El incremento de control, la actualización del integrador y la salida saturada se resumen como:

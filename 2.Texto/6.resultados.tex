@@ -47,7 +47,7 @@ $E_{\mathrm{odom}}$ el error odométrico (\%).
 La desviación angular normalizada se expresa respecto de esa referencia nominal fija:
 
 \begin{equation}
-E_{\theta,360}
+D_{\theta,360}
 =
 \frac{
 \left|
@@ -64,7 +64,7 @@ E_{\theta,360}
 \label{eq:desviacion_angular_360}
 \end{equation}
 
-\noindent donde $E_{\theta,360}$ es la desviación angular normalizada [\%],
+\noindent donde $D_{\theta,360}$ es la desviación angular normalizada [\%],
 $\Delta\theta_{360}$ la referencia nominal fija y
 $\Delta\theta_{\mathrm{obs}}$ el giro observado. La
 Tabla~\ref{tab:resumen_odometria} consolida las métricas diferenciadas
@@ -120,7 +120,7 @@ Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref
 
 \begin{table}[htbp]
 \centering
-\caption{Desviación angular y error medio respecto de la referencia nominal de $360^\circ$ (5 repeticiones por entorno).}
+\caption{Desviación angular respecto de la referencia nominal de $360^\circ$ (5 repeticiones por entorno).}
 \label{tab:resumen_giro}
 \small
 \begin{tabular}{p{7.0cm} p{3.2cm} p{3.2cm}}
@@ -128,7 +128,7 @@ Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref
 \textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
 \midrule
 Desviación angular media & $17.1^\circ$ & $11.7^\circ$ \\
-Desviación angular normalizada $E_{\theta,360}$ & $4.74\%$ & $3.24\%$ \\
+Desviación angular normalizada $D_{\theta,360}$ & $4.74\%$ & $3.24\%$ \\
 Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \bottomrule
 \end{tabular}
@@ -153,7 +153,7 @@ La desviación angular observada integra los efectos del límite de
 velocidad, la duración del ensayo, la dinámica física y el procedimiento de
 medición. La incorporación de una IMU se plantea como mejora futura.
 
-\section{Evaluación del controlador PID}
+\section{Evaluación del control de velocidad}
 \label{sec:resultados_pid}
 
 El seguimiento en lazo cerrado se verificó en dos momentos del procedimiento
@@ -299,9 +299,10 @@ El índice de cobertura libre se calcula sobre la imagen de ocupación completa,
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
-La navegación dirigida se evalúa funcionalmente, mientras que la exploración
-se analiza mediante cobertura y área mapeada.
-La exploración por fronteras se ejecutó de forma autónoma en cinco iteraciones válidas. El nodo explorador seleccionó fronteras y despachó metas de navegación a Nav2 mediante la acción \texttt{NavigateToPose}. Los contadores de texto de \texttt{run\_explore.sh} no distinguen metas únicas, por eso informaban cero metas generadas. Para obtener una medida fiable, cada meta se reconstruyó por su identificador único a partir del flujo de estado de la acción registrado en cada sesión, según la Tabla~\ref{tab:anx_explore_metas} del \ref{anx:protocolo_resultados}.
+La navegación con Nav2 hacia las metas generadas automáticamente por el
+explorador se evalúa funcionalmente y mediante el resultado terminal de dichas
+metas, mientras que la exploración se caracteriza además mediante cobertura y
+área mapeada. La exploración por fronteras se ejecutó de forma autónoma en cinco iteraciones válidas. El nodo explorador seleccionó fronteras y despachó metas de navegación a Nav2 mediante la acción \texttt{NavigateToPose}. Los contadores de texto de \texttt{run\_explore.sh} no distinguen metas únicas, por eso informaban cero metas generadas. Para obtener una medida fiable, cada meta se reconstruyó por su identificador único a partir del flujo de estado de la acción registrado en cada sesión, según la Tabla~\ref{tab:anx_explore_metas} del \ref{anx:protocolo_resultados}.
 
 En total se generaron 60 metas de navegación. De ellas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera. El resultado predominante fue el aborto, con 54 metas abortadas y una sola meta completada con éxito. Las metas abortadas tuvieron una vida mediana de entre 20 y 61 segundos según la iteración, de modo que corresponden a intentos reales de navegación y no a reemplazos inmediatos de meta. Otras cinco metas quedaron sin estado terminal al finalizar sus respectivos registros. Por tanto, la fracción de metas exitosas respecto del total generado fue de $1/60\approx1.7\%$, mientras que entre las 55 metas con resultado terminal fue de $1/55\approx1.8\%$. Estos valores muestran que la cadena explorador--Nav2 se ejecutó, pero también evidencian un desempeño operacional limitado para completar las metas seleccionadas en el entorno utilizado.
 
@@ -345,7 +346,7 @@ tasa de éxito ni error de posición final para ese caso. La Tabla~\ref{tab:esta
 \textbf{Subsistema} & \textbf{Estado} & \textbf{Observación} \\
 \midrule
 Odometría & Validada cuantitativamente en hardware real (recta de 2~m, $n=5$) & En simulación no se registró verdad de terreno independiente. El protocolo angular no mide error odométrico angular \\
-Control PID & Evaluado experimentalmente & Indicadores de la Tabla~\ref{tab:pid_performance} calculados sobre la captura real en lazo cerrado a 0.13~m/s \\
+Control de velocidad & Evaluado experimentalmente & Indicadores de la Tabla~\ref{tab:pid_performance} calculados sobre la captura real en lazo cerrado a 0.13~m/s \\
 SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
 Cobertura y área libre cuantificadas en cinco iteraciones válidas; la
 alineación de paredes se evaluó visualmente y no se dispuso de ground truth

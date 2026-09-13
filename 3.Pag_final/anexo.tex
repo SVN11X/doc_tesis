@@ -373,7 +373,12 @@ Nano AVR, la lectura de 32~bits no está garantizada como una operación atómic
 por tanto, el conteo devuelto puede, en principio, ser modificado durante su
 copia. Esta condición se conserva porque corresponde al firmware ejecutado.
 
-Para determinar el número de ticks por revolución de rueda, se hizo girar cada rueda una vuelta completa y se repitió la medición diez veces; estas muestras sustentan el valor unificado $N_e$ adoptado (Tabla~\ref{tab:parametros_modelo}). Las muestras individuales se presentan en la Tabla~\ref{tab:anx_muestras_cuentas}.
+Para caracterizar la resolución efectiva de los encoders, se hizo girar cada
+rueda una vuelta completa y se repitió la medición diez veces. Durante los
+ensayos, el firmware y la interfaz de hardware utilizaron el valor unificado
+$N_e=1980$~ticks/vuelta (Tabla~\ref{tab:parametros_modelo}); las mediciones
+experimentales permiten cuantificar la discrepancia de dicho valor respecto
+de los promedios obtenidos para cada rueda.
 
 \begin{table}[H]
 \centering
@@ -845,7 +850,7 @@ Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
 \small
 \begin{tabular}{ccccc}
 \toprule
-\textbf{Prueba} & \textbf{Ref. nominal (\textdegree{})} & \textbf{Giro acumulado \texttt{/odom} (\textdegree{})} & \textbf{Desviación (\textdegree{})} & \textbf{$E_{\theta,360}$ (\%)} \\
+\textbf{Prueba} & \textbf{Ref. nominal (\textdegree{})} & \textbf{Giro acumulado \texttt{/odom} (\textdegree{})} & \textbf{Desviación (\textdegree{})} & \textbf{$D_{\theta,360}$ (\%)} \\
 \midrule
 1 & 360.0 & 335.86 & $-24.14$ & 6.71\% \\
 2 & 360.0 & 347.40 & $-12.60$ & 3.50\% \\
@@ -1140,7 +1145,7 @@ $E_{\mathrm{odom}}$ & Error entre la odometría y la distancia física
 medida & \% \\
 $\Delta\theta_{360}$ & Referencia nominal fija de $360^\circ$ utilizada por los scripts de giro & grados \\
 $\Delta\theta_{\mathrm{obs}}$ & Giro observado: acumulación de \texttt{/odom} en simulación o medición física en hardware real & grados \\
-$E_{\theta,360}$ & Desviación angular normalizada respecto de $\Delta\theta_{360}$; no corresponde a error odométrico angular ni a seguimiento de una consigna efectiva sin limitación & \% \\
+$D_{\theta,360}$ & Desviación angular normalizada respecto de $\Delta\theta_{360}$; no corresponde a error odométrico angular ni a seguimiento de una consigna efectiva sin limitación & \% \\
 $M$ & Conjunto de intensidades de celda de la imagen PGM del mapa analizado & No aplica \\
 $p$ & Intensidad de una celda de la imagen PGM & nivel de gris \\
 $\mathbf{1}[\cdot]$ & Función indicadora de una condición lógica & adim. \\
