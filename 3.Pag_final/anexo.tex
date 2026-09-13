@@ -887,7 +887,26 @@ Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
 
 Este anexo presenta los registros por iteración de la exploración autónoma en hardware real obtenidos mediante el framework \texttt{sesiones\_mapeo}. Cada ejecución parte de un reinicio de SLAM y Nav2. La definición y la interpretación de la cobertura y del área libre mapeada son las establecidas en la Sec.~\ref{sec:resultados_slam}; aquí se conservan los valores desagregados de la sesión realizada el 22 de junio de 2026.
 
-Se ejecutaron seis iteraciones; la iteración~02 se abortó durante la inicialización y se excluyó porque no produjo mapa ni métricas completas.
+Se ejecutaron seis iteraciones. La iteración~02 se excluyó del análisis.
+Durante esa ejecución, que se extendió por 5.09~min, se constató que
+el robot no se desplazó de su posición inicial, mientras que la odometría de
+encoders acumuló 3.851~m. El explorador despachó 14 metas de navegación, de
+las cuales 13 terminaron en aborto y una quedó sin estado terminal, y se
+registraron 13 avisos de lista de fronteras agotada. La imagen de ocupación
+tampoco quedó almacenada al término de la sesión, por lo que no fue posible
+calcular la cobertura ni el área libre mapeada. La causa de la inmovilidad no
+se determinó, y la iteración no se incorpora al recuento de metas ni a los
+promedios de la Tabla~\ref{tab:slam_real_indicadores}.
+
+Este episodio ilustra de forma directa la limitación de una odometría basada
+únicamente en encoders, que mide el giro de las ruedas y no el desplazamiento
+efectivo del vehículo. En las cinco iteraciones conservadas, en cambio, el
+desplazamiento queda respaldado por evidencia independiente de los encoders,
+porque el mapa creció hasta coberturas de entre 53.4\% y 82.9\% y ese
+crecimiento exige que el sensor láser observe geometría nueva desde posiciones
+distintas. Del mismo modo, el error odométrico informado en la
+Sec.~\ref{sec:resultados_odometria} se calcula contra una distancia medida con
+cinta métrica y no contra la propia odometría.
 
 \subsection{Exploración autónoma por iteración}
 
