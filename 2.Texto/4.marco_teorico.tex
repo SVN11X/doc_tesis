@@ -59,6 +59,10 @@ el robot real y su modelo digital comparten una única definición geométrica,
 parametrizada de forma que dimensiones como el radio de rueda se definan una
 sola vez.
 
+Esa parametrización se consigue con \texttt{xacro}, un lenguaje de macros
+para XML que permite definir constantes, reutilizar bloques y dividir la
+descripción en módulos.
+
 El Alg.~\ref{alg:urdf_estructura} resume la organización modular de la
 descripción URDF/\texttt{xacro} desarrollada, en la que un archivo raíz
 compone el modelo a partir de módulos reutilizables que se seleccionan según

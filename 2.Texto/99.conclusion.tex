@@ -82,7 +82,7 @@ declarado.
 \begin{itemize}
 \item \textbf{Deriva odométrica:} la odometría basada solo en encoders acumula error, especialmente en giros y trayectorias largas.
 \item \textbf{Espacio de pruebas reducido:} el recinto disponible limita la ejecución de recorridos extensos y condiciona la geometría de los mapas de costo.
-\item \textbf{Registro de navegación:} los contadores de texto de \texttt{run\_explore.sh} no identifican metas únicas, por lo que el resultado de las metas de exploración se reconstruyó a posteriori desde el flujo de estado de la acción. No se ejecutó un protocolo de navegación dirigida con metas fijas, por lo que no se dispone de tasa de éxito ni de error de posición final para ese caso.
+\item \textbf{Registro de navegación:} los contadores automáticos de la sesión no identifican metas únicas, por lo que el resultado de las metas de exploración se reconstruyó a posteriori desde el flujo de estado de la acción. No se ejecutó un protocolo de navegación dirigida con metas fijas, por lo que no se dispone de tasa de éxito ni de error de posición final para ese caso.
 \item \textbf{Métricas PID:} los indicadores de la Tabla~\ref{tab:pid_performance} provienen de la captura experimental en hardware real, mientras que los sobreimpulsos de 10.7\% a 15.6\% provienen de una simulación ilustrativa sobre un modelo FOPDT reidentificado. No deben interpretarse como una única prueba.
 \item \textbf{Fidelidad de la simulación:} Gazebo Classic no reproduce completamente fricción, zona muerta del driver, ruido sensorial ni latencias reales.
 \item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.
@@ -97,7 +97,7 @@ declarado.
 
 \begin{enumerate}
 \item Ejecutar el protocolo cuantitativo de navegación en un entorno de mayor superficie, registrando cada meta y su resultado de forma unívoca.
-\item Integrar una \gls{IMU} mediante \texttt{robot\_localization} para reducir la deriva angular.
+\item Integrar una \gls{IMU} mediante el paquete de fusión sensorial \texttt{robot\_localization} para reducir la deriva angular.
 \item Migrar el sistema a una distribución mantenida de \gls{ROS2} y portar en el mismo paso el gemelo digital a una versión vigente de Gazebo, dado que Gazebo Classic ya no recibe soporte.
 \item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
 \item Evaluar la exploración con un protocolo que distinga selección de frontera, envío de meta, resultado de la acción y cobertura obtenida.

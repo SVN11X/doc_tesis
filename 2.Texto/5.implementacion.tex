@@ -152,9 +152,10 @@ entorno porque corresponde a la configuración efectivamente utilizada.
 \subsection{Selección del backend de control}
 \label{sec:backend}
 
-El modelo utiliza \texttt{ros2\_control} en ambos entornos, pero carga un
-plugin de hardware distinto en cada caso, como resume la
-Tabla~\ref{tab:xacro_args_backend}. La interfaz empleada en el robot real se
+El modelo utiliza en ambos entornos \texttt{ros2\_control}, el framework de
+\gls{ROS2} que estandariza el acceso al hardware mediante interfaces de
+comando y de estado, pero carga un plugin de hardware distinto en cada caso,
+como resume la Tabla~\ref{tab:xacro_args_backend}. La interfaz empleada en el robot real se
 describe en la Sec.~\ref{sec:diff_drive_params}; la trazabilidad completa de
 la selección se conserva en el \ref{anx:gemelo_digital}.
 
@@ -510,10 +511,11 @@ $K_o$ & 50 & 50 \\
 \end{algorithmic}
 \end{algorithm}
 
-Las operaciones internas de la rutina de actualización, es decir banda
-muerta, saturación e integrador condicional, son las formalizadas en las
-ecuaciones anteriores y quedan detalladas en el
-Alg.~\ref{alg:pid_firmware}.
+El Alg.~\ref{alg:pid_firmware} presenta la secuencia de llamadas de la rutina
+de actualización. Las operaciones internas del cálculo por rueda, es decir la
+banda muerta asimétrica, la saturación de la salida acumulada y la
+actualización condicional del integrador, se detallan en el
+\ref{anx:pid_ecuaciones}.
 
 \subsection{Bucle principal y auto-detención}
 \label{sec:bucle_principal}
@@ -611,7 +613,7 @@ evita bloquear el sistema cuando la carga computacional crece, incorpora
 detección de cierre de lazo y mantiene un consumo compatible con computadores
 embebidos, razón por la cual resulta adecuado para la arquitectura distribuida
 de este prototipo.
-El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, en modo \texttt{online\_async}. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
+El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, en su modo asíncrono en línea. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
 Las configuraciones de hardware y simulación comparten la estructura del
 algoritmo, pero emplean parámetros específicos para cada entorno; los valores
 cargados se consolidan en la Tabla~\ref{tab:slam_params_ch9}.

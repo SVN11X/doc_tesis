@@ -740,6 +740,8 @@ Fin de la secuencia antes del reintento &
 \texttt{scan\_topic} & \texttt{/scan} & Entrada del \gls{LIDAR} \\
 \texttt{resolution} & 0.05~m & Resolución del mapa \\
 \texttt{do\_loop\_closing} & \texttt{true} & Cierre de lazo activado \\
+\texttt{mode} & \texttt{mapping} & Modo de operación del nodo \\
+Nodo ejecutado & \texttt{async\_slam\_toolbox\_node} & Variante asíncrona en línea, lanzada con \texttt{mapper\_params\_online\_async.yaml} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -976,7 +978,7 @@ y la plantea como trabajo futuro.
 
 \subsection{Limitaciones de los contadores de exploración}
 
-Los contadores de texto de \texttt{run\_explore.sh} no permiten calcular una tasa de éxito. El script incrementa sus archivos temporales desde dos fuentes simultáneas, coincidencias de texto en el registro de \texttt{explore\_server} y mensajes de los tópicos internos de la acción \texttt{NavigateToPose}, sin conservar ni deduplicar identificadores de meta. Por eso sus resúmenes muestran un contador nulo de metas generadas junto a coincidencias de éxito y de fallo, y no deben interpretarse como números de metas únicas.
+Los contadores de texto de \texttt{run\_explore.sh} no permiten calcular una tasa de éxito, por dos motivos distintos. El contador de metas generadas se alimenta de coincidencias de texto en el registro de \texttt{explore\_server} y del eco del tópico de meta de la acción \texttt{NavigateToPose}. La primera fuente no produce coincidencias porque el mensaje de envío de meta está declarado en nivel \textit{debug} en \texttt{explore.cpp} y el nodo se ejecutó en nivel informativo. La segunda tampoco, porque ese tópico no entregó datos y el propio registro conserva la advertencia de tópico no publicado. Por eso el contador de metas generadas queda en cero. Los contadores de éxito y de fallo sí se incrementan, pero lo hacen una vez por cada línea del flujo de estado de la acción, sin conservar ni deduplicar identificadores de meta, de modo que cuentan mensajes de estado y no metas únicas.
 
 Para obtener una medida fiable se descartaron esos contadores y se reconstruyó el resultado de cada meta a partir del flujo de estado de la acción \texttt{NavigateToPose}, que quedó registrado íntegro en cada sesión. Cada meta se identifica por su identificador único de 16 bytes. A cada identificador se le asigna su estado terminal, con la prioridad éxito sobre aborto sobre cancelación, y se cuenta como en ejecución cuando alcanzó ese estado en algún momento del registro. El resultado agregado se presenta en la Tabla~\ref{tab:anx_explore_metas}.
 
