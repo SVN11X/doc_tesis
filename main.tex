@@ -204,7 +204,7 @@ singlelinecheck=false
 
 \titlecontents{subsection}
 [48pt]
-{\addvspace{0pt}\raggedright}
+{\addvspace{0pt}}
 {\thecontentslabel\quad}
 {}
 {\dotfill\contentspage}
@@ -219,6 +219,8 @@ singlelinecheck=false
 
 \makeatletter
 \renewcommand{\@pnumwidth}{4.5em}
+\renewcommand{\@tocrmarg}{0pt}
+\renewcommand{\@dotsep}{1.5}
 \makeatother
 
 \newcommand{\UTEMPaginaHeader}{
