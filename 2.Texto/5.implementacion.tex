@@ -48,7 +48,7 @@ consolidan en el \ref{anx:implementacion_diffdrive} y en el
 \caption{Parámetros físicos y temporales empleados en la implementación.}
 \label{tab:parametros_modelo}
 \small
-\begin{tabular}{p{1.4cm} p{3.5cm} p{2.8cm} p{5.8cm}}
+\begin{tabular}{P{1.4cm} P{3.5cm} P{2.8cm} P{5.8cm}}
 \toprule
 \textbf{Símbolo} &
 \textbf{Parámetro} &
@@ -85,9 +85,12 @@ Conversión de consignas de rueda a \textit{ticks/frame}. \\
 \end{tabular}
 \end{table}
 
-El valor efectivo $N_e=1980$~ticks/vuelta se adoptó a partir de una
-calibración experimental por rueda. Las muestras, los promedios y el error
-asociado al valor unificado se conservan en el \ref{anx:pid_data}.
+El valor unificado $N_e=1980$~ticks/vuelta corresponde al valor
+efectivamente utilizado por el firmware y la interfaz de hardware durante
+los ensayos. La calibración experimental por rueda produjo promedios
+ligeramente distintos; las muestras, los promedios y el error sistemático
+asociado al uso de este valor unificado se conservan en el
+\ref{anx:pid_data}.
 
 \section{Gemelo digital del robot}
 \label{ch:robot_digital}
@@ -139,6 +142,12 @@ base para localizar al robot (\texttt{base\_link} o \texttt{base\_footprint})
 no es el mismo en simulación que en hardware real. Esa asignación por entorno,
 la correspondencia entre componentes, marcos y tópicos, y la verificación
 estructural del árbol se documentan en el \ref{anx:gemelo_digital}.
+
+Dado que \texttt{base\_footprint} está unido a \texttt{base\_link}
+mediante una transformación fija identidad, con traslación y rotación nulas,
+esta diferencia de identificador no introduce un desfase geométrico entre
+ambos marcos. Se conserva, no obstante, la asignación específica de cada
+entorno porque corresponde a la configuración efectivamente utilizada.
 
 \subsection{Selección del backend de control}
 \label{sec:backend}
