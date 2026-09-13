@@ -245,9 +245,11 @@ Publicación de odometría & Habilitada & Publica \texttt{odom}$\rightarrow$\tex
 \end{table}
 
 La comunicación entre \texttt{diff\_drive\_controller} y el firmware se
-realiza mediante \texttt{DiffDriveArduino}, el plugin de hardware de \texttt{ros2\_control}~\citep{openrobotics2024ros2control} que intercambia con el \gls{Arduino}, mediante el
-enlace serial, las referencias de velocidad de rueda y las lecturas de
-encoder. Su ciclo de lectura--actualización--escritura se ejecuta con la
+realiza mediante \texttt{DiffDriveArduino}, una interfaz de hardware adaptada
+del proyecto \texttt{diffdrive\_arduino}~\citep{newans_diffdrive} e integrada
+al framework \texttt{ros2\_control}~\citep{openrobotics2024ros2control}. La
+interfaz intercambia con el \gls{Arduino}, mediante el enlace serial, las
+referencias de velocidad de rueda y las lecturas de encoder. Su ciclo de lectura--actualización--escritura se ejecuta con la
 frecuencia $f_{\mathrm{ctrl}}$ indicada en la
 Tabla~\ref{tab:parametros_modelo}.
 En la fase de escritura, las consignas de rueda se convierten a
@@ -366,9 +368,11 @@ La comunicación entre la Raspberry Pi y el \gls{Arduino} se realiza mediante el
 La lectura de los encoders no ocurre dentro del bucle principal. Cada cambio
 de nivel en los canales de un encoder dispara una interrupción de cambio de
 pin, cuya rutina actualiza el contador de esa rueda. De este modo el conteo
-avanza en paralelo a la ejecución del programa principal, sin depender de su
-tiempo de ciclo, y ningún flanco se pierde aunque el bucle esté ocupado
-resolviendo el protocolo serial o el control PID. El programa principal solo
+avanza mediante interrupciones, en paralelo a la ejecución del programa principal
+y sin depender directamente de su tiempo de ciclo. Este mecanismo permite
+registrar transiciones mientras el bucle atiende el protocolo serial o el control
+PID, sin asumir que todas las transiciones puedan registrarse bajo cualquier
+condición temporal. El programa principal solo
 lee el valor acumulado cuando lo necesita: en cada ciclo del PID para calcular
 la velocidad de cada rueda, y al responder el comando de lectura de encoders,
 a partir del cual la Raspberry Pi estima la odometría.

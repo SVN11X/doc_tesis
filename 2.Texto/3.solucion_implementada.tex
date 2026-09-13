@@ -50,8 +50,9 @@ RViz2 permite la supervisión.
 Cada dominio del sistema se resolvió eligiendo, entre las alternativas
 comparadas en el Capítulo~\ref{ch:estado_arte}, la más adecuada para una
 plataforma diferencial de bajo costo orientada a interiores. Se adoptó
-\gls{ROS2} como middleware por su ecosistema de paquetes de mapeo, navegación
-y exploración y por su soporte vigente para sistemas distribuidos
+\gls{ROS2} como middleware por su arquitectura distribuida y por su ecosistema
+de paquetes de mapeo, navegación y exploración, frente a una base ROS~1 cuyo
+soporte oficial ya finalizó
 (Sec.~\ref{sec:alternativas_middleware})
 \citep{macenski2022ros2,ros_noetic_eol}. La percepción se resolvió con un
 \gls{LIDAR} 2D, suficiente para interiores y de menor costo y carga de
@@ -64,7 +65,7 @@ controlador local reactivo, adecuados a un mapa de ocupación 2D y de bajo costo
 computacional (Sec.~\ref{sec:exploracion})
 \citep{macenski2023desks}.
 
- La validación previa del diseño se apoyó en un gemelo digital construido
+La validación previa del diseño se apoyó en un gemelo digital construido
 en Gazebo Classic. Se optó por esa versión y no por el Gazebo actual porque
 es la compatible con \gls{ROS2} Foxy y con Ubuntu 20.04, que constituyen la
 base del sistema (Sec.~\ref{sec:gemelo_digital}).
@@ -85,7 +86,7 @@ Para la exploración autónoma se eligió el enfoque basado en fronteras
 (Sec.~\ref{sec:exploracion}), por su menor complejidad y su fácil integración
 con el mapa de ocupación y con Nav2, frente a los métodos de ganancia de
 información y de \textit{active SLAM}, que exigen modelos y cómputo adicionales
-\citep{placed2023active,horner_mexplore}.
+\citep{placed2023active,alvarez2021mexplore_ros2}.
 
 El fundamento teórico de cada uno de estos componentes se desarrolla en el
 Capítulo~\ref{marco_teorico}, y su implementación concreta en el

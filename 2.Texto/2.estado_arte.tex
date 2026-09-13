@@ -183,7 +183,7 @@ rejilla y permiten replanificar de forma periódica con bajo costo
 computacional \citep{macenski2023desks}. Los métodos basados en muestreo,
 como RRT y RRT$^*$, se emplean sobre todo en espacios continuos de mayor
 dimensión o en sistemas con restricciones de movimiento
-\citep{lavalle2006planning}. Los métodos de optimización de trayectorias
+\citep{lavalle2006planning,karaman2011optimal}. Los métodos de optimización de trayectorias
 mejoran la suavidad y la factibilidad de la ruta, a cambio de un mayor costo
 de cómputo \citep{macenski2023desks}.
 
@@ -210,16 +210,18 @@ como DWB, Regulated Pure Pursuit y MPPI, y orquestar la navegación mediante
 \texttt{move\_base}, cumplió un rol equivalente durante años, pero quedó ligado
 a una distribución cuyo soporte ya finalizó \citep{ros_noetic_eol}. En un
 ámbito distinto, Autoware surgió como una pila de navegación orientada a
-vehículos autónomos, con requerimientos de percepción y cómputo muy
-superiores a los de una plataforma de interiores \citep{kato2018autoware}.
-El proyecto ha evolucionado desde entonces, pero su ámbito de aplicación
-sigue siendo distinto al de este trabajo. También existen soluciones propietarias integradas en
-robots comerciales, cuyo funcionamiento interno no siempre es accesible.
+vehículos autónomos \citep{kato2018autoware}. La documentación oficial actual
+lo describe como una pila integral de conducción autónoma que cubre desde el
+sensado hasta el control \citep{autoware2026docs}. Por ello, su ámbito de
+aplicación y sus requerimientos de percepción y cómputo siguen siendo
+distintos a los de una plataforma de interiores como la desarrollada en este
+trabajo. También existen soluciones propietarias integradas en robots
+comerciales, cuyo funcionamiento interno no siempre es accesible.
 
 Como alternativa a estos frameworks, es posible desarrollar una arquitectura
 propia, apoyándose en bibliotecas de planificación de movimiento como OMPL
-\citep{sucan2012ompl} o integrando los componentes mediante otros middleware
-robóticos. Los algoritmos
+\citep{sucan2012ompl,ompl2026docs} o integrando los componentes mediante otros
+middleware robóticos. Los algoritmos
 de planificación y control pueden ser equivalentes, pero cambian las
 interfaces, las herramientas de supervisión y los mecanismos de comunicación.
 En términos generales, un framework consolidado reduce el esfuerzo de
@@ -235,8 +237,8 @@ fronteras, métodos guiados por ganancia de información y propuestas de
 La exploración basada en fronteras, propuesta originalmente por
 \citet{yamauchi1997frontier}, utiliza como candidatos las regiones que
 separan el espacio conocido de las zonas todavía no observadas. Herramientas
-como \texttt{explore\_lite} representan ejemplos de este enfoque
-\citep{horner_mexplore}. Su
+como \texttt{explore\_lite} representan ejemplos de este enfoque, incluido
+su port a \gls{ROS2} \citep{horner_mexplore,alvarez2021mexplore_ros2}. Su
 principal ventaja es la facilidad de integración con mapas de ocupación y
 sistemas de navegación ya existentes.
 
@@ -266,13 +268,16 @@ difieren en la precisión de sus modelos físicos, la representación de
 sensores, la integración con plataformas robóticas, los recursos
 computacionales requeridos y la facilidad para construir escenarios de
 prueba.
-Gazebo Classic presenta una amplia utilización en proyectos académicos y de
-investigación debido a su integración con descripciones URDF, sensores
-simulados y herramientas del ecosistema robótico
-\citep{osrf2025gazeboclassic,openrobotics2024gazebo}. Webots y CoppeliaSim, presentados originalmente
-en \citet{michel2004webots} y \citet{rohmer2013coppeliasim}, también permiten
-modelar robots y entornos tridimensionales mediante interfaces propias, mientras que Isaac
-Sim incorpora capacidades avanzadas de representación gráfica, generación de
+Gazebo Classic permite simular robots y entornos tridimensionales mediante
+motores de física, sensores y extensiones basadas en plugins
+\citep{osrf2025gazeboclassic}. El Gazebo actual corresponde a la línea
+sucesora mantenida por el proyecto y se distribuye separadamente de Gazebo
+Classic \citep{openrobotics2024gazebo}. Webots y CoppeliaSim, presentados
+originalmente en \citet{michel2004webots} y \citet{rohmer2013coppeliasim},
+continúan disponibles como simuladores robóticos con modelado de robots y
+entornos tridimensionales, de acuerdo con su documentación oficial reciente
+\citep{cyberbotics2025webots,coppelia2025version}. Isaac Sim incorpora
+capacidades avanzadas de representación gráfica, generación de
 datos sintéticos y simulación de sensores, aunque requiere una mayor
 capacidad de procesamiento \citep{nvidia2025isaacsim}.
 

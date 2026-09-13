@@ -10,8 +10,8 @@ address   = {Cambridge, {MA}}
 author       = {{Shanghai Slamtec Co., Ltd.}},
 title        = {{RPLIDAR A1} Low Cost 360 Degree Laser Range Scanner: Introduction and Datasheet},
 year         = {2020},
-url          = {https://www.slamtec.com/en/lidar/a1spec},
-urldate      = {2025-09-22},
+url          = {https://wiki.slamtec.com/download/attachments/83066883/LD108_SLAMTEC_rplidar_datasheet_A1M8_v3.0_en.pdf?api=v2&modificationDate=1677786044000&version=1},
+urldate      = {2026-09-12},
 note         = {Hoja de datos rev.~3.0, documento LD108, modelo A1M8}
 }
 
@@ -22,7 +22,6 @@ year    = {2025},
 url     = {https://docs.nav2.org/},
 urldate = {2026-09-12}
 }
-
 
 @article{ngoc2023efficient,
 author  = {Ngoc, Hoang Tran and Vinh, Nghi Nguyen and Nguyen, Nguyen Trung and Quach, Luyl-Da},
@@ -78,6 +77,17 @@ publisher = {Cambridge University Press},
 address   = {Cambridge},
 isbn      = {978-0521862059},
 doi       = {10.1017/CBO9780511546877}
+}
+
+@article{karaman2011optimal,
+author  = {Karaman, Sertac and Frazzoli, Emilio},
+title   = {Sampling-Based Algorithms for Optimal Motion Planning},
+journal = {The International Journal of Robotics Research},
+volume  = {30},
+number  = {7},
+pages   = {846--894},
+year    = {2011},
+doi     = {10.1177/0278364911406761}
 }
 
 @online{rep103,
@@ -157,8 +167,11 @@ note = {Sitio del Gazebo moderno, sucesor de Gazebo Classic}
 }
 
 @online{openrobotics2024ros2control,
-author = {{Open Robotics}}, title = {{ros2\_control}: A Framework for Real-Time Control},
-year = {2024}, url = {https://control.ros.org/}, urldate = {2025-09-22}
+author  = {{ros-controls}},
+title   = {{ros2\_control} Documentation -- Foxy},
+url     = {https://control.ros.org/foxy/},
+urldate = {2026-09-12},
+note    = {Documentación oficial de la versión Foxy; esta distribución se encuentra fuera de soporte}
 }
 
 @article{placed2023active,
@@ -182,7 +195,16 @@ title        = {{m-explore}: {ROS} packages for multi-robot exploration (\texttt
 year         = {2017},
 url          = {https://github.com/hrnr/m-explore},
 urldate      = {2025-09-22},
-note         = {Paquete \texttt{explore\_lite}. Se emplea su adaptaci\'on a ROS~2}
+note         = {Proyecto original para ROS~1; la implementaci\'on utilizada en esta tesis corresponde al port para ROS~2 citado por separado}
+}
+
+@online{alvarez2021mexplore_ros2,
+author       = {Alvarez, Carlos},
+title        = {\texttt{m-explore-ros2}: {ROS} 2 port of \texttt{m-explore} (\texttt{explore\_lite})},
+year         = {2021},
+url          = {https://github.com/robo-friends/m-explore-ros2},
+urldate      = {2026-09-12},
+note         = {Versi\'on 1.0.0; primer port funcional para ROS~2 Foxy, publicado el 1 de agosto de 2021}
 }
 
 @article{maxim2023fopdt,
@@ -423,3 +445,38 @@ publisher = {IEEE},
 doi       = {10.1109/ICEC.1998.699146}
 }
 
+@online{autoware2026docs,
+author  = {{Autoware Foundation}},
+title   = {{Autoware Documentation}},
+year    = {2026},
+url     = {https://docs.autoware.org/main/home/},
+urldate = {2026-09-12},
+note    = {Documentación oficial vigente; la versión estable 1.9.0 fue publicada en 2026}
+}
+
+@online{ompl2026docs,
+author  = {{Open Motion Planning Library Project}},
+title   = {The {Open Motion Planning Library} ({OMPL})},
+year    = {2026},
+url     = {https://ompl.kavrakilab.org/},
+urldate = {2026-09-12},
+note    = {Documentación oficial; versión 2.0.2 publicada el 14 de agosto de 2026}
+}
+
+@online{cyberbotics2025webots,
+author  = {{Cyberbotics Ltd.}},
+title   = {{Webots Reference Manual}: Release {R2025a}},
+year    = {2025},
+url     = {https://cyberbotics.com/doc/reference/index?version=released},
+urldate = {2026-09-12},
+note    = {Documentación oficial de Webots, release R2025a}
+}
+
+@online{coppelia2025version,
+author  = {{Coppelia Robotics AG}},
+title   = {{CoppeliaSim} Version History: Version 4.10.0},
+date    = {2025-05-14},
+url     = {https://manual.coppeliarobotics.com/en/versionInfo.htm},
+urldate = {2026-09-12},
+note    = {Documentación oficial de la versión 4.10.0}
+}
