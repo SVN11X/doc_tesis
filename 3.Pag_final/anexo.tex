@@ -411,7 +411,7 @@ A partir del factor $2\pi/N_e$ de la Ec.~\eqref{eq:posicion_rueda_encoder}, la c
 \label{anx:comparacion_pso_lambda}
 \label{anx:lambda_detalle}
 
-Ese script vuelve a identificar un modelo FOPDT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del firmware reutilizando la misma rutina de planta, referencia interpolada y cuantización descrita más arriba, con banda muerta 2 para ambas ruedas. Además,\texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm12750$, valor que resulta de multiplicar el PWM máximo (255) por el divisor de normalización de la salida (50); este límite no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
+Ese script vuelve a identificar un modelo FOPDT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del firmware reutilizando la misma rutina de planta, referencia interpolada y cuantización descrita más arriba, con banda muerta 2 para ambas ruedas. Además, \texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm12750$, valor que resulta de multiplicar el PWM máximo (255) por el divisor de normalización de la salida (50); este límite no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
 
 La referencia analítica Lambda se calcula a partir de esa nueva identificación. Como retardo efectivo, $L_{ef,j}$, se toma el mayor entre el retardo puro identificado para la rueda, $L_{d,j}$, y dos períodos de control (2/30~s); y como constante de diseño, $\lambda_j$, se fija el triple de la constante de tiempo identificada $\tau_j$. A partir de ahí el script obtiene una forma serie, la convierte a la forma paralela estándar y la lleva a la escala de firmware mediante un factor de escalamiento $f_{\lambda}$; el detalle de estas conversiones se encuentra en \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}SintonizacionLambda.\allowbreak{}py}.
 
@@ -1167,6 +1167,8 @@ $r_{\mathrm{inflacion}}$ & Radio de inflación & m \\
 $\beta$ & Factor de decaimiento del costo (\texttt{cost\_scaling\_factor}) & 1/m \\
 $U(F)$ & Puntaje de costo de la frontera $F$ (heurístico, no homogéneo) & No aplica \\
 $|F|$ & Contador de tamaño de la frontera; se inicializa en 1 y se incrementa por celdas vecinas incorporadas. Si no se añade ninguna, la frontera conserva tamaño 1 & celdas \\
+$p_F^{\mathrm{impl}}$ & Punto representativo de la frontera $F$ almacenado por la implementación como \texttt{centroid}; no es el centroide geométrico de todas sus celdas (\ref{anx:explore_impl}) & m \\
+$d_{\mathrm{min}}^{\mathrm{world}}$ & Distancia mínima de la frontera $F$ al robot, en coordenadas del mundo (\texttt{frontier.min\_distance}) & m \\
 $\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}); en este sistema 0.05, usada tanto en el área libre como en el costo de frontera & m/celda \\
 $w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
 $f_{\mathrm{exp}}$ & Frecuencia configurada de reevaluación del explorador (\texttt{planner\_frequency}) & Hz \\
