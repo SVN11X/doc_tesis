@@ -57,6 +57,13 @@ medidos en el entorno, condiciones que no se configuraron durante los ensayos.
 En consecuencia, este trabajo no informa tasa de éxito ni error de posición
 final para metas fijas, y ese ensayo se plantea como trabajo futuro.
 
+La localización comprometida es la que resuelve SLAM Toolbox durante el mapeo
+en línea, es decir, la estimación de la transformación entre el marco del mapa
+y el marco odométrico mientras el mapa se construye. La localización sobre un
+mapa previamente almacenado mediante AMCL no forma parte del alcance. La pila
+de navegación utilizada incorpora ese nodo con sus parámetros por defecto,
+pero no se ajustó para este robot ni se ejecutó en ninguno de los ensayos.
+
 Entre sus limitaciones se considera que el prototipo no incorpora \gls{IMU}, cámara ni fusión sensorial, por lo que la odometría puede degradarse en trayectorias largas o giros acumulados. Además, el sistema no está orientado a exteriores, superficies irregulares ni obstáculos dinámicos rápidos. La implementación se desarrolla sobre \gls{ROS2} Foxy y Ubuntu 20.04 LTS, con simulación en Gazebo Classic 11; esta combinación se congela al inicio del proyecto para garantizar la compatibilidad de la cadena completa de paquetes sobre el hardware disponible. La migración a una distribución con soporte vigente se plantea como trabajo futuro.
 
 \section*{Metodología}

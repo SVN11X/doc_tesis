@@ -54,13 +54,15 @@ corresponde a una realización PID estándar, como se detalla en la
 Sec.~\ref{sec:motorcontrol_pid}.
 
 \item[\autoref{oe3} -- Localización, mapeo y navegación:]
-\textit{Cumplido parcialmente.} El mapeo se implementó y verificó
-funcionalmente en hardware real, con caracterización cuantitativa de cobertura
-y área libre. AMCL quedó implementado y configurado para localización sobre
-mapas almacenados, pero no fue evaluado mediante un protocolo experimental
-independiente. Nav2 quedó integrado y verificado funcionalmente mediante las
-metas generadas durante la exploración, cuyo resultado se cuantificó. La
-navegación dirigida con metas fijas definidas por el operador no forma parte del alcance declarado en la sección \hyperref[sec:alcances]{Alcances y limitaciones}.
+\textit{Cumplido parcialmente.} El mapeo y la localización se implementaron
+mediante \texttt{slam\_toolbox} y se verificaron funcionalmente en hardware
+real, con caracterización cuantitativa de cobertura y área libre. Nav2 quedó
+integrado y verificado funcionalmente mediante las metas generadas durante la
+exploración, cuyo resultado se cuantificó. El carácter parcial proviene del
+desempeño alcanzado en esa navegación, con 54 metas abortadas de 60 generadas.
+La navegación dirigida con metas fijas definidas por el operador y la
+localización sobre un mapa almacenado con AMCL no forman parte del alcance
+declarado en la sección \hyperref[sec:alcances]{Alcances y limitaciones}.
 \item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras se integró y ejecutó de forma autónoma. Se generaron y despacharon 60 metas de navegación en cinco iteraciones, reconstruidas por identificador único, con 54 abortos y una meta completada. La cobertura y el área libre se cuantificaron. La baja tasa de metas completadas, 1 de 55 metas con resultado terminal, constituye una limitación del desempeño obtenido cuya causa no se aisló experimentalmente.
 \end{description}
 
@@ -102,7 +104,7 @@ declarado.
 \item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
 \item Evaluar la exploración con un protocolo que distinga selección de frontera, envío de meta, resultado de la acción y cobertura obtenida.
 \item Reemplazar la ley acumulativa del firmware por un PID incremental estándar con lectura atómica de encoders, y repetir los ensayos de control y odometría.
-\item Evaluar la localización con AMCL sobre un mapa almacenado, comparando la pose estimada con posiciones marcadas físicamente en el recinto.
+\item Extender el sistema a la localización sobre un mapa almacenado mediante AMCL, comparando la pose estimada con posiciones marcadas físicamente en el recinto.
 \item Repetir el protocolo angular con un giro controlado a un ángulo fijo y verificar la velocidad angular efectiva registrada en \texttt{/odom}.
 \item Registrar la pose verdadera de Gazebo Classic en los ensayos simulados para separar el error odométrico del error de seguimiento en simulación.
 \end{enumerate}

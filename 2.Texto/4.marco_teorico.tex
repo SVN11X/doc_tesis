@@ -483,7 +483,9 @@ puede realizarse sin volver a ejecutar el proceso de mapeo. Para este propósito
 se emplea la localización de Monte Carlo adaptativa, un método de localización
 probabilística basado en un filtro de partículas
 \citep{thrun2005probabilistic}.
-Cada partícula representa una hipótesis de pose. Las hipótesis se propagan con la odometría y se ponderan según la concordancia entre los barridos del \gls{LIDAR} y el mapa de ocupación almacenado, y luego el remuestreo concentra las partículas en las regiones de mayor probabilidad. Este método estima la transformación entre el marco del mapa y el odométrico, mientras que la odometría mantiene la transformación entre este último y la base del robot. A diferencia del SLAM de la Sec.~\ref{sec:slam}, la localización no construye ni modifica el mapa, sino que sitúa al robot dentro de uno ya conocido. El nodo utilizado y su configuración se detallan en la Sec.~\ref{sec:amcl_ch9}.
+Cada partícula representa una hipótesis de pose. Las hipótesis se propagan con la odometría y se ponderan según la concordancia entre los barridos del \gls{LIDAR} y el mapa de ocupación almacenado, y luego el remuestreo concentra las partículas en las regiones de mayor probabilidad. Este método estima la transformación entre el marco del mapa y el odométrico, mientras que la odometría mantiene la transformación entre este último y la base del robot. A diferencia del SLAM de la Sec.~\ref{sec:slam}, la localización no construye ni modifica el mapa, sino que sitúa al robot dentro de uno ya conocido. El uso de este método en la pila de navegación empleada y su relación con el
+modo de localización utilizado en este trabajo se precisan en la
+Sec.~\ref{sec:amcl_ch9}.
 
 \section{Planificación de rutas y control local}
 \label{sec:nav_marco}

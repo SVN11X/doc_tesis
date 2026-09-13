@@ -353,10 +353,10 @@ alineación de paredes se evaluó visualmente y no se dispuso de ground truth
 geométrico para validar el error absoluto del mapa \\
 Nav2 & Verificada funcionalmente, resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}). El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
 Exploración & Verificada funcionalmente, resultado de metas cuantificado & 60 metas autónomas en 5 iteraciones, 54 abortadas, 1 exitosa y 5 sin estado terminal. Cobertura y área cuantificadas \\
-Localización AMCL & Implementada y configurada, no evaluada experimentalmente &
-El nodo y sus archivos de lanzamiento están disponibles para navegación sobre
-mapas almacenados, pero AMCL no se ejecutó durante los ensayos de mapeo y
-exploración ni se realizó un protocolo independiente de localización \\
+Localización & Resuelta por \texttt{slam\_toolbox} durante el mapeo en línea y
+verificada funcionalmente en las cinco iteraciones válidas &
+La localización sobre un mapa almacenado con AMCL queda fuera del alcance
+declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) y no se ensayó \\
 \bottomrule
 \end{tabular}
 \end{table}

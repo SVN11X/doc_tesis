@@ -627,15 +627,15 @@ Sec.~\ref{sec:localizacion_marco} se implementa mediante AMCL
 este propósito. AMCL estima la transformación entre los marcos \texttt{map} y
 \texttt{odom}, mientras que la odometría mantiene la transformación entre
 \texttt{odom} y el marco base del robot.
-Para la navegación sobre un mapa previamente guardado se dispone del nodo
-AMCL de Nav2, con archivos de configuración propios para hardware real y
-simulación; su lanzamiento se documenta en el \ref{anx:amcl_lanzamiento}.
-Debe distinguirse este modo de la exploración ejecutada durante el mapeo en
-línea. En las pruebas de mapeo y exploración documentadas en este trabajo,
-\texttt{slam\_toolbox} genera el mapa y estima la transformación
-\texttt{map}$\rightarrow$\texttt{odom}; por tanto, AMCL no se ejecuta
-simultáneamente durante esas pruebas. Su configuración queda disponible para
-la navegación posterior sobre mapas almacenados.
+En este trabajo la localización se resuelve mediante \texttt{slam\_toolbox}
+durante el mapeo en línea, que estima la transformación
+\texttt{map}$\rightarrow$\texttt{odom} a medida que construye el mapa. Ese es
+el modo empleado en la totalidad de los ensayos descritos en el
+Capítulo~\ref{ch:resultados}. La localización sobre un mapa previamente
+almacenado mediante AMCL corresponde a un modo distinto, que la pila de
+navegación ofrece con sus parámetros por defecto y que queda fuera del alcance
+declarado en la \hyperref[sec:alcances]{sección de alcances y limitaciones}.
+Ese nodo no se ajustó para este robot ni se ejecutó durante los ensayos.
 
 \subsection{Navegación autónoma con Nav2}
 \label{sec:nav2_ch9}
