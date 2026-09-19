@@ -159,7 +159,7 @@ El transporte se apoya en el estándar DDS (\textit{Data Distribution Service}),
 \subsection{Sensor láser LIDAR 2D}
 \label{sec:lidar_marco}
 
-Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo la señal reflejada, por tiempo de vuelo o por triangulación óptica \citep{corke2023}. En un \gls{LIDAR} 2D, el emisor y el receptor giran sobre un eje vertical y entregan, en cada revolución, un barrido de pares ángulo y distancia en un plano horizontal, con el que se detectan paredes y obstáculos y se alimentan el SLAM y los mapas de costos \citep{corke2023}. Sus limitaciones principales son la incapacidad de detectar objetos fuera del plano de barrido y la degradación ante superficies muy absorbentes o reflectantes. El sensor empleado, RPLidar A1, opera por triangulación con alcance nominal de 12~m y cobertura de 360$^\circ$ \citep{ismail2022eslam, SlamtecA1Datasheet}.
+Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo el tiempo que tarda en volver la señal reflejada \citep[Sec.~6.8]{corke2023}. Los \gls{LIDAR} 2D también pueden medir por triangulación óptica \citep{ran2025review2dlidar}. En un \gls{LIDAR} 2D, el emisor y el receptor giran sobre un eje vertical y entregan, en cada revolución, un barrido de pares ángulo y distancia en un plano horizontal, con el que se detectan paredes y obstáculos y se alimentan el SLAM y los mapas de costos \citep{corke2023}. Sus limitaciones principales son la incapacidad de detectar objetos fuera del plano de barrido y la degradación ante superficies muy absorbentes o reflectantes. El sensor empleado, RPLidar A1, opera por triangulación y cubre 360$^\circ$ \citep{SlamtecA1Datasheet}.
 
 \subsection{Encoders incrementales de cuadratura}
 \label{sec:encoders_marco}
@@ -208,9 +208,10 @@ Un motor DC de imanes permanentes gira con velocidad aproximadamente proporciona
 \label{sec:odometria}
 
 La odometría estima la pose del robot integrando el desplazamiento medido de
-sus ruedas \citep{ferreira2023differential}. Es adecuada para sistemas
-embebidos por su bajo costo computacional, pero acumula deriva por errores
-de calibración, cuantización de encoders y deslizamiento \citep{corke2023}.
+sus ruedas \citep{ferreira2023differential}. Su cálculo es sencillo, lo que la hace
+adecuada para sistemas embebidos. Sin embargo, acumula deriva por errores
+sistemáticos, como un radio de rueda mal calibrado, y por errores aleatorios, como
+el deslizamiento entre la rueda y el suelo \citep[Sec.~6.1]{corke2023}.
 
 \noindent\textbf{Convención.} $v$ y $\omega$ sin subíndice denotan la
 velocidad lineal (m/s) y angular (rad/s) del robot; con subíndice
@@ -346,7 +347,7 @@ Fig.~\ref{fig:lazo_pid} resume esta estructura.
 {Lazo de control de velocidad de una rueda con controlador PID.}
 {fig:lazo_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID, tomada de la formulación clásica de control realimentado \citep{corke2023}, solo se utiliza como referencia conceptual:
+El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID, tomada de la formulación clásica de control realimentado \citep[Sec.~3.2]{astrom2009controlpid}, solo se utiliza como referencia conceptual:
 
 \begin{equation}
 u_j(t)
@@ -432,9 +433,9 @@ g=1,\ldots,g_{\max},
 \label{eq:pso_inercia}
 \end{equation}
 
-\noindent donde $g_{\max}$ es el número máximo de generaciones. La ley lineal
-específica de la Ec.~\eqref{eq:pso_inercia} corresponde a una decisión de
-implementación del script. Su efecto es reducir progresivamente el peso de la
+\noindent donde $g_{\max}$ es el número máximo de generaciones. La disminución
+lineal del peso de inercia fue propuesta por \citet{shi1998modified}, que lo
+redujeron desde 1.4 hasta 0. El script usa esa misma forma, pero partiendo de 1. Su efecto es reducir progresivamente el peso de la
 velocidad previa a medida que avanza la búsqueda. La función de costo empleada
 para la sintonización combina el error cuadrático medio de la velocidad
 respecto de la referencia con una penalización por sobreimpulso, favoreciendo
@@ -492,7 +493,7 @@ Sec.~\ref{sec:amcl_ch9}.
 
 La navegación autónoma opera sobre una representación del entorno en forma de
 rejilla de ocupación, donde cada celda clasifica el espacio como libre, ocupado
-o desconocido \citep{lavalle2006planning}. Sobre esa rejilla se construyen mapas de costo que agregan a los obstáculos una zona de inflación que penaliza
+o desconocido \citep[Sec.~V]{macenski2023desks}. Sobre esa rejilla se construyen mapas de costo que agregan a los obstáculos una zona de inflación que penaliza
 transitar cerca de ellos \citep{nav2_doc}. Sobre esta representación, el planificador global calcula una ruta desde la posición actual hasta la
 meta. En este trabajo la búsqueda global se resuelve mediante el algoritmo A$^*$ sobre la rejilla derivada del mapa de costos. El planificador empleado y la opción de configuración que habilita esta búsqueda se presentan en el
 Capítulo~\ref{ch:implementacion}. A$^*$ ordena la expansión de
@@ -511,7 +512,7 @@ El control local convierte la ruta global en comandos de velocidad
 ejecutables. El enfoque de ventana dinámica considera únicamente las
 velocidades $(v,\omega)$ alcanzables desde el estado actual dado el límite
 de aceleración del robot, simula hacia adelante las trayectorias asociadas a
-cada candidato y las evalúa mediante una suma ponderada de criterios:
+cada candidato y las evalúa mediante una suma ponderada de criterios~\citep[Sec.~III-A]{macenski2023desks}:
 
 \begin{equation}
 J_{\mathrm{DWB}}(v,\omega)

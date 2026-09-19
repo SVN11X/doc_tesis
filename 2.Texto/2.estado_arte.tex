@@ -12,11 +12,12 @@ madurez.
 \label{sec:panorama_robotica_movil}
 
 El desarrollo actual de robótica móvil abarca aplicaciones en dominios tan diversos como la logística, la agricultura y las flotas multirrobot, entre otros \citep{macenski2023desks}. La diversidad de aplicaciones ha dado lugar a
-robots con distintas arquitecturas de locomoción. Las plataformas diferenciales son habituales en interiores, por su simplicidad mecánica y su capacidad de giro sobre el eje \citep{corke2023,ferreira2023differential, ran2025review2dlidar}. Los
+robots con distintas arquitecturas de locomoción. Las plataformas diferenciales son habituales en robots móviles pequeños, por su simplicidad mecánica y su capacidad de girar sobre sí mismas \citep[Sec.~4.1]{corke2023,ferreira2023differential}. Los
 vehículos con dirección tipo Ackermann se emplean cuando se requiere un
 movimiento semejante al de un automóvil. Las bases omnidireccionales
-permiten desplazamientos laterales en espacios reducidos. La elección depende de factores como el entorno, la
-carga transportada, la maniobrabilidad requerida y la complejidad del control \citep{corke2023}.
+permiten desplazamientos laterales en espacios reducidos. Cada configuración ofrece
+distinta maniobrabilidad y complejidad mecánica. Un vehículo tipo automóvil no puede
+girar sobre sí mismo, mientras que uno diferencial sí puede hacerlo \citep[Sec.~4.1]{corke2023}.
 
 También existen diferencias en el nivel de autonomía. Algunos sistemas siguen
 rutas previamente definidas, mientras que otros estiman su posición,
@@ -24,14 +25,14 @@ construyen mapas, planifican trayectorias y reaccionan ante cambios del
 entorno. Por ejemplo, un robot logístico puede desplazarse entre estaciones
 conocidas; un robot de inspección puede recorrer una instalación y registrar
 mediciones; y una plataforma de investigación puede explorar un recinto
-desconocido mientras genera su mapa \citep{thrun2005probabilistic}.
+desconocido mientras genera su mapa.
 Desde el punto de vista computacional, estas funciones pueden concentrarse en
 un solo computador o distribuirse entre varios dispositivos. El control de
 los actuadores suele requerir una ejecución rápida y periódica, mientras que
 la percepción, el mapeo y la planificación demandan mayor capacidad de
-procesamiento. Como resultado, en la robótica móvil coexisten arquitecturas
-centralizadas, sistemas distribuidos y soluciones híbridas adaptadas a los
-requerimientos de cada aplicación \citep{macenski2022ros2}.
+procesamiento. Por ello, los sistemas robóticos suelen descomponerse en componentes
+independientes que pueden ejecutarse en un mismo proceso, en varios procesos o en
+varios computadores \citep{macenski2022ros2}.
 
 \section{Plataformas de software y middleware robótico}
 \label{sec:alternativas_middleware}
@@ -70,8 +71,8 @@ ROS~2 &
 Plataforma modular para sistemas distribuidos, con diferentes mecanismos de
 comunicación, calidad de servicio y herramientas para integrar hardware y
 algoritmos. &
-Ofrece un ecosistema amplio, aunque su configuración y administración de
-dependencias pueden aumentar la complejidad del sistema.
+Ofrece un ecosistema amplio, aunque su capa de comunicaciones puede requerir
+ajustes, por ejemplo para transmitir mensajes de gran tamaño.
 \citep{macenski2022ros2} \\
 
 YARP &
@@ -139,7 +140,7 @@ GMapping & Técnica de mapeo por rejilla con filtro de partículas
 memoria acotado en escenas pequeñas \citep{ran2025review2dlidar}.
 & Depende de una odometría consistente y carece de detección de cierre de lazo,
 y su portabilidad a \gls{ROS2} es menor que la de las alternativas más recientes
-\citep{ran2025review2dlidar,ngoc2023efficient,macenski2023desks}. \\
+\citep{ran2025review2dlidar,ngoc2023efficient,macenski2021slamtoolbox}. \\
 
 Hector SLAM & Puede operar con baja dependencia de la odometría de ruedas
 \citep{kohlbrecher2011hector}. & Requiere un \gls{LIDAR} de alta tasa de barrido
@@ -149,14 +150,14 @@ extensas \citep{ran2025review2dlidar}. \\
 Cartographer &
 Buena consistencia global y capacidad de cierre de lazo
 \citep{hess2016cartographer}. &
-Mayor complejidad de configuración en la comparación experimental sobre
-\gls{ROS2} \citep{ngoc2023efficient}. En una comparación independiente de
+Mayor complejidad de configuración y ajuste
+\citep{ngoc2023efficient,macenski2023desks}. En una comparación independiente de
 cinco algoritmos SLAM 2D, Cartographer presentó el mayor uso medio de CPU
 \citep{trejos2022slam}. \\
 
 \texttt{slam\_toolbox} &
 Integración con \gls{ROS2}, grafos de poses y almacenamiento de mapas. &
-Su desempeño depende de la calidad de la odometría y de los datos láser
+En modo asíncrono puede omitir mediciones si el procesamiento de la anterior se retrasa
 \citep{macenski2021slamtoolbox}. \\
 
 \bottomrule
