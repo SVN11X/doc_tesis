@@ -22,9 +22,10 @@ La selección del backend y su trazabilidad se documentan en el
 \ref{anx:gemelo_digital}.
 
 Respecto del control de bajo nivel, el firmware ejecuta de forma independiente
-para cada rueda una ley de control discreta acumulativa, denominada PID en el
-firmware original, cuya estructura no corresponde a la forma incremental
-estándar de un controlador PID. La
+para cada rueda la ley de control heredada del firmware original, que
+corresponde a un controlador PI en forma incremental con la acción
+proporcional sobre la medición, más un término integral adicional, y cuyas
+ganancias no cumplen la función que indica su nombre. La
 Fig.~\ref{fig:respuesta_escalon_final} corresponde a una adquisición
 experimental en lazo cerrado, y los indicadores de la
 Tabla~\ref{tab:pid_performance} se calcularon sobre esa misma respuesta medida.
@@ -48,10 +49,10 @@ El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 la estimación de los estados de rueda y el control de velocidad en el firmware;
 la posición y velocidad de rueda se exportan mediante
 \texttt{DiffDriveArduino}, y la odometría se integra en
-\texttt{diff\_drive\_controller}. Sin embargo, la ley discreta heredada de
-\texttt{ROSArduinoBridge}, denominada PID en su implementación original, no
-corresponde a una realización PID estándar, como se detalla en la
-Sec.~\ref{sec:motorcontrol_pid}.
+\texttt{diff\_drive\_controller}. Sin embargo, la ley heredada de
+\texttt{ROSArduinoBridge} opera como un controlador PI incremental sin acción
+derivativa efectiva y se evaluó en un único punto de operación, como se detalla
+en la Sec.~\ref{sec:motorcontrol_pid} y en la Sec.~\ref{sec:resultados_pid}.
 
 \item[\autoref{oe3} -- Localización, mapeo y navegación:]
 \textit{Cumplido parcialmente.} El mapeo y la localización se implementaron

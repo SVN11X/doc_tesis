@@ -428,14 +428,14 @@ ruedas; y $\operatorname{sat}_{[-255,255]}(\cdot)$ la saturación al intervalo P
 permitido.
 
 La estructura anterior reproduce literalmente el controlador ejecutado en el
-firmware y no corresponde a la forma incremental estándar de un PID. En
+firmware y no coincide exactamente con la forma incremental estándar de un PID. En
 particular, el término $K_{p,j}e_j^{\mathrm{db}}[k]$ forma parte del incremento
 que posteriormente se suma a la salida anterior $u_j[k-1]$, por lo que su
 efecto también se acumula entre ciclos. Además, el estado
 $I_j^{\mathrm{int}}[k]$ acumula separadamente el término
 $K_{i,j}e_j^{\mathrm{db}}[k]$. En consecuencia, las ganancias reportadas en
 este trabajo caracterizan esta realización discreta específica y no deben
-interpretarse como ganancias de un PID incremental estándar. Esta estructura
+interpretarse según el nombre que reciben en el firmware. Esta estructura
 es la misma del firmware original~\citep{newans_rosarduinobridge,hbrobotics_rosarduinobridge}
 y no fue modificada en este trabajo ni durante los ensayos, por lo que los
 resultados experimentales del Capítulo~\ref{ch:resultados} corresponden al
@@ -458,12 +458,29 @@ medición actual, por lo que actúa como ganancia proporcional sobre la medició
 y no como acción derivativa. $K_{i,j}$ actúa sobre una acumulación del estado
 integral, es decir, como una segunda integración. La ley ejecutada no contiene
 una acción derivativa efectiva. Sin el término asociado a $K_{i,j}$, como en la
-configuración por defecto del firmware original, donde $K_i=0$, la ley equivale
-a un controlador PI cuya acción proporcional se calcula sobre la medición y no
-sobre el error, variante conocida como I-P que evita saltos de la salida ante
-cambios bruscos de la referencia~\citep{astrom2006advanced}. La rueda derecha
-opera en esa condición, porque su estado integral permanece en cero
+configuración por defecto del firmware original, donde $K_i=0$, la ley coincide
+con la forma incremental del PID descrita por \citet[Sec.~13.4]{astrom2009controlpid},
+con la integral aproximada por diferencia hacia atrás, sin acción derivativa y
+con ponderación nula del punto de consigna en la acción proporcional. En esa
+correspondencia, $K_{d,j}/K_o$ cumple el papel de la ganancia proporcional y
+$K_{p,j}/K_o$ el del coeficiente integral por muestra, de modo que la ley es un
+controlador PI incremental. Con ponderación nula, la referencia solo entra en el
+término integral, lo que evita saltos de la señal de control y reduce la
+sobreelongación ante cambios del punto de consigna
+\citep[Sec.~3.4]{astrom2009controlpid}. La rueda derecha opera en esa
+condición, porque su estado integral permanece en cero
 (Sec.~\ref{sec:resultados_pid}).
+
+Esta ley se conservó en lugar de reemplazarla por otra formulación del PID o
+por una ley escrita desde cero, por dos razones. La interfaz
+\texttt{diffdrive\_arduino}~\citep{newans_diffdrive} usa el protocolo serial
+de este firmware. Además, la forma incremental es útil aun cuando la
+integración se realiza dentro del controlador, porque simplifica la protección
+contra el windup del integrador y permite realizar la mayoría de los cálculos
+solo con incrementos \citep[Secs.~13.1 y 13.4]{astrom2009controlpid}. La
+elección responde a esas razones y a que la ley siguió la referencia en los
+ensayos, y no a una comparación de desempeño con otras leyes, que queda como
+trabajo futuro.
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.

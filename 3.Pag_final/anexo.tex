@@ -150,7 +150,7 @@ La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en 
 \midrule
 \texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. & Adaptado de \citep{newans_articubot} \\
 \texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. & Adaptado de \citep{newans_diffdrive} \\
-\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. & Adaptado de \citep{hbrobotics_rosarduinobridge} \\
+\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. & Adaptado de \citep{newans_rosarduinobridge}, bifurcación de \citep{hbrobotics_rosarduinobridge} \\
 \texttt{explore\_lite} & Exploración autónoma basada en fronteras (proyecto \texttt{m-explore}). & Adaptado de \citep{alvarez2021mexplore_ros2}, port a \gls{ROS2} de \citep{horner_mexplore} \\
 \texttt{pid\_config} & Scripts de captura, identificación FOPDT y sintonización PSO. & Elaboración propia \\
 \bottomrule
@@ -521,7 +521,7 @@ Ocho valores \\
 
 En cada actualización se leen primero ambos encoders. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~ticks/frame). El incremento de salida se calcula en punto flotante a partir de los términos proporcional, derivativo sobre la medición e integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
 
-El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$); en caso contrario conserva su valor, implementando un mecanismo simple de \textit{anti-windup} por integración condicional. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
+El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$); en caso contrario conserva su valor, implementando un mecanismo simple de \textit{anti-windup} por integración condicional~\citep[Sec.~3.5]{astrom2009controlpid}. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
 
 Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
@@ -545,7 +545,7 @@ asociado a $K_d$ se calcula sobre la medición para evitar saltos de la
 derivada ante cambios de la referencia, y el estado integral se guarda ya
 multiplicado por $K_i$ para admitir cambios de ganancia en ejecución. Ambas
 mejoras corresponden a la forma posicional del PID, en la que la salida se
-calcula completa en cada ciclo. Al sumarse cada incremento a la salida
+calcula completa en cada ciclo~\citep[Sec.~13.4]{astrom2009controlpid}. Al sumarse cada incremento a la salida
 anterior, cada término sube un orden de integración, tal como muestra la
 Ec.~\eqref{eq:pid_equivalente}.
 
