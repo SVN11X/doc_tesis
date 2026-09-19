@@ -519,7 +519,7 @@ Ocho valores \\
 
 \noindent La implementación utiliza una ley discreta acumulativa con un término calculado sobre la diferencia de la medición, variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
 
-En cada actualización se leen primero ambos encoders. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~ticks/frame). El incremento de salida se calcula en punto flotante a partir de los términos proporcional, derivativo sobre la medición e integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
+En cada actualización se leen primero ambos encoders. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~ticks/frame). El incremento de salida se calcula en punto flotante a partir de los términos asociados a $K_p$, a $K_d$ y al estado integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
 
 El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$); en caso contrario conserva su valor, implementando un mecanismo simple de \textit{anti-windup} por integración condicional~\citep[Sec.~3.5]{astrom2009controlpid}. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
 
@@ -537,8 +537,8 @@ Home Brew Robotics Club~\citep{hbrobotics_rosarduinobridge}. El encabezado de
 \texttt{diff\_controller.h} en ambos repositorios indica que el controlador se
 tomó en su mayor parte del código ArbotiX de Mike Ferguson. La función
 \texttt{doPID()} de ambos repositorios contiene la misma ley acumulativa de la
-Sec.~\ref{sec:motorcontrol_pid}. Por tanto, la estructura no estándar de la ley
-no fue introducida en este trabajo, sino heredada.
+Sec.~\ref{sec:motorcontrol_pid}. Por tanto, la estructura de la ley y el nombre
+de sus ganancias no fueron introducidos en este trabajo, sino heredados.
 
 Los comentarios del código original explican esa estructura. El término
 asociado a $K_d$ se calcula sobre la medición para evitar saltos de la

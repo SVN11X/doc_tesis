@@ -6,9 +6,9 @@
 Este trabajo describe el diseño e implementación de un prototipo de robot móvil diferencial para mapeo 2D, navegación autónoma y exploración de interiores con \gls{ROS2} Foxy sobre Ubuntu 20.04 en una Raspberry Pi 4. El sistema integra un \gls{Arduino} Nano para el control de bajo nivel, un driver L298N, encoders de cuadratura, un RPLidar A1 y un gemelo digital en Gazebo Classic.
 
 El control diferencial se implementó sobre la infraestructura de control de
-\gls{ROS2}. En el firmware se mantuvo la ley de control discreta acumulativa
-heredada de \texttt{ROSArduinoBridge}, denominada PID en su implementación
-original, cuyas ganancias se obtuvieron mediante optimización por enjambre de
+\gls{ROS2}. En el firmware se mantuvo la ley de control incremental heredada
+de \texttt{ROSArduinoBridge}, que opera como un controlador PI y cuyas
+ganancias se obtuvieron mediante optimización por enjambre de
 partículas (PSO) y refinamiento experimental sobre hardware real. El mapeo se realizó con SLAM Toolbox y la navegación con Nav2, incorporando además exploración autónoma basada en fronteras.
 
 La odometría se validó cuantitativamente en trayectorias rectas sobre hardware real, con un error medio de 3.63\%. El mapeo se verificó funcionalmente y se caracterizó mediante el índice de cobertura libre y el área libre mapeada, sin una referencia geométrica externa que permita cuantificar el error absoluto del mapa. El control de velocidad se evaluó experimentalmente en lazo cerrado a 0.13~m/s, con error estacionario cercano a cero y sin sobreimpulso apreciable dentro de la resolución de medida. Con carácter ilustrativo, una simulación sobre un modelo FOPDT reidentificado arroja sobreimpulsos de 10.7\%--15.6\%. La exploración basada en fronteras se ejecutó de extremo a extremo en hardware real y alcanzó un índice medio de cobertura libre de 62.2\% en cinco iteraciones, con un área libre mapeada media de 3.50~m$^2$. De las 60 metas generadas, 54 abortaron y una se completó, limitación del desempeño alcanzado en el recinto utilizado. La navegación dirigida con metas fijas queda fuera del alcance.
@@ -24,9 +24,9 @@ La odometría se validó cuantitativamente en trayectorias rectas sobre hardware
 This thesis describes the design and implementation of a differential mobile robot prototype for 2D mapping, autonomous navigation, and indoor exploration using \gls{ROS2} Foxy on Ubuntu 20.04 on a Raspberry Pi 4. The system integrates an \gls{Arduino} Nano for low-level control, an L298N motor driver, quadrature encoders, an RPLidar A1, and a Gazebo Classic-based digital twin.
 
 Differential control was implemented on top of the \gls{ROS2} control
-infrastructure. The firmware retained the accumulated discrete control law
-inherited from \texttt{ROSArduinoBridge}, referred to as PID in its original
-implementation, whose gains were obtained through Particle Swarm Optimization
+infrastructure. The firmware retained the incremental control law inherited
+from \texttt{ROSArduinoBridge}, which operates as a PI controller and whose
+gains were obtained through Particle Swarm Optimization
 (PSO) and experimental refinement on real hardware. Mapping used SLAM Toolbox and navigation used Nav2, additionally incorporating frontier-based autonomous exploration.
 
 Odometry was quantitatively validated on straight trajectories on real hardware, with a mean error of 3.63\%. Mapping was functionally verified and characterized through free-space coverage and mapped free area, without an external geometric reference to quantify absolute map accuracy. Closed-loop speed control was evaluated experimentally on the real robot at 0.13~m/s, with near-zero steady-state error and no appreciable overshoot within the measurement resolution. As an illustrative complement, a simulation on a reidentified FOPDT model yields overshoots of 10.7\%--15.6\%. Frontier-based exploration was executed end-to-end on real hardware and achieved a mean free-space coverage index of 62.2\% over five iterations, with a mean mapped free area of 3.50~m$^2$. Of the 60 goals generated, 54 were aborted and one was completed, a limitation of the performance achieved in the test enclosure. Goal-directed navigation with fixed goals is outside the scope of this work.
