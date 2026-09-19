@@ -415,6 +415,12 @@ Ese script vuelve a identificar un modelo FOPDT mediante un PSO sin semilla fija
 
 La referencia analítica Lambda se calcula a partir de esa nueva identificación. Como retardo efectivo, $L_{ef,j}$, se toma el mayor entre el retardo puro identificado para la rueda, $L_{d,j}$, y dos períodos de control (2/30~s); y como constante de diseño, $\lambda_j$, se fija el triple de la constante de tiempo identificada $\tau_j$. A partir de ahí el script obtiene una forma serie, la convierte a la forma paralela estándar y la lleva a la escala de firmware mediante un factor de escalamiento $f_{\lambda}$; el detalle de estas conversiones se encuentra en \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}SintonizacionLambda.\allowbreak{}py}.
 
+Esa conversión asigna cada ganancia de la forma paralela a la ganancia del
+firmware con el mismo nombre y escala $K_d$ sin dividir por el período de
+control, sin considerar que en la ley ejecutada esas ganancias cumplen otra
+función (Ec.~\eqref{eq:pid_equivalente}). Por ello, la curva Lambda no
+representa un controlador Lambda equivalente aplicado sobre la ley ejecutada.
+
 La comparación es únicamente ilustrativa: además de las aproximaciones
 señaladas, el simulador aplica banda muerta cero al controlador Lambda. Por
 ello, las curvas y métricas corresponden al script comparativo ejecutado y no
@@ -520,6 +526,56 @@ El término integral se almacena en un \texttt{int}: la operación compuesta \te
 Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
 resume en el Alg.~\ref{alg:pid_firmware}.
+
+\subsection{Origen de la ley de control y cambios respecto del firmware original}
+\label{anx:pid_origen}
+
+El firmware se adaptó a partir de la bifurcación de
+\texttt{ros\_arduino\_bridge} mantenida por Josh
+Newans~\citep{newans_rosarduinobridge}, derivada a su vez del proyecto del
+Home Brew Robotics Club~\citep{hbrobotics_rosarduinobridge}. El encabezado de
+\texttt{diff\_controller.h} en ambos repositorios indica que el controlador se
+tomó en su mayor parte del código ArbotiX de Mike Ferguson. La función
+\texttt{doPID()} de ambos repositorios contiene la misma ley acumulativa de la
+Sec.~\ref{sec:motorcontrol_pid}. Por tanto, la estructura no estándar de la ley
+no fue introducida en este trabajo, sino heredada.
+
+Los comentarios del código original explican esa estructura. El término
+asociado a $K_d$ se calcula sobre la medición para evitar saltos de la
+derivada ante cambios de la referencia, y el estado integral se guarda ya
+multiplicado por $K_i$ para admitir cambios de ganancia en ejecución. Ambas
+mejoras corresponden a la forma posicional del PID, en la que la salida se
+calcula completa en cada ciclo. Al sumarse cada incremento a la salida
+anterior, cada término sube un orden de integración, tal como muestra la
+Ec.~\eqref{eq:pid_equivalente}.
+
+Respecto del original se conservaron la estructura de la ley, el período de
+control de 30~Hz, la saturación a $\pm255$, la integración condicional, el
+reinicio de estados al detenerse, el intervalo de auto-detención de 2000~ms y
+la rutina de lectura de encoders, incluida su lectura no atómica
+(\ref{anx:pid_data}). Los cambios introducidos fueron cuatro. Primero, las
+ganancias dejaron de ser constantes enteras compartidas por ambas ruedas, con
+$K_p=20$, $K_d=12$, $K_i=0$ y $K_o=50$ en el original, y pasaron a ser valores
+de punto flotante propios de cada rueda, que \texttt{resetPID()} vuelve a
+cargar con los valores de la Tabla~\ref{tab:ganancias_pid}. Por ello, las
+ganancias cargadas por el enlace serial solo rigen hasta la siguiente
+detención o reinicio. Segundo, se agregó a \texttt{doPID()} una banda muerta
+sobre el error, de 1~tick/frame en la rueda derecha y 2 en la izquierda.
+Tercero, se definieron el diámetro de rueda y la resolución de encoders del
+prototipo y se agregaron comandos para fijar y leer velocidades en m/s, leer
+las ganancias y cargar ganancias distintas por rueda
+(Tabla~\ref{tab:protocolo_serial}), retirando los de servomotores y de
+verificación de conexión. Cuarto, en el accionamiento del L298N se
+intercambiaron los pines de avance y retroceso del motor izquierdo y se
+declararon los pines como salidas al iniciar.
+
+El paso a ganancias de punto flotante tiene una consecuencia que el original
+no presentaba. Con $K_i$ entero, el producto $K_i e$ es siempre entero y el
+estado integral lo acumula sin pérdida. En este trabajo el estado integral se
+mantuvo como entero de 16~bits, por lo que los valores fraccionarios
+$K_{i,L}=0.075$ y $K_{i,R}=0.001$ se truncan y su efecto queda limitado en la
+rueda izquierda y anulado en la derecha, como se analiza en la
+Sec.~\ref{sec:resultados_pid}.
 
 \subsection{Procesamiento FOPDT usado por los scripts}
 \label{anx:fodt_scripts}

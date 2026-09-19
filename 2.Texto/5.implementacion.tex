@@ -357,7 +357,7 @@ se documentan en el \ref{anx:hardware_ros2}.
 \section{Firmware de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
 
-El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto homónimo y se adaptó para este trabajo, incorporando ganancias PID independientes por rueda y la resolución efectiva de encoders del prototipo. Cumple cuatro funciones principales: comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control}, lectura de encoders, control PID de velocidad por rueda y auto-detención de seguridad ante pérdida de comandos.
+El firmware \texttt{ROSArduinoBridge} parte de un proyecto de código abierto homónimo~\citep{newans_rosarduinobridge} y se adaptó para este trabajo, incorporando ganancias PID independientes por rueda, una banda muerta sobre el error y la resolución efectiva de encoders del prototipo, sin modificar la estructura de su ley de control. Cumple cuatro funciones principales: comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control}, lectura de encoders, control PID de velocidad por rueda y auto-detención de seguridad ante pérdida de comandos.
 
 \subsection{Arquitectura modular y constantes físicas}
 
@@ -416,8 +416,9 @@ u_j[k]
 \bigl(u_j[k-1]+\Delta u_j^{\mathrm{long}}[k]\bigr).
 \end{align*}
 
-\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias proporcional,
-integral y derivativa discretas de la rueda $j$; $e_j^{\mathrm{db}}[k]$ es el
+\noindent donde $K_{p,j}$, $K_{i,j}$ y $K_{d,j}$ son las ganancias de la rueda $j$
+que el firmware original denomina proporcional, integral y derivativa, cuya
+acción efectiva se aclara más adelante; $e_j^{\mathrm{db}}[k]$ es el
 error discreto de velocidad tras la banda muerta; $m_j^{\mathrm{int}}[k]$ la
 medición de velocidad en la escala interna del firmware; $I_j^{\mathrm{int}}[k]$
 el estado integral, que acumula $K_{i,j}e_j^{\mathrm{db}}[k]$ en cada ciclo;
@@ -433,11 +434,13 @@ que posteriormente se suma a la salida anterior $u_j[k-1]$, por lo que su
 efecto también se acumula entre ciclos. Además, el estado
 $I_j^{\mathrm{int}}[k]$ acumula separadamente el término
 $K_{i,j}e_j^{\mathrm{db}}[k]$. En consecuencia, las ganancias reportadas en
-este trabajo caracterizan esta realización discreta específica heredada de
-\texttt{ROSArduinoBridge} y no deben interpretarse como ganancias de un PID
-incremental estándar. Esta estructura no se modificó durante los ensayos, por
-lo que los resultados experimentales del Capítulo~\ref{ch:resultados}
-corresponden al controlador efectivamente implementado.
+este trabajo caracterizan esta realización discreta específica y no deben
+interpretarse como ganancias de un PID incremental estándar. Esta estructura
+es la misma del firmware original~\citep{newans_rosarduinobridge,hbrobotics_rosarduinobridge}
+y no fue modificada en este trabajo ni durante los ensayos, por lo que los
+resultados experimentales del Capítulo~\ref{ch:resultados} corresponden al
+controlador efectivamente implementado. Su origen y los cambios introducidos
+respecto del original se detallan en el \ref{anx:pid_origen}.
 
 Si se desprecian la saturación y los truncamientos enteros, y se parte de un
 reinicio con la salida acumulada, la medición previa y el estado integral en
@@ -454,7 +457,13 @@ acumulado, por lo que actúa como ganancia integral. $K_{d,j}$ multiplica la
 medición actual, por lo que actúa como ganancia proporcional sobre la medición
 y no como acción derivativa. $K_{i,j}$ actúa sobre una acumulación del estado
 integral, es decir, como una segunda integración. La ley ejecutada no contiene
-una acción derivativa efectiva.
+una acción derivativa efectiva. Sin el término asociado a $K_{i,j}$, como en la
+configuración por defecto del firmware original, donde $K_i=0$, la ley equivale
+a un controlador PI cuya acción proporcional se calcula sobre la medición y no
+sobre el error, variante conocida como I-P que evita saltos de la salida ante
+cambios bruscos de la referencia~\citep{astrom2006advanced}. La rueda derecha
+opera en esa condición, porque su estado integral permanece en cero
+(Sec.~\ref{sec:resultados_pid}).
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
@@ -578,21 +587,22 @@ planta y del controlador se documentan en el \ref{anx:fodt_scripts} y en el
 Las ganancias sugeridas por PSO se usaron como punto de partida y luego se
 ajustaron sobre el robot real (Etapa~3 del Alg.~\ref{alg:sintonizacion}), hasta
 obtener los valores definitivos de la Tabla~\ref{tab:ganancias_pid}. La ejecución
-de partida sugirió una acción integral casi nula y ganancias proporcional y
-derivativa cercanas a 11 y 35 en ambas ruedas. Al cargarlas y aplicar un escalón
+de partida sugirió un $K_i$ casi nulo y valores de $K_p$ y $K_d$ cercanos a
+11 y 35 en ambas ruedas. Al cargar esas ganancias y aplicar un escalón
 de 0.13~m/s aparecieron dos comportamientos que el modelo FOPDT no anticipa
 (Fig.~\ref{fig:respuesta_escalon_pso}).
 
-El primero es un error estacionario persistente. Con la acción integral casi
-nula, la rueda izquierda se estabiliza un escalón de cuantización por debajo de
+El primero es un error estacionario persistente. Con $K_i$ casi
+nulo, la rueda izquierda se estabiliza un escalón de cuantización por debajo de
 la referencia, por lo que su $K_i$ se aumentó a 0.075, mientras que la derecha
 converge por sí sola y mantuvo un valor mínimo de 0.001. El segundo es un
 arranque lento asociado a la zona muerta del driver, descrita en la
 Sec.~\ref{sec:motores_marco}, que el modelo de primer orden no representa. Para
-atravesar ese tramo la ganancia proporcional se aumentó a 16.00 y 16.42. Ese
+atravesar ese tramo se aumentó $K_p$ a 16.00 y 16.42, lo que en la ley
+ejecutada acelera el crecimiento de la salida mientras persiste el error. Ese
 aumento, sobre una velocidad cuantizada por los encoders, volvió excesiva la
-acción derivativa sugerida, por lo que $K_d$ se redujo desde valores cercanos a
-35 hasta 20.30 y 20.05. La salida completa de la ejecución de partida se
+acción asociada a $K_d$, que en esta ley actúa en proporción a la medición, por
+lo que $K_d$ se redujo desde valores cercanos a 35 hasta 20.30 y 20.05. La salida completa de la ejecución de partida se
 conserva en la Tabla~\ref{tab:pso_resultados} del
 \ref{anx:resultados_pso_ejecucion}.
 

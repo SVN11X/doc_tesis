@@ -103,7 +103,9 @@ declarado.
 \item Migrar el sistema a una distribución mantenida de \gls{ROS2} y portar en el mismo paso el gemelo digital a una versión vigente de Gazebo, dado que Gazebo Classic ya no recibe soporte.
 \item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
 \item Evaluar la exploración con un protocolo que distinga selección de frontera, envío de meta, resultado de la acción y cobertura obtenida.
-\item Reemplazar la ley acumulativa del firmware por un PID incremental estándar con lectura atómica de encoders, y repetir los ensayos de control y odometría.
+\item Extender la evaluación del control de velocidad a otras referencias y
+compararlo con un PID incremental estándar, incorporando un estado integral en
+punto flotante y lectura atómica de encoders.
 \item Extender el sistema a la localización sobre un mapa almacenado mediante AMCL, comparando la pose estimada con posiciones marcadas físicamente en el recinto.
 \item Repetir el protocolo angular con un giro controlado a un ángulo fijo y verificar la velocidad angular efectiva registrada en \texttt{/odom}.
 \item Registrar la pose verdadera de Gazebo Classic en los ensayos simulados para separar el error odométrico del error de seguimiento en simulación.
