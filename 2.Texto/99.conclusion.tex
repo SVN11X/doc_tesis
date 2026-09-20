@@ -34,10 +34,12 @@ numéricas se documentan en los anexos de implementación y sintonización.
 
 El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. Los indicadores de cobertura libre y de área mapeada se cuantificaron sobre hardware real durante las iteraciones de exploración.
 La navegación con Nav2 quedó integrada mediante planificación global,
-control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecutó en cinco iteraciones válidas y alcanzó
-un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$). Se generaron 60
-metas de navegación autónomas reconstruidas por identificador único, de las
-cuales 54 abortaron y una se completó. El recinto reducido y el radio de inflación de 0.15~m son posibles causas, pero no se aislaron experimentalmente. El detalle metodológico se conserva en el
+control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecutó en cinco iteraciones válidas, que
+terminaron automáticamente al no quedar fronteras y sin intervención manual, con
+un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$). De las 60 metas
+generadas, 54 quedaron abortadas y una se completó. En 53 de esos abortos la
+meta fue reemplazada por el propio explorador, que renueva su destino cada
+3.3~s, y Nav2 informa ese reemplazo como aborto. El detalle metodológico se conserva en el
 \ref{anx:resultados_metodologia}.
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
@@ -58,20 +60,25 @@ en la Sec.~\ref{sec:motorcontrol_pid} y en la Sec.~\ref{sec:resultados_pid}.
 \textit{Cumplido parcialmente.} El mapeo y la localización durante la
 construcción del mapa se implementaron y verificaron funcionalmente en hardware
 real, junto con la caracterización cuantitativa de cobertura y área libre
-mapeada. El sistema de navegación también se integró y ejecutó las metas
-generadas durante la exploración. Sin embargo, la elevada proporción de metas
-abortadas evidencia una baja robustez para completar los destinos seleccionados,
-por lo que no se considera completamente cumplido este objetivo.
+mapeada. Nav2 se integró y condujo al robot hacia las metas del explorador en
+las cinco ejecuciones válidas, sin abortos atribuibles a fallos de navegación en
+el registro. Sin embargo, como 53 de los 54 abortos corresponden a reemplazos de
+meta hechos por el explorador, el resultado de las metas no permite medir la
+tasa de éxito de la navegación. El carácter parcial proviene de que no se obtuvo
+un indicador cuantitativo del desempeño de la navegación.
 
-\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido con limitaciones de desempeño.} La estrategia de exploración
-autónoma se integró y ejecutó sobre el robot real, generando destinos hacia
-regiones no exploradas sin intervención manual continua. Cinco de las seis
-ejecuciones experimentales produjeron mapas válidos, con un índice medio de
-cobertura libre de 62.2\% y un área libre mapeada media de
-3.50~m$^2$. Estos resultados verifican funcionalmente la ejecución del proceso
-de exploración. La principal limitación observada corresponde al desempeño del
-sistema de navegación para completar individualmente las metas generadas.
-\end{description}
+\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido.} La estrategia
+de exploración por fronteras se integró y ejecutó sobre el robot real, y generó
+60 metas hacia regiones no exploradas sin intervención manual. Cinco de las seis
+ejecuciones terminaron de forma automática por el criterio del propio
+explorador, al no quedar fronteras en el mapa de costos, y produjeron mapas
+válidos con un índice medio de cobertura libre de 62.2\% y un área libre mapeada
+media de 3.50~m$^2$. En la ejecución restante el robot no se desplazó y la causa
+no se determinó. La exploración quedó verificada funcionalmente y caracterizada,
+sin una referencia geométrica externa para validar el mapa. Su principal
+limitación es que el explorador agrega a la lista negra las metas que él mismo
+reemplaza, efecto de la integración con Nav2 que no impidió terminar la
+exploración.
 
 Respecto de la pregunta de investigación planteada en la Introducción, los
 resultados muestran que fue posible construir un prototipo diferencial capaz de
@@ -80,11 +87,10 @@ ensayado. Cinco de las seis ejecuciones experimentales produjeron mapas válidos
 lo que permite verificar funcionalmente la integración entre exploración,
 navegación y mapeo.
 
-No obstante, los resultados obtenidos para las metas individuales evidencian una
-baja robustez del sistema de navegación para completar todos los destinos
-generados. En consecuencia, el trabajo demuestra el funcionamiento integrado
-del proceso de exploración autónoma, aunque identifica como principal limitación
-el desempeño de navegación hacia las metas seleccionadas.
+El resultado de las metas individuales no contradice esa conclusión, porque 53
+de los 54 abortos corresponden a reemplazos de meta hechos por el propio
+explorador. Sí deja pendiente medir cuantitativamente el desempeño de la
+navegación, lo que requiere un protocolo con metas fijas.
 
 \section*{Limitaciones}
 \phantomsection
@@ -100,6 +106,7 @@ el desempeño de navegación hacia las metas seleccionadas.
 \item \textbf{Validez externa:} los resultados provienen de un único recinto, cuya área libre mapeada media fue de 3.50~m$^2$, y de cinco iteraciones, por lo que no se generalizan a entornos mayores o de geometría distinta. La superficie del recinto no se midió de forma independiente del mapa.
 \item \textbf{Ley de control de bajo nivel:} el firmware ejecuta la ley acumulativa heredada de \texttt{ROSArduinoBridge}, en la que $K_p$ actúa como ganancia integral, $K_d$ como ganancia proporcional sobre la medición y $K_i$ como segunda integración (Ec.~\eqref{eq:pid_equivalente}). No se realizó un análisis de estabilidad de esta ley ni una comparación con un PID incremental estándar.
 \item \textbf{Particularidades de implementación conservadas:} la lectura no atómica de los encoders, la posición global del PSO copiada desde la posición actual y sin semilla fija, y el costo de fronteras no homogéneo en unidades se documentan tal como se ejecutaron. Su efecto sobre los resultados no se cuantificó.
+\item \textbf{Integración entre explorador y Nav2:} el explorador envía una meta nueva sin cancelar la anterior, y Nav2 informa la meta reemplazada como abortada. Por eso el resultado de las metas no mide la tasa de éxito de la navegación, y el explorador agrega a su lista negra fronteras que no fallaron. El efecto sobre la duración de la exploración no se cuantificó.
 \end{itemize}
 
 \section*{Trabajo futuro}
@@ -111,7 +118,7 @@ el desempeño de navegación hacia las metas seleccionadas.
 \item Integrar una \gls{IMU} mediante el paquete de fusión sensorial \texttt{robot\_localization} para reducir la deriva angular.
 \item Migrar el sistema a una distribución mantenida de \gls{ROS2} y portar en el mismo paso el gemelo digital a una versión vigente de Gazebo, dado que Gazebo Classic ya no recibe soporte.
 \item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
-\item Evaluar la exploración con un protocolo que distinga selección de frontera, envío de meta, resultado de la acción y cobertura obtenida.
+\item Registrar por separado los reemplazos de meta y los fallos de Nav2, cancelando la meta en curso antes de enviar la siguiente o conservando el registro de \texttt{bt\_navigator}, y evaluar el efecto de \texttt{planner\_frequency} sobre la duración de la exploración.
 \item Extender la evaluación del control de velocidad a otras referencias y
 compararlo con un PID incremental estándar, incorporando un estado integral en
 punto flotante y lectura atómica de encoders.

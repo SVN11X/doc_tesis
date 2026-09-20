@@ -971,22 +971,31 @@ cinta métrica y no contra la propia odometría.
 \caption{Resultado de las metas de navegación de la exploración, reconstruidas por identificador único a partir del flujo de estado de la acción \texttt{NavigateToPose} registrado en cada sesión.}
 \label{tab:anx_explore_metas}
 \footnotesize
-\begin{tabular}{rccccc}
+\begin{tabular}{rccccccc}
 \toprule
-\textbf{Iter.} & \makecell{\textbf{Metas}\\\textbf{generadas}} & \textbf{Abortadas} & \textbf{Exitosas} & \makecell{\textbf{Sin estado}\\\textbf{terminal}} & \makecell{\textbf{Vida mediana}\\\textbf{meta abortada (s)}} \\
+\textbf{Iter.} & \makecell{\textbf{Metas}\\\textbf{generadas}} & \textbf{Abortadas} & \makecell{\textbf{Reemplazadas}\\\textbf{por el explorador}} & \textbf{Exitosas} & \makecell{\textbf{Sin estado}\\\textbf{terminal}} & \makecell{\textbf{Tiempo activo}\\\textbf{mediano (s)}} & \makecell{\textbf{Término sin}\\\textbf{fronteras}} \\
 \midrule
-1 & 18 & 17 & 0 & 1 & 61 \\
-3 & 9  & 8  & 0 & 1 & 20 \\
-4 & 12 & 11 & 0 & 1 & 24 \\
-5 & 11 & 9  & 1 & 1 & 39 \\
-6 & 10 & 9  & 0 & 1 & 26 \\
+1 & 18 & 17 & 16 & 0 & 1 & 3.3 & Sí \\
+3 & 9  & 8  & 8  & 0 & 1 & 3.3 & Sí \\
+4 & 12 & 11 & 11 & 0 & 1 & 3.3 & Sí \\
+5 & 11 & 9  & 9  & 1 & 1 & 3.3 & Sí \\
+6 & 10 & 9  & 9  & 0 & 1 & 3.3 & Sí \\
 \midrule
-\textbf{Total} & \textbf{60} & \textbf{54} & \textbf{1} & \textbf{5} & --- \\
+\textbf{Total} & \textbf{60} & \textbf{54} & \textbf{53} & \textbf{1} & \textbf{5} & --- & \textbf{5 de 5} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent De las 60 metas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera seleccionada. Las metas sin estado terminal permanecían en ejecución o en cancelación cuando terminó el registro. La reconstrucción se obtuvo agrupando los mensajes de estado de la acción por el identificador de meta de 16 bytes y tomando el último estado observado de cada meta.
+\noindent De las 60 metas, 59 alcanzaron el estado de ejecución. La restante es
+la primera meta de la iteración~1, que ya figuraba abortada en el primer mensaje
+registrado y por eso tampoco pudo clasificarse como reemplazada. Las metas sin
+estado terminal son la última de cada ejecución. Al no encontrar fronteras, el
+explorador solicitó automáticamente su cancelación, y el script de ensayo cerró
+el registro antes de que esa cancelación terminara. El tiempo activo es el
+intervalo entre la aceptación de una meta y la aceptación de la meta que la
+reemplazó. Su máximo fue de 16.7~s en la iteración~1 y de 6.7~s en las demás.
+La reconstrucción se obtuvo agrupando los mensajes de estado de la acción por el
+identificador de meta de 16 bytes.
 
 Los estadísticos agregados por iteración se presentan en la Tabla~\ref{tab:slam_real_indicadores} y la interpretación de los contadores en la Sec.~\ref{sec:resultados_nav2}. Las intervenciones manuales, registradas por el operador, fueron nulas en las cinco iteraciones válidas.
 
@@ -1056,6 +1065,16 @@ y la plantea como trabajo futuro.
 Los contadores de texto de \texttt{run\_explore.sh} no permiten calcular una tasa de éxito, por dos motivos distintos. El contador de metas generadas se alimenta de coincidencias de texto en el registro de \texttt{explore\_server} y del eco del tópico de meta de la acción \texttt{NavigateToPose}. La primera fuente no produce coincidencias porque el mensaje de envío de meta está declarado en nivel \textit{debug} en \texttt{explore.cpp} y el nodo se ejecutó en nivel informativo. La segunda tampoco, porque ese tópico no entregó datos y el propio registro conserva la advertencia de tópico no publicado. Por eso el contador de metas generadas queda en cero. Los contadores de éxito y de fallo sí se incrementan, pero lo hacen una vez por cada línea del flujo de estado de la acción, sin conservar ni deduplicar identificadores de meta, de modo que cuentan mensajes de estado y no metas únicas.
 
 Para obtener una medida fiable se descartaron esos contadores y se reconstruyó el resultado de cada meta a partir del flujo de estado de la acción \texttt{NavigateToPose}, que quedó registrado íntegro en cada sesión. Cada meta se identifica por su identificador único de 16 bytes. A cada identificador se le asigna su estado terminal, con la prioridad éxito sobre aborto sobre cancelación, y se cuenta como en ejecución cuando alcanzó ese estado en algún momento del registro. El resultado agregado se presenta en la Tabla~\ref{tab:anx_explore_metas}.
+
+Para distinguir las metas reemplazadas por el explorador de los fallos de Nav2
+se usó el orden de los mensajes de estado. Una meta abortada se clasificó como
+reemplazada cuando existía un mensaje en el que la meta siguiente ya figuraba y
+la meta abortada seguía aceptada o en ejecución. No se utilizó la hora escrita
+en cada línea del registro, porque tiene resolución de un segundo y corresponde
+al momento de escritura y no al de publicación del mensaje. Los tiempos se
+calcularon con el sello de aceptación que cada meta incluye en el mensaje. El
+procedimiento está implementado en el script
+\texttt{clasificar\_metas\_exploracion.py}.
 
 \section{Convención de rutas y localización del software}
 \label{anx:rutas_software}

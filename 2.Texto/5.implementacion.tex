@@ -776,29 +776,29 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 \State $p^*\gets p_{F^*}^{\mathrm{impl}}$
 \If{la meta no presenta progreso durante \texttt{progress\_timeout}}
 \State $B\gets B\cup\{p^*\}$
-\State Cancelar la meta activa.
-\Else
-\State Enviar $p^*$ a \texttt{NavigateToPose} con orientación identidad.
-\State $\texttt{estado}\gets\Call{ObtenerEstadoMeta}{}$
+\State Repetir la selección con la lista negra actualizada.
+\ElsIf{$p^*$ está a 0.01~m o más de la meta anterior}
+\State Enviar $p^*$ a \texttt{NavigateToPose} con orientación identidad, sin cancelar la meta en curso.
+\EndIf
+\EndIf
+\State Esperar el siguiente período de $1/f_{\mathrm{exp}}$.
+\EndWhile
+\Statex \textbf{Al recibir el resultado de una meta enviada al punto $p$:}
 \If{$\texttt{estado}=\texttt{SUCCEEDED}$}
-\State Programar una nueva planificación.
+\State Ejecutar una nueva planificación de inmediato.
 \ElsIf{$\texttt{estado}=\texttt{ABORTED}$}
-\State $B\gets B\cup\{p^*\}$
+\State $B\gets B\cup\{p\}$
 \ElsIf{$\texttt{estado}=\texttt{CANCELED}$}
 \State Conservar $B$ sin cambios.
 \EndIf
-\EndIf
-\EndIf
-\EndWhile
 \end{algorithmic}
 \end{algorithm}
 
 Dentro del Alg.~\ref{alg:exploracion_fronteras}, el puntaje de cada frontera combina distancia y tamaño, de modo que se
 prefieren las cercanas y las que prometen descubrir más entorno. La meta se
 envía con orientación identidad, porque solo importa la posición de la
-frontera, y la lista negra $B$ evita reintentar metas improductivas. Si no
-queda ninguna frontera, el entorno alcanzable se considera mapeado. El cálculo
-del punto representativo, el escalamiento de la distancia y la programación del
+frontera, y la lista negra $B$ evita reintentar metas improductivas.Como Nav2 informa como abortada también la meta que el explorador reemplaza (Sec.~\ref{sec:resultados_nav2}), esa lista recibe además puntos de metas que
+no fallaron. Si no queda ninguna frontera, el entorno alcanzable se considera mapeado. El cálculo del punto representativo, el escalamiento de la distancia y la programación del
 temporizador se documentan en el \ref{anx:explore_impl}.
 
 \subsection{Transferencia simulación--hardware}
