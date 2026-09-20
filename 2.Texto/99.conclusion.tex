@@ -55,28 +55,36 @@ derivativa efectiva y se evaluó en un único punto de operación, como se detal
 en la Sec.~\ref{sec:motorcontrol_pid} y en la Sec.~\ref{sec:resultados_pid}.
 
 \item[\autoref{oe3} -- Localización, mapeo y navegación:]
-\textit{Cumplido parcialmente.} El mapeo y la localización se implementaron
-mediante \texttt{slam\_toolbox} y se verificaron funcionalmente en hardware
-real, con caracterización cuantitativa de cobertura y área libre. Nav2 quedó
-integrado y verificado funcionalmente mediante las metas generadas durante la
-exploración, cuyo resultado se cuantificó. El carácter parcial proviene del
-desempeño alcanzado en esa navegación, con 54 metas abortadas de 60 generadas.
-La navegación dirigida con metas fijas definidas por el operador y la
-localización sobre un mapa almacenado con AMCL no forman parte del alcance
-declarado en la sección \hyperref[sec:alcances]{Alcances y limitaciones}.
-\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido parcialmente.} El módulo de fronteras se integró y ejecutó de forma autónoma. Se generaron y despacharon 60 metas de navegación en cinco iteraciones, reconstruidas por identificador único, con 54 abortos y una meta completada. La cobertura y el área libre se cuantificaron. La baja tasa de metas completadas, 1 de 55 metas con resultado terminal, constituye una limitación del desempeño obtenido cuya causa no se aisló experimentalmente.
+\textit{Cumplido parcialmente.} El mapeo y la localización durante la
+construcción del mapa se implementaron y verificaron funcionalmente en hardware
+real, junto con la caracterización cuantitativa de cobertura y área libre
+mapeada. El sistema de navegación también se integró y ejecutó las metas
+generadas durante la exploración. Sin embargo, la elevada proporción de metas
+abortadas evidencia una baja robustez para completar los destinos seleccionados,
+por lo que no se considera completamente cumplido este objetivo.
+
+\item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido con limitaciones de desempeño.} La estrategia de exploración
+autónoma se integró y ejecutó sobre el robot real, generando destinos hacia
+regiones no exploradas sin intervención manual continua. Cinco de las seis
+ejecuciones experimentales produjeron mapas válidos, con un índice medio de
+cobertura libre de 62.2\% y un área libre mapeada media de
+3.50~m$^2$. Estos resultados verifican funcionalmente la ejecución del proceso
+de exploración. La principal limitación observada corresponde al desempeño del
+sistema de navegación para completar individualmente las metas generadas.
 \end{description}
 
-Respecto de la pregunta de investigación planteada en la Introducción, el
-trabajo muestra que sí es posible construir, con componentes accesibles y
-herramientas de código abierto, un prototipo diferencial capaz de mapear y de
-explorar entornos interiores de forma autónoma. La respuesta es afirmativa en
-diseño, construcción, control y mapeo. En navegación y exploración el sistema
-quedó integrado y en funcionamiento, con la cobertura y el resultado de las 60
-metas cuantificados, pero la baja proporción de metas completadas impide
-afirmar un desempeño de navegación robusto en las condiciones ensayadas. La
-navegación hacia metas fijas definidas por el operador queda fuera del alcance
-declarado.
+Respecto de la pregunta de investigación planteada en la Introducción, los
+resultados muestran que fue posible construir un prototipo diferencial capaz de
+generar mapas 2D y ejecutar un proceso de exploración autónoma en el entorno
+ensayado. Cinco de las seis ejecuciones experimentales produjeron mapas válidos,
+lo que permite verificar funcionalmente la integración entre exploración,
+navegación y mapeo.
+
+No obstante, los resultados obtenidos para las metas individuales evidencian una
+baja robustez del sistema de navegación para completar todos los destinos
+generados. En consecuencia, el trabajo demuestra el funcionamiento integrado
+del proceso de exploración autónoma, aunque identifica como principal limitación
+el desempeño de navegación hacia las metas seleccionadas.
 
 \section*{Limitaciones}
 \phantomsection

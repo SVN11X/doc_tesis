@@ -299,12 +299,38 @@ El índice de cobertura libre se calcula sobre la imagen de ocupación completa,
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
-La navegación con Nav2 hacia las metas generadas automáticamente por el
-explorador se evalúa funcionalmente y mediante el resultado terminal de dichas
-metas, mientras que la exploración se caracteriza además mediante cobertura y
-área mapeada. La exploración por fronteras se ejecutó de forma autónoma en cinco iteraciones válidas. El nodo explorador seleccionó fronteras y despachó metas de navegación a Nav2 mediante la acción \texttt{NavigateToPose}. Los contadores automáticos de la sesión informaban cero metas generadas porque ninguna de sus dos fuentes del lado de la meta produjo coincidencias durante los ensayos. Sus contadores de fallo y de éxito, en cambio, se incrementan una vez por cada mensaje del flujo de estado, sin deduplicar identificadores de meta, de modo que no expresan números de metas únicas. El detalle de este comportamiento se documenta en el \ref{anx:resultados_metodologia}. Para obtener una medida fiable, cada meta se reconstruyó por su identificador único a partir del flujo de estado de la acción registrado en cada sesión, según la Tabla~\ref{tab:anx_explore_metas} del \ref{anx:protocolo_resultados}.
+Los resultados de navegación y exploración se analizan en dos niveles
+complementarios. El primero corresponde al resultado de cada ejecución completa
+de exploración, considerando si el robot operó de forma autónoma, se desplazó
+por el entorno, incorporó nuevas observaciones y produjo un mapa válido. El
+segundo corresponde al resultado de las metas individuales generadas durante
+dicha exploración.
 
-En total se generaron 60 metas de navegación. De ellas, 59 alcanzaron el estado de ejecución, es decir el robot navegó activamente hacia la frontera. El resultado predominante fue el aborto, con 54 metas abortadas y una sola meta completada con éxito. Las metas abortadas tuvieron una vida mediana de entre 20 y 61 segundos según la iteración, de modo que corresponden a intentos reales de navegación y no a reemplazos inmediatos de meta. Otras cinco metas quedaron sin estado terminal al finalizar sus respectivos registros. Por tanto, la fracción de metas exitosas respecto del total generado fue de $1/60\approx1.7\%$, mientras que entre las 55 metas con resultado terminal fue de $1/55\approx1.8\%$. Estos valores muestran que la cadena explorador--Nav2 se ejecutó, pero también evidencian un desempeño operacional limitado para completar las metas seleccionadas en el entorno utilizado.
+Esta distinción permite evaluar por separado el funcionamiento global de la
+exploración y la capacidad del sistema de navegación para completar cada una de
+las metas seleccionadas. Por tanto, el resultado de una meta individual no se
+interpreta directamente como el resultado de toda la ejecución de exploración.
+
+La exploración autónoma produjo un mapa válido en cinco de las seis ejecuciones
+experimentales. En estas cinco ejecuciones, el índice de cobertura libre varió
+entre 53.4\% y 82.9\%, con una media de 62.2\%, mientras que el área libre
+mapeada se mantuvo entre 3.478 y 3.540~m$^2$, con una media de
+3.50~m$^2$.
+
+En total se generaron 60 metas de navegación durante las cinco ejecuciones
+válidas. De ellas, 59 alcanzaron la etapa de ejecución. Respecto de su resultado
+final, 54 metas fueron abortadas, una fue completada exitosamente y cinco
+quedaron sin un resultado terminal al finalizar los registros.
+
+Considerando el total de metas generadas, la proporción de metas completadas
+exitosamente fue de aproximadamente 1.7%. Este valor caracteriza
+específicamente el desempeño del sistema para completar las metas individuales
+de navegación y no corresponde a una tasa de éxito global de la exploración.
+
+La elevada proporción de metas abortadas evidencia una limitación importante en
+la robustez de la navegación bajo las condiciones del ensayo. Sin embargo, esta
+limitación coexistió con ejecuciones de exploración en las que el robot continuó
+incorporando información del entorno y produjo mapas válidos.
 
 Los diecisiete mensajes de lista de fronteras agotada registrados en las cinco
 iteraciones válidas, once de ellos en la iteración~1, no representan diecisiete
@@ -352,7 +378,10 @@ Cobertura y área libre cuantificadas en cinco iteraciones válidas; la
 alineación de paredes se evaluó visualmente y no se dispuso de ground truth
 geométrico para validar el error absoluto del mapa \\
 Nav2 & Verificada funcionalmente, resultado de metas cuantificado & Distribución de resultados de 55 metas terminales de exploración (Tabla~\ref{tab:anx_explore_metas}). El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
-Exploración & Verificada funcionalmente, resultado de metas cuantificado & 60 metas autónomas en 5 iteraciones, 54 abortadas, 1 exitosa y 5 sin estado terminal. Cobertura y área cuantificadas \\
+Exploración autónoma & Verificada funcionalmente en hardware real &
+Cinco de seis ejecuciones produjeron mapas válidos de manera autónoma.
+Cobertura libre media de 62.2\% y área libre mapeada media de
+3.50~m$^2$ \\
 Localización & Resuelta por \texttt{slam\_toolbox} durante el mapeo en línea y
 verificada funcionalmente en las cinco iteraciones válidas &
 La localización sobre un mapa almacenado con AMCL queda fuera del alcance
