@@ -307,8 +307,7 @@ segundo corresponde al resultado de las metas individuales generadas durante
 dicha exploración.
 
 Esta distinción permite evaluar por separado el funcionamiento global de la
-exploración y la capacidad del sistema de navegación para completar cada una de
-las metas seleccionadas. Por tanto, el resultado de una meta individual no se
+exploración y el resultado que Nav2 informa para cada meta. Por tanto, el resultado de una meta individual no se
 interpreta directamente como el resultado de toda la ejecución de exploración.
 
 La exploración autónoma produjo un mapa válido en cinco de las seis ejecuciones
@@ -322,8 +321,7 @@ del operador. En cada una, el nodo \texttt{explore\_server} informó que no
 quedaban fronteras en el mapa de costos, detuvo la exploración y solicitó
 cancelar la meta en curso. El script de ensayo detecta ese aviso, guarda el
 mapa y cierra el registro. La iteración~2, excluida del análisis, no llegó a ese
-término. Las intervenciones manuales fueron nulas en las cinco ejecuciones
-válidas.
+término.
 
 En total se generaron 60 metas de navegación durante las cinco ejecuciones
 válidas. De ellas, 59 alcanzaron la etapa de ejecución. Respecto de su estado

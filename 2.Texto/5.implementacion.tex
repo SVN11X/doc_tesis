@@ -778,7 +778,7 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 \State $B\gets B\cup\{p^*\}$
 \State Repetir la selección con la lista negra actualizada.
 \ElsIf{$p^*$ está a 0.01~m o más de la meta anterior}
-\State Enviar $p^*$ a \texttt{NavigateToPose} con orientación identidad, sin cancelar la meta en curso.
+\State Enviar $p^*$ a \texttt{NavigateToPose} sin cancelar la meta en curso.
 \EndIf
 \EndIf
 \State Esperar el siguiente período de $1/f_{\mathrm{exp}}$.
@@ -797,7 +797,7 @@ en el Alg.~\ref{alg:exploracion_fronteras}.
 Dentro del Alg.~\ref{alg:exploracion_fronteras}, el puntaje de cada frontera combina distancia y tamaño, de modo que se
 prefieren las cercanas y las que prometen descubrir más entorno. La meta se
 envía con orientación identidad, porque solo importa la posición de la
-frontera, y la lista negra $B$ evita reintentar metas improductivas.Como Nav2 informa como abortada también la meta que el explorador reemplaza (Sec.~\ref{sec:resultados_nav2}), esa lista recibe además puntos de metas que
+frontera, y la lista negra $B$ evita reintentar metas improductivas. Como Nav2 informa como abortada también la meta que el explorador reemplaza (Sec.~\ref{sec:resultados_nav2}), esa lista recibe además puntos de metas que
 no fallaron. Si no queda ninguna frontera, el entorno alcanzable se considera mapeado. El cálculo del punto representativo, el escalamiento de la distancia y la programación del
 temporizador se documentan en el \ref{anx:explore_impl}.
 

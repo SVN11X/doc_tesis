@@ -968,20 +968,21 @@ cinta métrica y no contra la propia odometría.
 
 \begin{table}[H]
 \centering
-\caption{Resultado de las metas de navegación de la exploración, reconstruidas por identificador único a partir del flujo de estado de la acción \texttt{NavigateToPose} registrado en cada sesión.}
+\caption{Resultado de las metas de navegación de la exploración, reconstruidas por identificador único a partir del flujo de estado de la acción \texttt{NavigateToPose} registrado en cada sesión. Las cinco iteraciones terminaron al no quedar fronteras.}
 \label{tab:anx_explore_metas}
 \footnotesize
-\begin{tabular}{rccccccc}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ccccccc}
 \toprule
-\textbf{Iter.} & \makecell{\textbf{Metas}\\\textbf{generadas}} & \textbf{Abortadas} & \makecell{\textbf{Reemplazadas}\\\textbf{por el explorador}} & \textbf{Exitosas} & \makecell{\textbf{Sin estado}\\\textbf{terminal}} & \makecell{\textbf{Tiempo activo}\\\textbf{mediano (s)}} & \makecell{\textbf{Término sin}\\\textbf{fronteras}} \\
+\textbf{Iter.} & \makecell{\textbf{Metas}\\\textbf{generadas}} & \textbf{Abortadas} & \makecell{\textbf{Reemplazadas}\\\textbf{por el}\\\textbf{explorador}} & \textbf{Exitosas} & \makecell{\textbf{Sin estado}\\\textbf{terminal}} & \makecell{\textbf{Tiempo activo}\\\textbf{mediano (s)}} \\
 \midrule
-1 & 18 & 17 & 16 & 0 & 1 & 3.3 & Sí \\
-3 & 9  & 8  & 8  & 0 & 1 & 3.3 & Sí \\
-4 & 12 & 11 & 11 & 0 & 1 & 3.3 & Sí \\
-5 & 11 & 9  & 9  & 1 & 1 & 3.3 & Sí \\
-6 & 10 & 9  & 9  & 0 & 1 & 3.3 & Sí \\
+1 & 18 & 17 & 16 & 0 & 1 & 3.3 \\
+3 & 9  & 8  & 8  & 0 & 1 & 3.3 \\
+4 & 12 & 11 & 11 & 0 & 1 & 3.3 \\
+5 & 11 & 9  & 9  & 1 & 1 & 3.3 \\
+6 & 10 & 9  & 9  & 0 & 1 & 3.3 \\
 \midrule
-\textbf{Total} & \textbf{60} & \textbf{54} & \textbf{53} & \textbf{1} & \textbf{5} & --- & \textbf{5 de 5} \\
+\textbf{Total} & \textbf{60} & \textbf{54} & \textbf{53} & \textbf{1} & \textbf{5} & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1074,7 +1075,12 @@ en cada línea del registro, porque tiene resolución de un segundo y correspond
 al momento de escritura y no al de publicación del mensaje. Los tiempos se
 calcularon con el sello de aceptación que cada meta incluye en el mensaje. El
 procedimiento está implementado en el script
-\texttt{clasificar\_metas\_exploracion.py}.
+\texttt{clasificar\_metas\_exploracion.py}. El comportamiento de Nav2 ante una
+meta nueva se verificó en los archivos \texttt{simple\_action\_server.hpp} y
+\texttt{bt\_navigator.cpp} de la rama \texttt{foxy-devel} de Nav2
+\citep{nav2_foxy_src}.
+
+\section{Convención de rutas y localización del software}
 
 \section{Convención de rutas y localización del software}
 \label{anx:rutas_software}
