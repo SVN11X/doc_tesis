@@ -50,11 +50,14 @@ RViz2 permite la supervisión.
 Cada dominio del sistema se resolvió eligiendo, entre las alternativas
 comparadas en el Capítulo~\ref{ch:estado_arte}, la más adecuada para una
 plataforma diferencial de bajo costo orientada a interiores. Se adoptó
-\gls{ROS2} como middleware por su arquitectura distribuida y por su ecosistema
-de paquetes de mapeo, navegación y exploración, frente a una base ROS~1 cuyo
-soporte oficial ya finalizó
-(Sec.~\ref{sec:alternativas_middleware})
-\citep{macenski2022ros2,ros_noetic_eol}. La percepción se resolvió con un
+\gls{ROS2} como middleware por su arquitectura distribuida, sin un nodo maestro
+central, y por su ecosistema de paquetes de mapeo, navegación y exploración
+(Sec.~\ref{sec:alternativas_middleware}) \citep{macenski2022ros2}. El fin de
+soporte de ROS~1 \citep{ros_noetic_eol} no se usó como criterio de selección,
+porque la distribución adoptada, \gls{ROS2} Foxy, también se encuentra fuera de
+soporte. Esa distribución se mantuvo por la compatibilidad de la cadena de
+paquetes con el hardware disponible, como se declara en Alcances y
+limitaciones. La percepción se resolvió con un
 \gls{LIDAR} 2D, suficiente para interiores y de menor costo y carga de
 procesamiento que las cámaras RGB-D o el \gls{LIDAR} 3D, y el mapeo con
 \texttt{slam\_toolbox}, por su integración nativa, su enfoque basado en grafos
@@ -66,9 +69,10 @@ computacional (Sec.~\ref{sec:exploracion})
 \citep{macenski2023desks}.
 
 La validación previa del diseño se apoyó en un gemelo digital construido
-en Gazebo Classic. Se optó por esa versión y no por el Gazebo actual porque
-es la compatible con \gls{ROS2} Foxy y con Ubuntu 20.04, que constituyen la
-base del sistema (Sec.~\ref{sec:gemelo_digital}).
+en Gazebo Classic. Se optó por esa versión y no por el Gazebo actual porque es
+la que emplean los complementos de simulación y de \texttt{ros2\_control} del
+paquete base adaptado, disponibles para \gls{ROS2} Foxy sobre Ubuntu 20.04,
+que constituyen la base del sistema (Sec.~\ref{sec:gemelo_digital}).
 
 La sintonización del control de bajo nivel también se resolvió como una
 decisión de diseño. En lugar de buscar las tres ganancias PID por prueba y

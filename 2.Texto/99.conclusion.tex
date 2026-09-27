@@ -44,7 +44,7 @@ meta fue reemplazada por el propio explorador, que renueva su destino cada
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
 \begin{description}
-\item[\autoref{oe1} -- Construcción y gemelo digital:] \textit{Cumplido.} Se diseñó y construyó la plataforma diferencial física y se verificó su gemelo digital con el backend de \texttt{ros2\_control} ejecutado en Gazebo Classic.
+\item[\autoref{oe1} -- Construcción y gemelo digital:] \textit{Cumplido.} Se diseñó y construyó la plataforma diferencial física y se verificó su gemelo digital con el backend de \texttt{ros2\_control} ejecutado en Gazebo Classic. La verificación fue funcional, según los criterios de la Tabla~\ref{tab:criterios_aceptacion_resumen}, y no incluyó una comparación cuantitativa entre simulación y hardware sobre una misma variable medida, porque la distancia simulada se obtuvo de la propia odometría.
 
 \item[\autoref{oe2} -- Control de bajo nivel:]
 \textit{Cumplido parcialmente.} Se implementaron la lectura de encoders,
@@ -79,6 +79,7 @@ sin una referencia geométrica externa para validar el mapa. Su principal
 limitación es que el explorador agrega a la lista negra las metas que él mismo
 reemplaza, efecto de la integración con Nav2 que no impidió terminar la
 exploración.
+\end{description}
 
 Respecto de la pregunta de investigación planteada en la Introducción, los
 resultados muestran que fue posible construir un prototipo diferencial capaz de

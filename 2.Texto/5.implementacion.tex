@@ -9,7 +9,7 @@ necesaria para la operación del prototipo tanto en simulación como en hardware
 \section{Componentes y parámetros del prototipo}
 \label{ch:componentes}
 
-El prototipo corresponde a una plataforma diferencial de bajo costo para interiores: controla el desplazamiento mediante la diferencia de velocidad entre las ruedas motrices izquierda y derecha.
+El prototipo corresponde a una plataforma diferencial de bajo costo para interiores: controla el desplazamiento mediante la diferencia de velocidad entre las ruedas motrices izquierda y derecha. Los materiales montados en el robot costaron 444\,643~CLP y el proyecto completo 582\,447~CLP, sin incluir la estación de trabajo necesaria para el mapeo, la navegación y la exploración (Tabla~\ref{tab:anx_costos}). Ese costo es menor que el de la plataforma comercial comparable más cercana (Tabla~\ref{tab:comparacion_costos}).
 
 \subsection{Configuración general del prototipo}
 
@@ -213,8 +213,10 @@ alimentar la Raspberry Pi, el \gls{Arduino}, el \gls{LIDAR} y los
 periféricos. Esta separación reduce la interferencia eléctrica producida por los motores sobre la electrónica de control.
 El dominio de comunicaciones conecta la Raspberry Pi con el
 \gls{Arduino} mediante un enlace serial USB para intercambiar referencias de
-velocidad y datos de encoders. El RPLidar A1 entrega los barridos utilizados
-por el sistema de percepción. La asignación de dispositivos y su
+velocidad y datos de encoders. El RPLidar A1 se conecta a un puerto serie UART
+de la Raspberry Pi, y un nodo de adquisición desarrollado para este trabajo
+convierte su trama en los barridos utilizados por el sistema de percepción
+(\ref{anx:nodo_lidar}). La asignación de dispositivos y su
 identificación persistente se documentan en el \ref{anx:hardware_ros2}. La
 Fig.~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de
 datos del prototipo.

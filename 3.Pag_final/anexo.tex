@@ -23,11 +23,121 @@
 \section{Construcción, componentes y montaje}
 \label{anx:componentes}
 
-Este anexo reúne información complementaria sobre los componentes, el montaje físico y la reproducción del prototipo. La Tabla~\ref{tab:anx_print_params} reúne los parámetros generales utilizados
-en la fabricación de las piezas por impresión 3D.
+Este anexo reúne información complementaria sobre los componentes, el montaje físico y la reproducción del prototipo. 
+
+\subsection{Costo de los materiales}
+\label{anx:costos}
+
+La Tabla~\ref{tab:anx_costos} resume los valores pagados por los materiales del
+proyecto, en pesos chilenos nominales, según los registros de compra entre abril
+de 2024 y julio de 2026. Los kits de tornillería, conectores y cables se
+contabilizan por su precio completo, aunque solo se usó una parte de ellos. El
+total del robot comprende los elementos montados en la plataforma. El grupo de
+operación y desarrollo reúne elementos que no van montados en el robot, como la
+red dedicada, el cargador, las baterías de repuesto y los accesorios usados
+para acceder a la Raspberry Pi durante el desarrollo. Ningún monto incluye la
+estación de trabajo. No se realizó una comparación de precios con plataformas
+comerciales, por lo que el calificativo de bajo costo se refiere a los montos
+de este desglose.
+
+\begin{table}[H]
+\centering
+\caption{Costo de los materiales del prototipo.}
+\label{tab:anx_costos}
+\small
+\begin{tabular}{p{9.2cm} c r}
+\toprule
+\textbf{Elemento} & \textbf{Cantidad} & \textbf{Costo (CLP)} \\
+\midrule
+\multicolumn{3}{l}{\textit{Componentes principales del robot}} \\
+Raspberry Pi~4 Modelo B de 8~GB, carcasa de aluminio y microSD de 64~GB & 1 & 91\,759 \\
+RPLidar A1 & 1 & 83\,324 \\
+\gls{Arduino} Nano V3 y placa base con bornes de tornillo & 1 & 8\,000 \\
+Motorreductor JGA25-370 de 12~V con encoder y rueda & 2 & 18\,038 \\
+Driver L298N & 1 & 3\,000 \\
+Módulo reductor DC-DC de 25~W & 1 & 18\,858 \\
+Batería de 12~V y 3000~mAh con adaptador de montaje & 1 & 25\,658 \\
+Rueda loca & 1 & 1\,893 \\
+\textbf{Subtotal componentes principales} & & \textbf{250\,530} \\
+\midrule
+\multicolumn{3}{l}{\textit{Energía, montaje y cableado del robot}} \\
+Interruptor, portafusible, conectores XT60 y bloque de distribución & Varios & 9\,547 \\
+Filamento PLA+ de 1~kg & 1 & 13\,353 \\
+Tornillería, separadores y tuercas de inserción térmica & 6 kits & 127\,234 \\
+Cables, conectores y terminales & Varios & 43\,979 \\
+\textbf{Subtotal energía, montaje y cableado} & & \textbf{194\,113} \\
+\midrule
+\textbf{Total del robot} & & \textbf{444\,643} \\
+\midrule
+\multicolumn{3}{l}{\textit{Operación y desarrollo, fuera del robot}} \\
+Enrutador de viaje GL.iNet GL-MT300N-V2 & 1 & 22\,140 \\
+Cables de red RJ45 Cat-6 & 3 & 8\,376 \\
+Cargador de baterías de 12~V & 1 & 16\,169 \\
+Baterías de 12~V de repuesto & 2 & 41\,436 \\
+Transmisor y receptor HDMI inalámbrico, cables micro HDMI y hub USB & Varios & 49\,683 \\
+\textbf{Subtotal operación y desarrollo} & & \textbf{137\,804} \\
+\midrule
+\textbf{Total del proyecto} & & \textbf{582\,447} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Comparación con plataformas comerciales}
+\label{anx:costos_comparacion}
+
+La Tabla~\ref{tab:comparacion_costos} contrasta el costo del prototipo con el
+de dos plataformas comerciales comparables, orientadas a docencia e
+investigación con ROS. Los montos en pesos se convierten a dólares
+estadounidenses con un tipo de cambio referencial de 963~CLP/USD, que
+corresponde al promedio de los valores mensuales del dólar observado de
+octubre a diciembre de 2024 \citep{sii_dolar2024}. Se eligió ese período
+porque el 68\% del gasto del prototipo se realizó en 2024. Los precios
+comerciales son precios de catálogo vigentes a la fecha de consulta y no
+incluyen envío, aranceles ni impuestos de internación, por lo que su costo
+real en Chile sería mayor.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{Comparación de costo con plataformas comerciales.}
+\label{tab:comparacion_costos}
+\small
+\begin{tabular}{P{3.8cm} r r P{5.0cm}}
+\toprule
+\textbf{Plataforma} & \textbf{Costo (USD)} & \textbf{Costo (CLP)} & \textbf{Observación} \\
+\midrule
+Este prototipo, robot & 462\tnote{a} & 444\,643 &
+Materiales montados en el robot (Tabla~\ref{tab:anx_costos}). \\
+Este prototipo, proyecto completo & 605\tnote{a} & 582\,447 &
+Agrega red dedicada, cargador, baterías de repuesto y accesorios de desarrollo. \\
+TurtleBot~3 Burger RPi4 4~GB \citep{ROBOTIS_TB3Burger} & 681\tnote{b} & 656\,092 &
+LiDAR 2D de 360$^\circ$, Raspberry Pi~4, controlador con IMU, actuadores con controlador y encoder integrados, batería y cargador. \\
+TurtleBot~3 Waffle Pi RPi4 4~GB \citep{ROBOTIS_TB3Waffle} & 1\,681\tnote{b} & 1\,619\,188 &
+Agrega cámara y una base de mayor tamaño y capacidad de carga. \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[a] Convertido desde pesos chilenos al tipo de cambio referencial de 963~CLP/USD.
+\item[b] Precio de catálogo de la tienda internacional de ROBOTIS, consultado en septiembre de 2026, sin envío ni impuestos de destino. Convertido a pesos al mismo tipo de cambio.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+El robot costó un 32\% menos que el TurtleBot~3 Burger, la plataforma
+comercial más cercana, y el proyecto completo un 11\% menos. Esa diferencia
+debe leerse junto con el equipamiento de cada plataforma. El Burger incluye
+una unidad de medición inercial en su controlador, que el prototipo no posee,
+y actuadores con controlador y encoder integrados, que el prototipo resuelve
+con componentes separados de menor costo. La comparación indica, por tanto,
+que el prototipo se ubica por debajo del costo de la plataforma comercial de
+entrada, y no que ofrezca las mismas prestaciones a menor precio.
 
 \subsection{Parámetros de impresión 3D}
 \label{anx:impresion3d}
+
+La Tabla~\ref{tab:anx_print_params} reúne los parámetros generales utilizados
+en la fabricación de las piezas por impresión 3D.
 
 \begin{table}[H]
 \centering
@@ -73,6 +183,9 @@ apertura de $\pm3.14$~rad, tasa de actualización de 10~Hz y rango de 0.08~m a
 más permisivo que el del sensor físico; ambas diferencias corresponden a la
 brecha simulación--realidad señalada en la Sec.~\ref{sec:laser_sim}.
 
+En hardware real, el nodo de adquisición del \ref{anx:nodo_lidar} publica 230
+sectores por barrido y descarta las lecturas bajo 0.15~m, de modo que la
+resolución angular y el rango mínimo de ambos entornos tampoco coinciden.
 \subsection{Validación estructural del URDF}
 \label{anx:validacion_urdf}
 
@@ -275,6 +388,44 @@ La teleoperación utiliza los nodos \texttt{joy\_node} y
 \texttt{/diff\_cont/cmd\_vel\_unstamped}, entrada del controlador
 diferencial. El botón de habilitación actúa como
 \textit{dead-man switch}.
+
+\subsection{Nodo de adquisición del RPLidar A1}
+\label{anx:nodo_lidar}
+
+En hardware real, el sensor no se lee con el controlador del fabricante. El
+lanzamiento \texttt{rplidar.launch.py} inicia el nodo
+\texttt{rplidar\_serial\_publisher.py}, desarrollado para este trabajo dentro
+del paquete \texttt{articubot\_one}, que se comunica con el RPLidar A1 a través
+de \texttt{/dev/rlidar\_gpio} a 115200~baudios. Al arrancar, el nodo detiene y
+reinicia el sensor, consulta su información y su estado de salud, y no inicia
+la publicación si no logra leer ese estado o si el sensor informa un error.
+Luego activa el modo de barrido estándar. El nodo ofrece además los servicios
+\texttt{\textasciitilde/stop\_scan} y \texttt{\textasciitilde/start\_scan} para
+detener y reanudar el barrido.
+
+Cada 50~ms el nodo lee el buffer serie, descarta los paquetes que no cumplen
+los bits de verificación del protocolo y agrupa las mediciones por vuelta. Una
+vuelta se cierra cuando el ángulo retrocede más de $187.5^\circ$ respecto de la
+medición anterior, y se publica solo si reúne al menos 180 mediciones. En caso
+contrario no se publica, parte de las mediciones siguientes se descarta y el
+resto se agrega a la misma vuelta.
+
+Cada vuelta publicada se reparte en 230 sectores angulares de
+$2\pi/230\approx1.57^\circ$. En cada sector se conserva la menor distancia
+medida. Los sectores sin medición o con lecturas fuera del intervalo de 0.15~m
+a 12~m quedan con valor infinito. El ángulo se invierte antes de asignar el
+sector, para que el barrido quede en la convención de ángulos positivos en
+sentido antihorario de \gls{ROS2}. El mensaje se publica en \texttt{/scan}, en
+el marco \texttt{laser\_frame} y con el perfil de calidad de servicio para
+datos de sensores. El lanzamiento entrega también un parámetro de frecuencia de
+barrido que el nodo no declara, por lo que no tiene efecto.
+
+La marca de tiempo de cada barrido corresponde al instante de publicación,
+posterior al cierre de la vuelta, y no al de su primera medición. El período
+del barrido se estima con el intervalo entre publicaciones consecutivas. Por
+ello, los nodos que consumen el tópico asocian cada barrido a una pose
+posterior a la real, desfase cuyo efecto crece con la velocidad del robot, en
+especial durante los giros. Su efecto sobre los mapas no se cuantificó.
 
 \subsection{Temporalidad y ciclo de la interfaz \texttt{DiffDriveArduino}}
 \label{anx:implementacion_diffdrive}
@@ -741,6 +892,17 @@ exploración descritas en la Sec.~\ref{sec:resultados_slam}.
 
 Los mapas de costo real utilizan un \textit{footprint} rectangular respecto de \texttt{base\_link}, con vértices en $(0.20,\,0.13)$, $(-0.08,\,0.13)$, $(-0.08,\,-0.13)$ y $(0.20,\,-0.13)$~m. La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, correspondiente al borde posterior. Con radio de inflación $r_{\mathrm{inflacion}}=0.15$~m y factor de decaimiento $\beta=5.0$~m$^{-1}$ (\texttt{cost\_scaling\_factor}), la capa asigna un costo entero de 254 en la celda del obstáculo (letal), 253 dentro del radio inscrito, un valor con decaimiento exponencial en la distancia $d_o$ entre el radio inscrito y el de inflación, y 0 más allá del radio de inflación.
 
+La esquina delantera del \textit{footprint} queda a unos 0.24~m de
+\texttt{base\_link}, por lo que el radio circunscrito supera al radio de
+inflación. Por eso, las celdas situadas entre 0.15~m y 0.24~m de un obstáculo
+tienen costo nulo aunque la esquina del robot pueda alcanzarlas. El
+planificador global trata al robot como un punto sobre el mapa de costos, y el
+crítico \texttt{BaseObstacle} del controlador DWB evalúa solo la celda bajo el
+centro del robot. Ninguno de los dos comprueba el contorno completo, así que la
+configuración no garantiza que la ruta deje espacio para la huella rotada del
+robot en pasos estrechos. Su efecto en las ejecuciones informadas no se
+cuantificó.
+
 \subsection{Acciones de recuperación de Nav2}
 \label{anx:recovery_nav2}
 
@@ -1061,6 +1223,18 @@ Sec.~\ref{sec:comparacion_sim_real} deja la caracterización cuantitativa del
 consumo energético y de la carga computacional fuera de los ensayos realizados
 y la plantea como trabajo futuro.
 
+El repositorio incluye además scripts preparados para ensayos que no forman
+parte de la evidencia del Capítulo~\ref{ch:resultados}, como deslizamiento de
+ruedas, cierre de lazo, carga de CPU, monitoreo de recursos, bloqueo y calidad
+del \gls{LIDAR} y navegación con metas fijas. Sus directorios no contienen
+registros de salida, por lo que ninguno aporta mediciones a este trabajo. El
+script de navegación con metas fijas define tres escenarios con cinco
+repeticiones y clasifica cada repetición según el resultado de la acción
+\texttt{NavigateToPose} y su duración, sin medir el error de posición final.
+La tolerancia que informa para el modo real, 0.22~m, no coincide con el valor
+de 0.10~m configurado en Nav2 (Tabla~\ref{tab:anx_nav2_dwb_params}). Ese valor
+solo se imprime en sus salidas y no interviene en la clasificación.
+
 \subsection{Limitaciones de los contadores de exploración}
 
 Los contadores de texto de \texttt{run\_explore.sh} no permiten calcular una tasa de éxito, por dos motivos distintos. El contador de metas generadas se alimenta de coincidencias de texto en el registro de \texttt{explore\_server} y del eco del tópico de meta de la acción \texttt{NavigateToPose}. La primera fuente no produce coincidencias porque el mensaje de envío de meta está declarado en nivel \textit{debug} en \texttt{explore.cpp} y el nodo se ejecutó en nivel informativo. La segunda tampoco, porque ese tópico no entregó datos y el propio registro conserva la advertencia de tópico no publicado. Por eso el contador de metas generadas queda en cero. Los contadores de éxito y de fallo sí se incrementan, pero lo hacen una vez por cada línea del flujo de estado de la acción, sin conservar ni deduplicar identificadores de meta, de modo que cuentan mensajes de estado y no metas únicas.
@@ -1113,6 +1287,8 @@ todos los archivos de código citados en el documento.
 \texttt{robot.\allowbreak{}urdf.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Modelo principal URDF/\texttt{xacro}. \\
 \texttt{robot\_\allowbreak{}core.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Geometría, eslabones y articulaciones. \\
 \texttt{lidar.\allowbreak{}xacro}, \texttt{lidar\_\allowbreak{}sim.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Sensor real y modelo simulado del LiDAR. \\
+\texttt{rplidar.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del nodo de adquisición del LiDAR en hardware real. \\
+\texttt{rplidar\_\allowbreak{}serial\_\allowbreak{}publisher.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}scripts/} & Nodo propio de lectura serie del RPLidar A1 y publicación de \texttt{/scan}. \\
 \texttt{gazebo\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Backend alternativo no seleccionado. \\
 \texttt{ros2\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
 \texttt{launch\_\allowbreak{}robot.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del robot físico y controladores. \\
@@ -1136,7 +1312,7 @@ todos los archivos de código citados en el documento.
 \texttt{prueba\_\allowbreak{}giro.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro/} & Ejecución de la prueba angular en hardware. \\
 \texttt{prueba\_\allowbreak{}giro\_\allowbreak{}sim.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro\_\allowbreak{}sim/} & Ejecución de la prueba angular en simulación. \\
 \texttt{run\_\allowbreak{}explore.\allowbreak{}sh} & \texttt{test/\allowbreak{}exploracion/} & Ejecución y registro de exploración. \\
-\texttt{run\_\allowbreak{}prueba\_\allowbreak{}nav.\allowbreak{}sh} & \texttt{test/\allowbreak{}navegacion/} & Protocolo por escenarios de navegación. \\
+\texttt{run\_\allowbreak{}prueba\_\allowbreak{}nav.\allowbreak{}sh} & \texttt{test/\allowbreak{}navegacion/} & Protocolo preparado de navegación con metas fijas, no ejecutado (\ref{anx:resultados_metodologia}). \\
 \texttt{analizar\_\allowbreak{}slam.\allowbreak{}py} & \texttt{test/\allowbreak{}slam/} & Cálculo de métricas de mapeo. \\
 \end{longtable}
 \endgroup
