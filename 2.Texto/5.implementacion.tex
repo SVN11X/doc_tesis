@@ -637,11 +637,9 @@ La técnica de SLAM por grafos de poses descrita en la Sec.~\ref{sec:slam} se
 materializa en este trabajo mediante SLAM Toolbox
 \citep{macenski2021slamtoolbox}, un sistema de SLAM 2D por grafos de poses
 diseñado para \gls{ROS2}. Procesa los barridos de forma asíncrona, lo que
-evita bloquear el sistema cuando la carga computacional crece, incorpora
-detección de cierre de lazo y mantiene un consumo compatible con computadores
-embebidos, razón por la cual resulta adecuado para la arquitectura distribuida
-de este prototipo.
-El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, en su modo asíncrono en línea. En la arquitectura distribuida ejecutada, este nodo se despliega en la estación de trabajo; la Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot.
+evita bloquear el sistema cuando la carga computacional crece, e incorpora
+detección de cierre de lazo.
+El robot construye el mapa del entorno mediante \texttt{slam\_toolbox}, en su modo asíncrono en línea. En la arquitectura distribuida ejecutada, este nodo no se ejecuta en la Raspberry Pi 4 sino en la estación de trabajo, que tiene un procesador de clase portátil (Tabla~\ref{tab:anx_versiones_sw}). La Raspberry Pi 4 publica \texttt{/scan}, \texttt{/odom} y las transformaciones asociadas al robot. El uso de CPU del nodo no se midió (\ref{anx:resultados_metodologia}).
 Las configuraciones de hardware y simulación comparten la estructura del
 algoritmo, pero emplean parámetros específicos para cada entorno; los valores
 cargados se consolidan en la Tabla~\ref{tab:slam_params_ch9}.

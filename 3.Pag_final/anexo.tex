@@ -36,9 +36,8 @@ total del robot comprende los elementos montados en la plataforma. El grupo de
 operación y desarrollo reúne elementos que no van montados en el robot, como la
 red dedicada, el cargador, las baterías de repuesto y los accesorios usados
 para acceder a la Raspberry Pi durante el desarrollo. Ningún monto incluye la
-estación de trabajo. No se realizó una comparación de precios con plataformas
-comerciales, por lo que el calificativo de bajo costo se refiere a los montos
-de este desglose.
+estación de trabajo. La comparación de estos montos con plataformas
+comerciales se presenta en el \ref{anx:costos_comparacion}.
 
 \begin{table}[H]
 \centering
@@ -865,15 +864,23 @@ Tabla~\ref{tab:anx_nav2_dwb_params}.
 \texttt{max\_vel\_x} (DWB) & 0.15~m/s & 0.26~m/s \\
 \texttt{max\_vel\_theta} & 0.35~rad/s & 1.0~rad/s \\
 \texttt{xy\_goal\_tolerance} & 0.10~m & 0.25~m \\
+\texttt{yaw\_goal\_tolerance} & 3.14~rad & 0.25~rad \\
+\texttt{min\_vel\_x} (DWB) & $-0.15$~m/s & 0.0~m/s \\
+Verificador de progreso & 0.05~m en 6.0~s & 0.5~m en 10.0~s \\
 \texttt{use\_astar} & \texttt{true} & \texttt{true} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent En hardware real, DWB evalúa candidatos de hasta 0.15~m/s,
-mientras que \texttt{diff\_drive\_controller} limita la velocidad lineal a
-0.13~m/s; por ello, las consignas superiores a este último valor se limitan
-en la etapa posterior.
+\noindent En hardware real, DWB evalúa candidatos de hasta 0.15~m/s hacia
+adelante y hacia atrás, mientras que \texttt{diff\_drive\_controller} limita
+la velocidad lineal a 0.13~m/s. Por ello, las consignas superiores a este
+último valor se limitan en la etapa posterior. La tolerancia angular de
+3.14~rad equivale a no exigir una orientación final, de modo que una meta se
+considera alcanzada solo por su posición. El verificador de progreso,
+configurado con \texttt{required\_movement\_radius} y
+\texttt{movement\_time\_allowance}, declara una falla del controlador cuando
+el robot no se desplaza 0.05~m en 6.0~s.
 
 \subsection{Lanzamiento de la localización con AMCL}
 \label{anx:amcl_lanzamiento}
@@ -1108,7 +1115,9 @@ Este anexo presenta los registros por iteración de la exploración autónoma en
 Se ejecutaron seis iteraciones. La iteración~02 se excluyó del análisis.
 Durante esa ejecución, que se extendió por 5.09~min, se constató que
 el robot no se desplazó de su posición inicial, mientras que la odometría de
-encoders acumuló 3.851~m. El explorador despachó 14 metas de navegación, de
+encoders acumuló 3.851~m.La cercanía de ese valor con los 3.850~m de la iteración~5 no proviene de una
+mezcla de registros, porque cada distancia se calculó sobre el rosbag de su
+propia carpeta, con duraciones de 5.09 y 2.50~min. El explorador despachó 14 metas de navegación, de
 las cuales 13 terminaron en aborto y una quedó sin estado terminal, y se
 registraron 13 avisos de lista de fronteras agotada. La imagen de ocupación
 tampoco quedó almacenada al término de la sesión, por lo que no fue posible
@@ -1231,6 +1240,8 @@ registros de salida, por lo que ninguno aporta mediciones a este trabajo. El
 script de navegación con metas fijas define tres escenarios con cinco
 repeticiones y clasifica cada repetición según el resultado de la acción
 \texttt{NavigateToPose} y su duración, sin medir el error de posición final.
+Además, sus tres poses objetivo solo están definidas en coordenadas del mundo
+simulado, sin un conjunto propio para el recinto real.
 La tolerancia que informa para el modo real, 0.22~m, no coincide con el valor
 de 0.10~m configurado en Nav2 (Tabla~\ref{tab:anx_nav2_dwb_params}). Ese valor
 solo se imprime en sus salidas y no interviene en la clasificación.
