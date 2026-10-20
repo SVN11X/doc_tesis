@@ -8,13 +8,13 @@ La robótica móvil autónoma permite desarrollar sistemas capaces de desplazars
 \phantomsection
 \addcontentsline{toc}{section}{Planteamiento del problema}
 
-El desarrollo de un robot móvil autónomo para interiores requiere resolver de forma integrada la percepción del entorno, la estimación de la posición, el control del movimiento y la planificación de trayectorias. En una plataforma de bajo costo, estos procesos deben distribuirse adecuadamente entre el hardware embebido; encargado del control en tiempo real y la adquisición sensorial, y un computador de mayor capacidad que ejecuta el mapeo y la planificación, manteniendo la coherencia entre simulación y robot real. Por ello, el problema central de este trabajo consiste en determinar si es posible construir un prototipo de robot diferencial que, usando componentes accesibles y herramientas de código abierto, sea capaz de mapear, navegar y explorar entornos interiores de manera autónoma.
+El desarrollo de un robot móvil autónomo para interiores requiere resolver de forma integrada la percepción del entorno, la estimación de la posición, el control del movimiento y la planificación de trayectorias. En una plataforma de bajo costo, estos procesos deben distribuirse adecuadamente entre el \textit{hardware} embebido, encargado del control en tiempo real y la adquisición sensorial, y un computador de mayor capacidad que ejecuta el mapeo y la planificación, manteniendo la coherencia entre simulación y robot real. Por ello, el problema central de este trabajo consiste en determinar si es posible construir un prototipo de robot diferencial que, usando componentes accesibles y herramientas de código abierto, sea capaz de mapear, navegar y explorar entornos interiores de manera autónoma.
 
 \section*{Justificación}
 \phantomsection
 \addcontentsline{toc}{section}{Justificación}
 
-Este proyecto se justifica por su aporte académico y tecnológico al integrar conocimientos de electrónica, control, robótica móvil, sistemas embebidos y software robótico. A diferencia de plataformas comerciales ya integradas, el prototipo desarrollado permite documentar el proceso completo de construcción, programación, control y validación de un robot diferencial propio, incluyendo el firmware de bajo nivel, la interfaz con \texttt{ros2\_control}, la configuración de SLAM, la navegación autónoma y la exploración de fronteras. Cabe precisar que el firmware y la interfaz de hardware no se desarrollaron desde cero, sino que se adaptaron a partir de proyectos de código abierto~\citep{newans_articubot,newans_diffdrive,hbrobotics_rosarduinobridge}, cuyo origen y rol se detallan en el \ref{anx:workspace}. La contribución original reside en su adaptación e integración, la parametrización geométrica del modelo, la identificación FOPDT y la sintonización PID mediante PSO con refinamiento experimental sobre hardware real.
+Este proyecto se justifica por su aporte académico y tecnológico al integrar conocimientos de electrónica, control, robótica móvil, sistemas embebidos y \textit{software} robótico. A diferencia de plataformas comerciales ya integradas, el prototipo desarrollado permite documentar el proceso completo de construcción, programación, control y validación de un robot diferencial propio, incluyendo el \textit{firmware} de bajo nivel, la interfaz con \texttt{ros2\_control}, la configuración de SLAM, la navegación autónoma y la exploración de fronteras. Cabe precisar que el \textit{firmware} y la interfaz de \textit{hardware} no se desarrollan desde cero, sino que se adaptan a partir de proyectos de código abierto~\citep{newans_articubot,newans_diffdrive,hbrobotics_rosarduinobridge}, cuyo origen y rol se detallan en el \ref{anx:workspace}. La contribución original reside en su adaptación e integración, la parametrización geométrica del modelo, la identificación FOPDT, la sintonización PID mediante PSO con refinamiento experimental sobre \textit{hardware} real y el análisis de estabilidad de la ley de control ejecutada.
 
 \section*{Objetivo general}
 \phantomsection
@@ -32,7 +32,7 @@ generados automáticamente por una estrategia de exploración de fronteras.
 \begin{description}
 \item[\ObEsp.\label{oe1}] Diseñar y construir un prototipo de robot móvil diferencial, validado previamente mediante un gemelo digital en el simulador Gazebo Classic.
 
-\item[\ObEsp.\label{oe2}] Implementar el sistema de control de bajo nivel, incluyendo modelo cinemático diferencial, odometría por encoders y controlador PID en lazo cerrado sobre las velocidades de las ruedas.
+\item[\ObEsp.\label{oe2}] Implementar el sistema de control de bajo nivel, incluyendo modelo cinemático diferencial, odometría por \textit{encoders} y controlador PID en lazo cerrado sobre las velocidades de las ruedas.
 
 \item[\ObEsp.\label{oe3}] Implementar la localización, el mapeo 2D y la navegación autónoma del robot mediante SLAM Toolbox y Nav2.
 
@@ -45,7 +45,7 @@ generados automáticamente por una estrategia de exploración de fronteras.
 \addcontentsline{toc}{section}{Alcances y limitaciones}
 \label{sec:alcances}
 
-El alcance del trabajo comprende el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial para interiores. El sistema opera sobre superficies planas, utiliza un \gls{LIDAR} 2D RPLidar A1 como sensor principal y emplea odometría por encoders para estimar el desplazamiento. La validación considera pruebas en simulación y en hardware real, abordando odometría, control, mapeo, navegación y exploración.
+El alcance del trabajo comprende el diseño, construcción, programación y validación de un prototipo funcional de robot móvil diferencial para interiores. El sistema opera sobre superficies planas, utiliza un \gls{LIDAR} 2D RPLidar A1 como sensor principal y emplea odometría por \textit{encoders} para estimar el desplazamiento. La validación considera pruebas en simulación y en \textit{hardware} real, abordando odometría, control, mapeo, navegación y exploración. Los ensayos se repiten un número reducido de veces, por lo que sus resultados se informan con intervalos de confianza y no se generalizan a otros entornos. La exactitud de los mapas se evalúa respecto de un plano del recinto con distancias medidas manualmente.
 
 La evaluación de la navegación se realiza sobre los destinos que genera la
 estrategia de exploración, que son los comprometidos en el objetivo general.
@@ -53,7 +53,7 @@ No forma parte del alcance un protocolo de navegación dirigida con metas fijas
 definidas por el operador, con tasa de éxito y error de posición final medido
 respecto de marcas físicas del recinto. Ese protocolo exige un mapa
 previamente almacenado, localización con AMCL activa y puntos de referencia
-medidos en el entorno, condiciones que no se configuraron durante los ensayos.
+medidos en el entorno, condiciones que no se configuran durante los ensayos.
 En consecuencia, este trabajo no informa tasa de éxito ni error de posición
 final para metas fijas, y ese ensayo se plantea como trabajo futuro.
 
@@ -62,15 +62,15 @@ en línea, es decir, la estimación de la transformación entre el marco del map
 y el marco odométrico mientras el mapa se construye. La localización sobre un
 mapa previamente almacenado mediante AMCL no forma parte del alcance. La pila
 de navegación utilizada incorpora ese nodo con sus parámetros por defecto,
-pero no se ajustó para este robot ni se ejecutó en ninguno de los ensayos.
+pero no se ajusta para este robot ni se ejecuta en ninguno de los ensayos.
 
-Entre sus limitaciones se considera que el prototipo no incorpora \gls{IMU}, cámara ni fusión sensorial, por lo que la odometría puede degradarse en trayectorias largas o giros acumulados. Además, el sistema no está orientado a exteriores, superficies irregulares ni obstáculos dinámicos rápidos. La implementación se desarrolla sobre \gls{ROS2} Foxy y Ubuntu 20.04 LTS, con simulación en Gazebo Classic 11; esta combinación se congela al inicio del proyecto para garantizar la compatibilidad de la cadena completa de paquetes sobre el hardware disponible. La migración a una distribución con soporte vigente se plantea como trabajo futuro.
+Entre sus limitaciones se considera que el prototipo no incorpora \gls{IMU}, cámara ni fusión sensorial, por lo que la odometría puede degradarse en trayectorias largas o giros acumulados. Además, el sistema no está orientado a exteriores, superficies irregulares ni obstáculos dinámicos rápidos. La implementación se desarrolla sobre \gls{ROS2} Foxy y Ubuntu 20.04 LTS, con simulación en Gazebo Classic 11; esta combinación se congela al inicio del proyecto para garantizar la compatibilidad de la cadena completa de paquetes sobre el \textit{hardware} disponible. La migración a una distribución con soporte vigente se plantea como trabajo futuro.
 
 \section*{Metodología}
 \phantomsection
 \addcontentsline{toc}{section}{Metodología}
 
-La metodología es experimental e iterativa, organizada en seis etapas: Diseño del gemelo digital y simulación, Construcción del hardware, Control de bajo nivel, SLAM y navegación autónoma, Exploración y validación final, y Documentación.
+La metodología es experimental e iterativa, organizada en seis etapas: Diseño del gemelo digital y simulación, Construcción del \textit{hardware}, Control de bajo nivel, SLAM y navegación autónoma, Exploración y validación final, y Documentación.
 
 \section*{Organización del documento}
 \phantomsection

@@ -4,7 +4,7 @@
 Este capítulo presenta los fundamentos generales empleados en el diseño del
 robot móvil diferencial. La exposición avanza desde el robot como sistema
 físico (estructura, marcos de referencia y descripción digital) hacia la
-plataforma de software que lo integra, los principios de sensado y
+plataforma de \textit{software} que lo integra, los principios de sensado y
 actuación, el modelo cinemático y el control de bajo nivel, y finalmente
 las capas de mapeo, localización, navegación y exploración autónoma.
 \section{El robot móvil: estructura, marcos de referencia y rotaciones}
@@ -66,7 +66,7 @@ descripción en módulos.
 El Alg.~\ref{alg:urdf_estructura} resume la organización modular de la
 descripción URDF/\texttt{xacro} desarrollada, en la que un archivo raíz
 compone el modelo a partir de módulos reutilizables que se seleccionan según
-el entorno de ejecución (hardware real o simulación).
+el entorno de ejecución (\textit{hardware} real o simulación).
 
 \begin{algorithm}[htbp]
 \caption{Construcción del modelo URDF/\texttt{xacro} del robot.}
@@ -99,7 +99,7 @@ el entorno de ejecución (hardware real o simulación).
 \subsection{Simulación robótica y Gazebo Classic}
 \label{sec:simuladores_marco}
 
-Un simulador robótico integra un motor de física, la simulación de sensores y un entorno tridimensional configurable, lo que permite verificar la geometría, la cinemática y la lógica de control antes de operar el hardware. Gazebo Classic, el simulador empleado, se integra de forma nativa con \gls{ROS2}
+Un simulador robótico integra un motor de física, la simulación de sensores y un entorno tridimensional configurable, lo que permite verificar la geometría, la cinemática y la lógica de control antes de operar el \textit{hardware}. Gazebo Classic, el simulador empleado, se integra de forma nativa con \gls{ROS2}
 mediante los paquetes de puente del ecosistema: el modelo URDF se carga en el
 mundo simulado y los sensores publican datos con las mismas interfaces que sus
 contrapartes físicas \citep{osrf2025gazeboclassic}. La brecha simulación--realidad, es decir fricción, zonas muertas, ruido sensorial y latencias, se considera al interpretar los resultados del Capítulo~\ref{ch:resultados}.
@@ -161,11 +161,11 @@ El transporte se apoya en el estándar DDS (\textit{Data Distribution Service}),
 
 Un \gls{LIDAR} mide distancias emitiendo pulsos de luz láser y midiendo el tiempo que tarda en volver la señal reflejada \citep[Sec.~6.8]{corke2023}. Los \gls{LIDAR} 2D también pueden medir por triangulación óptica \citep{ran2025review2dlidar}. En un \gls{LIDAR} 2D, el emisor y el receptor giran sobre un eje vertical y entregan, en cada revolución, un barrido de pares ángulo y distancia en un plano horizontal, con el que se detectan paredes y obstáculos y se alimentan el SLAM y los mapas de costos \citep{corke2023}. Sus limitaciones principales son la incapacidad de detectar objetos fuera del plano de barrido y la degradación ante superficies muy absorbentes o reflectantes. El sensor empleado, RPLidar A1, opera por triangulación y cubre 360$^\circ$ \citep{SlamtecA1Datasheet}.
 
-\subsection{Encoders incrementales de cuadratura}
+\subsection{\texorpdfstring{\textit{Encoders}}{Encoders} incrementales de cuadratura}
 \label{sec:encoders_marco}
 
-Un encoder incremental convierte la rotación de un eje en una secuencia de
-pulsos eléctricos. En los encoders magnéticos de efecto Hall, un imán
+Un \textit{encoder} incremental convierte la rotación de un eje en una secuencia de
+pulsos eléctricos. En los \textit{encoders} magnéticos de efecto Hall, un imán
 multipolar solidario al eje del motor induce pulsos en dos sensores
 desfasados, generando dos canales en cuadratura (desfasados 90$^\circ$). El
 orden de los flancos entre ambos canales indica el sentido de giro, y contar
@@ -174,35 +174,35 @@ los flancos de ambos canales cuadruplica la resolución básica del sensor
 canales, el desfase entre ellos y los flancos contabilizados.
 
 \utemFigurePropia{2.Texto/Imag/fig_cuadratura_encoder.png}{0.85\textwidth}
-{Canales en cuadratura de un encoder incremental y decodificación $\times$4.}
+{Canales en cuadratura de un \textit{encoder} incremental y decodificación $\times$4.}
 {fig:cuadratura_encoder}
 
-Cuando el encoder está montado en el eje del
+Cuando el \textit{encoder} está montado en el eje del
 motor y este acciona la rueda a través de una caja reductora, cada vuelta de
 la rueda corresponde a $N_g$ vueltas del motor, por lo que la resolución
-teórica en el eje de salida es:
+teórica en el eje de salida es la que indica la Ec.~\eqref{eq:resolucion_encoder}:
 
 \begin{equation}
 N_e^{\mathrm{teo}} = N_{\mathrm{Hall}} \cdot c_q \cdot N_g,
 \label{eq:resolucion_encoder}
 \end{equation}
 
-\noindent donde $N_e^{\mathrm{teo}}$ es la resolución teórica del encoder
-[ticks/vuelta del eje de salida], $N_{\mathrm{Hall}}$ el número de pulsos
+\noindent donde $N_e^{\mathrm{teo}}$ es la resolución teórica del \textit{encoder}
+[\textit{ticks}/vuelta del eje de salida], $N_{\mathrm{Hall}}$ el número de pulsos
 por vuelta del eje del motor, $c_q\in\{1,2,4\}$ el factor de decodificación
 en cuadratura y $N_g$ la relación de reducción. En la práctica, tolerancias
 mecánicas y pérdidas de conteo hacen que la resolución efectiva $N_e$ pueda
 diferir del valor teórico, por lo que es habitual determinarla
 experimentalmente. Esta resolución es la que relaciona el conteo acumulado
-de ticks con la posición y la velocidad angular de cada rueda mediante las
+de \textit{ticks} con la posición y la velocidad angular de cada rueda mediante las
 Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas}, base de la
 odometría desarrollada en la Sec.~\ref{sec:odometria}; los valores numéricos
 del prototipo se consolidan en el Capítulo~\ref{ch:implementacion}.
 
-\subsection{Motores DC y driver de potencia}
+\subsection{Motores DC y \texorpdfstring{\textit{driver}}{driver} de potencia}
 \label{sec:motores_marco}
 
-Un motor DC de imanes permanentes gira con velocidad aproximadamente proporcional a la tensión media aplicada y entrega un torque proporcional a la corriente. Como un microcontrolador no puede suministrar esa potencia, se interpone un \emph{driver} basado en un puente H, que aplica la tensión de la batería al motor en ambas polaridades y regula la magnitud de la velocidad mediante \gls{PWM}. Los drivers reales introducen dos efectos relevantes para el control: una caída de tensión interna y una zona muerta a bajos ciclos de trabajo, en la cual el motor no vence la fricción estática y no gira.
+Un motor DC de imanes permanentes gira con velocidad aproximadamente proporcional a la tensión media aplicada y entrega un torque proporcional a la corriente. Como un microcontrolador no puede suministrar esa potencia, se interpone un \textit{driver} basado en un puente H, que aplica la tensión de la batería al motor en ambas polaridades y regula la magnitud de la velocidad mediante \gls{PWM}. Los \textit{drivers} reales introducen dos efectos relevantes para el control: una caída de tensión interna y una zona muerta a bajos ciclos de trabajo, en la cual el motor no vence la fricción estática y no gira.
 
 \section{Cinemática diferencial y odometría}
 \label{sec:odometria}
@@ -217,14 +217,15 @@ el deslizamiento entre la rueda y el suelo \citep[Sec.~6.1]{corke2023}.
 velocidad lineal (m/s) y angular (rad/s) del robot; con subíndice
 $j\in\{R,L\}$ denotan las magnitudes correspondientes de la rueda derecha o
 izquierda. La posición angular de rueda se denota $\phi_j$ (rad) y el conteo
-de encoder se expresa en ticks. El listado completo de símbolos, subíndices
+de \textit{encoder} se expresa en \textit{ticks}. El listado completo de símbolos, subíndices
 y unidades empleados en el documento se reúne en el \ref{anx:nomenclatura}.
 
 Considérese un robot diferencial con radio de rueda $r$, separación entre
 ruedas $b$ y la forma muestreada $q_k=(x_k,y_k,\theta_k)$ de la pose definida
 en la Sec.~\ref{sec:robot_definicion}, donde $k$ identifica la muestra
 discreta. La relación entre las velocidades angulares de rueda y las
-velocidades del robot es la del modelo cinemático diferencial estándar
+velocidades del robot es la del modelo cinemático diferencial estándar,
+expresada en las Ecs.~\eqref{eq:v_lineal} y~\eqref{eq:v_angular}
 \citep{corke2023,ferreira2023differential}:
 
 \begin{align}
@@ -235,7 +236,7 @@ v[k] &= \frac{r}{2}\left(\omega_R[k]+\omega_L[k]\right),
 \end{align}
 
 La relación inversa, utilizada para transformar una consigna del robot en
-consignas de rueda, es:
+consignas de rueda, es la de la Ec.~\eqref{eq:cinematica_inversa}:
 
 \begin{align}
 \omega_R^{\mathrm{cmd}}[k]
@@ -257,7 +258,8 @@ consignas lineal (m/s) y angular (rad/s) del robot, mientras que
 $\omega_R^{\mathrm{cmd}}$ y $\omega_L^{\mathrm{cmd}}$ son las consignas
 angulares de las ruedas (rad/s).
 Además, una discretización de Euler del modelo cinemático permite propagar la pose
-entre muestras:
+entre muestras mediante las Ecs.~\eqref{eq:pose_x}, \eqref{eq:pose_y}
+y~\eqref{eq:pose_theta}:
 
 \begin{align}
 x_{k+1} &= x_k + T_k\,v[k]\cos\theta_k,
@@ -273,10 +275,10 @@ $k+1$ (s). Estas ecuaciones expresan la integración odométrica del modelo
 cinemático diferencial general \citep{ferreira2023differential}. El integrador odométrico efectivamente ejecutado pertenece a la
 capa de control descrita en el Capítulo~\ref{ch:implementacion}.
 
-\subsection{Estimación de estados de rueda a partir de encoders}
+\subsection{Estimación de estados de rueda a partir de \texorpdfstring{\textit{encoders}}{encoders}}
 \label{sec:estados_rueda}
 
-A partir del conteo acumulado de encoder $c_j[k]$ (ticks), la posición
+A partir del conteo acumulado de \textit{encoder} $c_j[k]$ (\textit{ticks}), la posición
 angular de cada rueda se obtiene mediante:
 
 \begin{equation}
@@ -287,7 +289,7 @@ angular de cada rueda se obtiene mediante:
 \label{eq:posicion_rueda_encoder}
 \end{equation}
 
-\noindent donde $N_e$ es la resolución efectiva del encoder (ticks/vuelta),
+\noindent donde $N_e$ es la resolución efectiva del \textit{encoder} (\textit{ticks}/vuelta),
 definida en la Sec.~\ref{sec:encoders_marco}. La velocidad angular se estima por diferencias finitas entre dos lecturas
 consecutivas:
 
@@ -302,7 +304,7 @@ consecutivas:
 \noindent donde $\widehat{\omega}_j[k]$ es la velocidad angular estimada de
 la rueda $j$ (rad/s) y $\Delta t_k$ el tiempo real transcurrido entre las
 lecturas empleadas en segundos. La definición por casos de $\Delta t_k$ y la
-secuencia de lectura ejecutada por la interfaz de hardware se desarrollan en
+secuencia de lectura ejecutada por la interfaz de \textit{hardware} se desarrollan en
 el Capítulo~\ref{ch:implementacion} y en el
 \ref{anx:implementacion_diffdrive}.
 
@@ -312,7 +314,8 @@ el Capítulo~\ref{ch:implementacion} y en el
 Para obtener un modelo destinado a la sintonización del controlador se
 identifica, para cada rueda, una estructura de primer orden con retardo FOPDT
 (\textit{First Order Plus Dead Time}) a partir de la respuesta experimental
-ante un escalón de \gls{PWM} \citep{maxim2023fopdt}:
+ante un escalón de \gls{PWM}. La Ec.~\eqref{eq:fodt} presenta esa estructura
+\citep{maxim2023fopdt}:
 
 \begin{equation}
 G_j(S)
@@ -330,16 +333,18 @@ compleja de Laplace se denota con mayúscula, $S$, para distinguirla a simple
 vista del segundo (s), unidad de tiempo escrita en redonda; los productos
 $\tau_j S$ y $L_{d,j}\,S$ son adimensionales.
 Los parámetros $(K_m,\tau,L_d)$ se estiman minimizando el error
-cuadrático entre la respuesta medida y la respuesta del modelo. La
-discretización, la cuantización del retardo y las aproximaciones numéricas
-empleadas por los scripts se documentan en el
+cuadrático entre la respuesta medida y la respuesta del modelo. Como el retardo
+se estima en múltiplos del período de captura \citep[Sec.~2.4]{maxim2023fopdt},
+un valor menor que ese período solo indica que el retardo es menor que él. La
+justificación del modelo, la discretización, la cuantización del retardo y las
+aproximaciones numéricas empleadas por los \textit{scripts} se documentan en el
 \ref{anx:fodt_scripts}.
 
 \section{Control PID}
 \label{sec:pid}
 
 El control de velocidad de cada rueda se organiza como un lazo cerrado: la
-velocidad medida por el encoder se compara con la referencia, y la diferencia
+velocidad medida por el \textit{encoder} se compara con la referencia, y la diferencia
 alimenta al controlador, que ajusta la tensión media entregada al motor. La
 Fig.~\ref{fig:lazo_pid} resume esta estructura.
 
@@ -347,7 +352,7 @@ Fig.~\ref{fig:lazo_pid} resume esta estructura.
 {Lazo de control de velocidad de una rueda con controlador PID.}
 {fig:lazo_pid}
 
-El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID, tomada de la formulación clásica de control realimentado \citep[Sec.~3.2]{astrom2009controlpid}, solo se utiliza como referencia conceptual:
+El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID de la Ec.~\eqref{eq:pid_continuo}, tomada de la formulación clásica de control realimentado \citep[Sec.~3.2]{astrom2009controlpid}, solo se utiliza como referencia conceptual:
 
 \begin{equation}
 u_j(t)
@@ -363,9 +368,13 @@ K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
 \noindent donde $t$ es el tiempo continuo, $u_j(t)$ la acción de control, $e_j(t)$ el error de velocidad, $K_{p,j}^{\mathrm{cont}}$, $K_{i,j}^{\mathrm{cont}}$ y $K_{d,j}^{\mathrm{cont}}$ las ganancias proporcional, integral y derivativa de la forma continua, respectivamente, y $\sigma$ la variable de integración.
 
 El controlador no se evalúa de forma continua, sino a intervalos regulares en
-el microcontrolador. Su formulación discreta específica, la realización en el
-firmware y las ganancias definitivas se desarrollan en la
-Sec.~\ref{sec:motorcontrol_pid} y en el \ref{anx:pid_ecuaciones}.
+el microcontrolador, y puede organizarse en forma incremental, en que cada
+muestra calcula el cambio de la señal de control y lo suma a la salida anterior
+\citep[Sec.~13.4]{astrom2009controlpid}. Su formulación discreta específica, la
+realización en el \textit{firmware} y las ganancias definitivas se desarrollan
+en la Sec.~\ref{sec:motorcontrol_pid} y en el \ref{anx:pid_ecuaciones}, y la
+forma incremental del PID y los criterios de estabilidad del lazo muestreado,
+en el \ref{anx:estabilidad_pid}.
 
 \section{Sintonización del controlador PID mediante PSO}
 \label{sec:sintonizacion}
@@ -373,7 +382,7 @@ Sec.~\ref{sec:motorcontrol_pid} y en el \ref{anx:pid_ecuaciones}.
 Las ganancias del PID se obtienen mediante un procedimiento híbrido:
 identificación FOPDT por rueda (Sec.~\ref{sec:fodt}), búsqueda de ganancias
 iniciales mediante optimización por enjambre de partículas y refinamiento
-experimental posterior sobre el hardware. Como referencia analítica
+experimental posterior sobre el \textit{hardware}. Como referencia analítica
 complementaria se emplea además la sintonía Lambda, cuyo desarrollo y
 condiciones de comparación se documentan en el \ref{anx:lambda_detalle}.
 
@@ -384,7 +393,7 @@ PSO (\textit{Particle Swarm Optimization}) es una metaheurística
 poblacional inspirada en el comportamiento colectivo de enjambres. En este
 trabajo, \citet{gokcce2021particle} se utiliza como antecedente de la
 aplicación de PSO a la sintonización de controladores PID en robótica móvil,
-pero no como fuente de la ecuación específica implementada. El script empleado
+pero no como fuente de la ecuación específica implementada. El \textit{script} empleado
 combina el factor de constricción analizado por \citet{clerc2002particle} con
 un peso de inercia, mecanismo introducido en PSO por
 \citet{shi1998modified}. La combinación concreta utilizada aquí, incluido el
@@ -434,12 +443,14 @@ g=1,\ldots,g_{\max},
 \end{equation}
 
 \noindent donde $g_{\max}$ es el número máximo de generaciones. La disminución
-lineal del peso de inercia fue propuesta por \citet{shi1998modified}, que lo
-redujeron desde 1.4 hasta 0. El script usa esa misma forma, pero partiendo de 1. Su efecto es reducir progresivamente el peso de la
+lineal del peso de inercia la proponen \citet{shi1998modified}, que lo
+reducen desde 1.4 hasta 0. El \textit{script} usa esa misma forma, pero partiendo de 1. Su efecto es reducir progresivamente el peso de la
 velocidad previa a medida que avanza la búsqueda. La función de costo empleada
 para la sintonización combina el error cuadrático medio de la velocidad
 respecto de la referencia con una penalización por sobreimpulso, favoreciendo
-respuestas rápidas pero amortiguadas. Las escalas de búsqueda, las cotas, la
+respuestas rápidas pero amortiguadas. Como toda metaheurística, PSO no
+garantiza encontrar el óptimo global, razón por la cual el procedimiento incluye
+un refinamiento experimental. Las escalas de búsqueda, las cotas, la
 configuración del enjambre y las particularidades numéricas de la ejecución se
 presentan en el Capítulo~\ref{ch:implementacion} y en el
 \ref{anx:pso_detalle}.
@@ -496,7 +507,7 @@ o desconocido \citep[Sec.~V]{macenski2023desks}. Sobre esa rejilla se construyen
 transitar cerca de ellos \citep{nav2_doc}. Sobre esta representación, el planificador global calcula una ruta desde la posición actual hasta la
 meta. En este trabajo la búsqueda global se resuelve mediante el algoritmo A$^*$ sobre la rejilla derivada del mapa de costos. El planificador empleado y la opción de configuración que habilita esta búsqueda se presentan en el
 Capítulo~\ref{ch:implementacion}. A$^*$ ordena la expansión de
-los nodos mediante la función de evaluación~\citep[Sec.~2.2.2]{lavalle2006planning}:
+los nodos mediante la función de evaluación de la Ec.~\eqref{eq:astar}~\citep[Sec.~2.2.2]{lavalle2006planning}:
 
 \begin{equation}
 f(n)=g(n)+h(n),
@@ -505,7 +516,7 @@ f(n)=g(n)+h(n),
 
 \noindent donde $n$ es el nodo evaluado, $g(n)$ representa el costo acumulado
 desde el origen hasta dicho nodo y $h(n)$ una estimación del costo restante
-hasta la meta. La implementación de Nav2 incorpora además los costos de su propia representación, cuyo escalamiento interno no se reconstruyó en este trabajo. Por eso no se emplean la admisibilidad de la heurística ni la optimalidad de la ruta como criterio de validación, sino la capacidad de generar una ruta global que el controlador local pueda seguir.
+hasta la meta. La implementación de Nav2 incorpora además los costos de su propia representación, cuyo escalamiento interno no se reconstruye en este trabajo. Por eso no se emplean la admisibilidad de la heurística ni la optimalidad de la ruta como criterio de validación, sino la capacidad de generar una ruta global que el controlador local pueda seguir.
 
 El control local convierte la ruta global en comandos de velocidad
 ejecutables. El enfoque de ventana dinámica considera únicamente las
@@ -556,7 +567,7 @@ utilizada se presentan en el Capítulo~\ref{ch:implementacion} y en el
 
 \section*{Conclusión del capítulo}
 
-El capítulo estableció, en un nivel general, los fundamentos de cada elemento
+El capítulo establece, en un nivel general, los fundamentos de cada elemento
 del sistema enumerados en su introducción, desde la descripción física del
 robot hasta la exploración por fronteras. Sobre estos fundamentos, el
 Capítulo~\ref{ch:implementacion} y los anexos desarrollan los algoritmos,

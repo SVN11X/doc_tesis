@@ -31,7 +31,7 @@ Este anexo reúne información complementaria sobre los componentes, el montaje 
 La Tabla~\ref{tab:anx_costos} resume los valores pagados por los materiales del
 proyecto, en pesos chilenos nominales, según los registros de compra entre abril
 de 2024 y julio de 2026. Los kits de tornillería, conectores y cables se
-contabilizan por su precio completo, aunque solo se usó una parte de ellos. El
+contabilizan por su precio completo, aunque solo se usa una parte de ellos. El
 total del robot comprende los elementos montados en la plataforma. El grupo de
 operación y desarrollo reúne elementos que no van montados en el robot, como la
 red dedicada, el cargador, las baterías de repuesto y los accesorios usados
@@ -52,8 +52,8 @@ comerciales se presenta en el \ref{anx:costos_comparacion}.
 Raspberry Pi~4 Modelo B de 8~GB, carcasa de aluminio y microSD de 64~GB & 1 & 91\,759 \\
 RPLidar A1 & 1 & 83\,324 \\
 \gls{Arduino} Nano V3 y placa base con bornes de tornillo & 1 & 8\,000 \\
-Motorreductor JGA25-370 de 12~V con encoder y rueda & 2 & 18\,038 \\
-Driver L298N & 1 & 3\,000 \\
+Motorreductor JGA25-370 de 12~V con \textit{encoder} y rueda & 2 & 18\,038 \\
+\textit{Driver} L298N & 1 & 3\,000 \\
 Módulo reductor DC-DC de 25~W & 1 & 18\,858 \\
 Batería de 12~V y 3000~mAh con adaptador de montaje & 1 & 25\,658 \\
 Rueda loca & 1 & 1\,893 \\
@@ -73,7 +73,7 @@ Enrutador de viaje GL.iNet GL-MT300N-V2 & 1 & 22\,140 \\
 Cables de red RJ45 Cat-6 & 3 & 8\,376 \\
 Cargador de baterías de 12~V & 1 & 16\,169 \\
 Baterías de 12~V de repuesto & 2 & 41\,436 \\
-Transmisor y receptor HDMI inalámbrico, cables micro HDMI y hub USB & Varios & 49\,683 \\
+Transmisor y receptor HDMI inalámbrico, cables micro HDMI y \textit{hub} USB & Varios & 49\,683 \\
 \textbf{Subtotal operación y desarrollo} & & \textbf{137\,804} \\
 \midrule
 \textbf{Total del proyecto} & & \textbf{582\,447} \\
@@ -89,8 +89,8 @@ de dos plataformas comerciales comparables, orientadas a docencia e
 investigación con ROS. Los montos en pesos se convierten a dólares
 estadounidenses con un tipo de cambio referencial de 963~CLP/USD, que
 corresponde al promedio de los valores mensuales del dólar observado de
-octubre a diciembre de 2024 \citep{sii_dolar2024}. Se eligió ese período
-porque el 68\% del gasto del prototipo se realizó en 2024. Los precios
+octubre a diciembre de 2024 \citep{sii_dolar2024}. Se elige ese período
+porque el 68\% del gasto del prototipo corresponde a 2024. Los precios
 comerciales son precios de catálogo vigentes a la fecha de consulta y no
 incluyen envío, aranceles ni impuestos de internación, por lo que su costo
 real en Chile sería mayor.
@@ -110,7 +110,7 @@ Materiales montados en el robot (Tabla~\ref{tab:anx_costos}). \\
 Este prototipo, proyecto completo & 605\tnote{a} & 582\,447 &
 Agrega red dedicada, cargador, baterías de repuesto y accesorios de desarrollo. \\
 TurtleBot~3 Burger RPi4 4~GB \citep{ROBOTIS_TB3Burger} & 681\tnote{b} & 656\,092 &
-LiDAR 2D de 360$^\circ$, Raspberry Pi~4, controlador con IMU, actuadores con controlador y encoder integrados, batería y cargador. \\
+LIDAR 2D de 360$^\circ$, Raspberry Pi~4, controlador con IMU, actuadores con controlador y \textit{encoder} integrados, batería y cargador. \\
 TurtleBot~3 Waffle Pi RPi4 4~GB \citep{ROBOTIS_TB3Waffle} & 1\,681\tnote{b} & 1\,619\,188 &
 Agrega cámara y una base de mayor tamaño y capacidad de carga. \\
 \bottomrule
@@ -123,11 +123,11 @@ Agrega cámara y una base de mayor tamaño y capacidad de carga. \\
 \end{threeparttable}
 \end{table}
 
-El robot costó un 32\% menos que el TurtleBot~3 Burger, la plataforma
-comercial más cercana, y el proyecto completo un 11\% menos. Esa diferencia
+El costo del robot es un 32\% menor que el del TurtleBot~3 Burger, la
+plataforma comercial más cercana, y el del proyecto completo, un 11\% menor. Esa diferencia
 debe leerse junto con el equipamiento de cada plataforma. El Burger incluye
 una unidad de medición inercial en su controlador, que el prototipo no posee,
-y actuadores con controlador y encoder integrados, que el prototipo resuelve
+y actuadores con controlador y \textit{encoder} integrados, que el prototipo resuelve
 con componentes separados de menor costo. La comparación indica, por tanto,
 que el prototipo se ubica por debajo del costo de la plataforma comercial de
 entrada, y no que ofrezca las mismas prestaciones a menor precio.
@@ -167,13 +167,13 @@ Sec.~\ref{sec:atribucion}. Como trazabilidad adicional, el lanzamiento
 \texttt{articubot\_one/launch/launch\_sim.launch.py} fija
 \texttt{use\_ros2\_control=true} y \texttt{sim\_mode=true}; por ello,
 instancia \texttt{gazebo\_ros2\_control/GazeboSystem}. El archivo alternativo
-\texttt{gazebo\_control.xacro} no corresponde al backend seleccionado por
+\texttt{gazebo\_control.xacro} no corresponde al \textit{backend} seleccionado por
 ese lanzamiento. Los identificadores completos de \textit{plugin} resumidos en la
 Tabla~\ref{tab:xacro_args_backend} son
-\texttt{diffdrive\_arduino/DiffDriveArduino} en hardware real y
+\texttt{diffdrive\_arduino/DiffDriveArduino} en \textit{hardware} real y
 \texttt{gazebo\_ros2\_control/GazeboSystem} en simulación.
 
-El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. El marco base declarado en la configuración depende del entorno: en simulación, \texttt{slam\_toolbox} y AMCL emplean \texttt{base\_footprint}; en hardware real, ambos emplean \texttt{base\_link}. Los costmaps mantienen \texttt{base\_link} en ambos entornos.
+El archivo \texttt{robot\_core.xacro} define \texttt{base\_footprint} como un enlace hijo fijo y coincidente con \texttt{base\_link}, mediante una transformación de traslación y rotación nulas. El marco base declarado en la configuración depende del entorno: en simulación, \texttt{slam\_toolbox} y AMCL emplean \texttt{base\_footprint}; en \textit{hardware} real, ambos emplean \texttt{base\_link}. Los \textit{costmaps} mantienen \texttt{base\_link} en ambos entornos.
 
 El sensor láser simulado se declara en \texttt{lidar\_sim.xacro} mediante el
 complemento de sensor de rango de Gazebo Classic, con 360 muestras por barrido,
@@ -182,7 +182,7 @@ apertura de $\pm3.14$~rad, tasa de actualización de 10~Hz y rango de 0.08~m a
 más permisivo que el del sensor físico; ambas diferencias corresponden a la
 brecha simulación--realidad señalada en la Sec.~\ref{sec:laser_sim}.
 
-En hardware real, el nodo de adquisición del \ref{anx:nodo_lidar} publica 230
+En \textit{hardware} real, el nodo de adquisición del \ref{anx:nodo_lidar} publica 230
 sectores por barrido y descarta las lecturas bajo 0.15~m, de modo que la
 resolución angular y el rango mínimo de ambos entornos tampoco coinciden.
 \subsection{Validación estructural del URDF}
@@ -237,23 +237,23 @@ Paridad geométrica & Radio y separación de ruedas & Igualdad con parámetros d
 \end{tabular}
 \end{table}
 
-Los criterios anteriores se confirmaron durante la puesta en marcha del modelo
+Los criterios anteriores se confirman durante la puesta en marcha del modelo
 digital y complementan la evidencia estructural de la
 Tabla~\ref{tab:anx_urdf_evidencia}.
 
-\section{Hardware, red e integración con ROS 2}
+\section{\texorpdfstring{\textit{Hardware}}{Hardware}, red e integración con ROS 2}
 \label{anx:hardware_ros2}
 
 Este anexo documenta información complementaria sobre el entorno de ejecución, la red de comunicación, los paquetes principales y la integración entre Raspberry Pi, \gls{Arduino} y sensores.
 
-\subsection{Entorno de ejecución y workspace}
+\subsection{Entorno de ejecución y \texorpdfstring{\textit{workspace}}{workspace}}
 \label{anx:workspace}
 
-La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en la Raspberry Pi 4. La comunicación entre ambas se realiza mediante una red Wi-Fi dedicada, con IP estáticas. La Tabla~\ref{tab:anx_ws_roles} detalla los paquetes principales del workspace y su rol.
+La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en la Raspberry Pi 4. La comunicación entre ambas se realiza mediante una red Wi-Fi dedicada, con IP estáticas. La Tabla~\ref{tab:anx_ws_roles} detalla los paquetes principales del \textit{workspace} y su rol.
 
 \begin{table}[H]
 \centering
-\caption{Paquetes principales del workspace.}
+\caption{Paquetes principales del \textit{workspace}.}
 \label{tab:anx_ws_roles}
 \small
 \begin{tabular}{p{3.2cm} p{6.1cm} p{4.7cm}}
@@ -262,9 +262,9 @@ La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en 
 \midrule
 \texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. & Adaptado de \citep{newans_articubot} \\
 \texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. & Adaptado de \citep{newans_diffdrive} \\
-\texttt{ROSArduinoBridge} & Firmware de bajo nivel para encoders, motores y PID. & Adaptado de \citep{newans_rosarduinobridge}, bifurcación de \citep{hbrobotics_rosarduinobridge} \\
-\texttt{explore\_lite} & Exploración autónoma basada en fronteras (proyecto \texttt{m-explore}). & Adaptado de \citep{alvarez2021mexplore_ros2}, port a \gls{ROS2} de \citep{horner_mexplore} \\
-\texttt{pid\_config} & Scripts de captura, identificación FOPDT y sintonización PSO. & Elaboración propia \\
+\texttt{ROSArduinoBridge} & \textit{Firmware} de bajo nivel para \textit{encoders}, motores y PID. & Adaptado de \citep{newans_rosarduinobridge}, bifurcación de \citep{hbrobotics_rosarduinobridge} \\
+\texttt{explore\_lite} & Exploración autónoma basada en fronteras (proyecto \texttt{m-explore}). & Adaptado de \citep{alvarez2021mexplore_ros2}, \textit{port} a \gls{ROS2} de \citep{horner_mexplore} \\
+\texttt{pid\_config} & \textit{Scripts} de captura, identificación FOPDT y sintonización PSO. & Elaboración propia \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -272,15 +272,15 @@ La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en 
 \noindent Los paquetes \texttt{articubot\_one}, \texttt{diffdrive\_arduino},
 \texttt{ROSArduinoBridge} y \texttt{explore\_lite} provienen de bases de
 código abierto de terceros, cuyos repositorios de origen se indican en la
-última columna de la Tabla~\ref{tab:anx_ws_roles}. Todos fueron modificados
+última columna de la Tabla~\ref{tab:anx_ws_roles}. Todos son modificados
 y configurados por el autor para esta plataforma. El uso de
 \texttt{ros2\_control} sobre robots diferenciales de bajo costo cuenta con
-antecedentes documentados que orientaron esta integración
+antecedentes documentados que orientan esta integración
 \citep{amadi2024introduction}. El aporte propio sobre estos paquetes se
 describe en la Justificación de la Introducción.
 
 La Tabla~\ref{tab:anx_versiones_sw} registra el equipamiento de la estación
-de trabajo y las versiones exactas del entorno con las que se obtuvieron
+de trabajo y las versiones exactas del entorno con las que se obtienen
 los resultados del Capítulo~\ref{ch:resultados}. El equipamiento embarcado
 en el robot se describe en la Sec.~\ref{ch:componentes}.
 
@@ -302,7 +302,7 @@ Arquitectura & x86-64 \\
 Sistema operativo & Ubuntu 20.04.6 LTS \\
 Núcleo Linux & 5.15.0-139-generic \\
 Distribución \gls{ROS2} & Foxy Fitzroy (\texttt{ros-foxy-ros-core} 0.9.2) \\
-Middleware de comunicación & \texttt{rmw\_cyclonedds\_cpp} \\
+\textit{Middleware} de comunicación & \texttt{rmw\_cyclonedds\_cpp} \\
 Dominio \gls{ROS2} & \texttt{ROS\_DOMAIN\_ID = 0} \\
 Simulador & Gazebo Classic 11.11.0 \\
 \texttt{gazebo\_ros\_pkgs} & 3.5.3 \\
@@ -313,7 +313,7 @@ Simulador & Gazebo Classic 11.11.0 \\
 \end{tabular}
 \end{table}
 
-\subsection{Nodos del lanzamiento en hardware real}
+\subsection{Nodos del lanzamiento en \texorpdfstring{\textit{hardware}}{hardware} real}
 \label{anx:nodos_lanzamiento}
 
 El archivo \texttt{launch\_robot.launch.py} inicia los nodos resumidos en la
@@ -327,7 +327,7 @@ descripción del robot se publica desde el lanzamiento anidado
 
 \begin{table}[H]
 \centering
-\caption{Nodos iniciados por el lanzamiento en hardware real.}
+\caption{Nodos iniciados por el lanzamiento en \textit{hardware} real.}
 \label{tab:anx_nodos_lanzamiento}
 \small
 \begin{tabular}{p{4.0cm} p{4.4cm} p{4.9cm}}
@@ -340,7 +340,7 @@ Publica las transformaciones del robot a partir de la descripción URDF/\texttt{
 
 \texttt{controller\_manager} &
 \texttt{controller\_manager} (ejecutable \texttt{ros2\_control\_node}) &
-Gestiona la interfaz de hardware y el ciclo de los controladores. \\
+Gestiona la interfaz de \textit{hardware} y el ciclo de los controladores. \\
 
 \texttt{diff\_cont} &
 \texttt{diff\_drive\_controller/} \texttt{DiffDriveController} &
@@ -356,11 +356,11 @@ Publica el estado de las articulaciones. \\
 \subsection{Asignación de pines y dispositivos}
 \label{anx:pinout_dispositivos}
 La Tabla~\ref{tab:anx_pinout_arduino_l298n} resume la asignación de pines
-entre el \gls{Arduino}, el driver L298N y los encoders.
+entre el \gls{Arduino}, el \textit{driver} L298N y los \textit{encoders}.
 
 \begin{table}[H]
 \centering
-\caption{Asignación resumida de pines entre \gls{Arduino}, L298N y encoders.}
+\caption{Asignación resumida de pines entre \gls{Arduino}, L298N y \textit{encoders}.}
 \label{tab:anx_pinout_arduino_l298n}
 \small
 \begin{tabular}{lll}
@@ -373,8 +373,8 @@ PWM avance derecho & D9 & IN1 L298N \\
 PWM retroceso derecho & D5 & IN2 L298N \\
 Habilitación izquierda & D13 & ENB L298N \\
 Habilitación derecha & D12 & ENA L298N \\
-Encoder izquierdo A/B & D3/D2 & Encoder izquierdo \\
-Encoder derecho A/B & A4/A5 & Encoder derecho \\
+\textit{Encoder} izquierdo A/B & D3/D2 & \textit{Encoder} izquierdo \\
+\textit{Encoder} derecho A/B & A4/A5 & \textit{Encoder} derecho \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -391,7 +391,7 @@ diferencial. El botón de habilitación actúa como
 \subsection{Nodo de adquisición del RPLidar A1}
 \label{anx:nodo_lidar}
 
-En hardware real, el sensor no se lee con el controlador del fabricante. El
+En \textit{hardware} real, el sensor no se lee con el controlador del fabricante. El
 lanzamiento \texttt{rplidar.launch.py} inicia el nodo
 \texttt{rplidar\_serial\_publisher.py}, desarrollado para este trabajo dentro
 del paquete \texttt{articubot\_one}, que se comunica con el RPLidar A1 a través
@@ -402,7 +402,7 @@ Luego activa el modo de barrido estándar. El nodo ofrece además los servicios
 \texttt{\textasciitilde/stop\_scan} y \texttt{\textasciitilde/start\_scan} para
 detener y reanudar el barrido.
 
-Cada 50~ms el nodo lee el buffer serie, descarta los paquetes que no cumplen
+Cada 50~ms el nodo lee el búfer serie, descarta los paquetes que no cumplen
 los bits de verificación del protocolo y agrupa las mediciones por vuelta. Una
 vuelta se cierra cuando el ángulo retrocede más de $187.5^\circ$ respecto de la
 medición anterior, y se publica solo si reúne al menos 180 mediciones. En caso
@@ -424,12 +424,12 @@ posterior al cierre de la vuelta, y no al de su primera medición. El período
 del barrido se estima con el intervalo entre publicaciones consecutivas. Por
 ello, los nodos que consumen el tópico asocian cada barrido a una pose
 posterior a la real, desfase cuyo efecto crece con la velocidad del robot, en
-especial durante los giros. Su efecto sobre los mapas no se cuantificó.
+especial durante los giros. Su efecto sobre los mapas no se cuantifica.
 
 \subsection{Temporalidad y ciclo de la interfaz \texttt{DiffDriveArduino}}
 \label{anx:implementacion_diffdrive}
 
-\noindent El plugin exporta, para cada rueda, una interfaz de comando de
+\noindent El \textit{plugin} exporta, para cada rueda, una interfaz de comando de
 velocidad y dos interfaces de estado, de posición y de velocidad. En la fase
 de lectura, el conteo acumulado recibido por el enlace serial se convierte en
 posición angular mediante el factor $2\pi/N_e$ de la
@@ -437,12 +437,12 @@ Ec.~\eqref{eq:posicion_rueda_encoder} y en velocidad angular por diferencias
 finitas, según la Ec.~\eqref{eq:w_ruedas}, empleando como denominador el
 intervalo $\Delta t_k$ definido a continuación.
 
-\noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el buffer de entrada. Por eso el denominador $\Delta t_k$ que divide las diferencias finitas no es un valor fijo: en la primera lectura ($k=0$) es el tiempo transcurrido entre esa inicialización de \texttt{time\_} y el comienzo de la primera llamada a \texttt{read()}, e incluye la espera serial de 3000~ms; desde la segunda lectura ($k\geq1$) es el intervalo real medido entre dos llamadas consecutivas a \texttt{read()}. En consecuencia, la primera muestra de velocidad arrastra el tiempo de configuración, y la velocidad de estado entregada a \texttt{ros2\_control} no utiliza un valor fijo $1/30$~s.
+\noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el búfer de entrada. Por eso el denominador $\Delta t_k$ que divide las diferencias finitas no es un valor fijo: en la primera lectura ($k=0$) es el tiempo transcurrido entre esa inicialización de \texttt{time\_} y el comienzo de la primera llamada a \texttt{read()}, e incluye la espera serial de 3000~ms; desde la segunda lectura ($k\geq1$) es el intervalo real medido entre dos llamadas consecutivas a \texttt{read()}. En consecuencia, la primera muestra de velocidad arrastra el tiempo de configuración, y la velocidad de estado entregada a \texttt{ros2\_control} no utiliza un valor fijo $1/30$~s.
 
-La igualdad numérica de las frecuencias configuradas no implica sincronización temporal. El \texttt{controller\_manager} y el parámetro \texttt{loop\_rate} se configuran nominalmente en 30~Hz, mientras que el firmware programa un incremento entero de $33$~ms sobre \texttt{nextPID} (\texttt{PID\_INTERVAL}). Este intervalo corresponde a la
-planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  firmware.
+La igualdad numérica de las frecuencias configuradas no implica sincronización temporal. El \texttt{controller\_manager} y el parámetro \texttt{loop\_rate} se configuran nominalmente en 30~Hz, mientras que el \textit{firmware} programa un incremento entero de $33$~ms sobre \texttt{nextPID} (\texttt{PID\_INTERVAL}). Este intervalo corresponde a la
+planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  \textit{firmware}.
 
-En la fase de escritura de la interfaz, la velocidad angular comandada de la rueda, $\omega_j^{\mathrm{cmd}}$ [rad/s], se convierte en una referencia entera de \textit{ticks/frame} antes de enviar el comando serial. La conversión multiplica esa velocidad angular por un factor que combina la resolución efectiva del encoder $N_e$, la frecuencia nominal del lazo de control $f_{\mathrm{loop}}$ y el número de radianes de una vuelta de rueda; de forma equivalente, puede partirse de la consigna lineal de rueda, $v_j^{\mathrm{cmd}}$ [m/s], incorporando además el radio de rueda $r$. El resultado se trunca hacia cero al entero que admite el comando serial.
+En la fase de escritura de la interfaz, la velocidad angular comandada de la rueda, $\omega_j^{\mathrm{cmd}}$ [rad/s], se convierte en una referencia entera de \textit{ticks/frame} antes de enviar el comando serial. La conversión multiplica esa velocidad angular por un factor que combina la resolución efectiva del \textit{encoder} $N_e$, la frecuencia nominal del lazo de control $f_{\mathrm{loop}}$ y el número de radianes de una vuelta de rueda; de forma equivalente, puede partirse de la consigna lineal de rueda, $v_j^{\mathrm{cmd}}$ [m/s], incorporando además el radio de rueda $r$. El resultado se trunca hacia cero al entero que admite el comando serial.
 
 \subsection{Identificadores de código de los parámetros del cuerpo}
 \label{anx:identificadores}
@@ -479,7 +479,7 @@ $T_{\mathrm{PID,sched}}=33$~ms &
 \texttt{ROSArduinoBridge.ino} \\
 
 $r=0.0335$~m &
-\texttt{wheel\_radius}; en el firmware, \texttt{WHEEL\_DIAMETER}$=0.067$~m &
+\texttt{wheel\_radius}; en el \textit{firmware}, \texttt{WHEEL\_DIAMETER}$=0.067$~m &
 \texttt{my\_controllers.yaml}, \texttt{ROSArduinoBridge.ino} \\
 
 $b=0.188$~m &
@@ -498,21 +498,21 @@ Publicación de \texttt{odom}$\rightarrow$\texttt{base\_link} &
 \texttt{enable\_odom\_tf} &
 \texttt{my\_controllers.yaml} \\
 
-Auto-detención de seguridad &
+Autodetención de seguridad &
 \texttt{AUTO\_STOP\_INTERVAL}$=2000$~ms &
 \texttt{ROSArduinoBridge.ino} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Firmware, encoders y sintonización PID}
+\section{\texorpdfstring{\textit{Firmware}}{Firmware}, \texorpdfstring{\textit{encoders}}{encoders} y sintonización PID}
 \label{anx:firmware}
 
-Este anexo complementa el capítulo de firmware con datos experimentales y parámetros usados durante la sintonización del controlador PID.
+Este anexo complementa el capítulo de \textit{firmware} con datos experimentales y parámetros usados durante la sintonización del controlador PID.
 
-El firmware se distribuye en módulos independientes: \texttt{ROSArduinoBridge.ino} contiene el ciclo principal y el analizador serial; \texttt{commands.h}, los identificadores de comandos; \texttt{encoder\_driver.h} y \texttt{encoder\_driver.ino}, la lectura de encoders; \texttt{motor\_driver.h} y \texttt{motor\_driver.ino}, el accionamiento del L298N; y \texttt{diff\_controller.h}, el controlador PID discreto y sus ganancias. Su localización se indica en el \ref{anx:rutas_software}.
+El \textit{firmware} se distribuye en módulos independientes: \texttt{ROSArduinoBridge.ino} contiene el ciclo principal y el analizador serial; \texttt{commands.h}, los identificadores de comandos; \texttt{encoder\_driver.h} y \texttt{encoder\_driver.ino}, la lectura de \textit{encoders}; \texttt{motor\_driver.h} y \texttt{motor\_driver.ino}, el accionamiento del L298N; y \texttt{diff\_controller.h}, el controlador PID discreto y sus ganancias. Su localización se indica en el \ref{anx:rutas_software}.
 
-\subsection{Ticks por vuelta y ganancias finales}
+\subsection{\texorpdfstring{\textit{Ticks}}{Ticks} por vuelta y ganancias finales}
 \label{anx:pid_data}
 
 Los contadores \texttt{left\_enc\_pos} y
@@ -521,18 +521,19 @@ interrupciones de cambio de pin. \texttt{readEncoder()} devuelve cada contador
 sin deshabilitar interrupciones ni utilizar una sección atómica. En el Arduino
 Nano AVR, la lectura de 32~bits no está garantizada como una operación atómica;
 por tanto, el conteo devuelto puede, en principio, ser modificado durante su
-copia. Esta condición se conserva porque corresponde al firmware ejecutado.
+copia. Esta condición se conserva porque corresponde al \textit{firmware} ejecutado.
 
-Para caracterizar la resolución efectiva de los encoders, se hizo girar cada
-rueda una vuelta completa y se repitió la medición diez veces. Durante los
-ensayos, el firmware y la interfaz de hardware utilizaron el valor unificado
-$N_e=1980$~ticks/vuelta (Tabla~\ref{tab:parametros_modelo}); las mediciones
+Para caracterizar la resolución efectiva de los \textit{encoders}, se hace girar cada
+rueda una vuelta completa y se repite la medición diez veces, cuyos resultados
+se presentan en la Tabla~\ref{tab:anx_muestras_cuentas}. Durante los
+ensayos, el \textit{firmware} y la interfaz de \textit{hardware} utilizan el valor unificado
+$N_e=1980$~\textit{ticks}/vuelta (Tabla~\ref{tab:parametros_modelo}); las mediciones
 experimentales permiten cuantificar la discrepancia de dicho valor respecto
 de los promedios obtenidos para cada rueda.
 
 \begin{table}[H]
 \centering
-\caption{Muestras del número de ticks por revolución.}
+\caption{Muestras del número de \textit{ticks} por revolución.}
 \label{tab:anx_muestras_cuentas}
 \small
 \begin{tabular}{ccc}
@@ -553,28 +554,28 @@ de los promedios obtenidos para cada rueda.
 \end{tabular}
 \end{table}
 
-Los promedios de las diez repeticiones son $\bar{N}_R=1976$ y $\bar{N}_L=1969$~ticks/vuelta (ruedas derecha e izquierda), que difieren en menos del 0.4\%. El valor unificado $N_e=1980$~ticks/vuelta introduce un error sistemático de aproximadamente 0.20\% respecto de la media derecha y 0.56\% respecto de la izquierda.
+Los promedios de las diez repeticiones son $\bar{N}_R=1976$ y $\bar{N}_L=1969$~\textit{ticks}/vuelta (ruedas derecha e izquierda), que difieren en menos del 0.4\%. El valor unificado $N_e=1980$~\textit{ticks}/vuelta introduce un error sistemático de aproximadamente 0.20\% respecto de la media derecha y 0.56\% respecto de la izquierda.
 
-A partir del factor $2\pi/N_e$ de la Ec.~\eqref{eq:posicion_rueda_encoder}, la constante \texttt{rads\_per\_count} vale, para $N_e=1980$, $2\pi/1980\approx0.003173$~rad/tick. En el código, $N_e$ corresponde a \texttt{ENC\_TICKS\_PER\_REV} en el firmware y a \texttt{enc\_counts\_per\_rev} en el plugin \texttt{DiffDriveArduino}.
+A partir del factor $2\pi/N_e$ de la Ec.~\eqref{eq:posicion_rueda_encoder}, la constante \texttt{rads\_per\_count} vale, para $N_e=1980$, $2\pi/1980\approx0.003173$~rad/\textit{tick}. En el código, $N_e$ corresponde a \texttt{ENC\_TICKS\_PER\_REV} en el \textit{firmware} y a \texttt{enc\_counts\_per\_rev} en el \textit{plugin} \texttt{DiffDriveArduino}.
 
 \subsection{Comparación ilustrativa entre PSO y sintonización Lambda}
 \label{anx:comparacion_pso_lambda}
 \label{anx:lambda_detalle}
 
-Ese script vuelve a identificar un modelo FOPDT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del firmware reutilizando la misma rutina de planta, referencia interpolada y cuantización descrita más arriba, con banda muerta 2 para ambas ruedas. Además, \texttt{SintonizacionLambda.py} recorta explícitamente \texttt{ITerm} a $\pm12750$, valor que resulta de multiplicar el PWM máximo (255) por el divisor de normalización de la salida (50); este límite no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del firmware.
+El \textit{script} \texttt{SintonizacionLambda.py} vuelve a identificar un modelo FOPDT mediante un PSO sin semilla fija, por lo que sus parámetros pueden diferir de los generados por \texttt{SintonizacionAutomatica.py}, y simula las ganancias finales del \textit{firmware} reutilizando la misma rutina de planta, referencia interpolada y cuantización descrita en el \ref{anx:planta_sintonizacion}, con banda muerta 2 para ambas ruedas. Además, el \textit{script} recorta explícitamente \texttt{ITerm} a $\pm12750$, valor que resulta de multiplicar el PWM máximo (255) por el divisor de normalización de la salida (50); este límite no existe en \texttt{diff\_controller.h}; por tanto, no replica exactamente los tipos, las bandas muertas asimétricas ni todas las condiciones del \textit{firmware}.
 
-La referencia analítica Lambda se calcula a partir de esa nueva identificación. Como retardo efectivo, $L_{ef,j}$, se toma el mayor entre el retardo puro identificado para la rueda, $L_{d,j}$, y dos períodos de control (2/30~s); y como constante de diseño, $\lambda_j$, se fija el triple de la constante de tiempo identificada $\tau_j$. A partir de ahí el script obtiene una forma serie, la convierte a la forma paralela estándar y la lleva a la escala de firmware mediante un factor de escalamiento $f_{\lambda}$; el detalle de estas conversiones se encuentra en \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}SintonizacionLambda.\allowbreak{}py}.
+La referencia analítica Lambda se calcula a partir de esa nueva identificación. Como retardo efectivo, $L_{ef,j}$, se toma el mayor entre el retardo puro identificado para la rueda, $L_{d,j}$, y dos períodos de control (2/30~s); y como constante de diseño, $\lambda_j$, se fija el triple de la constante de tiempo identificada $\tau_j$. A partir de ahí el \textit{script} obtiene una forma serie, la convierte a la forma paralela estándar y la lleva a la escala de \textit{firmware} mediante un factor de escalamiento $f_{\lambda}$; el detalle de estas conversiones se encuentra en \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}SintonizacionLambda.\allowbreak{}py}.
 
 Esa conversión asigna cada ganancia de la forma paralela a la ganancia del
-firmware con el mismo nombre y escala $K_d$ sin dividir por el período de
+\textit{firmware} con el mismo nombre y escala $K_d$ sin dividir por el período de
 control, sin considerar que en la ley ejecutada esas ganancias cumplen otra
 función (Ec.~\eqref{eq:pid_equivalente}). Por ello, la curva Lambda no
 representa un controlador Lambda equivalente aplicado sobre la ley ejecutada.
 
 La comparación es únicamente ilustrativa: además de las aproximaciones
 señaladas, el simulador aplica banda muerta cero al controlador Lambda. Por
-ello, las curvas y métricas corresponden al script comparativo ejecutado y no
-a una validación de controladores equivalentes en hardware.
+ello, las curvas y métricas corresponden al \textit{script} comparativo ejecutado y no
+a una validación de controladores equivalentes en \textit{hardware}.
 
 \utemFigurePropia{2.Texto/Imag/comparacion_pso_vs_lambda.png}{1.0\textwidth}
 {Identificación de los modelos FOPDT de ambas ruedas en lazo abierto y comparación simulada de las respuestas en lazo cerrado obtenidas con las ganancias finales asociadas al procedimiento PSO y con la sintonización Lambda.}
@@ -583,11 +584,11 @@ a una validación de controladores equivalentes en hardware.
 \subsection{Protocolo de comunicación serial}
 \label{anx:protocolo_serial}
 
-La comunicación entre la Raspberry Pi y el \gls{Arduino} utiliza comandos textuales terminados mediante un carácter de retorno de carro (\texttt{\textbackslash r}). La Tabla~\ref{tab:protocolo_serial} resume los comandos implementados en el firmware y utilizados para el control, la configuración y el diagnóstico del robot.
+La comunicación entre la Raspberry Pi y el \gls{Arduino} utiliza comandos textuales terminados mediante un carácter de retorno de carro (\texttt{\textbackslash r}). La Tabla~\ref{tab:protocolo_serial} resume los comandos implementados en el \textit{firmware} y utilizados para el control, la configuración y el diagnóstico del robot.
 
 \begin{table}[H]
 \centering
-\caption{Comandos del protocolo serial implementado en el firmware.}
+\caption{Comandos del protocolo serial implementado en el \textit{firmware}.}
 \label{tab:protocolo_serial}
 \small
 \begin{tabular}{c p{2.7cm} p{6.8cm} p{2.2cm}}
@@ -600,17 +601,17 @@ La comunicación entre la Raspberry Pi y el \gls{Arduino} utiliza comandos textu
 
 \texttt{b} &
 \texttt{b} &
-Consulta la velocidad de comunicación serial configurada en el firmware. &
+Consulta la velocidad de comunicación serial configurada en el \textit{firmware}. &
 Tasa de baudios \\
 
 \texttt{e} &
 \texttt{e} &
-Lee los conteos acumulados de los encoders izquierdo y derecho. &
+Lee los conteos acumulados de los \textit{encoders} izquierdo y derecho. &
 \texttt{L R} \\
 
 \texttt{r} &
 \texttt{r} &
-Reinicia los conteos de ambos encoders y ejecuta \texttt{resetPID()}, que vuelve a cargar las ganancias predeterminadas y reinicia los estados internos. &
+Reinicia los conteos de ambos \textit{encoders} y ejecuta \texttt{resetPID()}, que vuelve a cargar las ganancias predeterminadas y reinicia los estados internos. &
 \texttt{OK} \\
 
 \texttt{o} &
@@ -620,17 +621,17 @@ Ejecuta primero \texttt{resetPID()} y luego aplica directamente valores PWM a lo
 
 \texttt{m} &
 \texttt{m M\_L M\_R} &
-Establece las referencias del controlador PID en \emph{ticks/frame} para las ruedas izquierda y derecha. Si ambas son cero, detiene los motores y ejecuta \texttt{resetPID()}. &
+Establece las referencias del controlador PID en \textit{ticks/frame} para las ruedas izquierda y derecha. Si ambas son cero, detiene los motores y ejecuta \texttt{resetPID()}. &
 \texttt{OK} \\
 
 \texttt{k} &
 \texttt{k V\_L V\_R} &
-Establece las referencias de velocidad lineal de rueda en m/s. El firmware las convierte internamente a \emph{ticks/frame}; si ambas son exactamente cero, detiene los motores y ejecuta \texttt{resetPID()}. &
+Establece las referencias de velocidad lineal de rueda en m/s. El \textit{firmware} las convierte internamente a \textit{ticks/frame}; si ambas son exactamente cero, detiene los motores y ejecuta \texttt{resetPID()}. &
 \texttt{OK} \\
 
 \texttt{j} &
 \texttt{j} &
-Consulta \texttt{PrevInput} de cada PID, es decir, la última medición entera en \emph{ticks/frame} actualizada por el ciclo de control, y la convierte a m/s. El comando no fuerza una nueva actualización del PID. &
+Consulta \texttt{PrevInput} de cada PID, es decir, la última medición entera en \textit{ticks/frame} actualizada por el ciclo de control, y la convierte a m/s. El comando no fuerza una nueva actualización del PID. &
 \texttt{V\_L V\_R} \\
 
 \texttt{u} &
@@ -662,14 +663,14 @@ Ocho valores \\
 \end{minipage}
 \end{table}
 
-\noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \emph{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del firmware; si no se recibe una nueva orden durante el intervalo de auto-detención, definido en el firmware como \texttt{AUTO\_STOP\_INTERVAL}$=2000$~ms, los motores se detienen automáticamente y la bandera interna \texttt{moving} vuelve a cero. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados internos; su vigencia se describe en la Sec.~\ref{sec:motorcontrol_pid}.
+\noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \textit{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del \textit{firmware}; si no se recibe una nueva orden durante el intervalo de autodetención, definido en el \textit{firmware} como \texttt{AUTO\_STOP\_INTERVAL}$=2000$~ms, los motores se detienen automáticamente y la bandera interna \texttt{moving} vuelve a cero. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados internos; su vigencia se describe en la Sec.~\ref{sec:motorcontrol_pid}.
 
 \subsection{Ecuaciones y estados internos del PID embebido}
 \label{anx:pid_ecuaciones}
 
 \noindent La implementación utiliza una ley discreta acumulativa con un término calculado sobre la diferencia de la medición, variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
 
-En cada actualización se leen primero ambos encoders. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~ticks/frame). El incremento de salida se calcula en punto flotante a partir de los términos asociados a $K_p$, a $K_d$ y al estado integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
+En cada actualización se leen primero ambos \textit{encoders}. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~\textit{ticks/frame}). El incremento de salida se calcula en punto flotante a partir de los términos asociados a $K_p$, a $K_d$ y al estado integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
 
 El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$); en caso contrario conserva su valor, implementando un mecanismo simple de \textit{anti-windup} por integración condicional~\citep[Sec.~3.5]{astrom2009controlpid}. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
 
@@ -677,18 +678,18 @@ Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
 resume en el Alg.~\ref{alg:pid_firmware}.
 
-\subsection{Origen de la ley de control y cambios respecto del firmware original}
+\subsection{Origen de la ley de control y cambios respecto del \texorpdfstring{\textit{firmware}}{firmware} original}
 \label{anx:pid_origen}
 
-El firmware se adaptó a partir de la bifurcación de
+El \textit{firmware} se adapta a partir de la bifurcación de
 \texttt{ros\_arduino\_bridge} mantenida por Josh
 Newans~\citep{newans_rosarduinobridge}, derivada a su vez del proyecto del
 Home Brew Robotics Club~\citep{hbrobotics_rosarduinobridge}. El encabezado de
-\texttt{diff\_controller.h} en ambos repositorios indica que el controlador se
-tomó en su mayor parte del código ArbotiX de Mike Ferguson. La función
+\texttt{diff\_controller.h} en ambos repositorios indica que el controlador
+proviene en su mayor parte del código ArbotiX de Mike Ferguson. La función
 \texttt{doPID()} de ambos repositorios contiene la misma ley acumulativa de la
 Sec.~\ref{sec:motorcontrol_pid}. Por tanto, la estructura de la ley y el nombre
-de sus ganancias no fueron introducidos en este trabajo, sino heredados.
+de sus ganancias no se introducen en este trabajo, sino que se heredan.
 
 Los comentarios del código original explican esa estructura. El término
 asociado a $K_d$ se calcula sobre la medición para evitar saltos de la
@@ -699,46 +700,76 @@ calcula completa en cada ciclo~\citep[Sec.~13.4]{astrom2009controlpid}. Al sumar
 anterior, cada término sube un orden de integración, tal como muestra la
 Ec.~\eqref{eq:pid_equivalente}.
 
-Respecto del original se conservaron la estructura de la ley, el período de
+Respecto del original se conservan la estructura de la ley, el período de
 control de 30~Hz, la saturación a $\pm255$, la integración condicional, el
-reinicio de estados al detenerse, el intervalo de auto-detención de 2000~ms y
-la rutina de lectura de encoders, incluida su lectura no atómica
-(\ref{anx:pid_data}). Los cambios introducidos fueron cuatro. Primero, las
-ganancias dejaron de ser constantes enteras compartidas por ambas ruedas, con
-$K_p=20$, $K_d=12$, $K_i=0$ y $K_o=50$ en el original, y pasaron a ser valores
+reinicio de estados al detenerse, el intervalo de autodetención de 2000~ms y
+la rutina de lectura de \textit{encoders}, incluida su lectura no atómica
+(\ref{anx:pid_data}). Los cambios introducidos son cuatro. Primero, las
+ganancias dejan de ser constantes enteras compartidas por ambas ruedas, con
+$K_p=20$, $K_d=12$, $K_i=0$ y $K_o=50$ en el original, y pasan a ser valores
 de punto flotante propios de cada rueda, que \texttt{resetPID()} vuelve a
 cargar con los valores de la Tabla~\ref{tab:ganancias_pid}. Por ello, las
 ganancias cargadas por el enlace serial solo rigen hasta la siguiente
-detención o reinicio. Segundo, se agregó a \texttt{doPID()} una banda muerta
-sobre el error, de 1~tick/frame en la rueda derecha y 2 en la izquierda.
-Tercero, se definieron el diámetro de rueda y la resolución de encoders del
-prototipo y se agregaron comandos para fijar y leer velocidades en m/s, leer
+detención o reinicio. Segundo, se agrega a \texttt{doPID()} una banda muerta
+sobre el error, de 1~\textit{tick/frame} en la rueda derecha y 2 en la izquierda.
+Tercero, se definen el diámetro de rueda y la resolución de \textit{encoders} del
+prototipo y se agregan comandos para fijar y leer velocidades en m/s, leer
 las ganancias y cargar ganancias distintas por rueda
 (Tabla~\ref{tab:protocolo_serial}), retirando los de servomotores y de
 verificación de conexión. Cuarto, en el accionamiento del L298N se
-intercambiaron los pines de avance y retroceso del motor izquierdo y se
-declararon los pines como salidas al iniciar.
+intercambian los pines de avance y retroceso del motor izquierdo y se
+declaran los pines como salidas al iniciar.
 
 El paso a ganancias de punto flotante tiene una consecuencia que el original
-no presentaba. Con $K_i$ entero, el producto $K_i e$ es siempre entero y el
+no presenta. Con $K_i$ entero, el producto $K_i e$ es siempre entero y el
 estado integral lo acumula sin pérdida. En este trabajo el estado integral se
-mantuvo como entero de 16~bits, por lo que los valores fraccionarios
+mantiene como entero de 16~bits, por lo que los valores fraccionarios
 $K_{i,L}=0.075$ y $K_{i,R}=0.001$ se truncan y su efecto queda limitado en la
 rueda izquierda y anulado en la derecha, como se analiza en la
 Sec.~\ref{sec:resultados_pid}.
 
-\subsection{Procesamiento FOPDT usado por los scripts}
+\subsection{Procesamiento FOPDT usado por los \texorpdfstring{\textit{scripts}}{scripts}}
 \label{anx:fodt_scripts}
 
-Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$ segundos (el período de captura), el retardo puro se cuantiza a un número entero de muestras, $n_{d,j}$, dividiendo el retardo identificado $L_{d,j}$ por el período de captura y truncando el resultado. La entrada retardada, $u_{j,d}[k]$, se obtiene tomando la muestra de PWM correspondiente a $n_{d,j}$ pasos antes del instante actual, o la primera muestra disponible cuando ese índice resultaría negativo. El sistema de primer orden se integra por el método de Euler explícito: en cada paso, la velocidad estimada por el modelo  $\widehat{v}_j[k]$, parte de su valor en el paso anterior y le suma una fracción de la diferencia entre la respuesta estática y esa misma estimación previa; la fracción es la razón entre el período de captura y la constante de tiempo $\tau_j$, y la respuesta estática es la ganancia estática $K_{m,j}$ multiplicada por la entrada retardada. La estimación arranca en cero. Aquí $u_j[k]$ es la entrada \gls{PWM} aplicada y $\widehat{v}_j[k]$ la velocidad lineal que el modelo estima para la rueda $j$ (m/s). Esta formulación corresponde al procedimiento de identificación; las diferencias de la planta usada durante la sintonización se describen más adelante.
+\paragraph{Justificación del modelo.} La estructura FOPDT es una de las
+reducciones de modelo más habituales antes de sintonizar un controlador, porque
+describe con pocos parámetros la respuesta al escalón \citep{maxim2023fopdt}.
+Con $L_{d,j}=0$ contiene el modelo de un motor DC en que se desprecia la
+inductancia de armadura \citep{iqbal2023electromechanical}, por lo que
+adoptarla no impone un retardo, ya que su valor lo determina la identificación.
+El retardo permite representar, además, los retardos que agrega la
+implementación digital, como el del muestreo de la medición
+\citep[Sec.~13.3]{astrom2009controlpid}. Como la respuesta se registra con el
+período de captura $T_{\mathrm{cap}}$, el retardo se estima como un número
+entero de períodos \citep[Sec.~2.4]{maxim2023fopdt}, por lo que un valor menor
+que $T_{\mathrm{cap}}$ solo indica que el retardo es menor que ese período.
+
+\paragraph{Procesamiento en los \textit{scripts}.} Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$ segundos (el período de captura), el retardo puro se cuantiza a un número entero de muestras, $n_{d,j}$, dividiendo el retardo identificado $L_{d,j}$ por el período de captura y truncando el resultado. La entrada retardada, $u_{j,d}[k]$, se obtiene tomando la muestra de PWM correspondiente a $n_{d,j}$ pasos antes del instante actual, o la primera muestra disponible cuando ese índice resultaría negativo. El sistema de primer orden se integra por el método de Euler explícito: en cada paso, la velocidad estimada por el modelo  $\widehat{v}_j[k]$, parte de su valor en el paso anterior y le suma una fracción de la diferencia entre la respuesta estática y esa misma estimación previa; la fracción es la razón entre el período de captura y la constante de tiempo $\tau_j$, y la respuesta estática es la ganancia estática $K_{m,j}$ multiplicada por la entrada retardada. La estimación arranca en cero. Aquí $u_j[k]$ es la entrada \gls{PWM} aplicada y $\widehat{v}_j[k]$ la velocidad lineal que el modelo estima para la rueda $j$ (m/s). Esta formulación corresponde al procedimiento de identificación; las diferencias de la planta usada durante la sintonización se describen más adelante.
 
 La velocidad medida $v_j^{\mathrm{med}}[k]$ se procesa fuera de línea con \texttt{scipy.ndimage.uniform\_filter1d} (\texttt{size=5}, modo \texttt{reflect}): un filtro uniforme centrado de cinco muestras; no causal ya que usa muestras anteriores y posteriores, del que se obtiene la velocidad filtrada $v_j^{\mathrm{filt}}[k]$.
 
-La función de costo de identificación ejecutada por el script es el error cuadrático medio entre la velocidad filtrada $v_j^{\mathrm{filt}}[k]$ y la estimada por el modelo $\widehat{v}_j[k]$, promediado sobre las $N$ muestras. Si $\tau_j<0.01$~s o $\widehat{v}_j$ contiene valores no finitos, el costo se fija en $10^{6}$.
+La función de costo de identificación ejecutada por el \textit{script} es el error cuadrático medio entre la velocidad filtrada $v_j^{\mathrm{filt}}[k]$ y la estimada por el modelo $\widehat{v}_j[k]$, promediado sobre las $N$ muestras. Si $\tau_j<0.01$~s o $\widehat{v}_j$ contiene valores no finitos, el costo se fija en $10^{6}$.
+
+\paragraph{Retardos identificados.} Con esta cuantización, todo $L_{d,j}$ entre
+0 y $T_{\mathrm{cap}}$ produce $n_{d,j}=0$ y el mismo costo de identificación,
+por lo que el optimizador puede detenerse en cualquier valor de ese intervalo.
+Eso explica que, para la rueda derecha, el \textit{script} de sintonización
+entregue 0.0692~s y el de comparación Lambda 0.0845~s, con los mismos
+$K_{m,R}$ y $\tau_R$. Los retardos identificados, $L_{d,L}=0.0001$~s y
+$L_{d,R}=0.0692$~s (Tabla~\ref{tab:pso_resultados}), indican entonces que el
+retardo de ambas ruedas es menor que $T_{\mathrm{cap}}$, y son pequeños frente
+a las constantes de tiempo de 0.33 y 0.35~s. Por ello, la respuesta al escalón
+se parece a la de un sistema de primer orden, caso en que el control PI es
+suficiente \citep[Sec.~3.6]{astrom2009controlpid}. El modelo FOPDT se conserva
+con los valores identificados, y la estabilidad se verifica con el retardo
+identificado y con su cota superior (\ref{anx:estabilidad_pid}). La estimación
+precisa de retardos menores que 0.1~s requiere un muestreo más rápido y queda
+como trabajo futuro.
 
 \subsection{Planta utilizada durante la sintonización PID}
+\label{anx:planta_sintonizacion}
 
-Con los parámetros identificados, el script simula una planta discreta FOPDT sin aplicar el retardo $L_{d,j}$ (aunque calcula una variable local \texttt{delay\_steps}). La consigna de cada rueda no se fija en 0.13~m/s: se obtiene del promedio de la respuesta experimental en lazo abierto para $t\geq7$~s, tabulada cada 0.1~s e interpolada linealmente (\texttt{np.interp}) al período de simulación $T_{\mathrm{sim}}$. La simulación cuantiza a ticks/frame solo la medición que ingresa al PID (redondeo al par más cercano), mientras que sus estados internos permanecen en punto flotante. Durante la optimización se usa una banda muerta común de 2~ticks/frame para ambas ruedas, a diferencia del firmware final (1~tick/frame en la derecha y 2 en la izquierda); por ello la simulación conserva la estructura acumulativa del controlador pero no replica exactamente sus tipos de datos ni sus condiciones por rueda.
+Con los parámetros identificados, el \textit{script} simula una planta discreta FOPDT sin aplicar el retardo $L_{d,j}$ (aunque calcula una variable local \texttt{delay\_steps}). La consigna de cada rueda no se fija en 0.13~m/s: se obtiene del promedio de la respuesta experimental en lazo abierto para $t\geq7$~s, tabulada cada 0.1~s e interpolada linealmente (\texttt{np.interp}) al período de simulación $T_{\mathrm{sim}}$. La simulación cuantiza a \textit{ticks/frame} solo la medición que ingresa al PID (redondeo al par más cercano), mientras que sus estados internos permanecen en punto flotante. Durante la optimización se usa una banda muerta común de 2~\textit{ticks/frame} para ambas ruedas, a diferencia del \textit{firmware} final (1~\textit{tick/frame} en la derecha y 2 en la izquierda); por ello la simulación conserva la estructura acumulativa del controlador pero no replica exactamente sus tipos de datos ni sus condiciones por rueda.
 
 \subsection{Particularidades de la implementación PSO}
 \label{anx:pso_detalle}
@@ -752,25 +783,25 @@ $w_{\mathrm{mse}}=1.0$ actuando como escala identidad del MSE y
 $w_{\mathrm{OS}}=3.0$ triplicando el peso relativo de cualquier excursión
 sobre la referencia, para orientar la búsqueda del enjambre hacia respuestas
 de bajo sobreimpulso. La función no penaliza el tiempo de subida ni el de
-establecimiento; ambos se calculan \emph{post hoc} y se reportan en la
+establecimiento; ambos se calculan \textit{post hoc} y se reportan en la
 Tabla~\ref{tab:pid_performance}.
 
 La actualización de los mejores valores sigue la clase
 \texttt{pso} ejecutada. Las particularidades de la posición global y la salida
 final escalada se desarrollan a continuación.
 
-Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de constricción está fijado en el script como la constante 0.7298, que es el valor que entrega la expresión de Clerc y Kennedy \citep[Ec.~5.3]{clerc2002particle} cuando su parámetro de ajuste vale 1 y la suma de los coeficientes cognitivo y social es $\psi=c_1+c_2=4.1$. El error que emplea el optimizador se define sobre la velocidad: es la diferencia entre la velocidad de referencia $v_j^{\mathrm{ref}}$ y la velocidad estimada por el modelo $\widehat{v}_j[k]$ para la rueda $j$, denotada $\varepsilon_j[k]$, y se resume por su norma-2 y su error cuadrático medio; no corresponde al error entero $e_j^{\mathrm{long}}$ que consume el firmware.
+Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de constricción está fijado en el \textit{script} como la constante 0.7298, que es el valor que entrega la expresión de Clerc y Kennedy \citep[Ec.~5.3]{clerc2002particle} cuando su parámetro de ajuste vale 1 y la suma de los coeficientes cognitivo y social es $\psi=c_1+c_2=4.1$. El error que emplea el optimizador se define sobre la velocidad: es la diferencia entre la velocidad de referencia $v_j^{\mathrm{ref}}$ y la velocidad estimada por el modelo $\widehat{v}_j[k]$ para la rueda $j$, denotada $\varepsilon_j[k]$, y se resume por su norma-2 y su error cuadrático medio; no corresponde al error entero $e_j^{\mathrm{long}}$ que consume el \textit{firmware}.
 
-La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que su costo histórico. El almacenamiento global presenta una particularidad: el costo global $J^{*}$ se toma como el mínimo de los costos históricos $J_i^{\mathrm{best}}$, pero la posición global $G$ se copia desde la posición actual de la partícula de menor costo histórico (no desde su posición personal $P_{i^*}$), de modo que $J^{*}$ y $G$ pueden corresponder a vectores distintos. Esta diferencia se mantiene porque representa el código ejecutado.
+La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que su costo histórico. El almacenamiento global presenta una particularidad: el costo global $J^{*}$ se toma como el mínimo de los costos históricos $J_i^{\mathrm{best}}$, pero la posición global $G$ se copia desde la posición actual de la partícula de menor costo histórico (no desde su posición personal $P_{i^*}$). Esta diferencia se mantiene porque representa el código ejecutado. Su efecto sobre el resultado es nulo, porque el mejor global solo cambia cuando una partícula acaba de mejorar su costo, y en ese instante su posición actual y su mejor posición personal coinciden.
 
-Al finalizar, los parámetros informados se obtienen escalando la posición global final $G^{\mathrm{final}}$ componente a componente, sin aplicar un nuevo recorte superior. En la etapa de identificación FOPDT, las tres componentes se multiplican por 0.01, 2.0 y 0.5 (para $K_m$, $\tau$ y $L_d$, respectivamente); en la etapa de sintonización PID, se multiplican por 40, 25 y 0.05 (para $K_p$, $K_d$ y $K_i$). Como en este paso no hay recorte superior, en la etapa PID la salida puede superar los valores de escala 40, 25 y 0.05 aunque el costo se haya evaluado con una copia recortada de la posición; por tanto, la salida escalada no necesariamente coincide con el candidato que produjo el costo almacenado.
+Al finalizar, los parámetros informados se obtienen escalando la posición global final $G^{\mathrm{final}}$ componente a componente, sin aplicar un nuevo recorte superior. En la etapa de identificación FOPDT, las tres componentes se multiplican por 0.01, 2.0 y 0.5 (para $K_m$, $\tau$ y $L_d$, respectivamente); en la etapa de sintonización PID, se multiplican por 40, 25 y 0.05 (para $K_p$, $K_d$ y $K_i$). Como en este paso no hay recorte superior, en la etapa PID la salida puede superar los valores de escala 40, 25 y 0.05 aunque el costo se haya evaluado con una copia recortada de la posición; por tanto, la salida escalada no necesariamente coincide con el candidato que produce el costo almacenado. En la ejecución de la Tabla~\ref{tab:pso_resultados}, la componente de $G$ asociada a $K_d$ termina en 1.39 y 1.47, de modo que el costo evalúa $K_d=25$ en ambas ruedas y el \textit{script} informa 34.69 y 36.70.
 
 \subsection{Protocolos de captura, identificación y sintonización}
 \label{anx:protocolos_sintonizacion}
 
 \begin{table}[H]
 \centering
-\caption{Configuración de la sintonización por PSO (qué se optimizó y con qué hiperparámetros).}
+\caption{Configuración de la sintonización por PSO (qué se optimiza y con qué hiperparámetros).}
 \label{tab:pso_config}
 \small
 \begin{tabular}{p{5.2cm} p{4.3cm} p{4.3cm}}
@@ -796,54 +827,221 @@ Entrada o referencia & Escalón PWM $=143$ & Referencia obtenida del promedio de
 \end{tabular}
 \end{table}
 
-Combinando las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas} con el período nominal de captura $T_{\mathrm{cap}}$, el script calcula directamente la velocidad lineal medida de cada rueda, $v_j^{\mathrm{med}}[k]$ [m/s]. Para ello toma el incremento de conteo del encoder en el intervalo —la diferencia entre el conteo actual y el anterior, $\Delta c_j[k]$—, lo divide por la resolución efectiva del encoder $N_e$ y lo multiplica por el cociente entre el perímetro de la rueda y el período de captura. En el script de captura \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}ControlLazoAbierto.\allowbreak{}py}, $T_{\mathrm{cap}}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el script no corrige la escala temporal de la muestra.
+Combinando las Ecs.~\eqref{eq:posicion_rueda_encoder} y~\eqref{eq:w_ruedas} con el período nominal de captura $T_{\mathrm{cap}}$, el \textit{script} calcula directamente la velocidad lineal medida de cada rueda, $v_j^{\mathrm{med}}[k]$ [m/s]. Para ello toma el incremento de conteo del \textit{encoder} en el intervalo —la diferencia entre el conteo actual y el anterior, $\Delta c_j[k]$—, lo divide por la resolución efectiva del \textit{encoder} $N_e$ y lo multiplica por el cociente entre el perímetro de la rueda y el período de captura. En el \textit{script} de captura \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}ControlLazoAbierto.\allowbreak{}py}, $T_{\mathrm{cap}}=0.1$~s es un valor nominal fijo: la velocidad se calcula dividiendo por ese período y no por el tiempo real transcurrido entre lecturas. El tiempo medido mediante \texttt{time.time()} solo se utiliza para dormir el remanente del ciclo; si la comunicación serial consume más de 0.1~s, el \textit{script} no corrige la escala temporal de la muestra.
 
 \subsection{Resultados de la ejecución PSO empleada}
 \label{anx:resultados_pso_ejecucion}
 
 \begin{table}[H]
 \centering
+\begin{threeparttable}
 \caption{Salida registrada de una ejecución de \texttt{SintonizacionAutomatica.py}: modelo FOPDT identificado y ganancias sugeridas por PSO.}
 \label{tab:pso_resultados}
 \small
-\begin{tabular}{l S[table-format=1.4] S[table-format=1.4]}
+\begin{tabular}{l c c}
 \toprule
-\textbf{Resultado} & {\textbf{Rueda izq.}} & {\textbf{Rueda der.}} \\
+\textbf{Resultado} & \textbf{Rueda izq.} & \textbf{Rueda der.} \\
 \midrule
 \multicolumn{3}{l}{\textit{Modelo FOPDT identificado (Etapa 1)}} \\
 $K_m$ [(m/s)/PWM] & 0.000913 & 0.000890 \\
 $\tau$ [s]        & 0.3291   & 0.3485 \\
-$L_d$ [s]         & 0.0001   & 0.0692 \\ \addlinespace
+$L_d$ [s]\tnote{a} & 0.0001   & 0.0692 \\
+Retardo entero aplicado $n_{d}$ [muestras] & 0 & 0 \\ \addlinespace
 \multicolumn{3}{l}{\textit{Ganancias sugeridas por PSO (Etapa 2)}} \\
 $K_p$ & 12.48 & 10.10 \\
-$K_d$ & 34.69 & 36.70 \\
+$K_d$ informado y cargado\tnote{b} & 34.69 & 36.70 \\
+$K_d$ evaluado por el costo\tnote{b} & 25.00 & 25.00 \\
 $K_i$ & 0.00001 & 0.00001 \\
 \bottomrule
 \end{tabular}
-
-\vspace{3pt}
-\parbox{0.85\linewidth}{\footnotesize\textit{Nota:} las ganancias finales (tras refinamiento experimental) se reportan en la Tabla~\ref{tab:ganancias_pid}; el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.}
+\begin{tablenotes}
+\footnotesize
+\item[a] Valor que entrega el optimizador. Como el retardo se cuantiza en muestras de $T_{\mathrm{cap}}=0.1$~s, cualquier $L_d$ menor que ese período produce $n_d=0$ y el mismo costo, por lo que el valor indica que el retardo es menor que $T_{\mathrm{cap}}$, sin precisar su magnitud.
+\item[b] La salida del \textit{script} escala la posición global sin recortarla, mientras que el costo evalúa una copia recortada a la cota de 25.
+\item[] Las ganancias finales, tras el refinamiento experimental, se reportan en la Tabla~\ref{tab:ganancias_pid}, y el desempeño del lazo cerrado, en la Tabla~\ref{tab:pid_performance}.
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
-\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que generó \texttt{resultados\_pso.tex} y pueden variar al repetir el script. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, cero muestras de retardo ($n_{d,j}=0$) en la cuantización descrita en el \ref{anx:fodt_scripts}. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
+\noindent La clase PSO no fija una semilla pseudoaleatoria, por lo que estos parámetros corresponden a la ejecución que genera el archivo \texttt{resultados\_pso.tex} y pueden variar al repetir el \textit{script}. Debido a que el período de captura utilizado en la identificación es $T_{\mathrm{cap}}=0.1$~s, los retardos numéricos obtenidos cumplen $L_{d,j}<T_{\mathrm{cap}}$ y producen, en ambos casos, cero muestras de retardo ($n_{d,j}=0$) en la cuantización descrita en el \ref{anx:fodt_scripts}. Por tanto, la discretización implementada no permite identificar con precisión retardos inferiores a un período de captura; los valores informados corresponden a la salida numérica del optimizador, pero no introducen un desplazamiento temporal efectivo en el modelo discreto.
+
+\paragraph{Aporte del PSO a las ganancias finales.} Este párrafo desarrolla el
+análisis resumido en la Sec.~\ref{sec:resultados_pid}.
+\citet{gokcce2021particle} emplean un costo del mismo tipo que el de este
+trabajo, que combina error estacionario, tiempo de subida y sobreimpulso, pero
+validan en simulación las ganancias que obtienen por PSO. En este trabajo, esas
+ganancias se cargan en el robot, y el refinamiento aumenta $K_p$ en 28\% y
+63\%, reduce $K_d$ en 41\% y 45\% respecto de los valores informados y aumenta
+$K_i$ en varios órdenes de magnitud. El ajuste se explica por tres factores. El
+primero es el modelo, porque la identificación usa un único escalón de 143
+niveles de PWM y una estructura lineal que no representa la zona muerta del
+\textit{driver}, y la simulación del costo calcula el controlador en punto
+flotante, por lo que no reproduce la banda de insensibilidad de hasta
+4~\textit{ticks/frame} de las ganancias sugeridas (\ref{anx:estabilidad_pid}).
+El segundo es la función objetivo, que evalúa un único escalón, no penaliza el
+esfuerzo de control y deja la componente asociada a $K_d$ sobre la frontera del
+espacio de búsqueda. El tercero es la implementación del optimizador, que no
+recorta su salida ni fija una semilla (\ref{anx:pso_detalle}), por lo que los
+$K_d$ informados, 34.69 y 36.70, no son los que evalúa el costo, aunque según la
+misma rutina ambos producen la misma subida (\ref{anx:estabilidad_pid}). Aun
+así, el PSO entrega un punto de partida estable y más conservador que las
+ganancias definitivas, del mismo orden de magnitud que ellas y obtenido sobre la
+estructura de la ley ejecutada, sin traducir ganancias de una regla analítica,
+como sí lo exige la sintonía Lambda del \ref{anx:lambda_detalle}. Por tanto, su
+aporte es el de una semilla de búsqueda y no el de un ajuste final validado por
+sí solo.
 
 \subsection{Captura de la respuesta en lazo cerrado}
 \label{anx:captura_lazo_cerrado}
 
-La respuesta experimental se adquirió mediante el script
-\texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}ControlLazoCerrado.\allowbreak{}py}. El script envía una referencia de 0.13~m/s
+La respuesta experimental se adquiere mediante el \textit{script}
+\texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}ControlLazoCerrado.\allowbreak{}py}. El \textit{script} envía una referencia de 0.13~m/s
 mediante el comando \texttt{k}, consulta la velocidad informada por el
-firmware mediante \texttt{j} y almacena muestras con un período nominal de
+\textit{firmware} mediante \texttt{j} y almacena muestras con un período nominal de
 0.1~s. La lectura serial se ejecuta en un hilo asíncrono y, después de solicitar
 \texttt{j}, el bucle copia inmediatamente el último par numérico disponible en
 \texttt{rawData}. Por ello, cada registro corresponde a la medición más reciente
 recibida, sin comprobar que haya sido actualizada específicamente para esa
 iteración.
 
+\subsection{Análisis de estabilidad del lazo de velocidad}
+\label{anx:estabilidad_pid}
+
+Este anexo desarrolla el análisis de estabilidad resumido en la
+Sec.~\ref{sec:motorcontrol_pid}. Los cálculos se ejecutan con el \textit{script}
+\texttt{AnalisisEstabilidadPID.py} (\ref{anx:rutas_software}), que usa solo los
+parámetros documentados en las Tablas~\ref{tab:parametros_modelo},
+\ref{tab:ganancias_pid} y~\ref{tab:pso_resultados}.
+
+\paragraph{Forma incremental del PID.} En la forma incremental, también llamada
+algoritmo de velocidad, cada muestra calcula el cambio de la señal de control y
+lo suma a la salida anterior \citep[Sec.~13.4]{astrom2009controlpid}. Con una
+ponderación $b_{\mathrm{sp}}$ del punto de consigna en la acción proporcional,
+la acción derivativa calculada sobre la medición y las acciones integral y
+derivativa aproximadas por diferencias hacia atrás, el incremento del PID es el
+de la Ec.~\eqref{eq:pi_incremental}
+\citep[Secs.~3.4, 13.3 y~13.4]{astrom2009controlpid}:
+
+\begin{equation}
+\Delta u[k]
+=
+K_c\bigl(b_{\mathrm{sp}}\,\Delta m^{\mathrm{ref}}[k]-\Delta m[k]\bigr)
++
+\frac{K_c\,T_m}{T_i}\,e[k]
+-
+\frac{K_c\,T_d}{T_m}\,\Delta^{2} m[k],
+\qquad
+u[k]=u[k-1]+\Delta u[k],
+\label{eq:pi_incremental}
+\end{equation}
+
+\noindent donde $K_c$ es la ganancia proporcional, $T_m$ el período de
+muestreo, $T_i$ y $T_d$ los tiempos integral y derivativo, $m^{\mathrm{ref}}$ la
+referencia, $m$ la medición, $e=m^{\mathrm{ref}}-m$ el error, y $\Delta$ y
+$\Delta^{2}$ la primera y la segunda diferencia entre muestras consecutivas. Con
+$b_{\mathrm{sp}}=0$ la referencia solo entra en el término integral, lo que
+evita saltos de la señal de control \citep[Sec.~3.4]{astrom2009controlpid}, y
+con $T_d=0$ el algoritmo se reduce a un PI incremental. En la ley ejecutada, sin
+el término asociado a $K_{i,j}$, $K_{d,j}/K_o$ cumple el papel de $K_c$ y
+$K_{p,j}/K_o$ el de $K_cT_m/T_i$. Con las ganancias definitivas, la ganancia
+proporcional equivalente es de 0.41 y 0.40~PWM por \textit{tick/frame}, y el
+tiempo integral equivalente, $T_i=T_mK_{d,j}/K_{p,j}$, es de 42 y 40~ms en las
+ruedas izquierda y derecha, respectivamente.
+
+\paragraph{Criterios de estabilidad.} El lazo discreto es estable cuando todas
+las raíces de su ecuación característica tienen magnitud menor que uno. Para
+estimar cuánto puede diferir la planta real del modelo, se calculan además el
+margen de ganancia, que indica cuántas veces puede crecer la ganancia del lazo,
+el margen de fase, que indica cuánto atraso adicional tolera, y el margen de
+retardo, que indica el máximo retardo adicional que admite antes de perder la
+estabilidad. La sensibilidad máxima $M_s$ resume la robustez en un solo número,
+y sus valores típicos se encuentran entre 1.2 y 2.0
+\citep[Sec.~5]{wittenmark_ifac_computer}.
+
+\paragraph{Planteamiento.} El análisis se aplica al lazo discreto que forman las
+Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida} con el modelo FOPDT
+identificado de cada rueda, discretizado de forma exacta con el período
+$T_{\mathrm{PID,sched}}=33$~ms. El modelo discreto incluye el retardo $L_{d,j}$,
+el retenedor de orden cero del PWM y la medición del \textit{firmware}, que
+entrega la velocidad media del período anterior. Como el retardo identificado
+es menor que el período de captura y su valor exacto no se resuelve con esos
+datos (\ref{anx:fodt_scripts}), el análisis se repite con el retardo en su cota
+superior, $L_{d,j}=T_{\mathrm{cap}}=0.1$~s. El análisis es lineal, por lo que no
+incluye la saturación, la zona muerta del \textit{driver} ni los truncamientos
+enteros, que se comentan al final de este anexo.
+
+\paragraph{Resultados.} La Tabla~\ref{tab:estabilidad_pid} resume los
+resultados con las ganancias definitivas. En la rueda izquierda se informan dos
+casos, sin el término asociado a $K_{i,L}$, que corresponde a la operación cerca
+del equilibrio, y con ese término tratado como lineal, que es el caso más
+desfavorable. En la rueda derecha ese término no tiene efecto, porque su estado
+integral permanece en cero.
+
+\begin{table}[htbp]
+\centering
+\caption{Estabilidad y robustez del lazo de velocidad con las ganancias definitivas y el modelo FOPDT identificado.}
+\label{tab:estabilidad_pid}
+\small
+\begin{tabular}{P{5.4cm} P{2.6cm} P{2.6cm} P{2.3cm}}
+\toprule
+\textbf{Indicador} & \textbf{Izquierda sin $K_{i,L}$} & \textbf{Izquierda con $K_{i,L}$} & \textbf{Derecha} \\
+\midrule
+\multicolumn{4}{l}{\textit{Con el retardo identificado}} \\
+Retardo del modelo $L_{d,j}$ & 0.0001~s & 0.0001~s & 0.0692~s \\
+Mayor magnitud de los polos de lazo cerrado & 0.947 & 0.995 & 0.959 \\
+Margen de fase & 56.9$^\circ$ & 53.4$^\circ$ & 46.8$^\circ$ \\
+Margen de ganancia & 38.8~dB & 38.8~dB & 17.1~dB \\
+Margen de retardo & 0.45~s & 0.42~s & 0.37~s \\
+Sensibilidad máxima $M_s$ & 1.36 & 1.39 & 1.65 \\
+\midrule
+\multicolumn{4}{l}{\textit{Con el retardo en su cota superior, $L_{d,j}=T_{\mathrm{cap}}=0.1$~s}} \\
+Margen de fase & 44.1$^\circ$ & 40.7$^\circ$ & 42.9$^\circ$ \\
+Margen de ganancia & 13.4~dB & 13.1~dB & 13.3~dB \\
+Margen de retardo & 0.35~s & 0.32~s & 0.34~s \\
+Sensibilidad máxima $M_s$ & 1.78 & 1.85 & 1.81 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+En los tres casos, todas las raíces quedan dentro del círculo unitario, por lo
+que el lazo nominal es estable, y la sensibilidad máxima, de 1.36 a 1.65, queda
+dentro del intervalo típico. Con el retardo en su cota superior el lazo sigue
+estable, y en todos los casos solo pierde la estabilidad si el retardo total
+supera unos 0.42~s, más de cuatro veces esa cota. Por eso, la incertidumbre del
+retardo no altera la conclusión de estabilidad. Un barrido de 625 combinaciones
+de la ganancia de la planta, entre 0.1 y 10 veces la identificada, y de su
+constante de tiempo, entre 0.05 y 3~s, muestra además que el lazo solo se vuelve
+inestable con ganancias de planta de al menos 6.8 veces la identificada, o de
+4.6 veces con el retardo en su cota.
+
+\paragraph{Efectos no incluidos en el análisis lineal.} Como el incremento de
+la Ec.~\eqref{eq:pid_fw_incremento} se trunca a un entero, en estado
+estacionario la salida no cambia mientras se cumpla
+$K_{p,j}\,|e_j^{\mathrm{db}}[k]|<K_o$. Esta banda de insensibilidad deja sin
+corregir errores de hasta 3~\textit{ticks/frame} con las ganancias definitivas y
+de hasta 4 con las sugeridas por PSO, es decir, cerca de 0.01~m/s, y el error
+estacionario medido, de 0.002 y 0.000~m/s (Tabla~\ref{tab:pid_performance}),
+queda dentro de ella. El análisis tampoco cubre las velocidades bajas. En un
+giro sobre el propio eje a 0.35~rad/s, cada rueda opera cerca de
+10~\textit{ticks/frame}, donde esa banda representa cerca de un 30\% de la
+referencia y la zona muerta del \textit{driver} tiene mayor peso.
+
+\paragraph{Ganancias sugeridas por PSO.} Con el mismo modelo, las ganancias
+sugeridas por PSO dan márgenes de fase de 62$^\circ$ a 66$^\circ$ y una
+sensibilidad máxima de 1.20 a 1.33, por lo que son más conservadoras que las
+definitivas. La rutina de simulación del \textit{script} de sintonización, que
+no aplica el retardo (\ref{anx:planta_sintonizacion}), predice con ellas una
+subida de 0.8 y 1.1~s, igual con el $K_d$ informado y con el evaluado por el
+costo. En el robot, en cambio, la rueda izquierda se detiene en 0.12~m/s y la
+derecha recién sostiene la referencia después de los 6~s
+(Fig.~\ref{fig:respuesta_escalon_pso}). Con las ganancias definitivas, la misma
+rutina predice sobreimpulsos de 10\% a 16\%, que no aparecen en el robot. El
+modelo, por tanto, sobrestima la rapidez del lazo real.
+
 \section{Configuración complementaria de SLAM, Nav2 y exploración}
 \label{anx:nav2_slam_config}
 
-Las configuraciones fuente se mantienen en \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/}. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}; en hardware real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
+Las configuraciones fuente se mantienen en \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/}. En simulación se utilizan \texttt{nav2\_params\_sim.yaml} y \texttt{mapper\_params\_online\_async\_sim.yaml}, con \texttt{use\_sim\_time: true}; en \textit{hardware} real se utilizan \texttt{nav2\_params.yaml} y \texttt{mapper\_params\_online\_async.yaml}, con \texttt{use\_sim\_time: false}.
 
 Los identificadores de \textit{plugin} cargados por los componentes resumidos
 en la Tabla~\ref{tab:nav2_componentes_ch9} son
@@ -858,11 +1056,12 @@ Tabla~\ref{tab:anx_nav2_dwb_params}.
 \small
 \begin{tabular}{lcc}
 \toprule
-\textbf{Parámetro} & \textbf{Hardware} & \textbf{Simulación} \\
+\textbf{Parámetro} & \textbf{\textit{Hardware}} & \textbf{Simulación} \\
 \midrule
 \texttt{controller\_frequency} & 8.0~Hz & 20.0~Hz \\
 \texttt{max\_vel\_x} (DWB) & 0.15~m/s & 0.26~m/s \\
 \texttt{max\_vel\_theta} & 0.35~rad/s & 1.0~rad/s \\
+\texttt{acc\_lim\_x} (DWB) & 0.25~m/s$^2$ & 2.5~m/s$^2$ \\
 \texttt{xy\_goal\_tolerance} & 0.10~m & 0.25~m \\
 \texttt{yaw\_goal\_tolerance} & 3.14~rad & 0.25~rad \\
 \texttt{min\_vel\_x} (DWB) & $-0.15$~m/s & 0.0~m/s \\
@@ -872,7 +1071,7 @@ Verificador de progreso & 0.05~m en 6.0~s & 0.5~m en 10.0~s \\
 \end{tabular}
 \end{table}
 
-\noindent En hardware real, DWB evalúa candidatos de hasta 0.15~m/s hacia
+\noindent En \textit{hardware} real, DWB evalúa candidatos de hasta 0.15~m/s hacia
 adelante y hacia atrás, mientras que \texttt{diff\_drive\_controller} limita
 la velocidad lineal a 0.13~m/s. Por ello, las consignas superiores a este
 último valor se limitan en la etapa posterior. La tolerancia angular de
@@ -894,7 +1093,7 @@ las transformaciones del robot. Este lanzamiento es independiente del de
 \texttt{slam\_toolbox} y no se ejecuta durante las pruebas de mapeo y
 exploración descritas en la Sec.~\ref{sec:resultados_slam}.
 
-\subsection{Geometría del costmap e inflación}
+\subsection{Geometría del \texorpdfstring{\textit{costmap}}{costmap} e inflación}
 \label{anx:costmap_inflacion}
 
 Los mapas de costo real utilizan un \textit{footprint} rectangular respecto de \texttt{base\_link}, con vértices en $(0.20,\,0.13)$, $(-0.08,\,0.13)$, $(-0.08,\,-0.13)$ y $(0.20,\,-0.13)$~m. La distancia mínima desde el origen a sus bordes es aproximadamente 0.08~m, correspondiente al borde posterior. Con radio de inflación $r_{\mathrm{inflacion}}=0.15$~m y factor de decaimiento $\beta=5.0$~m$^{-1}$ (\texttt{cost\_scaling\_factor}), la capa asigna un costo entero de 254 en la celda del obstáculo (letal), 253 dentro del radio inscrito, un valor con decaimiento exponencial en la distancia $d_o$ entre el radio inscrito y el de inflación, y 0 más allá del radio de inflación.
@@ -908,7 +1107,7 @@ crítico \texttt{BaseObstacle} del controlador DWB evalúa solo la celda bajo el
 centro del robot. Ninguno de los dos comprueba el contorno completo, así que la
 configuración no garantiza que la ruta deje espacio para la huella rotada del
 robot en pasos estrechos. Su efecto en las ejecuciones informadas no se
-cuantificó.
+cuantifica.
 
 \subsection{Acciones de recuperación de Nav2}
 \label{anx:recovery_nav2}
@@ -947,11 +1146,11 @@ Fin de la secuencia antes del reintento &
 \end{tabular}
 \end{table}
 
-\subsection{Parámetros principales de SLAM en hardware real}
+\subsection{Parámetros principales de SLAM en \texorpdfstring{\textit{hardware}}{hardware} real}
 
 \begin{table}[H]
 \centering
-\caption{Parámetros principales de \texttt{slam\_toolbox} cargados en hardware real.}
+\caption{Parámetros principales de \texttt{slam\_toolbox} cargados en \textit{hardware} real.}
 \label{tab:slam_params_ch9}
 \small
 \begin{tabular}{p{3.5cm} p{3cm} p{5cm}}
@@ -983,7 +1182,7 @@ Nodo ejecutado & \texttt{async\_slam\_toolbox\_node} & Variante asíncrona en l�
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Función} \\
 \midrule
 \texttt{robot\_base\_frame} & \texttt{base\_link} & Marco base del robot \\
-\texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & Costmap usado para detectar fronteras \\
+\texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & \textit{Costmap} usado para detectar fronteras \\
 \texttt{planner\_frequency} & 0.3~Hz & Valor configurado; período efectivo de 3333~ms ($\approx0.30003$~Hz) \\
 \texttt{progress\_timeout} & 10.0~s & Tiempo máximo sin progreso \\
 \texttt{gain\_scale} & 1.0 & Peso de ganancia de información en el costo de frontera (\ref{anx:explore_impl}) \\
@@ -991,7 +1190,7 @@ Nodo ejecutado & \texttt{async\_slam\_toolbox\_node} & Variante asíncrona en l�
 \texttt{orientation\_scale} & 0.0 & Parámetro cargado, pero no utilizado por \texttt{FrontierSearch} en el código ejecutado \\
 \texttt{min\_frontier\_size} & 0.05~m & Tamaño mínimo de una frontera válida \\
 \texttt{return\_to\_init} & \texttt{false} (valor por defecto) & No se carga en \texttt{explore.yaml}; no se ejecuta el retorno a la pose inicial \\
-\texttt{resolution} (costmap) & 0.05~m/celda & Resolución del costmap, $\rho_{\mathrm{map}}$ en el costo de frontera (\ref{anx:explore_impl}) \\
+\texttt{resolution} (\textit{costmap}) & 0.05~m/celda & Resolución del \textit{costmap}, $\rho_{\mathrm{map}}$ en el costo de frontera (\ref{anx:explore_impl}) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -999,40 +1198,40 @@ Nodo ejecutado & \texttt{async\_slam\_toolbox\_node} & Variante asíncrona en l�
 \subsection{Particularidades del explorador de fronteras}
 \label{anx:explore_impl}
 
-El detector inicia la búsqueda desde una celda libre próxima al robot. Al expandir una celda de la BFS, el código incorpora un vecino de cuatro conexiones únicamente cuando todavía no fue visitado y se cumple \texttt{map\_[nbr] <= map\_[idx]}; si esa condición no se cumple, evalúa el vecino como posible celda de frontera. Una celda desconocida constituye una celda de frontera cuando posee al menos un vecino de cuatro conexiones clasificado como espacio libre. Las celdas de frontera contiguas mediante ocho conexiones se agrupan en una misma frontera.
+El detector inicia la búsqueda desde una celda libre próxima al robot. Al expandir una celda de la BFS, el código incorpora un vecino de cuatro conexiones únicamente cuando todavía no se ha visitado y se cumple \texttt{map\_[nbr] <= map\_[idx]}; si esa condición no se cumple, evalúa el vecino como posible celda de frontera. Una celda desconocida constituye una celda de frontera cuando posee al menos un vecino de cuatro conexiones clasificado como espacio libre. Las celdas de frontera contiguas mediante ocho conexiones se agrupan en una misma frontera.
 
 La construcción implementada inicializa el tamaño de la frontera en uno para representar la celda inicial $p_0$, pero esa celda no se incorpora a la suma que calcula el punto denominado \texttt{centroid}: el punto enviado como centroide es la suma de las coordenadas de las celdas añadidas después de $p_0$ dividida por $1+|F_{\mathrm{add}}|$, donde $|F_{\mathrm{add}}|$ es el número de esas celdas añadidas. Por incluir la celda inicial en el divisor pero no en la suma, el punto almacenado $p_F^{\mathrm{impl}}$ no es el centroide geométrico convencional de todas las celdas de la frontera. La misma celda inicial tampoco participa en el cálculo de \texttt{min\_distance}.
 
-La variable \texttt{frontier.min\_distance} se calcula después de convertir las celdas añadidas a coordenadas del mundo, por lo que ya se encuentra en metros. Aun así, la función de costo implementada asigna a cada frontera $F$ un puntaje $U(F)$ restando a un término de distancia un término de ganancia: toma esa distancia mínima ya métrica $d_{\mathrm{min}}^{\mathrm{world}}(F)$ [m], la vuelve a multiplicar por la resolución del costmap $\rho_{\mathrm{map}}$ [m/celda] y la pondera por $w_{\mathrm{pot}}$; y le resta el número de celdas almacenado $|F|$ multiplicado también por $\rho_{\mathrm{map}}$ y ponderado por $w_{\mathrm{gain}}$. Los valores configurados de ambos pesos y del tamaño mínimo de frontera corresponden a la Tabla~\ref{tab:explore_params_ch9}. Como la distancia ya estaba en metros, esa segunda multiplicación por $\rho_{\mathrm{map}}$ deja el primer término escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
+La variable \texttt{frontier.min\_distance} se calcula después de convertir las celdas añadidas a coordenadas del mundo, por lo que ya se encuentra en metros. Aun así, la función de costo implementada asigna a cada frontera $F$ un puntaje $U(F)$ restando a un término de distancia un término de ganancia: toma esa distancia mínima ya métrica $d_{\mathrm{min}}^{\mathrm{world}}(F)$ [m], la vuelve a multiplicar por la resolución del \textit{costmap} $\rho_{\mathrm{map}}$ [m/celda] y la pondera por $w_{\mathrm{pot}}$; y le resta el número de celdas almacenado $|F|$ multiplicado también por $\rho_{\mathrm{map}}$ y ponderado por $w_{\mathrm{gain}}$. Los valores configurados de ambos pesos y del tamaño mínimo de frontera corresponden a la Tabla~\ref{tab:explore_params_ch9}. Como la distancia ya está en metros, esa segunda multiplicación por $\rho_{\mathrm{map}}$ deja el primer término escalado en m$^2$/celda y el segundo en metros, de modo que $U(F)$ es un puntaje heurístico no homogéneo. Esta diferencia se mantiene porque corresponde al código ejecutado.
 
 El ordenamiento, la selección y el envío de la meta se formalizan en el Alg.~\ref{alg:exploracion_fronteras}. Con resolución 0.05~m/celda y \texttt{min\_frontier\_size}=0.05~m, el criterio $|F|\rho_{\mathrm{map}}\geq0.05$ admite desde un tamaño almacenado de una celda. Si una frontera no incorpora vecinos después de la celda inicial, conserva $|F|=1$, $p_F^{\mathrm{impl}}=(0,0)$ y $d_{\mathrm{min}}^{\mathrm{world}}=\infty$, porque la celda inicial no se suma ni se utiliza para actualizar la distancia. Por tanto, su costo es infinito; aun así, puede permanecer como candidata si no existe otra frontera seleccionable. Dos objetivos se consideran iguales cuando su distancia euclidiana es inferior a 0.01~m.
 
-El parámetro configurado es $f_{\mathrm{exp}}=0.3$~Hz, pero el temporizador se construye por conversión a milisegundos enteros sin redondeo, lo que da un período de 3333~ms, equivalente a una frecuencia efectiva de aproximadamente 0.30003~Hz. La gestión de la lista negra se formaliza en el Alg.~\ref{alg:exploracion_fronteras}; como particularidad de la implementación, la comprobación de pertenencia utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del costmap.
+El parámetro configurado es $f_{\mathrm{exp}}=0.3$~Hz, pero el temporizador se construye por conversión a milisegundos enteros sin redondeo, lo que da un período de 3333~ms, equivalente a una frecuencia efectiva de aproximadamente 0.30003~Hz. La gestión de la lista negra se formaliza en el Alg.~\ref{alg:exploracion_fronteras}; como particularidad de la implementación, la comprobación de pertenencia utiliza tolerancias independientes en $x$ e $y$ iguales a cinco celdas del \textit{costmap}.
 
 \section{Detalle de validación de odometría}
 \label{anx:odometria_detalle}
 
 Este anexo recoge el detalle por repetición de las pruebas resumidas en la Sec.~\ref{sec:resultados_odometria}: trayectoria rectilínea de 2~m (medias en la Tabla~\ref{tab:resumen_odometria}) y protocolo angular con referencia nominal de $360^\circ$ (medias en la Tabla~\ref{tab:resumen_giro}). Se presentan las cinco repeticiones por entorno.
 
-Los scripts de la prueba angular publican una consigna de 0.4~rad/s durante
+Los \textit{scripts} de la prueba angular publican una consigna de 0.4~rad/s durante
 $2\pi/0.4$~s directamente sobre el tópico de entrada del controlador
 diferencial, lo que corresponde a la referencia nominal de $360^\circ$
-empleada por los scripts de análisis. Sin embargo, la configuración del
+empleada por los \textit{scripts} de análisis. Sin embargo, la configuración del
 controlador satura la velocidad angular en 0.35~rad/s
 (Tabla~\ref{tab:diff_drive_params}); bajo ese límite, mantenido de forma
 ideal y constante, el giro teórico alcanzable es
-$0.35\,(2\pi/0.4)$~rad, equivalente a $315^\circ$. Sin embargo, todos los giros registrados superan ese valor, tanto el giro acumulado de \texttt{/odom} en simulación (Tabla~\ref{tab:odom_giro_sim}) como el giro físico medido en hardware (Tabla~\ref{tab:odom_giro}). Esto indica que la velocidad angular efectiva no quedó limitada de forma ideal a 0.35~rad/s durante los ensayos. Los registros \textit{rosbag} de cada prueba contienen \texttt{/odom}, cuya velocidad angular permitiría verificar la velocidad efectivamente aplicada sin repetir los ensayos.
+$0.35\,(2\pi/0.4)$~rad, equivalente a $315^\circ$. Sin embargo, todos los giros registrados superan ese valor, tanto el giro acumulado de \texttt{/odom} en simulación (Tabla~\ref{tab:odom_giro_sim}) como el giro físico medido en \textit{hardware} (Tabla~\ref{tab:odom_giro}). Esto indica que la velocidad angular efectiva no queda limitada de forma ideal a 0.35~rad/s durante los ensayos. Los registros \textit{rosbag} de cada prueba contienen \texttt{/odom}, cuya velocidad angular permitiría verificar la velocidad efectivamente aplicada sin repetir los ensayos.
 
 En simulación, la interpretación del error rectilíneo y la condición del protocolo angular corresponden a las definidas en la Sec.~\ref{sec:resultados_odometria}. Como tratamiento exacto de la orientación, \texttt{prueba\_giro\_sim.py} reemplaza la diferencia normalizada de orientación de Gazebo Classic por el giro acumulado de \texttt{/odom} cuando aquella es menor que $10^\circ$; por ello, la tabla simulada no contiene una verdad de terreno angular independiente.
 
 \subsection{Trayectoria rectilínea de 2~m}
 
 La Tabla~\ref{tab:odom_recta_sim} presenta los resultados en simulación y la
-Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
+Tabla~\ref{tab:odom_recta_real} los obtenidos sobre \textit{hardware} real.
 
 \begin{table}[H]
 \centering
-\caption{Desviación de la odometría simulada respecto de la referencia nominal de 2~m (Gazebo Classic). La pose verdadera del simulador no quedó registrada.}
+\caption{Desviación de la odometría simulada respecto de la referencia nominal de 2~m (Gazebo Classic). La pose verdadera del simulador no queda registrada.}
 \label{tab:odom_recta_sim}
 \small
 \begin{tabular}{cccc}
@@ -1051,7 +1250,7 @@ Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
 
 \begin{table}[H]
 \centering
-\caption{Error de odometría en trayectoria rectilínea de 2~m en hardware real. El error corresponde a la discrepancia entre la odometría de encoders y la distancia física medida.}
+\caption{Error de odometría en trayectoria rectilínea de 2~m en \textit{hardware} real. El error corresponde a la discrepancia entre la odometría de \textit{encoders} y la distancia física medida.}
 \label{tab:odom_recta_real}
 \small
 \begin{tabular}{ccccc}
@@ -1090,7 +1289,7 @@ Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
 
 \begin{table}[H]
 \centering
-\caption{Desviación angular física respecto de la referencia nominal de $360^\circ$ usada por el script en hardware real. Las desviaciones son bidireccionales (sobre- y subgiros).}
+\caption{Desviación angular física respecto de la referencia nominal de $360^\circ$ usada por el \textit{script} en \textit{hardware} real. Las desviaciones son bidireccionales (sobre- y subgiros).}
 \label{tab:odom_giro}
 \small
 \begin{tabular}{cccc}
@@ -1110,26 +1309,26 @@ Tabla~\ref{tab:odom_recta_real} los obtenidos sobre hardware real.
 \section{Resultados complementarios de exploración y mapeo}
 \label{anx:protocolo_resultados}
 
-Este anexo presenta los registros por iteración de la exploración autónoma en hardware real obtenidos mediante el framework \texttt{sesiones\_mapeo}. Cada ejecución parte de un reinicio de SLAM y Nav2. La definición y la interpretación de la cobertura y del área libre mapeada son las establecidas en la Sec.~\ref{sec:resultados_slam}; aquí se conservan los valores desagregados de la sesión realizada el 22 de junio de 2026.
+Este anexo presenta los registros por iteración de la exploración autónoma en \textit{hardware} real obtenidos mediante el \textit{framework} \texttt{sesiones\_mapeo}. Cada ejecución parte de un reinicio de SLAM y Nav2. La definición y la interpretación de la cobertura y del área libre mapeada son las establecidas en la Sec.~\ref{sec:resultados_slam}; aquí se conservan los valores desagregados de la sesión realizada el 22 de junio de 2026.
 
-Se ejecutaron seis iteraciones. La iteración~02 se excluyó del análisis.
-Durante esa ejecución, que se extendió por 5.09~min, se constató que
-el robot no se desplazó de su posición inicial, mientras que la odometría de
-encoders acumuló 3.851~m.La cercanía de ese valor con los 3.850~m de la iteración~5 no proviene de una
-mezcla de registros, porque cada distancia se calculó sobre el rosbag de su
-propia carpeta, con duraciones de 5.09 y 2.50~min. El explorador despachó 14 metas de navegación, de
-las cuales 13 terminaron en aborto y una quedó sin estado terminal, y se
-registraron 13 avisos de lista de fronteras agotada. La imagen de ocupación
-tampoco quedó almacenada al término de la sesión, por lo que no fue posible
+Se ejecutan seis iteraciones. La iteración~02 se excluye del análisis.
+Durante esa ejecución, que se extiende por 5.09~min, se constata que
+el robot no se desplaza de su posición inicial, mientras que la odometría de
+\textit{encoders} acumula 3.851~m. La cercanía de ese valor con los 3.850~m de la iteración~5 no proviene de una
+mezcla de registros, porque cada distancia se calcula sobre el \textit{rosbag} de su
+propia carpeta, con duraciones de 5.09 y 2.50~min. El explorador despacha 14 metas de navegación, de
+las cuales 13 terminan en aborto y una queda sin estado terminal, y se
+registran 13 avisos de lista de fronteras agotada. La imagen de ocupación
+tampoco queda almacenada al término de la sesión, por lo que no es posible
 calcular la cobertura ni el área libre mapeada. La causa de la inmovilidad no
-se determinó, y la iteración no se incorpora al recuento de metas ni a los
+se determina, y la iteración no se incorpora al recuento de metas ni a los
 promedios de la Tabla~\ref{tab:slam_real_indicadores}.
 
 Este episodio ilustra de forma directa la limitación de una odometría basada
-únicamente en encoders, que mide el giro de las ruedas y no el desplazamiento
+únicamente en \textit{encoders}, que mide el giro de las ruedas y no el desplazamiento
 efectivo del vehículo. En las cinco iteraciones conservadas, en cambio, el
-desplazamiento queda respaldado por evidencia independiente de los encoders,
-porque el mapa creció hasta coberturas de entre 53.4\% y 82.9\% y ese
+desplazamiento queda respaldado por evidencia independiente de los \textit{encoders},
+porque el mapa crece hasta coberturas de entre 53.4\% y 82.9\% y ese
 crecimiento exige que el sensor láser observe geometría nueva desde posiciones
 distintas. Del mismo modo, el error odométrico informado en la
 Sec.~\ref{sec:resultados_odometria} se calcula contra una distancia medida con
@@ -1139,7 +1338,7 @@ cinta métrica y no contra la propia odometría.
 
 \begin{table}[H]
 \centering
-\caption{Resultado de las metas de navegación de la exploración, reconstruidas por identificador único a partir del flujo de estado de la acción \texttt{NavigateToPose} registrado en cada sesión. Las cinco iteraciones terminaron al no quedar fronteras.}
+\caption{Resultado de las metas de navegación de la exploración, reconstruidas por identificador único a partir del flujo de estado de la acción \texttt{NavigateToPose} registrado en cada sesión. Las cinco iteraciones terminan al no quedar fronteras.}
 \label{tab:anx_explore_metas}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -1158,24 +1357,24 @@ cinta métrica y no contra la propia odometría.
 \end{tabular}
 \end{table}
 
-\noindent De las 60 metas, 59 alcanzaron el estado de ejecución. La restante es
-la primera meta de la iteración~1, que ya figuraba abortada en el primer mensaje
-registrado y por eso tampoco pudo clasificarse como reemplazada. Las metas sin
+\noindent De las 60 metas, 59 alcanzan el estado de ejecución. La restante es
+la primera meta de la iteración~1, que ya figura abortada en el primer mensaje
+registrado y por eso tampoco puede clasificarse como reemplazada. Las metas sin
 estado terminal son la última de cada ejecución. Al no encontrar fronteras, el
-explorador solicitó automáticamente su cancelación, y el script de ensayo cerró
-el registro antes de que esa cancelación terminara. El tiempo activo es el
+explorador solicita automáticamente su cancelación, y el \textit{script} de ensayo cierra
+el registro antes de que esa cancelación termine. El tiempo activo es el
 intervalo entre la aceptación de una meta y la aceptación de la meta que la
-reemplazó. Su máximo fue de 16.7~s en la iteración~1 y de 6.7~s en las demás.
-La reconstrucción se obtuvo agrupando los mensajes de estado de la acción por el
+reemplaza. Su máximo es de 16.7~s en la iteración~1 y de 6.7~s en las demás.
+La reconstrucción se obtiene agrupando los mensajes de estado de la acción por el
 identificador de meta de 16 bytes.
 
-Los estadísticos agregados por iteración se presentan en la Tabla~\ref{tab:slam_real_indicadores} y la interpretación de los contadores en la Sec.~\ref{sec:resultados_nav2}. Las intervenciones manuales, registradas por el operador, fueron nulas en las cinco iteraciones válidas.
+Los estadísticos agregados por iteración se presentan en la Tabla~\ref{tab:slam_real_indicadores} y la interpretación de los contadores en la Sec.~\ref{sec:resultados_nav2}. Las intervenciones manuales, registradas por el operador, son nulas en las cinco iteraciones válidas.
 
 La Fig.~\ref{fig:anx_nav_exploracion_secuencia} muestra la secuencia completa de una ejecución representativa, desde el mapeo inicial de un pasillo estrecho hasta la mayor cobertura alcanzada, junto con la ruta planificada por Nav2 hacia las fronteras seleccionadas.
 
 El video de la ejecución se cita en la Sec.~\ref{sec:resultados_nav2}.
 
-\begin{utemMultiFigurePropia}{Secuencia de una ejecución representativa de exploración por fronteras y navegación autónoma sobre hardware real (vista de RViz y cámara cenital del recinto).}{fig:anx_nav_exploracion_secuencia}
+\begin{utemMultiFigurePropia}{Secuencia de una ejecución representativa de exploración por fronteras y navegación autónoma sobre \textit{hardware} real (vista de RViz y cámara cenital del recinto).}{fig:anx_nav_exploracion_secuencia}
 \addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Etapa temprana: pasillo estrecho.}
 \hfill
 \addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte2.png}{Mapa parcial en expansión.}
@@ -1193,7 +1392,7 @@ El video de la ejecución se cita en la Sec.~\ref{sec:resultados_nav2}.
 La clasificación de celdas empleada en la
 Ec.~\eqref{eq:cobertura_libre} se realiza sobre la imagen PGM del mapa de ocupación. Siendo $M$ el conjunto de intensidades $p$ de las celdas de dicha
 imagen PGM, los conteos empleados en la Ec.~\eqref{eq:cobertura_libre} se
-obtienen mediante la función indicadora $\mathbf{1}[\cdot]$, que vale $1$ cuando
+obtienen con la Ec.~\eqref{eq:conteos_cobertura}, mediante la función indicadora $\mathbf{1}[\cdot]$, que vale $1$ cuando
 la condición entre corchetes se cumple y $0$ en caso contrario:
 \begin{equation}
 N_{\mathrm{libre}}=\sum_{p\in M}\mathbf{1}\!\left[p\geq230\right],
@@ -1204,18 +1403,18 @@ N_{\mathrm{desconocido}}=\sum_{p\in M}\mathbf{1}\!\left[50<p<230\right].
 Las celdas restantes ($p\leq50$) se clasifican como ocupadas y no participan
 en el cálculo del índice de cobertura.
 
-Las diferencias de lectura y redondeo entre los distintos scripts de análisis se originan en esta clasificación. El script de análisis \texttt{test/\allowbreak{}slam/\allowbreak{}analizar\_\allowbreak{}slam.\allowbreak{}py} calcula a partir del rosbag y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_{\mathrm{map}}=0.05$~m/celda y redondea el resultado a dos decimales.
+Las diferencias de lectura y redondeo entre los distintos \textit{scripts} de análisis se originan en esta clasificación. El \textit{script} de análisis \texttt{test/\allowbreak{}slam/\allowbreak{}analizar\_\allowbreak{}slam.\allowbreak{}py} calcula a partir del \textit{rosbag} y de la imagen PGM el tiempo, la distancia odométrica, la cobertura y el área libre. En cambio, el número de nodos se suministra mediante el argumento \texttt{--nodos}, mientras que el cierre de lazo y la alineación se incorporan mediante \texttt{--cierre} y \texttt{--alineacion} o por ingreso manual. Por ello, el número de nodos informado corresponde al dato suministrado durante el análisis y la consistencia global indicada en la tabla es una valoración visual; no se presenta como una detección automática de cierre de lazo. Para el área libre, \texttt{analizar\_slam.py} lee la resolución desde el YAML del mapa, mientras \texttt{run\_explore.sh} utiliza directamente $\rho_{\mathrm{map}}=0.05$~m/celda y redondea el resultado a dos decimales.
 
 \subsection{Comparación cualitativa de mapas}
 
 \begin{table}[H]
 \centering
-\caption{Comparación cualitativa entre mapas de simulación y hardware real.}
+\caption{Comparación cualitativa entre mapas de simulación y \textit{hardware} real.}
 \label{tab:diferencias_mapas}
 \small
 \begin{tabular}{p{4.8cm} p{3.6cm} p{4.6cm}}
 \toprule
-\textbf{Aspecto} & \textbf{Simulación} & \textbf{Hardware real} \\
+\textbf{Aspecto} & \textbf{Simulación} & \textbf{\textit{Hardware} real} \\
 \midrule
 Nitidez de paredes & Alta & Media--alta \\
 Ruido en espacio libre & Nulo & Bajo--moderado \\
@@ -1227,6 +1426,7 @@ Zonas de sombra láser & Mínimas & Presentes \\
 \end{table}
 
 \subsection{Mediciones no incluidas en los ensayos}
+\label{anx:mediciones_no_incluidas}
 
 Los registros entregados no contienen mediciones de tensión, temperatura, uso
 de CPU, memoria ni autonomía energética. Esta es la razón por la que la
@@ -1234,12 +1434,12 @@ Sec.~\ref{sec:comparacion_sim_real} deja la caracterización cuantitativa del
 consumo energético y de la carga computacional fuera de los ensayos realizados
 y la plantea como trabajo futuro.
 
-El repositorio incluye además scripts preparados para ensayos que no forman
+El repositorio incluye además \textit{scripts} preparados para ensayos que no forman
 parte de la evidencia del Capítulo~\ref{ch:resultados}, como deslizamiento de
 ruedas, cierre de lazo, carga de CPU, monitoreo de recursos, bloqueo y calidad
 del \gls{LIDAR} y navegación con metas fijas. Sus directorios no contienen
 registros de salida, por lo que ninguno aporta mediciones a este trabajo. El
-script de navegación con metas fijas define tres escenarios con cinco
+\textit{script} de navegación con metas fijas define tres escenarios con cinco
 repeticiones y clasifica cada repetición según el resultado de la acción
 \texttt{NavigateToPose} y su duración, sin medir el error de posición final.
 Además, sus tres poses objetivo solo están definidas en coordenadas del mundo
@@ -1248,26 +1448,172 @@ La tolerancia que informa para el modo real, 0.22~m, no coincide con el valor
 de 0.10~m configurado en Nav2 (Tabla~\ref{tab:anx_nav2_dwb_params}). Ese valor
 solo se imprime en sus salidas y no interviene en la clasificación.
 
+Un protocolo de navegación con metas fijas requiere un mapa almacenado,
+localización activa sobre él y marcas físicas medidas en el recinto, y debería
+informar, para cada meta y repetición, el resultado de la acción, el error de
+posición final respecto de la marca, el tiempo hasta la meta y la longitud
+recorrida. \citet{ngoc2023efficient} miden el tiempo de llegada y el error
+euclidiano entre la meta y la posición final del robot en simulación, y
+\citet{francis2025principles} describen, entre las métricas de navegación, la
+tasa de éxito, el tiempo hasta la meta y la tasa de éxito ponderada por la
+longitud del camino. Con las tres metas y cinco repeticiones que define el
+\textit{script} preparado, 15 éxitos en 15 intentos permitirían afirmar con 95\%
+de confianza que la tasa de éxito supera el 78\%, según el intervalo de Clopper
+y Pearson, uno de los más usados para tasas de éxito en la evaluación de robots
+\citep{vincent2024generalizable}.
+
 \subsection{Limitaciones de los contadores de exploración}
 
-Los contadores de texto de \texttt{run\_explore.sh} no permiten calcular una tasa de éxito, por dos motivos distintos. El contador de metas generadas se alimenta de coincidencias de texto en el registro de \texttt{explore\_server} y del eco del tópico de meta de la acción \texttt{NavigateToPose}. La primera fuente no produce coincidencias porque el mensaje de envío de meta está declarado en nivel \textit{debug} en \texttt{explore.cpp} y el nodo se ejecutó en nivel informativo. La segunda tampoco, porque ese tópico no entregó datos y el propio registro conserva la advertencia de tópico no publicado. Por eso el contador de metas generadas queda en cero. Los contadores de éxito y de fallo sí se incrementan, pero lo hacen una vez por cada línea del flujo de estado de la acción, sin conservar ni deduplicar identificadores de meta, de modo que cuentan mensajes de estado y no metas únicas.
+Los contadores de texto de \texttt{run\_explore.sh} no permiten calcular una tasa de éxito, por dos motivos distintos. El contador de metas generadas se alimenta de coincidencias de texto en el registro de \texttt{explore\_server} y del eco del tópico de meta de la acción \texttt{NavigateToPose}. La primera fuente no produce coincidencias porque el mensaje de envío de meta está declarado en nivel \textit{debug} en \texttt{explore.cpp} y el nodo se ejecuta en nivel informativo. La segunda tampoco, porque ese tópico no entrega datos y el propio registro conserva la advertencia de tópico no publicado. Por eso el contador de metas generadas queda en cero. Los contadores de éxito y de fallo sí se incrementan, pero lo hacen una vez por cada línea del flujo de estado de la acción, sin conservar ni deduplicar identificadores de meta, de modo que cuentan mensajes de estado y no metas únicas.
 
-Para obtener una medida fiable se descartaron esos contadores y se reconstruyó el resultado de cada meta a partir del flujo de estado de la acción \texttt{NavigateToPose}, que quedó registrado íntegro en cada sesión. Cada meta se identifica por su identificador único de 16 bytes. A cada identificador se le asigna su estado terminal, con la prioridad éxito sobre aborto sobre cancelación, y se cuenta como en ejecución cuando alcanzó ese estado en algún momento del registro. El resultado agregado se presenta en la Tabla~\ref{tab:anx_explore_metas}.
+Para obtener una medida fiable se descartan esos contadores y se reconstruye el resultado de cada meta a partir del flujo de estado de la acción \texttt{NavigateToPose}, que queda registrado íntegro en cada sesión. Cada meta se identifica por su identificador único de 16 bytes. A cada identificador se le asigna su estado terminal, con la prioridad éxito sobre aborto sobre cancelación, y se cuenta como en ejecución cuando alcanza ese estado en algún momento del registro. El resultado agregado se presenta en la Tabla~\ref{tab:anx_explore_metas}.
 
 Para distinguir las metas reemplazadas por el explorador de los fallos de Nav2
-se usó el orden de los mensajes de estado. Una meta abortada se clasificó como
-reemplazada cuando existía un mensaje en el que la meta siguiente ya figuraba y
-la meta abortada seguía aceptada o en ejecución. No se utilizó la hora escrita
+se usa el orden de los mensajes de estado. Una meta abortada se clasifica como
+reemplazada cuando existe un mensaje en el que la meta siguiente ya figura y
+la meta abortada sigue aceptada o en ejecución. No se utiliza la hora escrita
 en cada línea del registro, porque tiene resolución de un segundo y corresponde
 al momento de escritura y no al de publicación del mensaje. Los tiempos se
-calcularon con el sello de aceptación que cada meta incluye en el mensaje. El
-procedimiento está implementado en el script
+calculan con el sello de aceptación que cada meta incluye en el mensaje. El
+procedimiento está implementado en el \textit{script}
 \texttt{clasificar\_metas\_exploracion.py}. El comportamiento de Nav2 ante una
-meta nueva se verificó en los archivos \texttt{simple\_action\_server.hpp} y
+meta nueva se verifica en los archivos \texttt{simple\_action\_server.hpp} y
 \texttt{bt\_navigator.cpp} de la rama \texttt{foxy-devel} de Nav2
 \citep{nav2_foxy_src}.
 
-\section{Convención de rutas y localización del software}
+\subsection{Comparación de los mapas con el plano del recinto}
+\label{anx:comparacion_plano}
+
+Para evaluar la exactitud de los mapas de la Sec.~\ref{sec:resultados_slam}, se
+levanta un plano del recinto con las distancias entre muros medidas
+manualmente, que se presenta en la Fig.~\ref{fig:plano_recinto}. Sus muros
+tienen menos de 2~cm de espesor y se representan como líneas. El largo del
+tabique corto unido al muro inferior no se mide, por lo que la
+Tabla~\ref{tab:exactitud_mapas} solo incluye su posición.
+
+\utemFigurePropia{2.Texto/Imag/plano_recinto.pdf}{0.62\textwidth}
+{Plano del recinto de ensayo, con las distancias entre muros medidas manualmente.}
+{fig:plano_recinto}
+
+La comparación usa los cinco mapas válidos, en las imágenes de cobertura que
+genera \texttt{analizar\_slam.py} a partir de los mapas registrados en ROS~2,
+de las que se recupera la clase de cada celda de 0.05~m con los umbrales de la
+Ec.~\eqref{eq:conteos_cobertura}. Los conteos recuperados reproducen el índice
+de cobertura y el área libre de la Tabla~\ref{tab:slam_real_indicadores}, con
+una diferencia máxima de dos celdas. Cada mapa se alinea con el plano mediante
+una rotación y una traslación, sin ajustar su escala, de modo que un error de
+escala del mapa queda reflejado en las distancias. Con el plano alineado, se
+toma un punto cada 1~cm a lo largo de los muros y se calcula su distancia a la
+celda ocupada más cercana del mapa, que es la métrica de exactitud que emplean
+\citet{trejos2022slam}. Solo se consideran los puntos que el robot observa, es
+decir, los que tienen una celda libre a menos de 0.10~m, que son entre el 92\% y
+el 93\% del total.
+
+La distancia media entre el plano y el mapa es de 3.4~cm, con 3.55, 3.19, 3.72,
+3.53 y 3.17~cm en las iteraciones 1, 3, 4, 5 y 6, del orden de la resolución del
+mapa, ya que al
+representar un muro con celdas de 0.05~m su posición puede diferir hasta
+0.025~m de la real. La Tabla~\ref{tab:exactitud_mapas} compara las distancias
+del plano con las medidas en los mapas, y la Fig.~\ref{fig:anx_mapas_vs_plano}
+muestra cada mapa alineado con el plano. El alto del recinto, los dos primeros
+pasillos y los pasos que dejan los muros largos coinciden con diferencias de
+$-2$ a $+4$~cm, menores que una celda, y el tercer pasillo resulta 5~cm más
+ancho. En total, los tres pasillos suman 12~cm más que en el plano. Como el
+plano registra distancias libres entre muros, el espesor de los dos muros
+largos explica a lo sumo 4~cm de esa diferencia, y el resto puede provenir de la
+medición manual o de una distorsión del mapa en esa dirección, causas que estos
+datos no permiten separar. Las mayores diferencias, de 6 a 9~cm, corresponden a
+los tabiques cortos, que quedan representados por pocas celdas ocupadas.
+
+\utemFigurePropia{2.Texto/Imag/mapas_vs_plano.pdf}{0.60\textwidth}
+{Mapas de las cinco iteraciones válidas alineados con el plano del recinto.}
+{fig:anx_mapas_vs_plano}
+
+\begin{table}[H]
+\centering
+\caption{Distancias del plano del recinto y las mismas distancias medidas en los mapas de las cinco iteraciones válidas.}
+\label{tab:exactitud_mapas}
+\small
+\begin{tabular}{P{4.6cm} c c c c}
+\toprule
+\textbf{Distancia} & \makecell{\textbf{Plano}\\\textbf{(m)}} & \makecell{\textbf{Media de}\\\textbf{los mapas (m)}} & \makecell{\textbf{Rango de}\\\textbf{los mapas (m)}} & \makecell{\textbf{Diferencia}\\\textbf{media (cm)}} \\
+\midrule
+Alto interior del recinto & 1.91 & 1.89 & 1.89 a 1.90 & $-1.7$ \\
+Ancho del primer pasillo & 0.58 & 0.62 & 0.61 a 0.64 & $+4.1$ \\
+Ancho del segundo pasillo & 0.58 & 0.60 & 0.59 a 0.61 & $+2.4$ \\
+Ancho del tercer pasillo & 0.98 & 1.03 & 1.02 a 1.05 & $+5.2$ \\
+Paso sobre el primer muro largo & 0.68 & 0.69 & 0.68 a 0.69 & $+0.5$ \\
+Paso bajo el segundo muro largo & 0.68 & 0.67 & 0.67 a 0.68 & $-0.8$ \\
+Largo del tabique unido al segundo muro largo & 0.40 & 0.34 & 0.32 a 0.38 & $-6.1$ \\
+Altura de ese tabique sobre el extremo del muro & 0.40 & 0.39 & 0.38 a 0.40 & $-0.5$ \\
+Distancia del tabique superior del tercer pasillo al muro superior & 0.40 & 0.32 & 0.31 a 0.34 & $-7.8$ \\
+Largo del tabique superior del tercer pasillo & 0.40 & 0.38 & 0.34 a 0.41 & $-2.3$ \\
+Distancia del tabique corto inferior al muro derecho & 0.61 & 0.70 & 0.69 a 0.71 & $+9.3$ \\
+\bottomrule
+\end{tabular}
+\vspace{3pt}
+\parbox{0.92\linewidth}{\footnotesize Las distancias de los mapas se miden entre las celdas ocupadas de cada muro, después de alinear el plano con cada mapa. La resolución del mapa es de 0.05~m/celda.}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Intervalos de confianza de los indicadores}
+\label{anx:intervalos_confianza}
+
+Este anexo desarrolla el alcance estadístico resumido en la
+Sec.~\ref{sec:alcance_estadistico}. La Tabla~\ref{tab:intervalos_confianza}
+presenta el intervalo de confianza al 95\% de la media de cada indicador,
+calculado con la Ec.~\eqref{eq:ic_media}, que usa la distribución $t$ de
+Student \citep[Cap.~8]{devore2021modern}:
+
+\begin{equation}
+\mu \pm t_{0.975,\,n-1}\,\frac{\sigma}{\sqrt{n}},
+\label{eq:ic_media}
+\end{equation}
+
+\noindent donde $\mu$ y $\sigma$ son la media y la desviación estándar
+muestrales de las $n$ repeticiones y $t_{0.975,\,n-1}$ el cuantil de la
+distribución $t$, igual a 2.776 para $n=5$. Para la proporción de exploraciones
+válidas se usa el intervalo de Clopper y Pearson, uno de los más usados para
+tasas de éxito en la evaluación de robots \citep{vincent2024generalizable}.
+
+\begin{table}[H]
+\centering
+\caption{Intervalos de confianza al 95\% de los indicadores obtenidos sobre \textit{hardware} real.}
+\label{tab:intervalos_confianza}
+\small
+\begin{tabular}{P{6.6cm} c c c}
+\toprule
+\textbf{Indicador} & $n$ & \textbf{Media} & \textbf{Intervalo al 95\%} \\
+\midrule
+Error odométrico $E_{\mathrm{odom}}$ (\%) & 5 & 3.63 & 3.08 a 4.18 \\
+Error de seguimiento $E_{\mathrm{seg}}$ (\%) & 5 & 7.18 & 6.65 a 7.71 \\
+Desviación angular respecto de $360^\circ$ ($^\circ$) & 5 & 11.7 & 1.8 a 21.6 \\
+Índice de cobertura libre $C_{\mathrm{libre}}$ (\%) & 5 & 62.2 & 46.2 a 78.3 \\
+Área libre mapeada $A_{\mathrm{libre}}$ (m$^2$) & 5 & 3.50 & 3.46 a 3.53 \\
+Distancia media del plano del recinto al mapa (cm) & 5 & 3.4 & 3.1 a 3.7 \\
+Exploraciones válidas (\%) & 6 & 83.3 & 35.9 a 99.6 \\
+\bottomrule
+\end{tabular}
+\vspace{3pt}
+\parbox{0.92\linewidth}{\footnotesize Intervalos de la media con la distribución $t$ de Student (Ec.~\eqref{eq:ic_media}), salvo la proporción de exploraciones válidas, que usa el intervalo de Clopper y Pearson. Los intervalos se calculan con el \textit{script} del \ref{anx:estabilidad_pid}, salvo el de la distancia al plano, que usa los valores por iteración del \ref{anx:comparacion_plano}.}
+\end{table}
+
+Los indicadores con baja dispersión, como el error odométrico, el área libre
+mapeada y la distancia al plano, quedan bien acotados aun con cinco
+repeticiones, mientras que la cobertura libre y la desviación angular tienen
+intervalos amplios. Con seis ejecuciones, la proporción de exploraciones
+válidas solo permite afirmar que supera el 36\%. Reducir a la mitad la
+semiamplitud del intervalo del error odométrico requeriría unas 13
+repeticiones, y afirmar una tasa de éxito superior al 80\% requeriría al menos
+17 ejecuciones consecutivas sin fallas. En la literatura,
+\citet{liu2025frontier} realizan diez ejecuciones por algoritmo en su ensayo
+real, \citet{placed2023active} señalan que faltan métricas y bancos de prueba
+estandarizados para comparar sistemas de exploración, y \citet{trejos2022slam}
+acompañan la comparación de algoritmos de SLAM con pruebas estadísticas y
+niveles de confianza.
+
+\section{Convención de rutas y localización del \texorpdfstring{\textit{software}}{software}}
 \label{anx:rutas_software}
 
 Las rutas de código citadas en la tesis son relativas al directorio raíz
@@ -1297,11 +1643,11 @@ todos los archivos de código citados en el documento.
 \endfoot
 \texttt{robot.\allowbreak{}urdf.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Modelo principal URDF/\texttt{xacro}. \\
 \texttt{robot\_\allowbreak{}core.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Geometría, eslabones y articulaciones. \\
-\texttt{lidar.\allowbreak{}xacro}, \texttt{lidar\_\allowbreak{}sim.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Sensor real y modelo simulado del LiDAR. \\
-\texttt{rplidar.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del nodo de adquisición del LiDAR en hardware real. \\
+\texttt{lidar.\allowbreak{}xacro}, \texttt{lidar\_\allowbreak{}sim.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Sensor real y modelo simulado del LIDAR. \\
+\texttt{rplidar.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del nodo de adquisición del LIDAR en \textit{hardware} real. \\
 \texttt{rplidar\_\allowbreak{}serial\_\allowbreak{}publisher.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}scripts/} & Nodo propio de lectura serie del RPLidar A1 y publicación de \texttt{/scan}. \\
-\texttt{gazebo\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Backend alternativo no seleccionado. \\
-\texttt{ros2\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Selección del backend de \texttt{ros2\_control} y parámetros del enlace serial. \\
+\texttt{gazebo\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & \textit{Backend} alternativo no seleccionado. \\
+\texttt{ros2\_\allowbreak{}control.\allowbreak{}xacro} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}description/} & Selección del \textit{backend} de \texttt{ros2\_control} y parámetros del enlace serial. \\
 \texttt{launch\_\allowbreak{}robot.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del robot físico y controladores. \\
 \texttt{launch\_\allowbreak{}sim.\allowbreak{}launch.\allowbreak{}py} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}launch/} & Arranque del gemelo digital en Gazebo Classic. \\
 \texttt{my\_\allowbreak{}controllers.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Geometría y límites del controlador diferencial. \\
@@ -1309,18 +1655,19 @@ todos los archivos de código citados en el documento.
 \texttt{mapper\_\allowbreak{}params\_\allowbreak{}online\_\allowbreak{}async.\allowbreak{}yaml}, \texttt{mapper\_\allowbreak{}params\_\allowbreak{}online\_\allowbreak{}async\_\allowbreak{}sim.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Configuración de \texttt{slam\_toolbox} real y simulada. \\
 \texttt{explore.\allowbreak{}yaml} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}config/} & Parámetros del explorador de fronteras. \\
 \texttt{obstacles.\allowbreak{}world} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}worlds/} & Mundo empleado en las pruebas de mapeo simulado. \\
-\texttt{ROSArduinoBridge.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Ciclo principal y protocolo serial del firmware. \\
+\texttt{ROSArduinoBridge.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Ciclo principal y protocolo serial del \textit{firmware}. \\
 \texttt{commands.\allowbreak{}h} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Identificadores de comandos seriales. \\
 \texttt{diff\_\allowbreak{}controller.\allowbreak{}h} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & PID discreto y ganancias finales. \\
-\texttt{encoder\_\allowbreak{}driver.\allowbreak{}h}, \texttt{encoder\_\allowbreak{}driver.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Lectura de encoders. \\
+\texttt{encoder\_\allowbreak{}driver.\allowbreak{}h}, \texttt{encoder\_\allowbreak{}driver.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Lectura de \textit{encoders}. \\
 \texttt{motor\_\allowbreak{}driver.\allowbreak{}h}, \texttt{motor\_\allowbreak{}driver.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Accionamiento del L298N. \\
 \texttt{ControlLazoAbierto.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Captura de la respuesta en lazo abierto. \\
 \texttt{ControlLazoCerrado.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Captura experimental en lazo cerrado. \\
 \texttt{SintonizacionAutomatica.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Identificación FOPDT y búsqueda PSO inicial. \\
 \texttt{SintonizacionLambda.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Comparación simulada con sintonía Lambda. \\
 \texttt{pyPso.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Implementación de la clase PSO. \\
-\texttt{resultados\_\allowbreak{}pso.\allowbreak{}tex}, \texttt{resultados\_\allowbreak{}lambda.\allowbreak{}tex} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Salidas LaTeX generadas por los scripts de sintonización. \\
-\texttt{prueba\_\allowbreak{}giro.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro/} & Ejecución de la prueba angular en hardware. \\
+\texttt{AnalisisEstabilidad\allowbreak{}PID.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Análisis de estabilidad y robustez del lazo de velocidad e intervalos de confianza de los ensayos. \\
+\texttt{resultados\_\allowbreak{}pso.\allowbreak{}tex}, \texttt{resultados\_\allowbreak{}lambda.\allowbreak{}tex} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Salidas LaTeX generadas por los \textit{scripts} de sintonización. \\
+\texttt{prueba\_\allowbreak{}giro.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro/} & Ejecución de la prueba angular en \textit{hardware}. \\
 \texttt{prueba\_\allowbreak{}giro\_\allowbreak{}sim.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro\_\allowbreak{}sim/} & Ejecución de la prueba angular en simulación. \\
 \texttt{run\_\allowbreak{}explore.\allowbreak{}sh} & \texttt{test/\allowbreak{}exploracion/} & Ejecución y registro de exploración. \\
 \texttt{run\_\allowbreak{}prueba\_\allowbreak{}nav.\allowbreak{}sh} & \texttt{test/\allowbreak{}navegacion/} & Protocolo preparado de navegación con metas fijas, no ejecutado (\ref{anx:resultados_metodologia}). \\
@@ -1359,37 +1706,47 @@ $\omega^{\mathrm{cmd}}[k]$ & Consigna angular del robot (Ec.~\eqref{eq:cinematic
 $\omega_j[k]$ & Velocidad angular de rueda $j\in\{R,L\}$ & rad/s \\
 $\widehat{\omega}_j[k]$ & Velocidad angular exportada por \texttt{DiffDriveArduino}, calculada con el intervalo real $\Delta t_k$ & rad/s \\
 $\phi_j[k]$ & Ángulo acumulado de rueda $j$ & rad \\
-$c_j[k]$ & Ticks acumulados del encoder de rueda $j$ & ticks \\
-$\Delta c_j[k]$ & Incremento de ticks del encoder en el intervalo & ticks \\
-$N_e$ & Resolución efectiva del encoder (\texttt{ENC\_TICKS\_PER\_REV}) & ticks/vuelta \\
-$N_e^{\mathrm{teo}}$ & Resolución teórica del encoder ($N_e^{\mathrm{teo}}=N_{\mathrm{Hall}}\,c_q\,N_g$) & ticks/vuelta \\
+$c_j[k]$ & \textit{Ticks} acumulados del \textit{encoder} de rueda $j$ & \textit{ticks} \\
+$\Delta c_j[k]$ & Incremento de \textit{ticks} del \textit{encoder} en el intervalo & \textit{ticks} \\
+$N_e$ & Resolución efectiva del \textit{encoder} (\texttt{ENC\_TICKS\_PER\_REV}) & \textit{ticks}/vuelta \\
+$N_e^{\mathrm{teo}}$ & Resolución teórica del \textit{encoder} ($N_e^{\mathrm{teo}}=N_{\mathrm{Hall}}\,c_q\,N_g$) & \textit{ticks}/vuelta \\
 $N_{\mathrm{Hall}}$ & Pulsos por vuelta del sensor Hall en el eje del motor & pulsos/vuelta \\
 $c_q$ & Factor de decodificación en cuadratura & adim. \\
 $N_g$ & Relación de reducción del motorreductor (nominal $46{:}1$) & adim. \\
-$\bar{N}_R,\bar{N}_L$ & Promedio experimental de ticks por vuelta (rueda derecha/izquierda) & ticks/vuelta \\
+$\bar{N}_R,\bar{N}_L$ & Promedio experimental de \textit{ticks} por vuelta (rueda derecha/izquierda) & \textit{ticks}/vuelta \\
 $f_{\mathrm{ctrl}}$ & Frecuencia nominal del ciclo \texttt{read()}--\texttt{update()}--\texttt{write()}, configurada mediante \texttt{controller\_manager.update\_rate} & Hz \\
-$f_{\mathrm{loop}}$ & Frecuencia nominal usada por \texttt{DiffDriveArduino} en la conversión de rad/s a ticks/frame, configurada mediante \texttt{loop\_rate} & Hz \\
-$f_{\mathrm{PID,nom}}$ & Frecuencia nominal declarada por \texttt{PID\_RATE} en el firmware & Hz \\
-$T_{\mathrm{PID,sched}}$ & Incremento del programador del firmware, igual a 33~ms por división entera & s \\
+$f_{\mathrm{loop}}$ & Frecuencia nominal usada por \texttt{DiffDriveArduino} en la conversión de rad/s a \textit{ticks/frame}, configurada mediante \texttt{loop\_rate} & Hz \\
+$f_{\mathrm{PID,nom}}$ & Frecuencia nominal declarada por \texttt{PID\_RATE} en el \textit{firmware} & Hz \\
+$T_{\mathrm{PID,sched}}$ & Incremento del programador del \textit{firmware}, igual a 33~ms por división entera & s \\
 $T_{\mathrm{cap}}$ & Período de captura en lazo abierto & s \\
 $\Delta t_k$ & Intervalo usado por \texttt{DiffDriveArduino}: en la primera lectura se mide desde la asignación de \texttt{time\_} al inicio de \texttt{configure()}, antes de la espera serial de 3000~ms; desde la segunda, entre llamadas consecutivas a \texttt{read()} & s \\
 $T_k$ & Intervalo entre las muestras $k$ y $k+1$ del modelo cinemático general (Ecs.~\eqref{eq:pose_x}--\eqref{eq:pose_theta}); distinto del intervalo ejecutado $\Delta t_k$ & s \\
 \multicolumn{3}{l}{\textit{Conversión y control de firmware}}\\
-$m_j^{\mathrm{int}}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[k-1]$, almacenada en \texttt{PrevInput} & ticks/frame \\
-$m_j^{\mathrm{cmd}}[k]$ & Referencia entera en ticks/frame enviada al firmware; \texttt{DiffDriveArduino} la genera al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ (conversión descrita en el \ref{anx:implementacion_diffdrive}) & ticks/frame \\
+$m_j^{\mathrm{int}}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[k-1]$, almacenada en \texttt{PrevInput} & \textit{ticks/frame} \\
+$m_j^{\mathrm{cmd}}[k]$ & Referencia entera en \textit{ticks/frame} enviada al \textit{firmware}; \texttt{DiffDriveArduino} la genera al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ (conversión descrita en el \ref{anx:implementacion_diffdrive}) & \textit{ticks/frame} \\
 $v_j^{\mathrm{cmd}}[k]$ & Velocidad lineal de rueda comandada & m/s \\
 $\omega_j^{\mathrm{cmd}}[k]$ & Velocidad angular de rueda comandada & rad/s \\
 $u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FOPDT & PWM \\
-$e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & ticks/frame \\
-$e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta & ticks/frame \\
+$e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & \textit{ticks/frame} \\
+$e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta & \textit{ticks/frame} \\
 $\Delta u_j^{\mathrm{long}}[k]$ & Incremento de la salida calculado por el controlador discreto y asignado al tipo \texttt{long} & PWM \\
 $u_j^{\mathrm{raw}}[k]$ & Salida acumulada antes de aplicar la saturación & PWM \\
 $I_j^{\mathrm{int}}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \texttt{int}; posee la misma escala interna que $K_{p,j}e_j^{\mathrm{db}}[k]$ & esc.\ fw \\
-$K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de firmware implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
+$K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de \textit{firmware} implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
 $K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
-$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ ticks/frame, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el firmware en el comando \texttt{k} & $\frac{\text{ticks/frame}}{\text{m/s}}$ \\
+$\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ \textit{ticks/frame}, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el \textit{firmware} en el comando \texttt{k} & $\frac{\textit{ticks/frame}}{\text{m/s}}$ \\
 $T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\
+$S_j^{e}[k]$ & Error acumulado desde el último reinicio, usado en la forma no incremental de la ley (Ec.~\eqref{eq:pid_equivalente}) & \textit{ticks/frame} \\
+$S_j^{I}[k]$ & Acumulación del estado integral desde el último reinicio (Ec.~\eqref{eq:pid_equivalente}) & esc.\ fw \\
+\multicolumn{3}{l}{\textit{Forma incremental y estabilidad del lazo de velocidad}}\\
+$T_m$ & Período de muestreo del controlador discreto. En el \textit{firmware}, $T_m=T_{\mathrm{PID,sched}}$ & s \\
+$K_c$ & Ganancia proporcional de la forma incremental del PID (Ec.~\eqref{eq:pi_incremental}) & $\frac{\text{PWM}}{\textit{ticks/frame}}$ \\
+$T_i,T_d$ & Tiempos integral y derivativo de la forma incremental del PID & s \\
+$b_{\mathrm{sp}}$ & Ponderación del punto de consigna en la acción proporcional & adim. \\
+$m^{\mathrm{ref}}[k]$, $m[k]$, $e[k]$ & Referencia, medición y error de la forma incremental del PID, con $e=m^{\mathrm{ref}}-m$ & \textit{ticks/frame} \\
+$\Delta,\Delta^{2}$ & Primera y segunda diferencia entre muestras consecutivas de una señal & No aplica \\
+$M_s$ & Sensibilidad máxima del lazo & adim. \\
 \multicolumn{3}{l}{\textit{Identificación FOPDT}}\\
 $S$ & Variable compleja de Laplace (en mayúscula para no confundirla con el segundo, s) & No aplica \\
 $G_j(S)$ & Función de transferencia FOPDT de la rueda $j\in\{R,L\}$ & (m/s)/PWM \\
@@ -1405,12 +1762,12 @@ $v_j^{\mathrm{filt}}[k]$ & Velocidad medida tras el filtro uniforme centrado & m
 \midrule \multicolumn{3}{l}{\textit{Sintonía Lambda (comparación ilustrativa)}} \\
 $\lambda_j$ & Constante de diseño de la sintonía Lambda ($\lambda_j=3\tau_j$) & s \\
 $L_{ef,j}$ & Retardo efectivo Lambda, $\max(L_{d,j},\,2/30)$ & s \\
-$f_{\lambda}$ & Factor de escalamiento a la escala de firmware, $143\,K_o/\kappa_{\mathrm{sim}}$ & esc.\ script \\
+$f_{\lambda}$ & Factor de escalamiento a la escala de \textit{firmware}, $143\,K_o/\kappa_{\mathrm{sim}}$ & esc.\ \textit{script} \\
 \multicolumn{3}{l}{\textit{Optimización por enjambre (PSO)}}\\
 $\xi_{i,d},V_{i,d}$ & Posición y velocidad de búsqueda de la partícula $i$, dimensión $d$ & adim. \\
 $\xi_{\min}$ & Límite inferior aplicado al estado de partícula ($10^{-4}$); el estado no tiene límite superior & adim. \\
 $P_{i,d},G_d$ & Mejor posición individual y vector de posición global almacenado & adim. \\
-$J^*$ & Mejor costo global almacenado; puede no corresponder a $G_d$ por la actualización implementada & varias \\
+$J^*$ & Mejor costo global almacenado, que corresponde al mismo candidato que $G_d$ (\ref{anx:pso_detalle}) & varias \\
 $\zeta$ & Factor de constricción ($\approx0.7298$) & adim. \\
 $w_{\mathrm{in}}^{g}$ & Peso de inercia (decreciente con la generación $g$) & adim. \\
 $c_1,c_2$ & Coeficientes cognitivo y social & adim. \\
@@ -1432,8 +1789,8 @@ $E_{\mathrm{seg}}$ & Error de seguimiento respecto de la distancia
 comandada & \% \\
 $E_{\mathrm{odom}}$ & Error entre la odometría y la distancia física
 medida & \% \\
-$\Delta\theta_{360}$ & Referencia nominal fija de $360^\circ$ utilizada por los scripts de giro & grados \\
-$\Delta\theta_{\mathrm{obs}}$ & Giro observado: acumulación de \texttt{/odom} en simulación o medición física en hardware real & grados \\
+$\Delta\theta_{360}$ & Referencia nominal fija de $360^\circ$ utilizada por los \textit{scripts} de giro & grados \\
+$\Delta\theta_{\mathrm{obs}}$ & Giro observado: acumulación de \texttt{/odom} en simulación o medición física en \textit{hardware} real & grados \\
 $D_{\theta,360}$ & Desviación angular normalizada respecto de $\Delta\theta_{360}$; no corresponde a error odométrico angular ni a seguimiento de una consigna efectiva sin limitación & \% \\
 $M$ & Conjunto de intensidades de celda de la imagen PGM del mapa analizado & No aplica \\
 $p$ & Intensidad de una celda de la imagen PGM & nivel de gris \\
@@ -1443,6 +1800,10 @@ $N_{\mathrm{desconocido}}$ & Número de celdas clasificadas como
 desconocidas & celdas \\
 $C_{\mathrm{libre}}$ & Índice de cobertura libre del mapa & \% \\
 $A_{\mathrm{libre}}$ & Área libre mapeada, calculada como $N_{\mathrm{libre}}\rho_{\mathrm{map}}^2$ & m$^2$ \\
+\multicolumn{3}{l}{\textit{Estadística de los ensayos}}\\
+$n$ & Número de repeticiones de un ensayo. En A\textsuperscript{*}, $n$ denota el nodo evaluado & No aplica \\
+$\mu,\sigma$ & Media y desviación estándar muestrales de un indicador, esta última con $n-1$ en el denominador. En la Ec.~\eqref{eq:pid_continuo}, $\sigma$ denota la variable de integración & unidad del indicador \\
+$t_{0.975,\,n-1}$ & Cuantil 0.975 de la distribución $t$ de Student con $n-1$ grados de libertad, igual a 2.776 para $n=5$ & adim. \\
 \multicolumn{3}{l}{\textit{Navegación y exploración}}\\
 $f(n),g(n),h(n)$ & Evaluación, costo acumulado y heurística de A\textsuperscript{*} & No aplica \\
 $n,\alpha$ & Nodo evaluado y celda sucesora en A\textsuperscript{*} & No aplica \\
@@ -1455,7 +1816,7 @@ $U(F)$ & Puntaje de costo de la frontera $F$ (heurístico, no homogéneo) & No a
 $|F|$ & Contador de tamaño de la frontera; se inicializa en 1 y se incrementa por celdas vecinas incorporadas. Si no se añade ninguna, la frontera conserva tamaño 1 & celdas \\
 $p_F^{\mathrm{impl}}$ & Punto representativo de la frontera $F$ almacenado por la implementación como \texttt{centroid}; no es el centroide geométrico de todas sus celdas (\ref{anx:explore_impl}) & m \\
 $d_{\mathrm{min}}^{\mathrm{world}}$ & Distancia mínima de la frontera $F$ al robot, en coordenadas del mundo (\texttt{frontier.min\_distance}) & m \\
-$\rho_{\mathrm{map}}$ & Resolución del mapa/costmap (\texttt{resolution}); en este sistema 0.05, usada tanto en el área libre como en el costo de frontera & m/celda \\
+$\rho_{\mathrm{map}}$ & Resolución del mapa/\textit{costmap} (\texttt{resolution}); en este sistema 0.05, usada tanto en el área libre como en el costo de frontera & m/celda \\
 $w_{\mathrm{pot}},w_{\mathrm{gain}}$ & Pesos de distancia (\texttt{potential\_scale}) y de ganancia (\texttt{gain\_scale}) & adim. \\
 $f_{\mathrm{exp}}$ & Frecuencia configurada de reevaluación del explorador (\texttt{planner\_frequency}) & Hz \\
 $\varepsilon_j[k]$ & Error de seguimiento del modelo para la rueda $j$,

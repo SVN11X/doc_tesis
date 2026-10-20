@@ -1,25 +1,26 @@
 \chapter{RESULTADOS EXPERIMENTALES}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evaluaron en simulación y en hardware real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evaluaron sobre el hardware real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}. El equipamiento de la estación de trabajo y las versiones de sistema
-operativo, middleware y paquetes con que se ejecutaron todos los ensayos se
-consolidan en el \ref{anx:workspace}. El entorno físico en que se realizaron las pruebas sobre hardware real se muestra en la Fig.~\ref{fig:entorno_experimental}.
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evalúan en simulación y en \textit{hardware} real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evalúan sobre el \textit{hardware} real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}. El equipamiento de la estación de trabajo y las versiones de sistema
+operativo, \textit{middleware} y paquetes con que se ejecutan todos los ensayos se
+consolidan en el \ref{anx:workspace}. El entorno físico en que se realizan las pruebas sobre \textit{hardware} real se muestra en la Fig.~\ref{fig:entorno_experimental}.
 
 \utemFigurePropia{2.Texto/Imag/entorno_experimental.jpg}{0.78\textwidth}
-{Entorno utilizado para las pruebas experimentales en hardware real.}{fig:entorno_experimental}
+{Entorno utilizado para las pruebas experimentales en \textit{hardware} real.}{fig:entorno_experimental}
 
 \section{Evaluación de odometría y control diferencial}
 \label{sec:resultados_odometria}
 
-La evaluación rectilínea utiliza una referencia nominal de 2~m. El script publica una velocidad lineal de 0.13~m/s durante $2/0.13\approx15.4$~s y luego detiene el robot, por lo que la referencia no es una consigna de posición sino el producto de la velocidad comandada por la duración del comando. En hardware real, la distancia física se midió con cinta métrica y el error odométrico corresponde a la discrepancia entre la odometría de encoders y esa medición. En simulación, la consulta de la pose verdadera a Gazebo Classic no entregó datos durante los ensayos y el script registró la propia odometría como distancia de respaldo. Por ello, en simulación no se dispone de una verdad de terreno independiente.
+La evaluación rectilínea utiliza una referencia nominal de 2~m. El \textit{script} publica una velocidad lineal de 0.13~m/s durante $2/0.13\approx15.4$~s y luego detiene el robot, por lo que la referencia no es una consigna de posición sino el producto de la velocidad comandada por la duración del comando. En \textit{hardware} real, la distancia física se mide con cinta métrica y el error odométrico corresponde a la discrepancia entre la odometría de \textit{encoders} y esa medición. En simulación, la consulta de la pose verdadera a Gazebo Classic no entrega datos durante los ensayos y el \textit{script} registra la propia odometría como distancia de respaldo. Por ello, en simulación no se dispone de una verdad de terreno independiente.
 
-Las pruebas angulares se analizaron respecto de una referencia nominal de
+Las pruebas angulares se analizan respecto de una referencia nominal de
 $360^\circ$ definida por el protocolo, que no corresponde a una consigna
 efectiva de vuelta completa; por ello, sus resultados expresan desviación
 respecto de ese valor nominal y no un error odométrico angular aislado. El
 desarrollo del protocolo y el límite que origina esta distinción se conservan
 en el \ref{anx:odometria_detalle}.
-Para distinguir ambos fenómenos se utilizaron las siguientes métricas:
+Para distinguir ambos fenómenos se utilizan las métricas de las
+Ecs.~\eqref{eq:error_seguimiento} y~\eqref{eq:error_odometrico}:
 
 \begin{align}
 E_{\mathrm{seg}}
@@ -44,7 +45,8 @@ d_{\mathrm{real}}
 $d_{\mathrm{odom}}$ la distancia calculada mediante odometría (m),
 $E_{\mathrm{seg}}$ el error de seguimiento (\%) y
 $E_{\mathrm{odom}}$ el error odométrico (\%).
-La desviación angular normalizada se expresa respecto de esa referencia nominal fija:
+La desviación angular normalizada se expresa respecto de esa referencia
+nominal fija mediante la Ec.~\eqref{eq:desviacion_angular_360}:
 
 \begin{equation}
 D_{\theta,360}
@@ -77,7 +79,7 @@ obtenidas en la trayectoria rectilínea de 2~m.
 \small
 \begin{tabular}{p{7.2cm} p{2.2cm} p{2.8cm}}
 \toprule
-\textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
+\textbf{Métrica} & \textbf{Simulación} & \textbf{\textit{Hardware} real} \\
 \midrule
 Error medio de seguimiento $E_{\mathrm{seg}}$
 & 3.39\%$^{*}$ & 7.18\% \\
@@ -90,33 +92,33 @@ Desviación estándar de $E_{\mathrm{odom}}$ ($n=5$)
 \bottomrule
 \end{tabular}
 \vspace{3pt}
-\parbox{0.85\linewidth}{\footnotesize $^{*}$ En simulación se calcula con la distancia de odometría, porque la pose verdadera de Gazebo Classic no quedó registrada.}
+\parbox{0.85\linewidth}{\footnotesize $^{*}$ En simulación se calcula con la distancia de odometría, porque la pose verdadera de Gazebo Classic no queda registrada.}
 \end{table}
 
-En hardware real, el error medio de seguimiento de 7.18\% corresponde a una
+En \textit{hardware} real, el error medio de seguimiento de 7.18\% corresponde a una
 distancia física media de aproximadamente 1.856~m frente a los 2~m definidos
 por el protocolo. Este error debe distinguirse del error odométrico de 3.63\%:
-el primero caracteriza cuánto se apartó el desplazamiento físico de la
+el primero caracteriza cuánto se aparta el desplazamiento físico de la
 referencia comandada, mientras que el segundo compara la estimación de
 odometría con la distancia realmente recorrida.
 
 Los registros permiten separar el 7.18\% en dos partes, aunque no aislar sus
-causas físicas. La odometría media de las cinco repeticiones fue 1.924~m, es
-decir, los encoders registraron un avance 3.8\% menor que los 2~m nominales.
-Esta parte ya está presente en la medición de los encoders y es compatible con
+causas físicas. La odometría media de las cinco repeticiones es 1.924~m, es
+decir, los \textit{encoders} registran un avance 3.8\% menor que los 2~m nominales.
+Esta parte ya está presente en la medición de los \textit{encoders} y es compatible con
 el tiempo de subida de las ruedas (Tabla~\ref{tab:pid_performance}), porque la
 referencia se define por tiempo y no por posición. La simulación, que no
-reproduce la zona muerta del driver, presenta una desviación del mismo orden
+reproduce la zona muerta del \textit{driver}, presenta una desviación del mismo orden
 (3.39\%). La parte restante, 0.067~m o 3.4\% de la referencia, corresponde a la
 sobreestimación de la distancia por la odometría, que expresada respecto de la
 distancia real es el error odométrico de 3.63\%. Su baja dispersión (0.44\%)
 indica un sesgo sistemático, compatible con un error de escala en el radio
 efectivo de rueda o con deslizamiento persistente. Estos efectos no se
-separaron mediante ensayos independientes. El valor $N_e=1980$ no explica el
+separan mediante ensayos independientes. El valor $N_e=1980$ no explica el
 sesgo, porque su diferencia con los promedios medidos haría que la odometría
 subestimara la distancia entre 0.2\% y 0.6\%.
 
-Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref{tab:resumen_giro}; su comparación entre simulación y hardware se desarrolla en la Sec.~\ref{sec:comparacion_sim_real}.
+Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref{tab:resumen_giro}; su comparación entre simulación y \textit{hardware} se desarrolla en la Sec.~\ref{sec:comparacion_sim_real}.
 
 \begin{table}[htbp]
 \centering
@@ -125,7 +127,7 @@ Los resultados correspondientes al protocolo angular se resumen en la Tabla~\ref
 \small
 \begin{tabular}{p{7.0cm} p{3.2cm} p{3.2cm}}
 \toprule
-\textbf{Métrica} & \textbf{Simulación} & \textbf{Hardware real} \\
+\textbf{Métrica} & \textbf{Simulación} & \textbf{\textit{Hardware} real} \\
 \midrule
 Desviación angular media & $17.1^\circ$ & $11.7^\circ$ \\
 Desviación angular normalizada $D_{\theta,360}$ & $4.74\%$ & $3.24\%$ \\
@@ -134,19 +136,19 @@ Desviación estándar & $5.8^\circ$ ($1.61\%$) & $8.0^\circ$ ($2.22\%$) \\
 \end{tabular}
 \end{table}
 
-Esta métrica no es un error odométrico angular aislado. En simulación, el giro observado es el giro acumulado de \texttt{/odom} al final de un ensayo de duración fija. En hardware real, es el giro físico medido al final del ensayo. En ambos casos se compara con la referencia nominal de 360~grados y no con el giro efectivamente comandado. Los giros observados, entre $335.9^\circ$ y $347.4^\circ$ en simulación y entre $340^\circ$ y $380^\circ$ en hardware real, superan los $315^\circ$ que se obtendrían si el límite de 0.35~rad/s actuara de forma ideal y constante durante todo el ensayo (\ref{anx:odometria_detalle}). Por tanto, los registros no son coherentes con esa hipótesis y la causa de la diferencia no se determinó. Un giro comandado a un ángulo fijo y controlado, planteado como trabajo futuro, entregaría un error angular directo.
+Esta métrica no es un error odométrico angular aislado. En simulación, el giro observado es el giro acumulado de \texttt{/odom} al final de un ensayo de duración fija. En \textit{hardware} real, es el giro físico medido al final del ensayo. En ambos casos se compara con la referencia nominal de 360~grados y no con el giro efectivamente comandado. Los giros observados, entre $335.9^\circ$ y $347.4^\circ$ en simulación y entre $340^\circ$ y $380^\circ$ en \textit{hardware} real, superan los $315^\circ$ que se obtendrían si el límite de 0.35~rad/s actuara de forma ideal y constante durante todo el ensayo (\ref{anx:odometria_detalle}). Por tanto, los registros no son coherentes con esa hipótesis y la causa de la diferencia no se determina con los datos disponibles. Un giro comandado a un ángulo fijo y controlado, planteado como trabajo futuro, entregaría un error angular directo.
 El desglose por repetición de ambos protocolos (trayectoria rectilínea y
-protocolo angular, en simulación y hardware real) se presenta en la
+protocolo angular, en simulación y \textit{hardware} real) se presenta en la
 Fig.~\ref{fig:resultados_odometria_repeticiones}.
 
-\begin{utemMultiFigurePropia}{Resultados por repetición de las pruebas rectilíneas y angulares en simulación y hardware real.}{fig:resultados_odometria_repeticiones}
+\begin{utemMultiFigurePropia}{Resultados por repetición de las pruebas rectilíneas y angulares en simulación y \textit{hardware} real.}{fig:resultados_odometria_repeticiones}
 \addutem{0.48}{2.Texto/Imag/odom_error_barras_sim.png}{Trayectoria rectilínea en simulación.}
 \hfill
-\addutem{0.48}{2.Texto/Imag/odom_error_barras.png}{Trayectoria rectilínea en hardware real.}
+\addutem{0.48}{2.Texto/Imag/odom_error_barras.png}{Trayectoria rectilínea en \textit{hardware} real.}
 \\[0.4cm]
 \addutem{0.48}{2.Texto/Imag/giro_error_barras_sim.png}{Protocolo angular en simulación.}
 \hfill
-\addutem{0.48}{2.Texto/Imag/giro_deriva_barras.png}{Protocolo angular en hardware real.}
+\addutem{0.48}{2.Texto/Imag/giro_deriva_barras.png}{Protocolo angular en \textit{hardware} real.}
 \end{utemMultiFigurePropia}
 
 La desviación angular observada integra los efectos del límite de
@@ -156,12 +158,13 @@ medición. La incorporación de una IMU se plantea como mejora futura.
 \section{Evaluación del control de velocidad}
 \label{sec:resultados_pid}
 
-El seguimiento en lazo cerrado se verificó en dos momentos del procedimiento
+El seguimiento en lazo cerrado se verifica en dos momentos del procedimiento
 de sintonización descrito en la Sec.~\ref{sec:sintonizacion_pso}: con las
 ganancias sugeridas por PSO y con las ganancias definitivas obtenidas tras el
-refinamiento. Ambas capturas se realizaron sobre el robot real, con una
+refinamiento. Ambas capturas se realizan sobre el robot real, con una
 referencia de 0.13~m/s y el mismo protocolo, conservado en el
-\ref{anx:captura_lazo_cerrado}.
+\ref{anx:captura_lazo_cerrado}. La Fig.~\ref{fig:respuesta_escalon_pso}
+presenta la respuesta con las ganancias sugeridas por PSO.
 
 \utemFigurePropia{2.Texto/Imag/respuesta_escalon_final_pso.png}{0.82\textwidth}
 {Respuesta en lazo cerrado del robot real con las ganancias sugeridas por PSO,
@@ -188,9 +191,9 @@ cerca de un segundo antes. En ambas ruedas, la velocidad medida converge hacia l
 la izquierda muestra pequeñas variaciones discretas alrededor del valor
 objetivo. La figura constituye una verificación cualitativa del seguimiento
 sobre el robot real. Los indicadores de la Tabla~\ref{tab:pid_performance}
-se calcularon sobre la captura de la Fig.~\ref{fig:respuesta_escalon_final}, con la referencia de 0.13~m/s. La
+se calculan sobre la captura de la Fig.~\ref{fig:respuesta_escalon_final}, con la referencia de 0.13~m/s. La
 comparación ilustrativa con el modelo FOPDT y la sintonía Lambda se conserva
-en el \ref{anx:lambda_detalle}. En esa simulación, las ganancias finales producen sobreimpulsos de 10.7\% a 15.6\%. Esos valores provienen de un modelo que no reproduce la zona muerta del driver, las bandas muertas asimétricas ni los tipos enteros del firmware, por lo que no se comparan directamente con la Tabla~\ref{tab:pid_performance}.
+en el \ref{anx:lambda_detalle}. En esa simulación, las ganancias finales producen sobreimpulsos de 10.7\% a 15.6\%. Esos valores provienen de un modelo que no reproduce la zona muerta del \textit{driver}, las bandas muertas asimétricas ni los tipos enteros del \textit{firmware}, por lo que no se comparan directamente con la Tabla~\ref{tab:pid_performance}.
 
 \begin{table}[htbp]
 \centering
@@ -209,22 +212,38 @@ Sobreimpulso máximo & Sin sobreimpulso significativo & Sin sobreimpulso signifi
 \end{tabular}
 \end{table}
 
-Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. La velocidad informada por el firmware tiene una resolución de 0.01~m/s, cercana a un 8 por ciento de la referencia. Por eso la banda del 2 por ciento queda por debajo de esa resolución y no se reporta un tiempo de establecimiento al 2 por ciento. La respuesta se estabiliza en torno a la referencia dentro de los primeros segundos, dentro de la resolución de medida.
-La comparación completa entre las ganancias del firmware y la referencia
+Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. La velocidad informada por el \textit{firmware} tiene una resolución de 0.01~m/s, cercana a un 8 por ciento de la referencia. Por eso la banda del 2 por ciento queda por debajo de esa resolución y no se reporta un tiempo de establecimiento al 2 por ciento. La respuesta se estabiliza en torno a la referencia dentro de los primeros segundos, dentro de la resolución de medida.
+La comparación completa entre las ganancias del \textit{firmware} y la referencia
 analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}, con carácter ilustrativo.
 
-La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fijó durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantenía un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero del estado integral (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~ticks/frame, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~ticks/frame, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~ticks/frame, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
+La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fija durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantiene un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero del estado integral (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~\textit{ticks/frame}, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~\textit{ticks/frame}, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~\textit{ticks/frame}, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
 
-El PSO entregó un punto de partida heurístico para las tres ganancias. El refinamiento experimental ajustó ese punto de partida, con aumentos de $K_p$ de 28\% y 63\%, reducciones de $K_d$ de 41\% y 45\% y un aumento de varios órdenes de magnitud en $K_i$, hasta lograr el seguimiento de la referencia sobre el robot real. Por tanto, el aporte del PSO fue el de una semilla de búsqueda y no el de un ajuste final validado por sí solo.
-El retardo identificado resultó menor que el período de captura, por lo que no introduce un desplazamiento temporal efectivo en el modelo discreto. En la práctica el modelo se comporta como uno de primer orden. El detalle se conserva en el \ref{anx:fodt_scripts}.
+El PSO entrega un punto de partida heurístico para las tres ganancias. El
+refinamiento experimental ajusta ese punto de partida, con aumentos de $K_p$ de
+28\% y 63\%, reducciones de $K_d$ de 41\% y 45\% respecto de los valores
+informados y un aumento de varios órdenes de magnitud en $K_i$, hasta lograr el
+seguimiento de la referencia sobre el robot real. El ajuste se explica porque el
+modelo FOPDT no representa la zona muerta del \textit{driver} ni la aritmética
+entera del \textit{firmware}, porque el costo evalúa un único escalón sin
+penalizar el esfuerzo de control y porque los $K_d$ informados superan la cota
+de 25 que evalúa el costo (\ref{anx:resultados_pso_ejecucion}). Aun así, las
+ganancias del PSO dan un lazo estable y más conservador, y quedan en el mismo
+orden de magnitud que las definitivas. Por tanto, el aporte del PSO es el de una semilla de
+búsqueda y no el de un ajuste final validado por sí solo. El retardo
+identificado resulta menor que el período de captura, por lo que no introduce
+un desplazamiento temporal efectivo en el modelo discreto. En la práctica el
+modelo se comporta como uno de primer orden. El detalle se conserva en el
+\ref{anx:fodt_scripts}. En cambio, el análisis de estabilidad incluye el retardo
+del modelo, con su valor identificado y con su cota superior.
 
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
 
-El mapeo se evaluó sobre el hardware real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones produjeron un mapa válido. La inspección visual de los mapas obtenidos mostró paredes definidas y consistencia global. Esta valoración es cualitativa. El análisis \emph{post hoc} no incorpora una detección automática de cierre de lazo, por lo que ese indicador quedó registrado como no determinado en las cinco iteraciones válidas.
-La métrica utilizada corresponde al índice de cobertura libre, definido como
-la proporción de celdas observadas como libres respecto del total de celdas
-susceptibles de ser exploradas:
+El mapeo se evalúa sobre el \textit{hardware} real a lo largo de varias sesiones prácticas dentro del entorno experimental, de las cuales cinco iteraciones producen un mapa válido. La inspección visual de los mapas obtenidos muestra paredes definidas y consistencia global. Esta valoración es cualitativa. El análisis \textit{post hoc} no incorpora una detección automática de cierre de lazo, por lo que ese indicador queda registrado como no determinado en las cinco iteraciones válidas.
+La métrica utilizada corresponde al índice de cobertura libre de la
+Ec.~\eqref{eq:cobertura_libre}, definido como la proporción de celdas
+observadas como libres respecto del total de celdas susceptibles de ser
+exploradas:
 
 \begin{equation}
 C_{\mathrm{libre}}
@@ -241,7 +260,8 @@ $C_{\mathrm{libre}}$ el índice de cobertura libre (\%). Las celdas ocupadas no
 se incluyen en el denominador. La clasificación se realiza sobre la imagen de
 ocupación generada por \texttt{slam\_toolbox}, según los umbrales de
 intensidad indicados en el \ref{anx:resultados_metodologia}.
-El área libre mapeada se calcula a partir del número de celdas libres:
+El área libre mapeada se calcula a partir del número de celdas libres mediante
+la Ec.~\eqref{eq:area_libre_mapeada}:
 
 \begin{equation}
 A_{\mathrm{libre}}
@@ -253,12 +273,12 @@ N_{\mathrm{libre}}\,\rho_{\mathrm{map}}^2,
 \noindent donde $A_{\mathrm{libre}}$ es el área libre mapeada [m$^2$] y
 $\rho_{\mathrm{map}}$ la resolución del mapa [m/celda]. La
 Tabla~\ref{tab:slam_real_indicadores} consolida los indicadores de mapeo
-obtenidos en las cinco iteraciones válidas sobre hardware real, recuperados \emph{post hoc} del \textit{rosbag} y del mapa PGM de cada sesión; su procedencia y
+obtenidos en las cinco iteraciones válidas sobre \textit{hardware} real, recuperados \textit{post hoc} del \textit{rosbag} y del mapa PGM de cada sesión; su procedencia y
 alcance se documentan en el \ref{anx:resultados_metodologia}.
 
 \begin{table}[htbp]
 \centering
-\caption{Indicadores de mapeo en hardware real por iteración (resolución $0.05$~m/celda).}
+\caption{Indicadores de mapeo en \textit{hardware} real por iteración (resolución $0.05$~m/celda).}
 \label{tab:slam_real_indicadores}
 \begin{threeparttable}
 \small
@@ -296,13 +316,25 @@ Estos indicadores caracterizan el mapeo obtenido en las cinco iteraciones
 válidas de exploración y no constituyen una medida del error absoluto del mapa. El contraste cualitativo de los mapas obtenidos se documenta en la Tabla~\ref{tab:diferencias_mapas} del \ref{anx:resultados_metodologia}.
 El índice de cobertura libre se calcula sobre la imagen de ocupación completa, cuyos límites no están anclados al recinto físico. Por eso es un indicador interno relativo y no una fracción absoluta del área del recinto. Esto explica que el área libre mapeada se mantenga casi constante entre iteraciones mientras el índice de cobertura varía de forma amplia, ya que este último depende de cuántas celdas desconocidas quedan dentro de la imagen. Por su mayor estabilidad, el área libre mapeada y el término de cada ejecución por ausencia de fronteras (Sec.~\ref{sec:resultados_nav2}) se toman como evidencia principal de la exploración, y el índice de cobertura como indicador complementario.
 
+La comparación de los indicadores anteriores entre iteraciones informa sobre
+la repetibilidad del mapeo, con un coeficiente de variación del área libre de
+0.8\%, pero no sobre su exactitud, porque una distorsión que se repita en todas
+las iteraciones no alteraría esa repetibilidad. Por eso, cada mapa se compara
+con un plano del recinto medido manualmente, mediante la distancia de cada
+punto de los muros del plano a la celda ocupada más cercana del mapa
+\citep{trejos2022slam}. La distancia media es de 3.4~cm,
+del orden de la resolución de 0.05~m/celda. Las mayores diferencias, de 6 a
+9~cm, corresponden a los tabiques cortos, y los tres pasillos resultan en total
+12~cm más anchos en los mapas que en el plano. El plano, el procedimiento y los
+resultados se presentan en el \ref{anx:comparacion_plano}.
+
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
 
 Los resultados de navegación y exploración se analizan en dos niveles
 complementarios. El primero corresponde al resultado de cada ejecución completa
-de exploración, considerando si el robot operó de forma autónoma, se desplazó
-por el entorno, incorporó nuevas observaciones y produjo un mapa válido. El
+de exploración, considerando si el robot opera de forma autónoma, se desplaza
+por el entorno, incorpora nuevas observaciones y produce un mapa válido. El
 segundo corresponde al resultado de las metas individuales generadas durante
 dicha exploración.
 
@@ -310,25 +342,25 @@ Esta distinción permite evaluar por separado el funcionamiento global de la
 exploración y el resultado que Nav2 informa para cada meta. Por tanto, el resultado de una meta individual no se
 interpreta directamente como el resultado de toda la ejecución de exploración.
 
-La exploración autónoma produjo un mapa válido en cinco de las seis ejecuciones
-experimentales. En estas cinco ejecuciones, el índice de cobertura libre varió
+La exploración autónoma produce un mapa válido en cinco de las seis ejecuciones
+experimentales. En estas cinco ejecuciones, el índice de cobertura libre varía
 entre 53.4\% y 82.9\%, con una media de 62.2\%, mientras que el área libre
-mapeada se mantuvo entre 3.478 y 3.540~m$^2$, con una media de
+mapeada se mantiene entre 3.478 y 3.540~m$^2$, con una media de
 3.50~m$^2$.
 
-Las cinco ejecuciones válidas terminaron de forma automática, sin intervención
-del operador. En cada una, el nodo \texttt{explore\_server} informó que no
-quedaban fronteras en el mapa de costos, detuvo la exploración y solicitó
-cancelar la meta en curso. El script de ensayo detecta ese aviso, guarda el
-mapa y cierra el registro. La iteración~2, excluida del análisis, no llegó a ese
+Las cinco ejecuciones válidas terminan de forma automática, sin intervención
+del operador. En cada una, el nodo \texttt{explore\_server} informa que no
+quedan fronteras en el mapa de costos, detiene la exploración y solicita
+cancelar la meta en curso. El \textit{script} de ensayo detecta ese aviso, guarda el
+mapa y cierra el registro. La iteración~2, excluida del análisis, no llega a ese
 término.
 
-En total se generaron 60 metas de navegación durante las cinco ejecuciones
-válidas. De ellas, 59 alcanzaron la etapa de ejecución. Respecto de su estado
-final, 54 metas quedaron abortadas, una fue completada y cinco no tenían estado
+En total se generan 60 metas de navegación durante las cinco ejecuciones
+válidas. De ellas, 59 alcanzan la etapa de ejecución. Respecto de su estado
+final, 54 metas quedan abortadas, una se completa y cinco no tienen estado
 terminal en el último mensaje registrado. Estas cinco corresponden a la última
-meta de cada ejecución, que el explorador canceló automáticamente al detenerse.
-El registro se cerró antes de que esa cancelación terminara, por lo que la meta
+meta de cada ejecución, que el explorador cancela automáticamente al detenerse.
+El registro se cierra antes de que esa cancelación termine, por lo que la meta
 figura en ejecución o en cancelación.
 
 En este sistema, el estado abortado no equivale a un fallo de navegación. El
@@ -340,51 +372,60 @@ llega una meta nueva mientras otra está en ejecución, la anterior se termina c
 estado abortado~\citep{nav2_foxy_src}. Por eso, el mismo estado registra tanto
 los reemplazos hechos por el explorador como los fallos propios de Nav2.
 
-Para separar ambos casos se revisó el orden de los mensajes de estado de cada
+Para separar ambos casos se revisa el orden de los mensajes de estado de cada
 meta, según el procedimiento del \ref{anx:resultados_metodologia}. En 53 de los
-54 abortos, la meta siguiente ya figuraba en ejecución mientras la meta abortada
-seguía activa, es decir, la meta terminó porque el explorador la reemplazó. El
-aborto restante corresponde a la primera meta de la iteración~1, que ya figuraba
-abortada en el primer mensaje registrado y no pudo clasificarse. El tiempo
-mediano que cada meta reemplazada permaneció activa fue de 3.3~s en las cinco
+54 abortos, la meta siguiente ya figura en ejecución mientras la meta abortada
+sigue activa, es decir, la meta termina porque el explorador la reemplaza. El
+aborto restante corresponde a la primera meta de la iteración~1, que ya figura
+abortada en el primer mensaje registrado y no puede clasificarse. El tiempo
+mediano que cada meta reemplazada permanece activa es de 3.3~s en las cinco
 ejecuciones, igual al período de reevaluación del explorador
-(Tabla~\ref{tab:anx_explore_metas}). Con los datos registrados no se identificó
+(Tabla~\ref{tab:anx_explore_metas}). Con los datos registrados no se identifica
 ningún aborto originado por un fallo de Nav2. Tampoco es posible saber si las
 metas reemplazadas habrían llegado a completarse.
 
 En consecuencia, la proporción de metas completadas, 1 de 60 (1.7\%), indica
-cuántas veces el robot llegó a menos de 0.10~m del punto de una frontera antes
-de que el explorador cambiara de destino. No corresponde a una tasa de éxito de
+cuántas veces el robot llega a menos de 0.10~m del punto de una frontera antes
+de que el explorador cambie de destino. No corresponde a una tasa de éxito de
 la navegación ni de la exploración. La navegación hacia metas fijas, que
 permitiría medir esa tasa, queda fuera del alcance declarado.
 
 Los diecisiete avisos de lista de fronteras agotada registrados en las cinco
 iteraciones válidas, once de ellos en la iteración~1, se relacionan con este
 mismo comportamiento. El explorador agrega a su lista negra el punto de toda
-meta que termina abortada, también cuando fue él quien la reemplazó. Así puede
-descartar la frontera que estaba siguiendo y, cuando todas las candidatas quedan
+meta que termina abortada, también cuando es él quien la reemplaza. Así puede
+descartar la frontera que sigue y, cuando todas las candidatas quedan
 en la lista, la vacía para volver a intentarlo. Este efecto de la integración
-entre \texttt{explore\_lite} y Nav2 no impidió terminar la exploración, pero su
-efecto sobre la duración del recorrido no se cuantificó. En la Fig.~\ref{fig:nav_exploracion_real} se muestran dos instantes representativos de una ejecución de navegación y exploración sobre hardware real, desde un mapa parcial hasta la mayor cobertura alcanzada.
+entre \texttt{explore\_lite} y Nav2 no impide terminar la exploración, pero su
+efecto sobre la duración del recorrido no se cuantifica. En la Fig.~\ref{fig:nav_exploracion_real} se muestran dos instantes representativos de una ejecución de navegación y exploración sobre \textit{hardware} real, desde un mapa parcial hasta la mayor cobertura alcanzada.
 
-Un registro en video (\href{https://www.youtube.com/watch?v=iTTC10eGDmc}{\textcolor{blue}{ver en YouTube}}) de una ejecución de demostración de la navegación y la exploración sobre hardware real está disponible en línea~\citep{valderas2026video}. Las capturas de la Fig.~\ref{fig:nav_exploracion_real} provienen de ese registro.
+Un registro en video (\href{https://www.youtube.com/watch?v=iTTC10eGDmc}{\textcolor{blue}{ver en YouTube}}) de una ejecución de demostración de la navegación y la exploración sobre \textit{hardware} real está disponible en línea~\citep{valderas2026video}. Las capturas de la Fig.~\ref{fig:nav_exploracion_real} provienen de ese registro.
 
-\begin{utemMultiFigurePropia}{Ejecución de navegación autónoma y exploración por fronteras sobre hardware real: avance desde un mapa parcial hasta una representación de mayor cobertura, con la ruta planificada por Nav2 (trazo verde).}{fig:nav_exploracion_real}
+\begin{utemMultiFigurePropia}{Ejecución de navegación autónoma y exploración por fronteras sobre \textit{hardware} real: avance desde un mapa parcial hasta una representación de mayor cobertura, con la ruta planificada por Nav2 (trazo verde).}{fig:nav_exploracion_real}
 \addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Mapa parcial en una etapa temprana de la exploración.}
 \hfill
 \addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Mayor cobertura con ruta planificada hacia la frontera seleccionada.}
 \end{utemMultiFigurePropia}
 
-La mejor iteración alcanzó un índice de cobertura libre de 82.9\%. El
+La mejor iteración alcanza un índice de cobertura libre de 82.9\%. El
 radio de inflación de 0.15~m aplicado en el recinto reducido
-(Sec.~\ref{sec:costmaps_ch9}) no se evaluó por separado, por lo que su efecto
-sobre la navegación no se cuantificó. En conjunto, los ensayos verifican la integración funcional, cuantifican la
+(Sec.~\ref{sec:costmaps_ch9}) no se evalúa por separado, por lo que su efecto
+sobre la navegación no se cuantifica. En conjunto, los ensayos verifican la integración funcional, cuantifican la
 cobertura y documentan el resultado de las metas de exploración según la
-Tabla~\ref{tab:anx_explore_metas}. Las cinco iteraciones finalizaron de forma
-automática al no quedar fronteras, y cada una generó un mapa válido. La navegación dirigida con metas fijas definidas por el operador, distinta de
-las metas que genera el explorador, queda fuera del alcance declarado en la
-\hyperref[sec:alcances]{Alcances y limitaciones} y no se ensayó, por lo que este trabajo no informa
-tasa de éxito ni error de posición final para ese caso. La Tabla~\ref{tab:estado_validacion} sintetiza el estado de validación alcanzado por cada subsistema.
+Tabla~\ref{tab:anx_explore_metas}. Las cinco iteraciones finalizan de forma
+automática al no quedar fronteras, y cada una genera un mapa válido.
+
+En las cinco ejecuciones válidas, Nav2 conduce al robot durante 12.7~min y
+21.9~m de recorrido odométrico, sin intervención manual y sin abortos
+identificados como fallos propios de Nav2. Estos indicadores describen la
+exploración, pero no miden si el robot llega a un destino dado ni con qué
+error. La navegación dirigida con metas fijas definidas por el operador,
+distinta de las metas que genera el explorador, queda fuera del alcance
+declarado en la \hyperref[sec:alcances]{Alcances y limitaciones} y no se
+ensaya, por lo que este trabajo no informa tasa de éxito ni error de posición
+final para ese caso. El protocolo que permitiría medirla se describe en el
+\ref{anx:mediciones_no_incluidas}. La Tabla~\ref{tab:estado_validacion}
+sintetiza el estado de validación alcanzado por cada subsistema.
 
 \begin{table}[htbp]
 \centering
@@ -395,56 +436,76 @@ tasa de éxito ni error de posición final para ese caso. La Tabla~\ref{tab:esta
 \toprule
 \textbf{Subsistema} & \textbf{Estado} & \textbf{Observación} \\
 \midrule
-Odometría & Validada cuantitativamente en hardware real (recta de 2~m, $n=5$) & En simulación no se registró verdad de terreno independiente. El protocolo angular no mide error odométrico angular \\
-Control de velocidad & Evaluado experimentalmente & Indicadores de la Tabla~\ref{tab:pid_performance} calculados sobre la captura real en lazo cerrado a 0.13~m/s \\
+Odometría & Validada cuantitativamente en \textit{hardware} real (recta de 2~m, $n=5$) & Error odométrico medio de 3.63\%, con intervalo de confianza al 95\% de 3.08\% a 4.18\%. En simulación no se registra verdad de terreno independiente. El protocolo angular no mide error odométrico angular \\
+Control de velocidad & Evaluado experimentalmente y verificado analíticamente & Indicadores de la Tabla~\ref{tab:pid_performance} calculados sobre la captura real en lazo cerrado a 0.13~m/s. Estabilidad y márgenes verificados con el modelo FOPDT identificado (Tabla~\ref{tab:estabilidad_pid}). Un único punto de operación \\
 SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
 Cobertura y área libre cuantificadas en cinco iteraciones válidas; la
-alineación de paredes se evaluó visualmente y no se dispuso de ground truth
-geométrico para validar el error absoluto del mapa \\
-Nav2 & Verificada funcionalmente & Ejecutó 59 metas del explorador. En 53 de los 54 abortos la meta fue reemplazada por el explorador (Tabla~\ref{tab:anx_explore_metas}), por lo que el resultado de las metas no mide su tasa de éxito. El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
-Exploración autónoma & Verificada funcionalmente en hardware real &
-Cinco de seis ejecuciones terminaron automáticamente al no quedar fronteras,
+alineación de paredes se evalúa visualmente. Distancia media de 3.4~cm al plano
+medido del recinto (Tabla~\ref{tab:exactitud_mapas}) \\
+Nav2 & Verificada funcionalmente & Ejecuta 59 metas del explorador durante 21.9~m de recorrido. En 53 de los 54 abortos la meta es reemplazada por el explorador (Tabla~\ref{tab:anx_explore_metas}), por lo que el resultado de las metas no mide su tasa de éxito. El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
+Exploración autónoma & Verificada funcionalmente en \textit{hardware} real &
+Cinco de seis ejecuciones terminan automáticamente al no quedar fronteras,
 sin intervención manual y con un mapa válido. Cobertura libre media de 62.2\% y
 área libre mapeada media de 3.50~m$^2$ \\
 Localización & Resuelta por \texttt{slam\_toolbox} durante el mapeo en línea y
 verificada funcionalmente en las cinco iteraciones válidas &
 La localización sobre un mapa almacenado con AMCL queda fuera del alcance
-declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) y no se ensayó \\
+declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) y no se ensaya \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Coherencia entre simulación y hardware}
+\section{Coherencia entre simulación y \texorpdfstring{\textit{hardware}}{hardware}}
 \label{sec:comparacion_sim_real}
 
 En la trayectoria rectilínea de 2~m, las desviaciones de la
 Tabla~\ref{tab:resumen_odometria} no miden la misma magnitud en ambos entornos.
-La de simulación se calcula con la propia odometría y la de hardware real con
+La de simulación se calcula con la propia odometría y la de \textit{hardware} real con
 la distancia física medida, de modo que el error odométrico solo puede
-separarse del error de seguimiento en hardware real. En el protocolo angular,
+separarse del error de seguimiento en \textit{hardware} real. En el protocolo angular,
 la desviación media respecto de la referencia nominal es mayor en simulación
-que en hardware real, con una dispersión menor
+que en \textit{hardware} real, con una dispersión menor
 (Tabla~\ref{tab:resumen_giro}).
 
-El mapeo y la exploración se evaluaron con indicadores únicamente sobre
-hardware real. En simulación se construyeron mapas en sesiones previas a los
-ensayos en hardware, sin calcular indicadores, por lo que el contraste entre
+El mapeo y la exploración se evalúan con indicadores únicamente sobre
+\textit{hardware} real. En simulación se construyen mapas en sesiones previas a los
+ensayos en \textit{hardware}, sin calcular indicadores, por lo que el contraste entre
 ambos entornos es solo cualitativo y se basa en inspección visual
 (Tabla~\ref{tab:diferencias_mapas}). Las limitaciones metodológicas de cada
 ensayo se detallan en el \ref{anx:resultados_metodologia}. Por su parte, la caracterización cuantitativa del consumo energético y de la carga computacional no forma parte de los ensayos realizados y se plantea como trabajo futuro; su alcance se precisa en el \ref{anx:resultados_metodologia}.
+
+\section{Alcance estadístico de los ensayos}
+\label{sec:alcance_estadistico}
+
+Los ensayos sobre \textit{hardware} real se repiten cinco veces en odometría,
+seis veces en exploración, de las cuales cinco son válidas, y una vez por
+conjunto de ganancias en el control de velocidad. Con el intervalo de confianza
+al 95\% de la media \citep[Cap.~8]{devore2021modern}, el error
+odométrico queda entre 3.08\% y 4.18\%, el área libre mapeada entre 3.46 y
+3.53~m$^2$ y la distancia al plano del recinto entre 3.1 y 3.7~cm, mientras que
+la cobertura libre, de 46.2\% a 78.3\%, y la desviación angular, de
+1.8$^\circ$ a 21.6$^\circ$, quedan poco acotadas. La proporción de
+exploraciones válidas solo permite afirmar con 95\% de confianza que supera el
+36\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}. Por esta razón, los resultados se presentan como
+una verificación funcional en el entorno ensayado y no como tasas de desempeño
+generalizables. El cálculo, los intervalos de todos los indicadores, las
+repeticiones necesarias para acotarlos mejor y su comparación con la literatura
+se presentan en el \ref{anx:intervalos_confianza}.
 
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_resultados}
 
 Los resultados muestran un error odométrico medio de 3.63\% en
-trayectorias rectas sobre hardware real y una desviación angular media de
-$11.7^\circ$ respecto de la referencia nominal del protocolo. La respuesta en lazo cerrado de la Fig.~\ref{fig:respuesta_escalon_final} fue
-medida en hardware, y sobre esa misma captura se calcularon los indicadores de
+trayectorias rectas sobre \textit{hardware} real y una desviación angular media de
+$11.7^\circ$ respecto de la referencia nominal del protocolo. La respuesta en lazo cerrado de la Fig.~\ref{fig:respuesta_escalon_final} se
+mide en \textit{hardware}, y sobre esa misma captura se calculan los indicadores de
 la Tabla~\ref{tab:pid_performance}, que muestran seguimiento de la referencia
 sin sobreimpulso apreciable.
-Por su parte, el sistema de mapeo con \texttt{slam\_toolbox} generó mapas utilizables en
-hardware real. La exploración por fronteras alcanzó un índice
+Por su parte, el sistema de mapeo con \texttt{slam\_toolbox} genera mapas utilizables en
+\textit{hardware} real. La exploración por fronteras alcanza un índice
 medio de cobertura libre de 62.2\% ($\sigma=12.9$) en cinco iteraciones, con
-un área libre mapeada media de 3.50~m$^2$. La integración funcional y la
-cobertura quedaron verificadas. La navegación hacia metas fijas definidas por
-el operador queda fuera del alcance declarado.
+un área libre mapeada media de 3.50~m$^2$, y sus mapas quedan a una distancia
+media de 3.4~cm del plano medido del recinto. La integración funcional y la
+cobertura quedan verificadas con un número reducido de repeticiones. La
+navegación hacia metas fijas definidas por el operador queda fuera del alcance
+declarado.

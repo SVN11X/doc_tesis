@@ -4,8 +4,8 @@
 Este capítulo describe, de forma general, la solución diseñada antes de entrar
 al detalle teórico y de implementación. A partir de las alternativas revisadas
 en el Capítulo~\ref{ch:estado_arte}, se propone un robot móvil diferencial de
-bajo costo que integra percepción láser 2D, odometría por encoders y control
-PID embebido, cuyas ganancias se determinaron combinando optimización por
+bajo costo que integra percepción láser 2D, odometría por \textit{encoders} y control
+PID embebido, cuyas ganancias se determinan combinando optimización por
 enjambre de partículas (PSO) y refinamiento experimental sobre el robot, sobre
 una arquitectura distribuida en dos entornos: robot y
 estación de trabajo, comunicados mediante \gls{ROS2}. El objetivo es que el
@@ -20,24 +20,24 @@ identificados por color.
 {fig:arquitectura_alto_nivel}
 
 Las flechas del diagrama representan el flujo lógico de mediciones, estados,
-metas y comandos entre los componentes. Por tanto, no todas corresponden a
-conexiones físicas directas, ya que parte del intercambio se realiza mediante
-tópicos, acciones y transformaciones de \gls{ROS2} a través de la red local.
+metas y comandos, y no todas corresponden a conexiones físicas directas, ya que
+parte del intercambio se realiza mediante tópicos, acciones y transformaciones
+de \gls{ROS2} a través de la red local.
 La función general de cada dominio es la siguiente:
 
 \begin{description}
-\item[Sensado.] Los \emph{encoders} de cuadratura miden el giro de cada rueda
+\item[Sensado.] Los \textit{encoders} de cuadratura miden el giro de cada rueda
 y el \gls{LIDAR} 2D percibe el entorno; son las dos fuentes de información del
 sistema.
-\item[Control de bajo nivel.] El \gls{Arduino} lee los encoders y ejecuta el
+\item[Control de bajo nivel.] El \gls{Arduino} lee los \textit{encoders} y ejecuta el
 control PID de velocidad de cada rueda, accionando los motores DC de tracción
-diferencial. Las ganancias de ese PID se determinaron en dos etapas: PSO
-entregó un primer conjunto a partir de un modelo identificado de cada rueda, y
-ese conjunto se refinó luego sobre el robot real hasta llegar a los valores
+diferencial. Las ganancias de ese PID se determinan en dos etapas: PSO
+entrega un primer conjunto a partir de un modelo identificado de cada rueda, y
+ese conjunto se refina luego sobre el robot real hasta llegar a los valores
 definitivos.
 \item[Sistema computacional del robot.] La Raspberry Pi~4 integra \gls{ROS2},
 estima la odometría a partir de las velocidades de rueda y actúa de puente
-entre el hardware embebido y la estación de trabajo.
+entre el \textit{hardware} embebido y la estación de trabajo.
 \item[Mapeo, navegación y exploración.] En la estación de trabajo,
 \texttt{slam\_toolbox} construye el mapa y estima la pose, Nav2 planifica y
 controla la navegación, el explorador de fronteras genera metas autónomas y
@@ -47,51 +47,48 @@ RViz2 permite la supervisión.
 \section{Selección de tecnologías}
 \label{sec:seleccion_tecnologias}
 
-Cada dominio del sistema se resolvió eligiendo, entre las alternativas
+Cada dominio del sistema se resuelve eligiendo, entre las alternativas
 comparadas en el Capítulo~\ref{ch:estado_arte}, la más adecuada para una
-plataforma diferencial de bajo costo orientada a interiores. Se adoptó
-\gls{ROS2} como middleware por su arquitectura distribuida, sin un nodo maestro
+plataforma diferencial de bajo costo orientada a interiores. Se adopta
+\gls{ROS2} como \textit{middleware} por su arquitectura distribuida, sin un nodo maestro
 central, y por su ecosistema de paquetes de mapeo, navegación y exploración
 (Sec.~\ref{sec:alternativas_middleware}) \citep{macenski2022ros2}. El fin de
-soporte de ROS~1 \citep{ros_noetic_eol} no se usó como criterio de selección,
+soporte de ROS~1 \citep{ros_noetic_eol} no se usa como criterio de selección,
 porque la distribución adoptada, \gls{ROS2} Foxy, también se encuentra fuera de
-soporte. Esa distribución se mantuvo por la compatibilidad de la cadena de
-paquetes con el hardware disponible, como se declara en Alcances y
-limitaciones. La percepción se resolvió con un
+soporte. Esa distribución se mantiene por la compatibilidad de la cadena de
+paquetes con el \textit{hardware} disponible, como se declara en Alcances y
+limitaciones. La percepción se resuelve con un
 \gls{LIDAR} 2D, suficiente para interiores y de menor costo y carga de
 procesamiento que las cámaras RGB-D o el \gls{LIDAR} 3D, y el mapeo con
 \texttt{slam\_toolbox}, por su integración nativa, su enfoque basado en grafos
 de poses y su capacidad de guardar y cargar mapas
 (Sec.~\ref{sec:sensores}) \citep{macenski2021slamtoolbox}. La navegación se
-apoyó en Nav2, con un planificador global de búsqueda sobre rejilla y un
+apoya en Nav2, con un planificador global de búsqueda sobre rejilla y un
 controlador local reactivo, adecuados a un mapa de ocupación 2D y de bajo costo
 computacional (Sec.~\ref{sec:exploracion})
 \citep{macenski2023desks}.
 
-La validación previa del diseño se apoyó en un gemelo digital construido
-en Gazebo Classic. Se optó por esa versión y no por el Gazebo actual porque es
+La validación previa del diseño se apoya en un gemelo digital construido
+en Gazebo Classic. Se opta por esa versión y no por el Gazebo actual porque es
 la que emplean los complementos de simulación y de \texttt{ros2\_control} del
-paquete base adaptado, disponibles para \gls{ROS2} Foxy sobre Ubuntu 20.04,
-que constituyen la base del sistema (Sec.~\ref{sec:gemelo_digital}).
+paquete base adaptado, disponibles para \gls{ROS2} Foxy sobre Ubuntu 20.04
+(Sec.~\ref{sec:gemelo_digital}).
 
-La sintonización del control de bajo nivel también se resolvió como una
+La sintonización del control de bajo nivel también se resuelve como una
 decisión de diseño. En lugar de buscar las tres ganancias PID por prueba y
-error desde cero, se identificó un modelo de primer orden con retardo para cada
-rueda y sobre él
-se aplicó PSO, un método de optimización que no requiere derivadas ni un
-modelo exacto de la planta y que permite buscar las tres ganancias de forma
-simultánea. El resultado de esa búsqueda se adoptó como punto de partida y no
-como valor final: las ganancias definitivas se alcanzaron ajustando ese punto
-de partida sobre el robot real, donde intervienen efectos que el modelo no
-recoge, como la zona muerta del driver, la cuantización de los encoders y la
-asimetría entre ambas ruedas.
+error desde cero, se identifica un modelo de primer orden con retardo para cada
+rueda y sobre él se aplica PSO, un método de optimización que no requiere
+derivadas ni un modelo exacto de la planta y que permite buscar las tres
+ganancias de forma simultánea. El resultado de esa búsqueda se adopta como punto de
+partida y no como valor final: las ganancias definitivas se alcanzan ajustando
+ese punto de partida sobre el robot real, donde intervienen efectos que el
+modelo no recoge, como la zona muerta del \textit{driver}, la cuantización de los
+\textit{encoders} y la asimetría entre ambas ruedas.
 
-Para la exploración autónoma se eligió el enfoque basado en fronteras
+Para la exploración autónoma se elige el enfoque basado en fronteras
 (Sec.~\ref{sec:exploracion}), por su menor complejidad y su fácil integración
 con el mapa de ocupación y con Nav2, frente a los métodos de ganancia de
 información y de \textit{active SLAM}, que exigen modelos y cómputo adicionales
-\citep{placed2023active,alvarez2021mexplore_ros2}.
-
-El fundamento teórico de cada uno de estos componentes se desarrolla en el
-Capítulo~\ref{marco_teorico}, y su implementación concreta en el
-Capítulo~\ref{ch:implementacion}.
+\citep{placed2023active,alvarez2021mexplore_ros2}. El fundamento teórico de cada
+uno de estos componentes se desarrolla en el Capítulo~\ref{marco_teorico}, y su
+implementación concreta en el Capítulo~\ref{ch:implementacion}.

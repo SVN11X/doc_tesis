@@ -2,91 +2,97 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{CONCLUSIONES}
 
-El presente trabajo tuvo como objetivo diseñar e implementar un prototipo de robot móvil diferencial capaz de generar mapas 2D, ejecutar navegación autónoma y realizar exploración basada en fronteras mediante \gls{ROS2} Foxy. El desarrollo integró diseño mecánico, electrónica de potencia, firmware de bajo nivel, gemelo digital en Gazebo Classic, mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración autónoma.
+El presente trabajo tiene como objetivo diseñar e implementar un prototipo de robot móvil diferencial capaz de generar mapas 2D, ejecutar navegación autónoma y realizar exploración basada en fronteras mediante \gls{ROS2} Foxy. El desarrollo integra diseño mecánico, electrónica de potencia, \textit{firmware} de bajo nivel, gemelo digital en Gazebo Classic, mapeo con \texttt{slam\_toolbox}, navegación con Nav2 y exploración autónoma.
 
-En relación con la plataforma física, se construyó un robot diferencial de bajo
+En relación con la plataforma física, se construye un robot diferencial de bajo
 costo con la configuración descrita en el Capítulo~\ref{ch:implementacion}, en
-la que el \gls{Arduino} ejecuta la lectura de encoders y el control de cada
-rueda, la Raspberry Pi ejecuta la interfaz de hardware, el controlador
+la que el \gls{Arduino} ejecuta la lectura de \textit{encoders} y el control de cada
+rueda, la Raspberry Pi ejecuta la interfaz de \textit{hardware}, el controlador
 diferencial y la adquisición del \gls{LIDAR}, y la estación de trabajo ejecuta
 SLAM, navegación, exploración y supervisión.
 
-El gemelo digital desarrollado en Gazebo Classic permitió verificar la geometría,
+El gemelo digital desarrollado en Gazebo Classic permite verificar la geometría,
 la cinemática, la cadena de transformaciones y la interfaz de control antes de
 operar el robot físico. En simulación, la desviación media respecto de la
-referencia nominal de 2~m fue 3.39\%, calculada con la propia odometría porque
-la pose verdadera de Gazebo Classic no quedó registrada durante los ensayos. Ese valor
-no separa el error odométrico del error de seguimiento. En hardware real, el
-error odométrico medio fue 3.63\% y el error físico de seguimiento fue 7.18\%.
-La selección del backend y su trazabilidad se documentan en el
+referencia nominal de 2~m es de 3.39\%, calculada con la propia odometría porque
+la pose verdadera de Gazebo Classic no queda registrada durante los ensayos. Ese valor
+no separa el error odométrico del error de seguimiento. En \textit{hardware} real, el
+error odométrico medio es de 3.63\% y el error físico de seguimiento es de 7.18\%.
+La selección del \textit{backend} y su trazabilidad se documentan en el
 \ref{anx:gemelo_digital}.
 
-Respecto del control de bajo nivel, el firmware ejecuta de forma independiente
-para cada rueda la ley de control heredada del firmware original, que
+Respecto del control de bajo nivel, el \textit{firmware} ejecuta de forma independiente
+para cada rueda la ley de control heredada del \textit{firmware} original, que
 corresponde a un controlador PI en forma incremental con la acción
 proporcional sobre la medición, más un término integral adicional, y cuyas
-ganancias no cumplen la función que indica su nombre. La
-Fig.~\ref{fig:respuesta_escalon_final} corresponde a una adquisición
-experimental en lazo cerrado, y los indicadores de la
-Tabla~\ref{tab:pid_performance} se calcularon sobre esa misma respuesta medida.
-Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. Los estados internos, la temporalidad y las aproximaciones
-numéricas se documentan en los anexos de implementación y sintonización.
+ganancias no cumplen la función que indica su nombre. El análisis del lazo
+discreto con el modelo FOPDT identificado muestra que esa ley es estable, con
+márgenes de fase de 47$^\circ$ a 57$^\circ$, y que sigue estable con el retardo
+del modelo en su cota superior. La Fig.~\ref{fig:respuesta_escalon_final} corresponde a una
+adquisición experimental en lazo cerrado, y los indicadores de la
+Tabla~\ref{tab:pid_performance} se calculan sobre esa misma respuesta medida.
+Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. Los estados internos, la
+temporalidad y las aproximaciones numéricas se documentan en los anexos de
+implementación y sintonización.
 
-El mapeo con \texttt{slam\_toolbox} permitió construir mapas 2D en simulación y hardware real. Los indicadores de cobertura libre y de área mapeada se cuantificaron sobre hardware real durante las iteraciones de exploración.
-La navegación con Nav2 quedó integrada mediante planificación global,
-control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecutó en cinco iteraciones válidas, que
-terminaron automáticamente al no quedar fronteras y sin intervención manual, con
+El mapeo con \texttt{slam\_toolbox} permite construir mapas 2D en simulación y \textit{hardware} real. Los indicadores de cobertura libre y de área mapeada se cuantifican sobre \textit{hardware} real durante las iteraciones de exploración. Frente a un plano medido del recinto, los mapas tienen una distancia media de 3.4~cm.
+La navegación con Nav2 queda integrada mediante planificación global,
+control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecuta en cinco iteraciones válidas, que
+terminan automáticamente al no quedar fronteras y sin intervención manual, con
 un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$). De las 60 metas
-generadas, 54 quedaron abortadas y una se completó. En 53 de esos abortos la
-meta fue reemplazada por el propio explorador, que renueva su destino cada
+generadas, 54 quedan abortadas y una se completa. En 53 de esos abortos la
+meta es reemplazada por el propio explorador, que renueva su destino cada
 3.3~s, y Nav2 informa ese reemplazo como aborto. El detalle metodológico se conserva en el
 \ref{anx:resultados_metodologia}.
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
 \begin{description}
-\item[\autoref{oe1} -- Construcción y gemelo digital:] \textit{Cumplido.} Se diseñó y construyó la plataforma diferencial física y se verificó su gemelo digital con el backend de \texttt{ros2\_control} ejecutado en Gazebo Classic. La verificación fue funcional, según los criterios de la Tabla~\ref{tab:criterios_aceptacion_resumen}, y no incluyó una comparación cuantitativa entre simulación y hardware sobre una misma variable medida, porque la distancia simulada se obtuvo de la propia odometría.
+\item[\autoref{oe1} -- Construcción y gemelo digital:] \textit{Cumplido.} Se diseña y construye la plataforma diferencial física y se verifica su gemelo digital con el \textit{backend} de \texttt{ros2\_control} ejecutado en Gazebo Classic. La verificación es funcional, según los criterios de la Tabla~\ref{tab:criterios_aceptacion_resumen}, y no incluye una comparación cuantitativa entre simulación y \textit{hardware} sobre una misma variable medida, porque la distancia simulada se obtiene de la propia odometría.
 
 \item[\autoref{oe2} -- Control de bajo nivel:]
-\textit{Cumplido parcialmente.} Se implementaron la lectura de encoders,
-la estimación de los estados de rueda y el control de velocidad en el firmware;
+\textit{Cumplido parcialmente.} Se implementan la lectura de \textit{encoders},
+la estimación de los estados de rueda y el control de velocidad en el \textit{firmware};
 la posición y velocidad de rueda se exportan mediante
 \texttt{DiffDriveArduino}, y la odometría se integra en
-\texttt{diff\_drive\_controller}. Sin embargo, la ley heredada de
-\texttt{ROSArduinoBridge} opera como un controlador PI incremental sin acción
-derivativa efectiva y se evaluó en un único punto de operación, como se detalla
+\texttt{diff\_drive\_controller}. La estabilidad de la ley ejecutada se
+verifica con el modelo FOPDT identificado. Sin embargo, la ley heredada de \texttt{ROSArduinoBridge} opera como un
+controlador PI incremental sin acción derivativa efectiva, su análisis es
+lineal y su desempeño se evalúa en un único punto de operación, como se detalla
 en la Sec.~\ref{sec:motorcontrol_pid} y en la Sec.~\ref{sec:resultados_pid}.
 
 \item[\autoref{oe3} -- Localización, mapeo y navegación:]
 \textit{Cumplido parcialmente.} El mapeo y la localización durante la
-construcción del mapa se implementaron y verificaron funcionalmente en hardware
+construcción del mapa se implementan y verifican funcionalmente en \textit{hardware}
 real, junto con la caracterización cuantitativa de cobertura y área libre
-mapeada. Nav2 se integró y condujo al robot hacia las metas del explorador en
-las cinco ejecuciones válidas, sin abortos atribuibles a fallos de navegación en
-el registro. Sin embargo, como 53 de los 54 abortos corresponden a reemplazos de
-meta hechos por el explorador, el resultado de las metas no permite medir la
-tasa de éxito de la navegación. El carácter parcial proviene de que no se obtuvo
-un indicador cuantitativo del desempeño de la navegación.
+mapeada. Nav2 se integra y conduce al robot hacia las metas del explorador en
+las cinco ejecuciones válidas, con 21.9~m de recorrido autónomo y sin abortos
+atribuibles a fallos de navegación en el registro. Sin embargo, como 53 de los
+54 abortos corresponden a reemplazos de meta hechos por el explorador, el
+resultado de las metas no permite medir la tasa de éxito de la navegación. El
+carácter parcial proviene de que no se obtiene un indicador cuantitativo del
+desempeño de la navegación.
 
 \item[\autoref{oe4} -- Exploración autónoma:] \textit{Cumplido.} La estrategia
-de exploración por fronteras se integró y ejecutó sobre el robot real, y generó
+de exploración por fronteras se integra y ejecuta sobre el robot real, y genera
 60 metas hacia regiones no exploradas sin intervención manual. Cinco de las seis
-ejecuciones terminaron de forma automática por el criterio del propio
-explorador, al no quedar fronteras en el mapa de costos, y produjeron mapas
+ejecuciones terminan de forma automática por el criterio del propio
+explorador, al no quedar fronteras en el mapa de costos, y producen mapas
 válidos con un índice medio de cobertura libre de 62.2\% y un área libre mapeada
-media de 3.50~m$^2$. En la ejecución restante el robot no se desplazó y la causa
-no se determinó. La exploración quedó verificada funcionalmente y caracterizada,
-sin una referencia geométrica externa para validar el mapa. Su principal
+media de 3.50~m$^2$. En la ejecución restante el robot no se desplaza y la causa
+no se determina. La exploración queda verificada funcionalmente y caracterizada,
+y sus mapas se comparan con un plano medido del recinto. Su principal
 limitación es que el explorador agrega a la lista negra las metas que él mismo
-reemplaza, efecto de la integración con Nav2 que no impidió terminar la
+reemplaza, efecto de la integración con Nav2 que no impide terminar la
 exploración.
 \end{description}
 
 Respecto de la pregunta de investigación planteada en la Introducción, los
-resultados muestran que fue posible construir un prototipo diferencial capaz de
+resultados muestran que es posible construir un prototipo diferencial capaz de
 generar mapas 2D y ejecutar un proceso de exploración autónoma en el entorno
-ensayado. Cinco de las seis ejecuciones experimentales produjeron mapas válidos,
+ensayado. Cinco de las seis ejecuciones experimentales producen mapas válidos,
 lo que permite verificar funcionalmente la integración entre exploración,
-navegación y mapeo.
+navegación y mapeo. Con seis ejecuciones, esa proporción no constituye una tasa
+de desempeño (Sec.~\ref{sec:alcance_estadistico}).
 
 El resultado de las metas individuales no contradice esa conclusión, porque 53
 de los 54 abortos corresponden a reemplazos de meta hechos por el propio
@@ -98,16 +104,18 @@ navegación, lo que requiere un protocolo con metas fijas.
 \addcontentsline{toc}{section}{Limitaciones}
 
 \begin{itemize}
-\item \textbf{Deriva odométrica:} la odometría basada solo en encoders acumula error, especialmente en giros y trayectorias largas.
+\item \textbf{Deriva odométrica:} la odometría basada solo en \textit{encoders} acumula error, especialmente en giros y trayectorias largas.
 \item \textbf{Espacio de pruebas reducido:} el recinto disponible limita la ejecución de recorridos extensos y condiciona la geometría de los mapas de costo.
-\item \textbf{Registro de navegación:} los contadores automáticos de la sesión no identifican metas únicas, por lo que el resultado de las metas de exploración se reconstruyó a posteriori desde el flujo de estado de la acción. No se ejecutó un protocolo de navegación dirigida con metas fijas, por lo que no se dispone de tasa de éxito ni de error de posición final para ese caso.
-\item \textbf{Métricas PID:} los indicadores de la Tabla~\ref{tab:pid_performance} provienen de la captura experimental en hardware real, mientras que los sobreimpulsos de 10.7\% a 15.6\% provienen de una simulación ilustrativa sobre un modelo FOPDT reidentificado. No deben interpretarse como una única prueba.
-\item \textbf{Fidelidad de la simulación:} Gazebo Classic no reproduce completamente fricción, zona muerta del driver, ruido sensorial ni latencias reales.
+\item \textbf{Registro de navegación:} los contadores automáticos de la sesión no identifican metas únicas, por lo que el resultado de las metas de exploración se reconstruye \textit{a posteriori} desde el flujo de estado de la acción. No se ejecuta un protocolo de navegación dirigida con metas fijas, por lo que no se dispone de tasa de éxito ni de error de posición final para ese caso.
+\item \textbf{Exactitud de los mapas:} se evalúa contra un plano medido manualmente, que no permite atribuir a la medición o al mapa los 12~cm en que los pasillos resultan más anchos en los mapas.
+\item \textbf{Métricas PID:} los indicadores de la Tabla~\ref{tab:pid_performance} provienen de la captura experimental en \textit{hardware} real, mientras que los sobreimpulsos de 10.7\% a 15.6\% provienen de una simulación ilustrativa sobre un modelo FOPDT reidentificado. No deben interpretarse como una única prueba.
+\item \textbf{Modelo y sintonización:} el período de captura de 0.1~s no resuelve el retardo del modelo FOPDT, el único escalón de PWM no representa la zona muerta del \textit{driver} y la simulación del costo del PSO no replica la aritmética entera del \textit{firmware}.
+\item \textbf{Fidelidad de la simulación:} Gazebo Classic no reproduce completamente fricción, zona muerta del \textit{driver}, ruido sensorial ni latencias reales.
 \item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.
-\item \textbf{Validez externa:} los resultados provienen de un único recinto, cuya área libre mapeada media fue de 3.50~m$^2$, y de cinco iteraciones, por lo que no se generalizan a entornos mayores o de geometría distinta. La superficie del recinto no se midió de forma independiente del mapa.
-\item \textbf{Ley de control de bajo nivel:} el firmware ejecuta la ley acumulativa heredada de \texttt{ROSArduinoBridge}, en la que $K_p$ actúa como ganancia integral, $K_d$ como ganancia proporcional sobre la medición y $K_i$ como segunda integración (Ec.~\eqref{eq:pid_equivalente}). No se realizó un análisis de estabilidad de esta ley ni una comparación con un PID incremental estándar.
-\item \textbf{Particularidades de implementación conservadas:} la lectura no atómica de los encoders, la posición global del PSO copiada desde la posición actual y sin semilla fija, y el costo de fronteras no homogéneo en unidades se documentan tal como se ejecutaron. Su efecto sobre los resultados no se cuantificó.
-\item \textbf{Integración entre explorador y Nav2:} el explorador envía una meta nueva sin cancelar la anterior, y Nav2 informa la meta reemplazada como abortada. Por eso el resultado de las metas no mide la tasa de éxito de la navegación, y el explorador agrega a su lista negra fronteras que no fallaron. El efecto sobre la duración de la exploración no se cuantificó.
+\item \textbf{Validez externa:} los resultados provienen de un único recinto, cuya área libre mapeada media es de 3.50~m$^2$, y de cinco iteraciones, por lo que no se generalizan a entornos mayores o de geometría distinta. Los intervalos de confianza son amplios en la cobertura libre, la desviación angular y la proporción de exploraciones válidas (Tabla~\ref{tab:intervalos_confianza}).
+\item \textbf{Ley de control de bajo nivel:} el \textit{firmware} ejecuta la ley acumulativa heredada de \texttt{ROSArduinoBridge}, en la que $K_p$ actúa como ganancia integral, $K_d$ como ganancia proporcional sobre la medición y $K_i$ como segunda integración (Ec.~\eqref{eq:pid_equivalente}). Su estabilidad se verifica con un análisis lineal, y no se compara con un PID incremental estándar ni se caracteriza a velocidades bajas.
+\item \textbf{Particularidades de implementación conservadas:} la lectura no atómica de los \textit{encoders}, la posición global del PSO copiada desde la posición actual y sin semilla fija, y el costo de fronteras no homogéneo en unidades se documentan tal como se ejecutan. Su efecto sobre los resultados no se cuantifica, salvo el de la copia de la posición global, que no altera el resultado (\ref{anx:pso_detalle}).
+\item \textbf{Integración entre explorador y Nav2:} el explorador envía una meta nueva sin cancelar la anterior, y Nav2 informa la meta reemplazada como abortada. Por eso el resultado de las metas no mide la tasa de éxito de la navegación, y el explorador agrega a su lista negra fronteras que no fallan. El efecto sobre la duración de la exploración no se cuantifica.
 \end{itemize}
 
 \section*{Trabajo futuro}
@@ -115,15 +123,18 @@ navegación, lo que requiere un protocolo con metas fijas.
 \addcontentsline{toc}{section}{Trabajo futuro}
 
 \begin{enumerate}
-\item Ejecutar el protocolo cuantitativo de navegación en un entorno de mayor superficie, registrando cada meta y su resultado de forma unívoca.
+\item Ejecutar el protocolo cuantitativo de navegación con metas fijas en un entorno de mayor superficie, registrando cada meta y su resultado de forma unívoca, con la tasa de éxito y el error de posición final.
 \item Integrar una \gls{IMU} mediante el paquete de fusión sensorial \texttt{robot\_localization} para reducir la deriva angular.
 \item Migrar el sistema a una distribución mantenida de \gls{ROS2} y portar en el mismo paso el gemelo digital a una versión vigente de Gazebo, dado que Gazebo Classic ya no recibe soporte.
 \item Evaluar la navegación en espacios estrechos con una configuración acorde a la geometría del entorno.
 \item Registrar por separado los reemplazos de meta y los fallos de Nav2, cancelando la meta en curso antes de enviar la siguiente o conservando el registro de \texttt{bt\_navigator}, y evaluar el efecto de \texttt{planner\_frequency} sobre la duración de la exploración.
-\item Extender la evaluación del control de velocidad a otras referencias y
+\item Extender la evaluación del control de velocidad a otras referencias, en especial a velocidades bajas y cambios de sentido, y
 compararlo con un PID incremental estándar, incorporando un estado integral en
-punto flotante y lectura atómica de encoders.
+punto flotante y lectura atómica de \textit{encoders}.
 \item Extender el sistema a la localización sobre un mapa almacenado mediante AMCL, comparando la pose estimada con posiciones marcadas físicamente en el recinto.
 \item Repetir el protocolo angular con un giro controlado a un ángulo fijo y verificar la velocidad angular efectiva registrada en \texttt{/odom}.
 \item Registrar la pose verdadera de Gazebo Classic en los ensayos simulados para separar el error odométrico del error de seguimiento en simulación.
+\item Medir el recinto con un instrumento de mayor precisión y repetir con esas medidas la comparación de los mapas obtenidos en \textit{hardware} real con el plano del recinto.
+\item Aumentar el número de repeticiones de cada ensayo según los tamaños de muestra estimados en el \ref{anx:intervalos_confianza}.
+\item Repetir la identificación FOPDT con un muestreo más rápido y escalones de distinta amplitud, y reformular el PSO con la aritmética entera del \textit{firmware}, salida recortada y semilla fija.
 \end{enumerate}

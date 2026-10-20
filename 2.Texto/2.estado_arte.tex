@@ -3,7 +3,7 @@
 
 Este capítulo presenta una revisión general de las principales tecnologías
 utilizadas en robots móviles autónomos para interiores. El análisis se centra
-en las alternativas disponibles para plataformas de software, percepción,
+en las alternativas disponibles para plataformas de \textit{software}, percepción,
 mapeo, navegación, exploración y simulación, considerando su capacidad de
 integración entre sí, sus requerimientos computacionales y su nivel de
 madurez.
@@ -34,23 +34,23 @@ procesamiento. Por ello, los sistemas robóticos suelen descomponerse en compone
 independientes que pueden ejecutarse en un mismo proceso, en varios procesos o en
 varios computadores \citep{macenski2022ros2}.
 
-\section{Plataformas de software y middleware robótico}
+\section{Plataformas de \texorpdfstring{\textit{software}}{software} y \texorpdfstring{\textit{middleware}}{middleware} robótico}
 \label{sec:alternativas_middleware}
 
 La integración de sensores, actuadores y algoritmos puede realizarse mediante
-una plataforma robótica de propósito general, un middleware de comunicación o
+una plataforma robótica de propósito general, un \textit{middleware} de comunicación o
 una arquitectura desarrollada específicamente para el sistema. Entre las
 alternativas más conocidas se encuentran ROS~1, ROS~2, YARP, Orocos RTT y
 LCM, además de soluciones propietarias utilizadas en plataformas comerciales.
 Estas alternativas no ofrecen exactamente el mismo nivel de funcionalidad.
 Algunas proporcionan bibliotecas, herramientas de visualización, gestión de
-paquetes y controladores de hardware, mientras que otras se concentran en la
+paquetes y controladores de \textit{hardware}, mientras que otras se concentran en la
 comunicación entre procesos o en la ejecución de componentes de tiempo real.
 La Tabla~\ref{tab:comparativa_middleware} presenta una comparación general.
 
 \begin{table}[htbp]
 \centering
-\caption{Comparación general de plataformas y middleware para robótica.}
+\caption{Comparación general de plataformas y \textit{middleware} para robótica.}
 \label{tab:comparativa_middleware}
 \small
 \begin{tabular}{P{2.1cm} P{5.4cm} P{6.3cm}}
@@ -63,20 +63,20 @@ La Tabla~\ref{tab:comparativa_middleware} presenta una comparación general.
 ROS~1 &
 Amplio conjunto histórico de paquetes, controladores y herramientas para
 desarrollo robótico. &
-Cuenta con una comunidad y base de software extensa, pero su última
-distribución oficial finalizó su período de soporte en 2025.
+Cuenta con una comunidad y base de \textit{software} extensa, pero su última
+distribución oficial se encuentra fuera de soporte desde 2025.
 \citep{ros_noetic_eol} \\
 
 ROS~2 &
 Plataforma modular para sistemas distribuidos, con diferentes mecanismos de
-comunicación, calidad de servicio y herramientas para integrar hardware y
+comunicación, calidad de servicio y herramientas para integrar \textit{hardware} y
 algoritmos. &
 Ofrece un ecosistema amplio, aunque su capa de comunicaciones puede requerir
 ajustes, por ejemplo para transmitir mensajes de gran tamaño.
 \citep{macenski2022ros2} \\
 
 YARP &
-Middleware orientado a la comunicación entre módulos y a la abstracción de
+\textit{Middleware} orientado a la comunicación entre módulos y a la abstracción de
 dispositivos; se utiliza en plataformas que requieren conectar componentes
 distribuidos. &
 El proyecto se define en torno a la comunicación entre módulos y la
@@ -100,7 +100,7 @@ no incluye componentes de percepción, mapeo ni navegación
 \bottomrule
 \end{tabular}
 \end{table}
-En consecuencia, la selección de una plataforma de software depende de la
+En consecuencia, la selección de una plataforma de \textit{software} depende de la
 disponibilidad de controladores, los requerimientos temporales, la capacidad
 computacional, la facilidad de integración, la comunidad disponible y el
 grado de desarrollo propio que puede asumir el proyecto. La alternativa
@@ -152,7 +152,7 @@ Buena consistencia global y capacidad de cierre de lazo
 \citep{hess2016cartographer}. &
 Mayor complejidad de configuración y ajuste
 \citep{ngoc2023efficient,macenski2023desks}. En una comparación independiente de
-cinco algoritmos SLAM 2D, Cartographer presentó el mayor uso medio de CPU
+cinco algoritmos SLAM 2D, Cartographer presenta el mayor uso medio de CPU
 \citep{trejos2022slam}. \\
 
 \texttt{slam\_toolbox} &
@@ -202,15 +202,15 @@ carga computacional \citep{macenski2023desks}.
 
 Los métodos de planificación y control descritos no se ejecutan de forma
 aislada, sino a través de una plataforma que los integra y coordina. Para esto
-existen distintas alternativas, que van desde frameworks de navegación ya
+existen distintas alternativas, que van desde \textit{frameworks} de navegación ya
 consolidados hasta arquitecturas desarrolladas de forma específica.
-Por su parte, Nav2 es el framework de navegación de referencia en \gls{ROS2}. Su estructura
+Por su parte, Nav2 es el \textit{framework} de navegación de referencia en \gls{ROS2}. Su estructura
 modular permite combinar planificadores como NavFn y Smac con controladores
 como DWB, Regulated Pure Pursuit y MPPI, y orquestar la navegación mediante
 árboles de comportamiento \citep{nav2_doc}. Su predecesor en ROS~1,
-\texttt{move\_base}, cumplió un rol equivalente durante años, pero quedó ligado
-a una distribución cuyo soporte ya finalizó \citep{ros_noetic_eol}. En un
-ámbito distinto, Autoware surgió como una pila de navegación orientada a
+\texttt{move\_base}, ha cumplido un rol equivalente durante años, pero está ligado
+a una distribución que ya no recibe soporte \citep{ros_noetic_eol}. En un
+ámbito distinto, Autoware se origina como una pila de navegación orientada a
 vehículos autónomos \citep{kato2018autoware}. La documentación oficial actual
 lo describe como una pila integral de conducción autónoma que cubre desde el
 sensado hasta el control \citep{autoware2026docs}. Por ello, su ámbito de
@@ -219,13 +219,13 @@ distintos a los de una plataforma de interiores como la desarrollada en este
 trabajo. También existen soluciones propietarias integradas en robots
 comerciales, cuyo funcionamiento interno no siempre es accesible.
 
-Como alternativa a estos frameworks, es posible desarrollar una arquitectura
+Como alternativa a estos \textit{frameworks}, es posible desarrollar una arquitectura
 propia, apoyándose en bibliotecas de planificación de movimiento como OMPL
 \citep{sucan2012ompl,ompl2026docs} o integrando los componentes mediante otros
-middleware robóticos. Los algoritmos
+\textit{middleware} robóticos. Los algoritmos
 de planificación y control pueden ser equivalentes, pero cambian las
 interfaces, las herramientas de supervisión y los mecanismos de comunicación.
-En términos generales, un framework consolidado reduce el esfuerzo de
+En términos generales, un \textit{framework} consolidado reduce el esfuerzo de
 integración y aporta componentes ya probados, mientras que una arquitectura
 propia ofrece mayor control a cambio de un mayor esfuerzo de desarrollo.
 
@@ -239,7 +239,7 @@ La exploración basada en fronteras, propuesta originalmente por
 \citet{yamauchi1997frontier}, utiliza como candidatos las regiones que
 separan el espacio conocido de las zonas todavía no observadas. Herramientas
 como \texttt{explore\_lite} representan ejemplos de este enfoque, incluido
-su port a \gls{ROS2} \citep{horner_mexplore,alvarez2021mexplore_ros2}. Su
+su \textit{port} a \gls{ROS2} \citep{horner_mexplore,alvarez2021mexplore_ros2}. Su
 principal ventaja es la facilidad de integración con mapas de ocupación y
 sistemas de navegación ya existentes.
 
@@ -270,7 +270,7 @@ sensores, la integración con plataformas robóticas, los recursos
 computacionales requeridos y la facilidad para construir escenarios de
 prueba.
 Gazebo Classic permite simular robots y entornos tridimensionales mediante
-motores de física, sensores y extensiones basadas en plugins
+motores de física, sensores y extensiones basadas en \textit{plugins}
 \citep{osrf2025gazeboclassic}. El Gazebo actual corresponde a la línea
 sucesora mantenida por el proyecto y se distribuye separadamente de Gazebo
 Classic \citep{openrobotics2024gazebo}. Webots y CoppeliaSim, presentados
@@ -284,8 +284,8 @@ capacidad de procesamiento \citep{nvidia2025isaacsim}.
 
 Conviene precisar la nomenclatura, porque el nombre Gazebo designa
 actualmente a dos programas distintos. La familia de versiones numeradas,
-cuya última entrega es la 11, pasó a denominarse Gazebo Classic y alcanzó
-su fin de soporte en enero de 2025 \citep{osrf2025gazeboclassic}. Su
+cuya última entrega es la 11, se denomina ahora Gazebo Classic y se encuentra
+fuera de soporte desde enero de 2025 \citep{osrf2025gazeboclassic}. Su
 sucesor, desarrollado inicialmente bajo el nombre Ignition y con versiones
 identificadas por nombre en lugar de número, es el que hoy se distribuye
 simplemente como Gazebo \citep{openrobotics2025gzmigration}.
