@@ -757,14 +757,17 @@ Eso explica que, para la rueda derecha, el \textit{script} de sintonización
 entregue 0.0692~s y el de comparación Lambda 0.0845~s, con los mismos
 $K_{m,R}$ y $\tau_R$. Los retardos identificados, $L_{d,L}=0.0001$~s y
 $L_{d,R}=0.0692$~s (Tabla~\ref{tab:pso_resultados}), indican entonces que el
-retardo de ambas ruedas es menor que $T_{\mathrm{cap}}$, y son pequeños frente
-a las constantes de tiempo de 0.33 y 0.35~s. Por ello, la respuesta al escalón
-se parece a la de un sistema de primer orden, caso en que el control PI es
-suficiente \citep[Sec.~3.6]{astrom2009controlpid}. El modelo FOPDT se conserva
-con los valores identificados, y la estabilidad se verifica con el retardo
-identificado y con su cota superior (\ref{anx:estabilidad_pid}). La estimación
-precisa de retardos menores que 0.1~s requiere un muestreo más rápido y queda
-como trabajo futuro.
+retardo de ambas ruedas es menor que $T_{\mathrm{cap}}$, y aun en esa cota es
+menor que un tercio de las constantes de tiempo de 0.33 y 0.35~s. Por ello, la
+respuesta al escalón se parece a la de un sistema de primer orden, caso en que
+el control PI es suficiente \citep[Sec.~3.6]{astrom2009controlpid}. Con estos
+datos, el modelo FOPDT y uno de primer orden sin retardo producen el mismo
+ajuste, y la planta usada en la sintonización tampoco aplica el retardo
+(\ref{anx:planta_sintonizacion}). La estructura FOPDT se conserva porque
+contiene al modelo de primer orden y permite verificar la estabilidad sin
+retardo y con el retardo en su cota superior (\ref{anx:estabilidad_pid}). La
+estimación precisa de retardos menores que 0.1~s requiere un muestreo más
+rápido y queda como trabajo futuro.
 
 \subsection{Planta utilizada durante la sintonización PID}
 \label{anx:planta_sintonizacion}
@@ -867,9 +870,10 @@ $K_i$ & 0.00001 & 0.00001 \\
 
 \paragraph{Aporte del PSO a las ganancias finales.} Este párrafo desarrolla el
 análisis resumido en la Sec.~\ref{sec:resultados_pid}.
-\citet{gokcce2021particle} emplean un costo del mismo tipo que el de este
-trabajo, que combina error estacionario, tiempo de subida y sobreimpulso, pero
-validan en simulación las ganancias que obtienen por PSO. En este trabajo, esas
+\citet{gokcce2021particle} emplean un costo que combina error estacionario,
+tiempo de subida y sobreimpulso, basado como el de este trabajo en la respuesta
+al escalón, pero validan en simulación las ganancias que obtienen por PSO. En
+este trabajo, esas
 ganancias se cargan en el robot, y el refinamiento aumenta $K_p$ en 28\% y
 63\%, reduce $K_d$ en 41\% y 45\% respecto de los valores informados y aumenta
 $K_i$ en varios órdenes de magnitud. El ajuste se explica por tres factores. El
@@ -884,12 +888,13 @@ espacio de búsqueda. El tercero es la implementación del optimizador, que no
 recorta su salida ni fija una semilla (\ref{anx:pso_detalle}), por lo que los
 $K_d$ informados, 34.69 y 36.70, no son los que evalúa el costo, aunque según la
 misma rutina ambos producen la misma subida (\ref{anx:estabilidad_pid}). Aun
-así, el PSO entrega un punto de partida estable y más conservador que las
-ganancias definitivas, del mismo orden de magnitud que ellas y obtenido sobre la
-estructura de la ley ejecutada, sin traducir ganancias de una regla analítica,
-como sí lo exige la sintonía Lambda del \ref{anx:lambda_detalle}. Por tanto, su
-aporte es el de una semilla de búsqueda y no el de un ajuste final validado por
-sí solo.
+así, el PSO entrega un punto de partida estable, con más margen que las
+ganancias definitivas y que las ganancias por defecto del \textit{firmware}
+original (\ref{anx:estabilidad_pid}), del mismo orden de magnitud que las
+definitivas y obtenido sobre la estructura de la ley ejecutada, sin traducir
+ganancias de una regla analítica, como sí lo exige la sintonía Lambda del
+\ref{anx:lambda_detalle}. Por tanto, su aporte es el de una semilla de búsqueda
+y no el de un ajuste final validado por sí solo.
 
 \subsection{Captura de la respuesta en lazo cerrado}
 \label{anx:captura_lazo_cerrado}
@@ -963,10 +968,11 @@ Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida} con el modelo FOPDT
 identificado de cada rueda, discretizado de forma exacta con el período
 $T_{\mathrm{PID,sched}}=33$~ms. El modelo discreto incluye el retardo $L_{d,j}$,
 el retenedor de orden cero del PWM y la medición del \textit{firmware}, que
-entrega la velocidad media del período anterior. Como el retardo identificado
-es menor que el período de captura y su valor exacto no se resuelve con esos
-datos (\ref{anx:fodt_scripts}), el análisis se repite con el retardo en su cota
-superior, $L_{d,j}=T_{\mathrm{cap}}=0.1$~s. El análisis es lineal, por lo que no
+entrega la velocidad media del período anterior. Como el período de captura no
+resuelve el retardo (\ref{anx:fodt_scripts}), el análisis se realiza sin
+retardo, que es el modelo efectivamente ajustado, y con el retardo en su cota
+superior, $L_{d,j}=T_{\mathrm{cap}}=0.1$~s. Entre ambos casos los márgenes varían
+de forma monótona con el retardo. El análisis es lineal, por lo que no
 incluye la saturación, la zona muerta del \textit{driver} ni los truncamientos
 enteros, que se comentan al final de este anexo.
 
@@ -979,22 +985,22 @@ integral permanece en cero.
 
 \begin{table}[htbp]
 \centering
-\caption{Estabilidad y robustez del lazo de velocidad con las ganancias definitivas y el modelo FOPDT identificado.}
+\caption{Estabilidad y robustez del lazo de velocidad con las ganancias definitivas, sin retardo y con el retardo en su cota superior.}
 \label{tab:estabilidad_pid}
 \small
 \begin{tabular}{P{5.4cm} P{2.6cm} P{2.6cm} P{2.3cm}}
 \toprule
 \textbf{Indicador} & \textbf{Izquierda sin $K_{i,L}$} & \textbf{Izquierda con $K_{i,L}$} & \textbf{Derecha} \\
 \midrule
-\multicolumn{4}{l}{\textit{Con el retardo identificado}} \\
-Retardo del modelo $L_{d,j}$ & 0.0001~s & 0.0001~s & 0.0692~s \\
-Mayor magnitud de los polos de lazo cerrado & 0.947 & 0.995 & 0.959 \\
-Margen de fase & 56.9$^\circ$ & 53.4$^\circ$ & 46.8$^\circ$ \\
-Margen de ganancia & 38.8~dB & 38.8~dB & 17.1~dB \\
-Margen de retardo & 0.45~s & 0.42~s & 0.37~s \\
-Sensibilidad máxima $M_s$ & 1.36 & 1.39 & 1.65 \\
+\multicolumn{4}{l}{\textit{Sin retardo, $L_{d,j}=0$ (modelo efectivamente ajustado)}} \\
+Mayor magnitud de los polos de lazo cerrado & 0.947 & 0.995 & 0.950 \\
+Margen de fase & 56.9$^\circ$ & 53.4$^\circ$ & 55.5$^\circ$ \\
+Margen de ganancia & 38.9~dB & 38.9~dB & 39.4~dB \\
+Margen de retardo & 0.45~s & 0.42~s & 0.44~s \\
+Sensibilidad máxima $M_s$ & 1.35 & 1.39 & 1.38 \\
 \midrule
 \multicolumn{4}{l}{\textit{Con el retardo en su cota superior, $L_{d,j}=T_{\mathrm{cap}}=0.1$~s}} \\
+Mayor magnitud de los polos de lazo cerrado & 0.961 & 0.995 & 0.964 \\
 Margen de fase & 44.1$^\circ$ & 40.7$^\circ$ & 42.9$^\circ$ \\
 Margen de ganancia & 13.4~dB & 13.1~dB & 13.3~dB \\
 Margen de retardo & 0.35~s & 0.32~s & 0.34~s \\
@@ -1003,16 +1009,30 @@ Sensibilidad máxima $M_s$ & 1.78 & 1.85 & 1.81 \\
 \end{tabular}
 \end{table}
 
-En los tres casos, todas las raíces quedan dentro del círculo unitario, por lo
-que el lazo nominal es estable, y la sensibilidad máxima, de 1.36 a 1.65, queda
-dentro del intervalo típico. Con el retardo en su cota superior el lazo sigue
-estable, y en todos los casos solo pierde la estabilidad si el retardo total
-supera unos 0.42~s, más de cuatro veces esa cota. Por eso, la incertidumbre del
-retardo no altera la conclusión de estabilidad. Un barrido de 625 combinaciones
-de la ganancia de la planta, entre 0.1 y 10 veces la identificada, y de su
-constante de tiempo, entre 0.05 y 3~s, muestra además que el lazo solo se vuelve
-inestable con ganancias de planta de al menos 6.8 veces la identificada, o de
-4.6 veces con el retardo en su cota.
+En los tres casos, todas las raíces quedan dentro del círculo unitario, tanto
+sin retardo como con el retardo en su cota, y la sensibilidad máxima, de 1.35 a
+1.85, queda dentro del intervalo típico. En todos los casos el lazo solo pierde
+la estabilidad si el retardo total supera unos 0.42~s, más de cuatro veces la
+cota. Por eso, la incertidumbre del retardo no altera la conclusión de
+estabilidad. Un barrido de 625 combinaciones de la ganancia de la planta, entre
+0.1 y 10 veces la identificada, y de su constante de tiempo, entre 0.05 y 3~s,
+muestra además que sin retardo el lazo es estable en todas ellas, y que con el
+retardo en su cota solo pierde la estabilidad con ganancias de planta mayores
+que 4.4 veces la identificada, o que 2.8 veces en la rueda izquierda si el
+término asociado a $K_{i,L}$ se trata como lineal.
+
+\paragraph{Condiciones de operación.} En operación,
+\texttt{diff\_drive\_controller} limita la base a 0.13~m/s y 0.35~rad/s
+(Tabla~\ref{tab:anx_identificadores}), por lo que cada rueda opera hasta unos
+0.16~m/s, es decir, unos 51~\textit{ticks/frame}. Según el modelo, esa
+velocidad requiere en régimen permanente unos 180 de los 255 niveles de PWM,
+por lo que la salida no se satura fuera de los transitorios. El ensayo a
+0.13~m/s corresponde al límite de velocidad lineal, y su escalón es mayor que
+los cambios de referencia de la navegación normal, en la que DWB limita la
+aceleración lineal a 0.25~m/s$^2$ (Tabla~\ref{tab:anx_nav2_dwb_params}). Como
+el modelo es lineal, los márgenes no dependen de la velocidad de operación, y
+las variaciones de la ganancia de la planta entre puntos de operación quedan
+cubiertas por el barrido anterior.
 
 \paragraph{Efectos no incluidos en el análisis lineal.} Como el incremento de
 la Ec.~\eqref{eq:pid_fw_incremento} se trunca a un entero, en estado
@@ -1027,9 +1047,14 @@ giro sobre el propio eje a 0.35~rad/s, cada rueda opera cerca de
 referencia y la zona muerta del \textit{driver} tiene mayor peso.
 
 \paragraph{Ganancias sugeridas por PSO.} Con el mismo modelo, las ganancias
-sugeridas por PSO dan márgenes de fase de 62$^\circ$ a 66$^\circ$ y una
-sensibilidad máxima de 1.20 a 1.33, por lo que son más conservadoras que las
-definitivas. La rutina de simulación del \textit{script} de sintonización, que
+sugeridas por PSO dan márgenes de fase de 64$^\circ$ a 71$^\circ$ sin retardo y
+de 53$^\circ$ a 62$^\circ$ con el retardo en su cota, y una sensibilidad máxima
+de 1.15 a 1.52, por lo que son más conservadoras que las definitivas. Las
+ganancias por defecto del \textit{firmware} original ($K_p=20$, $K_d=12$ y
+$K_i=0$, \ref{anx:pid_origen}) dan, en cambio, márgenes de fase de 49$^\circ$ a
+50$^\circ$ sin retardo y de 35$^\circ$ con el retardo en su cota, con una
+sensibilidad máxima de hasta 2.18, fuera del intervalo típico. La rutina de
+simulación del \textit{script} de sintonización, que
 no aplica el retardo (\ref{anx:planta_sintonizacion}), predice con ellas una
 subida de 0.8 y 1.1~s, igual con el $K_d$ informado y con el evaluado por el
 costo. En el robot, en cambio, la rueda izquierda se detiene en 0.12~m/s y la
@@ -1486,13 +1511,14 @@ meta nueva se verifica en los archivos \texttt{simple\_action\_server.hpp} y
 
 Para evaluar la exactitud de los mapas de la Sec.~\ref{sec:resultados_slam}, se
 levanta un plano del recinto con las distancias entre muros medidas
-manualmente, que se presenta en la Fig.~\ref{fig:plano_recinto}. Sus muros
+manualmente con huincha de medir, que se presenta en la
+Fig.~\ref{fig:plano_recinto}. Sus muros
 tienen menos de 2~cm de espesor y se representan como líneas. El largo del
 tabique corto unido al muro inferior no se mide, por lo que la
 Tabla~\ref{tab:exactitud_mapas} solo incluye su posición.
 
 \utemFigurePropia{2.Texto/Imag/plano_recinto.pdf}{0.62\textwidth}
-{Plano del recinto de ensayo, con las distancias entre muros medidas manualmente.}
+{Plano del recinto de ensayo, con las distancias entre muros medidas con huincha de medir.}
 {fig:plano_recinto}
 
 La comparación usa los cinco mapas válidos, en las imágenes de cobertura que
@@ -1509,6 +1535,10 @@ celda ocupada más cercana del mapa, que es la métrica de exactitud que emplean
 decir, los que tienen una celda libre a menos de 0.10~m, que son entre el 92\% y
 el 93\% del total.
 
+\utemFigurePropia{2.Texto/Imag/mapas_vs_plano.pdf}{0.95\textwidth}
+{Mapas de las cinco iteraciones válidas alineados con el plano del recinto.}
+{fig:anx_mapas_vs_plano}
+
 La distancia media entre el plano y el mapa es de 3.4~cm, con 3.55, 3.19, 3.72,
 3.53 y 3.17~cm en las iteraciones 1, 3, 4, 5 y 6, del orden de la resolución del
 mapa, ya que al
@@ -1524,10 +1554,6 @@ largos explica a lo sumo 4~cm de esa diferencia, y el resto puede provenir de la
 medición manual o de una distorsión del mapa en esa dirección, causas que estos
 datos no permiten separar. Las mayores diferencias, de 6 a 9~cm, corresponden a
 los tabiques cortos, que quedan representados por pocas celdas ocupadas.
-
-\utemFigurePropia{2.Texto/Imag/mapas_vs_plano.pdf}{0.60\textwidth}
-{Mapas de las cinco iteraciones válidas alineados con el plano del recinto.}
-{fig:anx_mapas_vs_plano}
 
 \begin{table}[H]
 \centering
@@ -1564,7 +1590,7 @@ Este anexo desarrolla el alcance estadístico resumido en la
 Sec.~\ref{sec:alcance_estadistico}. La Tabla~\ref{tab:intervalos_confianza}
 presenta el intervalo de confianza al 95\% de la media de cada indicador,
 calculado con la Ec.~\eqref{eq:ic_media}, que usa la distribución $t$ de
-Student \citep[Cap.~8]{devore2021modern}:
+Student \citep[Sec.~8.2]{devore2021modern}:
 
 \begin{equation}
 \mu \pm t_{0.975,\,n-1}\,\frac{\sigma}{\sqrt{n}},

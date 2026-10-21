@@ -87,7 +87,7 @@ Conversión de consignas de rueda a \textit{ticks/frame}. \\
 
 El valor unificado $N_e=1980$~\textit{ticks}/vuelta corresponde al valor
 efectivamente utilizado por el \textit{firmware} y la interfaz de \textit{hardware} durante
-los ensayos. La calibración experimental por rueda produjo promedios
+los ensayos. La calibración experimental por rueda produce promedios
 ligeramente distintos; las muestras, los promedios y el error sistemático
 asociado al uso de este valor unificado se conservan en el
 \ref{anx:pid_data}.
@@ -480,7 +480,7 @@ entra en el término integral, lo que evita saltos de la señal de control y
 reduce la sobreelongación ante cambios del punto de consigna
 \citep[Sec.~3.4]{astrom2009controlpid}. La rueda derecha opera en esa
 condición, porque su estado integral permanece en cero, y en la izquierda ese
-estado solo cambia con errores grandes (Sec.~\ref{sec:resultados_pid}).
+estado solo crece con errores grandes (Sec.~\ref{sec:resultados_pid}).
 
 Esta ley se conserva en lugar de reemplazarla por otra formulación del PID o
 por una ley escrita desde cero, por dos razones. La interfaz
@@ -520,7 +520,7 @@ $K_o$ & 50 & 50 \\
 \bottomrule
 \end{tabular}
 \vspace{3pt}
-\parbox{0.85\linewidth}{\footnotesize Las ganancias se aplican en la escala interna del \textit{firmware}.}
+\parbox{0.85\linewidth}{\footnotesize Las ganancias se aplican en la escala interna del \textit{firmware}. Sin el término asociado a $K_i$, equivalen a un PI incremental con ganancia proporcional $K_d/K_o$ de 0.41 y 0.40~PWM por \textit{tick/frame} y tiempo integral de 42 y 40~ms (\ref{anx:estabilidad_pid}).}
 \end{table}
 
 \begin{algorithm}[htbp]
@@ -560,14 +560,17 @@ La estabilidad de la ley ejecutada se verifica sobre el lazo discreto que forman
 las Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida} con el modelo
 FOPDT identificado de cada rueda, en un análisis lineal que no incluye la
 saturación, la zona muerta ni los truncamientos enteros
-(\ref{anx:estabilidad_pid}). Con el retardo identificado, el lazo es estable en
-ambas ruedas, con márgenes de fase de 47$^\circ$ a 57$^\circ$ y una
-sensibilidad máxima de 1.36 a 1.65, dentro del intervalo de 1.2 a 2.0 que se
-considera típico \citep[Sec.~5]{wittenmark_ifac_computer}. Como ese retardo es
-menor que el período de captura, el análisis se repite con el retardo en su
-cota de 0.1~s, y el lazo sigue estable y solo pierde la estabilidad si el
-retardo total supera unos 0.42~s. La Tabla~\ref{tab:estabilidad_pid} reúne
-estos resultados.
+(\ref{anx:estabilidad_pid}). Como el período de captura de 0.1~s no resuelve el
+retardo, el análisis se realiza sin retardo, que corresponde al modelo que la
+identificación efectivamente ajusta, y con el retardo en esa cota. Sin retardo,
+el lazo es estable en ambas ruedas, con márgenes de fase de 53$^\circ$ a
+57$^\circ$ y una sensibilidad máxima de 1.35 a 1.39. Con el retardo en su cota
+sigue estable, con márgenes de fase de 41$^\circ$ a 44$^\circ$ y una
+sensibilidad máxima de 1.78 a 1.85. En ambos casos la sensibilidad máxima queda
+dentro del intervalo de 1.2 a 2.0 que se considera típico
+\citep[Sec.~5]{wittenmark_ifac_computer}, y el lazo solo pierde la estabilidad
+si el retardo total supera unos 0.42~s. La Tabla~\ref{tab:estabilidad_pid}
+reúne estos resultados.
 
 \subsection{Bucle principal y autodetención}
 \label{sec:bucle_principal}
@@ -628,9 +631,10 @@ las aproximaciones numéricas de la planta y del controlador se documentan en el
 
 Los retardos identificados, $L_{d,L}=0.0001$~s y $L_{d,R}=0.0692$~s
 (Tabla~\ref{tab:pso_resultados}), son menores que el período de captura de
-0.1~s, por lo que solo indican que el retardo de ambas ruedas es menor que ese
-período (Sec.~\ref{sec:fodt}). El modelo FOPDT se conserva con esos valores, y
-su análisis se presenta en el \ref{anx:fodt_scripts}.
+0.1~s y se cuantizan a cero muestras, por lo que el modelo ajustado equivale a
+uno de primer orden sin retardo (Sec.~\ref{sec:fodt}). La estructura FOPDT se
+conserva porque contiene ese caso y permite acotar el retardo en el análisis de
+estabilidad, como se detalla en el \ref{anx:fodt_scripts}.
 
 \subsubsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}

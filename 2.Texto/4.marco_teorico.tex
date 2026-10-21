@@ -449,8 +449,10 @@ velocidad previa a medida que avanza la búsqueda. La función de costo empleada
 para la sintonización combina el error cuadrático medio de la velocidad
 respecto de la referencia con una penalización por sobreimpulso, favoreciendo
 respuestas rápidas pero amortiguadas. Como toda metaheurística, PSO no
-garantiza encontrar el óptimo global, razón por la cual el procedimiento incluye
-un refinamiento experimental. Las escalas de búsqueda, las cotas, la
+garantiza encontrar el óptimo global, y además su costo se evalúa sobre un
+modelo simplificado de cada rueda. Por eso, las ganancias que entrega se usan
+como punto de partida y se ajustan después sobre el robot real. Las escalas de
+búsqueda, las cotas, la
 configuración del enjambre y las particularidades numéricas de la ejecución se
 presentan en el Capítulo~\ref{ch:implementacion} y en el
 \ref{anx:pso_detalle}.

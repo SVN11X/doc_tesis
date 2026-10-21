@@ -233,8 +233,8 @@ búsqueda y no el de un ajuste final validado por sí solo. El retardo
 identificado resulta menor que el período de captura, por lo que no introduce
 un desplazamiento temporal efectivo en el modelo discreto. En la práctica el
 modelo se comporta como uno de primer orden. El detalle se conserva en el
-\ref{anx:fodt_scripts}. En cambio, el análisis de estabilidad incluye el retardo
-del modelo, con su valor identificado y con su cota superior.
+\ref{anx:fodt_scripts}. En cambio, el análisis de estabilidad considera el
+retardo en cero y en su cota superior de 0.1~s.
 
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
@@ -439,9 +439,9 @@ sintetiza el estado de validación alcanzado por cada subsistema.
 Odometría & Validada cuantitativamente en \textit{hardware} real (recta de 2~m, $n=5$) & Error odométrico medio de 3.63\%, con intervalo de confianza al 95\% de 3.08\% a 4.18\%. En simulación no se registra verdad de terreno independiente. El protocolo angular no mide error odométrico angular \\
 Control de velocidad & Evaluado experimentalmente y verificado analíticamente & Indicadores de la Tabla~\ref{tab:pid_performance} calculados sobre la captura real en lazo cerrado a 0.13~m/s. Estabilidad y márgenes verificados con el modelo FOPDT identificado (Tabla~\ref{tab:estabilidad_pid}). Un único punto de operación \\
 SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
-Cobertura y área libre cuantificadas en cinco iteraciones válidas; la
-alineación de paredes se evalúa visualmente. Distancia media de 3.4~cm al plano
-medido del recinto (Tabla~\ref{tab:exactitud_mapas}) \\
+Cobertura y área libre cuantificadas en cinco iteraciones válidas. Posición
+de los muros comparada con el plano medido del recinto, con una distancia media
+de 3.4~cm (Tabla~\ref{tab:exactitud_mapas}) \\
 Nav2 & Verificada funcionalmente & Ejecuta 59 metas del explorador durante 21.9~m de recorrido. En 53 de los 54 abortos la meta es reemplazada por el explorador (Tabla~\ref{tab:anx_explore_metas}), por lo que el resultado de las metas no mide su tasa de éxito. El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
 Exploración autónoma & Verificada funcionalmente en \textit{hardware} real &
 Cinco de seis ejecuciones terminan automáticamente al no quedar fronteras,
@@ -480,7 +480,7 @@ ensayo se detallan en el \ref{anx:resultados_metodologia}. Por su parte, la cara
 Los ensayos sobre \textit{hardware} real se repiten cinco veces en odometría,
 seis veces en exploración, de las cuales cinco son válidas, y una vez por
 conjunto de ganancias en el control de velocidad. Con el intervalo de confianza
-al 95\% de la media \citep[Cap.~8]{devore2021modern}, el error
+al 95\% de la media \citep[Sec.~8.2]{devore2021modern}, el error
 odométrico queda entre 3.08\% y 4.18\%, el área libre mapeada entre 3.46 y
 3.53~m$^2$ y la distancia al plano del recinto entre 3.1 y 3.7~cm, mientras que
 la cobertura libre, de 46.2\% a 78.3\%, y la desviación angular, de
