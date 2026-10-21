@@ -1555,31 +1555,89 @@ medición manual o de una distorsión del mapa en esa dirección, causas que est
 datos no permiten separar. Las mayores diferencias, de 6 a 9~cm, corresponden a
 los tabiques cortos, que quedan representados por pocas celdas ocupadas.
 
-\begin{table}[H]
-\centering
-\caption{Distancias del plano del recinto y las mismas distancias medidas en los mapas de las cinco iteraciones válidas.}
-\label{tab:exactitud_mapas}
+
+\begingroup
 \small
-\begin{tabular}{P{4.6cm} c c c c}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+
+\begin{longtable}{P{4.6cm} c c c c}
+
+\caption{Distancias del plano del recinto y las mismas distancias medidas en los mapas de las cinco iteraciones válidas.}
+\label{tab:exactitud_mapas}\\
+
 \toprule
-\textbf{Distancia} & \makecell{\textbf{Plano}\\\textbf{(m)}} & \makecell{\textbf{Media de}\\\textbf{los mapas (m)}} & \makecell{\textbf{Rango de}\\\textbf{los mapas (m)}} & \makecell{\textbf{Diferencia}\\\textbf{media (cm)}} \\
+\textbf{Distancia} &
+\makecell{\textbf{Plano}\\\textbf{(m)}} &
+\makecell{\textbf{Media de}\\\textbf{los mapas (m)}} &
+\makecell{\textbf{Rango de}\\\textbf{los mapas (m)}} &
+\makecell{\textbf{Diferencia}\\\textbf{media (cm)}} \\
 \midrule
-Alto interior del recinto & 1.91 & 1.89 & 1.89 a 1.90 & $-1.7$ \\
-Ancho del primer pasillo & 0.58 & 0.62 & 0.61 a 0.64 & $+4.1$ \\
-Ancho del segundo pasillo & 0.58 & 0.60 & 0.59 a 0.61 & $+2.4$ \\
-Ancho del tercer pasillo & 0.98 & 1.03 & 1.02 a 1.05 & $+5.2$ \\
-Paso sobre el primer muro largo & 0.68 & 0.69 & 0.68 a 0.69 & $+0.5$ \\
-Paso bajo el segundo muro largo & 0.68 & 0.67 & 0.67 a 0.68 & $-0.8$ \\
-Largo del tabique unido al segundo muro largo & 0.40 & 0.34 & 0.32 a 0.38 & $-6.1$ \\
-Altura de ese tabique sobre el extremo del muro & 0.40 & 0.39 & 0.38 a 0.40 & $-0.5$ \\
-Distancia del tabique superior del tercer pasillo al muro superior & 0.40 & 0.32 & 0.31 a 0.34 & $-7.8$ \\
-Largo del tabique superior del tercer pasillo & 0.40 & 0.38 & 0.34 a 0.41 & $-2.3$ \\
-Distancia del tabique corto inferior al muro derecho & 0.61 & 0.70 & 0.69 a 0.71 & $+9.3$ \\
+\endfirsthead
+
+\multicolumn{5}{l}{\small\itshape Tabla \thetable{} (continuación)}\\
+\toprule
+\textbf{Distancia} &
+\makecell{\textbf{Plano}\\\textbf{(m)}} &
+\makecell{\textbf{Media de}\\\textbf{los mapas (m)}} &
+\makecell{\textbf{Rango de}\\\textbf{los mapas (m)}} &
+\makecell{\textbf{Diferencia}\\\textbf{media (cm)}} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{5}{r}{\small\itshape Continúa en la página siguiente}\\
+\endfoot
+
 \bottomrule
-\end{tabular}
-\vspace{3pt}
-\parbox{0.92\linewidth}{\footnotesize Las distancias de los mapas se miden entre las celdas ocupadas de cada muro, después de alinear el plano con cada mapa. La resolución del mapa es de 0.05~m/celda.}
-\end{table}
+\endlastfoot
+
+Alto interior del recinto
+& 1.91 & 1.89 & 1.89 a 1.90 & $-1.7$ \\
+
+Ancho del primer pasillo
+& 0.58 & 0.62 & 0.61 a 0.64 & $+4.1$ \\
+
+Ancho del segundo pasillo
+& 0.58 & 0.60 & 0.59 a 0.61 & $+2.4$ \\
+
+Ancho del tercer pasillo
+& 0.98 & 1.03 & 1.02 a 1.05 & $+5.2$ \\
+
+Paso sobre el primer muro largo
+& 0.68 & 0.69 & 0.68 a 0.69 & $+0.5$ \\
+
+Paso bajo el segundo muro largo
+& 0.68 & 0.67 & 0.67 a 0.68 & $-0.8$ \\
+
+Largo del tabique unido al segundo muro largo
+& 0.40 & 0.34 & 0.32 a 0.38 & $-6.1$ \\
+
+Altura de ese tabique sobre el extremo del muro
+& 0.40 & 0.39 & 0.38 a 0.40 & $-0.5$ \\
+
+Distancia del tabique superior del tercer pasillo al muro superior
+& 0.40 & 0.32 & 0.31 a 0.34 & $-7.8$ \\
+
+Largo del tabique superior del tercer pasillo
+& 0.40 & 0.38 & 0.34 a 0.41 & $-2.3$ \\
+
+Distancia del tabique corto inferior al muro derecho
+& 0.61 & 0.70 & 0.69 a 0.71 & $+9.3$ \\
+
+\end{longtable}
+
+\noindent
+\parbox{\linewidth}{%
+\footnotesize
+Las distancias de los mapas se miden entre las celdas
+ocupadas de cada muro, después de alinear el plano
+con cada mapa. La resolución del mapa es de
+0.05~m/celda.
+}
+
+\endgroup
+
 
 \FloatBarrier
 
