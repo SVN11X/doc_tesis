@@ -700,7 +700,7 @@ calcula completa en cada ciclo~\citep[Sec.~13.4]{astrom2009controlpid}. Al sumar
 anterior, cada término sube un orden de integración, tal como muestra la
 Ec.~\eqref{eq:pid_equivalente}.
 
-Respecto del original se conservan la estructura de la ley, el período de
+Respecto del original se conservan la estructura de la ley, la frecuencia de
 control de 30~Hz, la saturación a $\pm255$, la integración condicional, el
 reinicio de estados al detenerse, el intervalo de autodetención de 2000~ms y
 la rutina de lectura de \textit{encoders}, incluida su lectura no atómica
@@ -1055,7 +1055,7 @@ $K_i=0$, \ref{anx:pid_origen}) dan, en cambio, márgenes de fase de 49$^\circ$ a
 50$^\circ$ sin retardo y de 35$^\circ$ con el retardo en su cota, con una
 sensibilidad máxima de hasta 2.18, fuera del intervalo típico. La rutina de
 simulación del \textit{script} de sintonización, que
-no aplica el retardo (\ref{anx:planta_sintonizacion}), predice con ellas una
+no aplica el retardo (\ref{anx:planta_sintonizacion}), predice con las ganancias del PSO una
 subida de 0.8 y 1.1~s, igual con el $K_d$ informado y con el evaluado por el
 costo. En el robot, en cambio, la rueda izquierda se detiene en 0.12~m/s y la
 derecha recién sostiene la referencia después de los 6~s
@@ -1629,7 +1629,7 @@ Los indicadores con baja dispersión, como el error odométrico, el área libre
 mapeada y la distancia al plano, quedan bien acotados aun con cinco
 repeticiones, mientras que la cobertura libre y la desviación angular tienen
 intervalos amplios. Con seis ejecuciones, la proporción de exploraciones
-válidas solo permite afirmar que supera el 36\%. Reducir a la mitad la
+válidas solo permite afirmar que supera el 35.9\%. Reducir a la mitad la
 semiamplitud del intervalo del error odométrico requeriría unas 13
 repeticiones, y afirmar una tasa de éxito superior al 80\% requeriría al menos
 17 ejecuciones consecutivas sin fallas. En la literatura,

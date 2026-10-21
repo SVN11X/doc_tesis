@@ -486,7 +486,7 @@ Esta ley se conserva en lugar de reemplazarla por otra formulación del PID o
 por una ley escrita desde cero, por dos razones. La interfaz
 \texttt{diffdrive\_arduino}~\citep{newans_diffdrive} usa el protocolo serial de
 este \textit{firmware}, y mantener un algoritmo de velocidad por compatibilidad
-con el equipo existente es la razón por la que los fabricantes lo conservan
+con el equipo existente es una de las razones por las que los fabricantes lo conservan
 \citep[Sec.~13.4]{astrom2009controlpid}. Además, la forma incremental es útil
 aun cuando la integración se realiza dentro del controlador, porque simplifica
 la protección contra el \textit{windup} del integrador y permite realizar la
@@ -562,7 +562,7 @@ FOPDT identificado de cada rueda, en un análisis lineal que no incluye la
 saturación, la zona muerta ni los truncamientos enteros
 (\ref{anx:estabilidad_pid}). Como el período de captura de 0.1~s no resuelve el
 retardo, el análisis se realiza sin retardo, que corresponde al modelo que la
-identificación efectivamente ajusta, y con el retardo en esa cota. Sin retardo,
+identificación efectivamente ajusta, y con el retardo en su cota de 0.1~s. Sin retardo,
 el lazo es estable en ambas ruedas, con márgenes de fase de 53$^\circ$ a
 57$^\circ$ y una sensibilidad máxima de 1.35 a 1.39. Con el retardo en su cota
 sigue estable, con márgenes de fase de 41$^\circ$ a 44$^\circ$ y una

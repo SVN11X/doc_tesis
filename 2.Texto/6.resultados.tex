@@ -421,7 +421,7 @@ identificados como fallos propios de Nav2. Estos indicadores describen la
 exploración, pero no miden si el robot llega a un destino dado ni con qué
 error. La navegación dirigida con metas fijas definidas por el operador,
 distinta de las metas que genera el explorador, queda fuera del alcance
-declarado en la \hyperref[sec:alcances]{Alcances y limitaciones} y no se
+declarado en \hyperref[sec:alcances]{Alcances y limitaciones} y no se
 ensaya, por lo que este trabajo no informa tasa de éxito ni error de posición
 final para ese caso. El protocolo que permitiría medirla se describe en el
 \ref{anx:mediciones_no_incluidas}. La Tabla~\ref{tab:estado_validacion}
@@ -441,7 +441,7 @@ Control de velocidad & Evaluado experimentalmente y verificado analíticamente &
 SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
 Cobertura y área libre cuantificadas en cinco iteraciones válidas. Posición
 de los muros comparada con el plano medido del recinto, con una distancia media
-de 3.4~cm (Tabla~\ref{tab:exactitud_mapas}) \\
+de 3.4~cm (\ref{anx:comparacion_plano}) \\
 Nav2 & Verificada funcionalmente & Ejecuta 59 metas del explorador durante 21.9~m de recorrido. En 53 de los 54 abortos la meta es reemplazada por el explorador (Tabla~\ref{tab:anx_explore_metas}), por lo que el resultado de las metas no mide su tasa de éxito. El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
 Exploración autónoma & Verificada funcionalmente en \textit{hardware} real &
 Cinco de seis ejecuciones terminan automáticamente al no quedar fronteras,
@@ -486,7 +486,7 @@ odométrico queda entre 3.08\% y 4.18\%, el área libre mapeada entre 3.46 y
 la cobertura libre, de 46.2\% a 78.3\%, y la desviación angular, de
 1.8$^\circ$ a 21.6$^\circ$, quedan poco acotadas. La proporción de
 exploraciones válidas solo permite afirmar con 95\% de confianza que supera el
-36\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}. Por esta razón, los resultados se presentan como
+35.9\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}. Por esta razón, los resultados se presentan como
 una verificación funcional en el entorno ensayado y no como tasas de desempeño
 generalizables. El cálculo, los intervalos de todos los indicadores, las
 repeticiones necesarias para acotarlos mejor y su comparación con la literatura
