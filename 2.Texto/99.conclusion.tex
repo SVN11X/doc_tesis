@@ -26,9 +26,11 @@ para cada rueda la ley de control heredada del \textit{firmware} original, que
 corresponde a un controlador PI en forma incremental con la acción
 proporcional sobre la medición, más un término integral adicional, y cuyas
 ganancias no cumplen la función que indica su nombre. El análisis del lazo
-discreto con el modelo FOPDT identificado muestra que esa ley es estable, con
+discreto con el modelo FOPDT identificado muestra estabilidad de los modelos
+lineales considerados, con
 márgenes de fase de 53$^\circ$ a 57$^\circ$ sin retardo y de 41$^\circ$ a
-44$^\circ$ con el retardo en su cota superior de 0.1~s. La Fig.~\ref{fig:respuesta_escalon_final} corresponde a una
+44$^\circ$ en el escenario de retardo de 0.1~s, que no se interpreta como
+una cota física medida. La Fig.~\ref{fig:respuesta_escalon_final} corresponde a una
 adquisición experimental en lazo cerrado, y los indicadores de la
 Tabla~\ref{tab:pid_performance} se calculan sobre esa misma respuesta medida.
 Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. Los estados internos, la
@@ -40,9 +42,11 @@ La navegación con Nav2 queda integrada mediante planificación global,
 control local, mapas de costo y acciones de recuperación. La exploración por fronteras se ejecuta en cinco iteraciones válidas, que
 terminan automáticamente al no quedar fronteras y sin intervención manual, con
 un índice medio de cobertura libre de 62.2\% ($\sigma=12.9$). De las 60 metas
-generadas, 54 quedan abortadas y una se completa. En 53 de esos abortos la
-meta es reemplazada por el propio explorador, que renueva su destino cada
-3.3~s, y Nav2 informa ese reemplazo como aborto. El detalle metodológico se conserva en el
+generadas, 54 quedan abortadas y una se completa. De esos abortos, 53 cumplen
+el criterio temporal de asociación a reemplazos del explorador, que reevalúa
+su destino cada 3.3~s. El mecanismo de reemplazo de Nav2 puede terminar la
+meta anterior como abortada; el criterio no determina de forma independiente
+la causa de cada caso. El detalle metodológico se conserva en el
 \ref{anx:resultados_metodologia}.
 El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 
@@ -55,7 +59,7 @@ la estimación de los estados de rueda y el control de velocidad en el \textit{f
 la posición y velocidad de rueda se exportan mediante
 \texttt{DiffDriveArduino}, y la odometría se integra en
 \texttt{diff\_drive\_controller}. La estabilidad de la ley ejecutada se
-verifica con el modelo FOPDT identificado. Sin embargo, la ley heredada de \texttt{ROSArduinoBridge} opera como un
+verifica sobre su idealización lineal con el modelo FOPDT identificado. Sin embargo, la ley heredada de \texttt{ROSArduinoBridge} opera como un
 controlador PI incremental sin acción derivativa efectiva, su análisis es
 lineal y su desempeño se evalúa en un único punto de operación, como se detalla
 en la Sec.~\ref{sec:motorcontrol_pid} y en la Sec.~\ref{sec:resultados_pid}.
@@ -65,9 +69,9 @@ en la Sec.~\ref{sec:motorcontrol_pid} y en la Sec.~\ref{sec:resultados_pid}.
 construcción del mapa se implementan y verifican funcionalmente en \textit{hardware}
 real, junto con la caracterización cuantitativa de cobertura y área libre
 mapeada. Nav2 se integra y conduce al robot hacia las metas del explorador en
-las cinco ejecuciones válidas, con 21.9~m de recorrido autónomo y sin abortos
-atribuibles a fallos de navegación en el registro. Sin embargo, como 53 de los
-54 abortos corresponden a reemplazos de meta hechos por el explorador, el
+las cinco ejecuciones válidas, con 21.9~m de recorrido autónomo. De los
+54 abortos, 53 cumplen el criterio temporal de asociación a reemplazos,
+sin que ello permita descartar fallos concurrentes. Por tanto, el
 resultado de las metas no permite medir la tasa de éxito de la navegación. El
 carácter parcial proviene de que no se obtiene un indicador cuantitativo del
 desempeño de la navegación.
@@ -91,11 +95,12 @@ resultados muestran que es posible construir un prototipo diferencial capaz de
 generar mapas 2D y ejecutar un proceso de exploración autónoma en el entorno
 ensayado. Cinco de las seis ejecuciones experimentales producen mapas válidos,
 lo que permite verificar funcionalmente la integración entre exploración,
-navegación y mapeo. Con seis ejecuciones, esa proporción no constituye una tasa
-de desempeño (Sec.~\ref{sec:alcance_estadistico}).
+navegación y mapeo. Con seis ejecuciones, esa proporción se considera
+descriptiva y no se generaliza como tasa de desempeño
+(Sec.~\ref{sec:alcance_estadistico}).
 
 El resultado de las metas individuales no contradice esa conclusión, porque 53
-de los 54 abortos corresponden a reemplazos de meta hechos por el propio
+de los 54 abortos se asocian temporalmente a reemplazos del propio
 explorador. Sí deja pendiente medir cuantitativamente el desempeño de la
 navegación, lo que requiere un protocolo con metas fijas.
 
@@ -135,6 +140,6 @@ punto flotante y lectura atómica de \textit{encoders}.
 \item Repetir el protocolo angular con un giro controlado a un ángulo fijo y verificar la velocidad angular efectiva registrada en \texttt{/odom}.
 \item Registrar la pose verdadera de Gazebo Classic en los ensayos simulados para separar el error odométrico del error de seguimiento en simulación.
 \item Medir el recinto con un instrumento de mayor precisión y repetir con esas medidas la comparación de los mapas obtenidos en \textit{hardware} real con el plano del recinto.
-\item Aumentar a un mínimo de 6 a 10 las repeticiones de cada ensayo, o más según los tamaños de muestra estimados en el \ref{anx:intervalos_confianza}.
+\item Ampliar inicialmente a entre 6 y 10 las repeticiones de cada ensayo, con 10 por condición como objetivo de partida, y ajustar el total según la dispersión y la precisión requerida (\ref{anx:intervalos_confianza}).
 \item Repetir la identificación FOPDT con un muestreo más rápido y escalones de distinta amplitud, y reformular el PSO con la aritmética entera del \textit{firmware}, salida recortada y semilla fija.
 \end{enumerate}

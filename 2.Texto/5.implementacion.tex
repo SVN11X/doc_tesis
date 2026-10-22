@@ -400,6 +400,7 @@ El controlador de velocidad se ejecuta de forma independiente para cada rueda en
 \begin{align}
 \Delta u_j^{\mathrm{long}}[k]
 &=
+\operatorname{trunc}_0\!\left(
 \frac{
 K_{p,j}e_j^{\mathrm{db}}[k]
 -
@@ -408,11 +409,15 @@ K_{d,j}\bigl(m_j^{\mathrm{int}}[k]-m_j^{\mathrm{int}}[k-1]\bigr)
 I_j^{\mathrm{int}}[k]
 }{
 K_o
-},
+}\right),
 \label{eq:pid_fw_incremento}\\
 I_j^{\mathrm{int}}[k+1]
 &=
-I_j^{\mathrm{int}}[k]+K_{i,j}e_j^{\mathrm{db}}[k],
+\begin{cases}
+\operatorname{trunc}_0\!\bigl(I_j^{\mathrm{int}}[k]+K_{i,j}e_j^{\mathrm{db}}[k]\bigr),
+& |u_j^{\mathrm{raw}}[k]|<255,\\
+I_j^{\mathrm{int}}[k], & \text{en otro caso},
+\end{cases}
 \label{eq:pid_fw_integrador}\\
 u_j[k]
 &=
@@ -426,19 +431,22 @@ que el \textit{firmware} original denomina proporcional, integral y derivativa, 
 acción efectiva se aclara más adelante; $e_j^{\mathrm{db}}[k]$ es el
 error discreto de velocidad tras la banda muerta; $m_j^{\mathrm{int}}[k]$ la
 medición de velocidad en la escala interna del \textit{firmware}; $I_j^{\mathrm{int}}[k]$
-el estado integral, que acumula $K_{i,j}e_j^{\mathrm{db}}[k]$ en cada ciclo;
+el estado integral, actualizado según la condición de saturación;
 $\Delta u_j^{\mathrm{long}}[k]$ el incremento de control; $u_j[k]$ la salida
 acumulada saturada; $K_o$ el divisor de escalamiento de la salida, común a ambas
 ruedas; y $\operatorname{sat}_{[-255,255]}(\cdot)$ la saturación al intervalo PWM
-permitido.
+permitido. Se define $u_j^{\mathrm{raw}}[k]=u_j[k-1]+\Delta
+u_j^{\mathrm{long}}[k]$, y $\operatorname{trunc}_0$ representa la conversión
+entera con truncamiento hacia cero, dentro del rango representable del tipo
+de destino.
 
-La estructura anterior reproduce literalmente el controlador ejecutado en el
+La estructura anterior resume el controlador ejecutado en el
 \textit{firmware} y no coincide exactamente con la forma incremental estándar de un PID. En
 particular, el término $K_{p,j}e_j^{\mathrm{db}}[k]$ forma parte del incremento
 que posteriormente se suma a la salida anterior $u_j[k-1]$, por lo que su
 efecto también se acumula entre ciclos. Además, el estado
 $I_j^{\mathrm{int}}[k]$ acumula separadamente el término
-$K_{i,j}e_j^{\mathrm{db}}[k]$. En consecuencia, las ganancias reportadas en
+$K_{i,j}e_j^{\mathrm{db}}[k]$ cuando su actualización está habilitada. En consecuencia, las ganancias reportadas en
 este trabajo caracterizan esta realización discreta específica y no deben
 interpretarse según el nombre que reciben en el \textit{firmware}. Esta estructura
 es la misma del \textit{firmware} original~\citep{newans_rosarduinobridge,hbrobotics_rosarduinobridge}
@@ -465,17 +473,19 @@ y no como acción derivativa. $K_{i,j}$ actúa sobre una acumulación del estado
 integral, es decir, como una segunda integración. La ley ejecutada no contiene
 una acción derivativa efectiva.
 
-Sin el término asociado a $K_{i,j}$, como en la configuración por defecto del
-\textit{firmware} original, donde $K_i=0$, la ley coincide con la forma
+Al omitir el estado adicional y prescindir de la banda muerta, la saturación
+y el truncado, la ley idealizada coincide con la forma
 incremental del PID descrita por \citet[Sec.~13.4]{astrom2009controlpid} y
 presentada en la Ec.~\eqref{eq:pi_incremental} del \ref{anx:estabilidad_pid},
 con la integral aproximada por
 diferencia hacia atrás, sin acción derivativa y con ponderación nula del punto
 de consigna en la acción proporcional. En esa correspondencia, $K_{d,j}/K_o$
 cumple el papel de la ganancia proporcional y $K_{p,j}/K_o$ el del coeficiente
-integral por muestra, de modo que la ley es un controlador PI incremental. Como \citet[Sec.~3.4]{astrom2009controlpid} conservan la
-denominación PID para estas variantes e indican sus ponderaciones, la ley se
-sigue denominando PID en este trabajo. Con ponderación nula, la referencia solo
+integral por muestra, de modo que la ley idealizada es un controlador PI
+incremental. La denominación PID se conserva en los archivos y en los
+identificadores de ganancias por su correspondencia con el \textit{firmware}
+heredado; su interpretación distingue la ley completa del PI equivalente.
+Con ponderación nula, la referencia solo
 entra en el término integral, lo que evita saltos de la señal de control y
 reduce la sobreelongación ante cambios del punto de consigna
 \citep[Sec.~3.4]{astrom2009controlpid}. La rueda derecha opera en esa
@@ -568,28 +578,32 @@ $K_o$ & 50 & 50 \\
 
 El Alg.~\ref{alg:pid_firmware} presenta la secuencia de llamadas de la rutina de actualización. Las operaciones internas del cálculo por rueda, es decir, la banda muerta asimétrica, la saturación de la salida acumulada y la actualización condicional del integrador, se detallan en el \ref{anx:pid_ecuaciones}.
 
-Como la forma incremental descrita por \citet[Sec.~13.4]{astrom2009controlpid}
-es el mismo PI reescrito para entregar el incremento de la señal de control
-\citep[Sec.~8]{wittenmark_ifac_computer}, la estabilidad se apoya en las
-propiedades conocidas del PI que establecen esas mismas referencias. El control
-PI es adecuado para procesos de dinámica
-esencialmente de primer orden \citep[Sec.~3.6]{astrom2009controlpid}, como el
-modelo identificado de cada rueda (Sec.~\ref{sec:identificacion_pso}), y el
-período de 33~ms es lo bastante corto para que el controlador digital se comporte
-como el continuo, ya que su producto con la frecuencia de cruce, cercano a 0.07,
-queda dentro del intervalo recomendado de 0.05 a 0.14
-\citep[Secs.~6 y 8]{wittenmark_ifac_computer}. Como
-verificación complementaria, se analiza el lazo discreto de las
+La forma incremental del PI constituye una realización conocida que entrega
+el cambio de la señal de control
+\citep[Sec.~13.4]{astrom2009controlpid}. La equivalencia entre la
+realización incremental y la absoluta también se describe en
+\citet[Sec.~8]{wittenmark_ifac_computer}. Su aplicación se verifica con las
+ganancias y el modelo de cada rueda. El PI es adecuado para procesos de
+dinámica esencialmente de primer orden \citep[Sec.~3.6]{astrom2009controlpid},
+como el modelo identificado (Sec.~\ref{sec:identificacion_pso}). El producto
+del período de 33~ms por la frecuencia de cruce, cercano a 0.07, queda dentro
+del intervalo recomendado de 0.05 a 0.14 para la aproximación al diseño
+continuo \citep[Secs.~6 y 8]{wittenmark_ifac_computer}; la verificación de este
+trabajo se realiza sobre el lazo discreto.
+
+Se analiza la idealización lineal de las
 Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida} con el modelo FOPDT
-de cada rueda, en un análisis lineal que no incluye la saturación,
-la zona muerta ni los truncamientos enteros (\ref{anx:estabilidad_pid}). Como el
-período de captura de 0.1~s no resuelve el retardo, se consideran los dos
-extremos, sin retardo y con el retardo en su cota de 0.1~s. En ambos el lazo es
-estable, con márgenes de fase de 53$^\circ$ a 57$^\circ$ y de 41$^\circ$ a
-44$^\circ$, respectivamente, y una sensibilidad máxima de 1.35 a 1.85, dentro
-del intervalo de 1.2 a 2.0 que se considera típico
-\citep[Sec.~5]{wittenmark_ifac_computer}. Solo pierde la estabilidad si el
-retardo total supera unos 0.42~s (Tabla~\ref{tab:estabilidad_pid}).
+de cada rueda, sin saturación, banda muerta ni truncamientos enteros
+(\ref{anx:estabilidad_pid}). Se consideran dos escenarios de retardo,
+$L_{d,j}=0$ y $L_{d,j}=0.1$~s. El segundo es un escenario de sensibilidad,
+porque el período de captura no establece una cota física del retardo. Los
+modelos analizados son estables en ambos escenarios, con márgenes de fase de
+53$^\circ$ a 57$^\circ$ y de 41$^\circ$ a 44$^\circ$, respectivamente, y
+sensibilidad máxima de 1.35 a 1.85, dentro del intervalo típico de 1.2 a 2.0
+\citep[Sec.~5]{wittenmark_ifac_computer}. El menor margen de retardo del modelo
+sin retardo es de unos 0.42~s (Tabla~\ref{tab:estabilidad_pid}). Estos márgenes
+caracterizan los modelos lineales y no constituyen una garantía global para
+el programa no lineal ni una medición del retardo del robot.
 
 \subsection{Bucle principal y autodetención}
 \label{sec:bucle_principal}
@@ -652,8 +666,8 @@ Los retardos identificados, $L_{d,L}=0.0001$~s y $L_{d,R}=0.0692$~s
 (Tabla~\ref{tab:pso_resultados}), son menores que el período de captura de
 0.1~s y se cuantizan a cero muestras, por lo que el modelo ajustado equivale a
 uno de primer orden sin retardo (Sec.~\ref{sec:fodt}). La estructura FOPDT se
-conserva porque contiene ese caso y permite acotar el retardo en el análisis de
-estabilidad, como se detalla en el \ref{anx:fodt_scripts}.
+conserva porque contiene ese caso y permite estudiar escenarios de retardo en
+el análisis de estabilidad, como se detalla en el \ref{anx:fodt_scripts}.
 
 \subsubsection{Refinamiento experimental}
 \label{subsec:refinamiento_iterativo}

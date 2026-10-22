@@ -236,8 +236,9 @@ búsqueda y no el de un ajuste final validado por sí solo. El retardo
 identificado resulta menor que el período de captura, por lo que no introduce
 un desplazamiento temporal efectivo en el modelo discreto. En la práctica el
 modelo se comporta como uno de primer orden. El detalle se conserva en el
-\ref{anx:fodt_scripts}. En cambio, el análisis de estabilidad considera el
-retardo en cero y en su cota superior de 0.1~s.
+\ref{anx:fodt_scripts}. En cambio, el análisis de estabilidad considera
+los escenarios de retardo de 0 y 0.1~s, sin interpretar el segundo como una
+cota física medida.
 
 \section{Resultados de mapeo con \texttt{slam\_toolbox}}
 \label{sec:resultados_slam}
@@ -329,7 +330,12 @@ punto de los muros del plano a la celda ocupada más cercana del mapa
 del orden de la resolución de 0.05~m/celda. Las mayores diferencias, de 6 a
 9~cm, corresponden a los tabiques cortos, y los tres pasillos resultan en total
 12~cm más anchos en los mapas que en el plano. El plano, el procedimiento y los
-resultados se presentan en el \ref{anx:comparacion_plano}.
+resultados se presentan en el \ref{anx:comparacion_plano}. El informe
+existente también contiene la comparación mapa$\to$plano y percentiles:
+las medias inversas varían entre 4.09 y 4.94~cm, y el percentil 95 conjunto
+plano$\to$mapa es de 8.4~cm (Tabla~\ref{tab:mapas_bidireccional}). Estas
+medidas complementan la media de 3.4~cm sin convertirla en una medida de
+exactitud global.
 
 \section{Navegación autónoma y exploración}
 \label{sec:resultados_nav2}
@@ -375,17 +381,20 @@ llega una meta nueva mientras otra está en ejecución, la anterior se termina c
 estado abortado~\citep{nav2_foxy_src}. Por eso, el mismo estado registra tanto
 los reemplazos hechos por el explorador como los fallos propios de Nav2.
 
-Para separar ambos casos se revisa el orden de los mensajes de estado de cada
+Para estudiar esa asociación se revisa el orden de los mensajes de estado de cada
 meta, según el procedimiento del \ref{anx:resultados_metodologia}. En 53 de los
-54 abortos, la meta siguiente ya figura en ejecución mientras la meta abortada
-sigue activa, es decir, la meta termina porque el explorador la reemplaza. El
+54 abortos se observa un mensaje en el que la meta siguiente ya figura
+mientras la anterior sigue aceptada o en ejecución. Esos abortos se clasifican
+como asociados temporalmente a reemplazos, de acuerdo con el criterio
+implementado; no se exige que la nueva meta ya esté en ejecución. El
 aborto restante corresponde a la primera meta de la iteración~1, que ya figura
 abortada en el primer mensaje registrado y no puede clasificarse. El tiempo
-mediano que cada meta reemplazada permanece activa es de 3.3~s en las cinco
+mediano entre la aceptación de la meta anterior y la siguiente es de 3.3~s en las cinco
 ejecuciones, igual al período de reevaluación del explorador
-(Tabla~\ref{tab:anx_explore_metas}). Con los datos registrados no se identifica
-ningún aborto originado por un fallo de Nav2. Tampoco es posible saber si las
-metas reemplazadas habrían llegado a completarse.
+(Tabla~\ref{tab:anx_explore_metas}). La coexistencia es compatible con el
+mecanismo de reemplazo de Nav2, pero no identifica de forma independiente la
+causa de cada aborto ni permite descartar fallos concurrentes. Tampoco es
+posible saber si las metas sustituidas habrían llegado a completarse.
 
 En consecuencia, la proporción de metas completadas, 1 de 60 (1.7\%), indica
 cuántas veces el robot llega a menos de 0.10~m del punto de una frontera antes
@@ -419,8 +428,8 @@ Tabla~\ref{tab:anx_explore_metas}. Las cinco iteraciones finalizan de forma
 automática al no quedar fronteras, y cada una genera un mapa válido.
 
 En las cinco ejecuciones válidas, Nav2 conduce al robot durante 12.7~min y
-21.9~m de recorrido odométrico, sin intervención manual y sin abortos
-identificados como fallos propios de Nav2. Estos indicadores describen la
+21.9~m de recorrido odométrico, sin intervención manual. El registro no permite
+cuantificar por separado los fallos propios de Nav2. Estos indicadores describen la
 exploración, pero no miden si el robot llega a un destino dado ni con qué
 error. La navegación dirigida con metas fijas definidas por el operador,
 distinta de las metas que genera el explorador, queda fuera del alcance
@@ -445,7 +454,7 @@ SLAM & Verificado funcionalmente y caracterizado cuantitativamente &
 Cobertura y área libre cuantificadas en cinco iteraciones válidas. Posición
 de los muros comparada con el plano medido del recinto, con una distancia media
 de 3.4~cm (\ref{anx:comparacion_plano}) \\
-Nav2 & Verificada funcionalmente & Ejecuta 59 metas del explorador durante 21.9~m de recorrido. En 53 de los 54 abortos la meta es reemplazada por el explorador (Tabla~\ref{tab:anx_explore_metas}), por lo que el resultado de las metas no mide su tasa de éxito. El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
+Nav2 & Verificada funcionalmente & Ejecuta 59 metas del explorador durante 21.9~m de recorrido. De los 54 abortos, 53 cumplen el criterio temporal de asociación a reemplazos (Tabla~\ref{tab:anx_explore_metas}); el resultado de las metas no mide la tasa de éxito de navegación. El protocolo con metas fijas queda fuera del alcance declarado (\hyperref[sec:alcances]{Alcances y limitaciones}) \\
 Exploración autónoma & Verificada funcionalmente en \textit{hardware} real &
 Cinco de seis ejecuciones terminan automáticamente al no quedar fronteras,
 sin intervención manual y con un mapa válido. Cobertura libre media de 62.2\% y
@@ -490,16 +499,23 @@ la cobertura libre, de 46.2\% a 78.3\%, y la desviación angular, de
 1.8$^\circ$ a 21.6$^\circ$, quedan poco acotadas. La proporción de
 exploraciones válidas solo permite afirmar con 95\% de confianza que supera el
 35.9\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}.
-Con un nivel de significancia de 0.05, tampoco permite afirmar que supere el
-50\%, porque la prueba binomial exacta entrega un valor $p$ de 0.11
-\citep[Cap.~9]{devore2021modern}. Por ello, el número de ensayos se considera
-bajo, y los resultados se presentan como una verificación funcional en el
-entorno ensayado y no como tasas de desempeño generalizables. Se considera
-admisible un mínimo de 6 a 10 repeticiones por ensayo para obtener intervalos
-de confianza con una variabilidad aceptable, en línea con las 6 a 15
-repeticiones que la validación de métodos de medición considera necesarias
-para estimar una desviación estándar \citep[Sec.~5.3.2]{cantwell2025eurachem}.
-Alcanzar ese número queda como trabajo futuro. El cálculo, los intervalos de todos los indicadores, las
+Como contraste exploratorio, la prueba binomial exacta unilateral de cinco
+éxitos en seis ejecuciones bajo la hipótesis nula de una proporción de éxito
+de 50\% entrega
+$p=0.109375$, por lo que no permite rechazar esa hipótesis al nivel de 0.05
+\citep[Cap.~9]{devore2021modern}. Ese valor no determina por sí solo la
+suficiencia de la muestra. Los intervalos amplios y el alcance de un único
+recinto limitan la precisión y la generalización; los resultados se presentan
+como una verificación funcional en el entorno ensayado.
+
+Como ampliación inicial se proponen entre 6 y 10 repeticiones por ensayo, con
+10 por condición como objetivo de partida y un total final sujeto a la
+dispersión y a la precisión requerida. La recomendación de 6 a 15
+repeticiones de la guía de validación de métodos analíticos es un antecedente
+para estimar una desviación estándar
+\citep[Sec.~5.3.2]{cantwell2025eurachem}, no una garantía de intervalos
+aceptables para cualquier ensayo robótico. La ampliación queda como trabajo
+futuro. El cálculo, los intervalos de todos los indicadores, las
 repeticiones necesarias para acotarlos mejor y su comparación con la literatura
 se presentan en el \ref{anx:intervalos_confianza}.
 

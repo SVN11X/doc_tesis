@@ -668,9 +668,9 @@ Ocho valores \\
 \subsection{Ecuaciones y estados internos del PID incremental embebido}
 \label{anx:pid_ecuaciones}
 
-La implementación sigue la forma incremental de las Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida}: en cada ciclo calcula un incremento, con un término calculado sobre la diferencia de la medición, y lo suma a la salida anterior. Además, usa variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. Sin el estado integral asociado a $K_i$, esta ley equivale al PI incremental de la Sec.~\ref{sec:motorcontrol_pid}, con las ganancias equivalentes de la Tabla~\ref{tab:ganancias_pid}. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
+La implementación sigue la forma incremental de las Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida}: en cada ciclo calcula un incremento, con un término calculado sobre la diferencia de la medición, y lo suma a la salida anterior. Además, usa variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. Su idealización lineal, sin el estado adicional asociado a $K_i$ ni las no linealidades anteriores, equivale al PI incremental de la Sec.~\ref{sec:motorcontrol_pid}, con las ganancias equivalentes de la Tabla~\ref{tab:ganancias_pid}. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
 
-En cada actualización se leen primero ambos \textit{encoders}. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~\textit{ticks/frame}). El incremento de salida se calcula en punto flotante a partir de los términos asociados a $K_p$, a $K_d$ y al estado integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
+En cada actualización se leen primero ambos \textit{encoders}. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~\textit{ticks/frame}). El incremento de salida se calcula en punto flotante a partir de los términos asociados a $K_p$, a $K_d$ y al estado integral (dividido por $K_o$). Ese cociente se trunca hacia cero al asignarlo a un \texttt{long}, antes de sumarlo a la salida anterior; así se forma $u_j^{\mathrm{raw}}[k]$, que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
 
 El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$). En caso contrario conserva su valor, lo que implementa un mecanismo simple de \textit{anti-windup} por integración condicional~\citep[Sec.~3.5]{astrom2009controlpid}. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
 
@@ -741,8 +741,9 @@ El retardo permite representar, además, los retardos que agrega la
 implementación digital, como el del muestreo de la medición
 \citep[Sec.~13.3]{astrom2009controlpid}. Como la respuesta se registra con el
 período de captura $T_{\mathrm{cap}}$, el retardo se estima como un número
-entero de períodos \citep[Sec.~2.4]{maxim2023fopdt}, por lo que un valor menor
-que $T_{\mathrm{cap}}$ solo indica que el retardo es menor que ese período.
+entero de períodos \citep[Sec.~2.4]{maxim2023fopdt}. Esta resolución del
+procedimiento de ajuste debe distinguirse de una cota física del retardo del
+robot.
 
 \paragraph{Procesamiento en los \textit{scripts}.} Para simular el modelo con datos muestreados cada $T_{\mathrm{cap}}$ segundos (el período de captura), el retardo puro se cuantiza a un número entero de muestras, $n_{d,j}$, dividiendo el retardo identificado $L_{d,j}$ por el período de captura y truncando el resultado. La entrada retardada, $u_{j,d}[k]$, se obtiene tomando la muestra de PWM correspondiente a $n_{d,j}$ pasos antes del instante actual, o la primera muestra disponible cuando ese índice resultaría negativo. El sistema de primer orden se integra por el método de Euler explícito: en cada paso, la velocidad estimada por el modelo  $\widehat{v}_j[k]$, parte de su valor en el paso anterior y le suma una fracción de la diferencia entre la respuesta estática y esa misma estimación previa; la fracción es la razón entre el período de captura y la constante de tiempo $\tau_j$, y la respuesta estática es la ganancia estática $K_{m,j}$ multiplicada por la entrada retardada. La estimación arranca en cero. Aquí $u_j[k]$ es la entrada \gls{PWM} aplicada y $\widehat{v}_j[k]$ la velocidad lineal que el modelo estima para la rueda $j$ (m/s). Esta formulación corresponde al procedimiento de identificación; las diferencias de la planta usada durante la sintonización se describen más adelante.
 
@@ -750,22 +751,20 @@ La velocidad medida $v_j^{\mathrm{med}}[k]$ se procesa fuera de línea con \text
 
 La función de costo de identificación ejecutada por el \textit{script} es el error cuadrático medio entre la velocidad filtrada $v_j^{\mathrm{filt}}[k]$ y la estimada por el modelo $\widehat{v}_j[k]$, promediado sobre las $N$ muestras. Si $\tau_j<0.01$~s o $\widehat{v}_j$ contiene valores no finitos, el costo se fija en $10^{6}$.
 
-\paragraph{Retardos identificados.} Con esta cuantización, todo $L_{d,j}$ entre
-0 y $T_{\mathrm{cap}}$ produce $n_{d,j}=0$ y el mismo costo de identificación,
+\paragraph{Retardos identificados.} Con esta cuantización, cualquier retardo que cumple
+$0\leq L_{d,j}<T_{\mathrm{cap}}$ produce $n_{d,j}=0$ y el mismo costo de identificación,
 por lo que el optimizador puede detenerse en cualquier valor de ese intervalo.
 Eso explica que, para la rueda derecha, el \textit{script} de sintonización
 entregue 0.0692~s y el de comparación Lambda 0.0845~s, con los mismos
 $K_{m,R}$ y $\tau_R$. Los retardos identificados, $L_{d,L}=0.0001$~s y
-$L_{d,R}=0.0692$~s (Tabla~\ref{tab:pso_resultados}), indican entonces que el
-retardo de ambas ruedas es menor que $T_{\mathrm{cap}}$, y aun en esa cota es
-menor que un tercio de las constantes de tiempo de 0.33 y 0.35~s. Por ello, la
-respuesta al escalón se parece a la de un sistema de primer orden, caso en que
-el control PI es suficiente \citep[Sec.~3.6]{astrom2009controlpid}. Con estos
-datos, el modelo FOPDT y uno de primer orden sin retardo producen el mismo
-ajuste, y la planta usada en la sintonización tampoco aplica el retardo
+$L_{d,R}=0.0692$~s (Tabla~\ref{tab:pso_resultados}), son salidas numéricas
+indistinguibles dentro de ese intervalo; no establecen que el retardo físico
+esté acotado por $T_{\mathrm{cap}}$. Con estos datos y esta discretización,
+el modelo FOPDT y uno de primer orden sin retardo producen el mismo ajuste,
+y la planta usada en la sintonización tampoco aplica el retardo
 (\ref{anx:planta_sintonizacion}). La estructura FOPDT se conserva porque
-contiene al modelo de primer orden y permite verificar la estabilidad sin
-retardo y con el retardo en su cota superior (\ref{anx:estabilidad_pid}). La
+contiene al modelo de primer orden y permite estudiar los escenarios de
+retardo de 0 y 0.1~s (\ref{anx:estabilidad_pid}). La
 estimación precisa de retardos menores que 0.1~s requiere un muestreo más
 rápido y queda como trabajo futuro.
 
@@ -786,8 +785,10 @@ $w_{\mathrm{mse}}=1.0$ actuando como escala identidad del MSE y
 $w_{\mathrm{OS}}=3.0$ triplicando el peso relativo de cualquier excursión
 sobre la referencia, para orientar la búsqueda del enjambre hacia respuestas
 de bajo sobreimpulso. La función no penaliza el tiempo de subida ni el de
-establecimiento; ambos se calculan \textit{post hoc} y se reportan en la
-Tabla~\ref{tab:pid_performance}.
+establecimiento. Los indicadores de la Tabla~\ref{tab:pid_performance}
+corresponden a la captura física descrita en la
+Sec.~\ref{sec:resultados_pid}; no se confunden con las predicciones de la
+simulación usada por el optimizador.
 
 La actualización de los mejores valores sigue la clase
 \texttt{pso} ejecutada. Las particularidades de la posición global y la salida
@@ -970,9 +971,11 @@ $T_{\mathrm{PID,sched}}=33$~ms. El modelo discreto incluye el retardo $L_{d,j}$,
 el retenedor de orden cero del PWM y la medición del \textit{firmware}, que
 entrega la velocidad media del período anterior. Como el período de captura no
 resuelve el retardo (\ref{anx:fodt_scripts}), el análisis se realiza sin
-retardo, que es el modelo efectivamente ajustado, y con el retardo en su cota
-superior, $L_{d,j}=T_{\mathrm{cap}}=0.1$~s. Entre ambos casos los márgenes varían
-de forma monótona con el retardo. El análisis es lineal, por lo que no
+retardo, que es el modelo efectivamente ajustado, y en un escenario de
+sensibilidad con $L_{d,j}=0.1$~s. Ese segundo valor no se presenta como una
+cota física medida. El barrido del \textit{script} explora el intervalo
+entre ambos escenarios, sin convertirlo en un rango experimental de
+incertidumbre. El análisis es lineal, por lo que no
 incluye la saturación, la zona muerta del \textit{driver} ni los truncamientos
 enteros, que se comentan al final de este anexo.
 
@@ -985,7 +988,7 @@ integral permanece en cero.
 
 \begin{table}[htbp]
 \centering
-\caption{Estabilidad y robustez del lazo de velocidad con las ganancias definitivas, sin retardo y con el retardo en su cota superior.}
+\caption{Estabilidad y robustez de los modelos lineales del lazo de velocidad con las ganancias definitivas en los escenarios de retardo de 0 y 0.1~s.}
 \label{tab:estabilidad_pid}
 \small
 \begin{tabular}{P{5.4cm} P{2.6cm} P{2.6cm} P{2.3cm}}
@@ -999,7 +1002,7 @@ Margen de ganancia & 38.9~dB & 38.9~dB & 39.4~dB \\
 Margen de retardo & 0.45~s & 0.42~s & 0.44~s \\
 Sensibilidad máxima $M_s$ & 1.35 & 1.39 & 1.38 \\
 \midrule
-\multicolumn{4}{l}{\textit{Con el retardo en su cota superior, $L_{d,j}=T_{\mathrm{cap}}=0.1$~s}} \\
+\multicolumn{4}{l}{\textit{Escenario de sensibilidad, $L_{d,j}=0.1$~s}} \\
 Mayor magnitud de los polos de lazo cerrado & 0.961 & 0.995 & 0.964 \\
 Margen de fase & 44.1$^\circ$ & 40.7$^\circ$ & 42.9$^\circ$ \\
 Margen de ganancia & 13.4~dB & 13.1~dB & 13.3~dB \\
@@ -1010,16 +1013,20 @@ Sensibilidad máxima $M_s$ & 1.78 & 1.85 & 1.81 \\
 \end{table}
 
 En los tres casos, todas las raíces quedan dentro del círculo unitario, tanto
-sin retardo como con el retardo en su cota, y la sensibilidad máxima, de 1.35 a
-1.85, queda dentro del intervalo típico. En todos los casos el lazo solo pierde
-la estabilidad si el retardo total supera unos 0.42~s, más de cuatro veces la
-cota. Por eso, la incertidumbre del retardo no altera la conclusión de
-estabilidad. Un barrido de 625 combinaciones de la ganancia de la planta, entre
+sin retardo como en el escenario de 0.1~s, y la sensibilidad máxima, de 1.35 a
+1.85, queda dentro del intervalo típico. Los márgenes de retardo adicional
+calculados son de 0.42 a 0.45~s para el modelo sin retardo y de 0.32 a
+0.35~s para el escenario de 0.1~s. Son propiedades de los modelos lineales con
+sus parámetros fijados; no determinan el retardo físico del robot ni prueban
+la estabilidad global del controlador no lineal. Un barrido de 625
+combinaciones de la ganancia de la planta, entre
 0.1 y 10 veces la identificada, y de su constante de tiempo, entre 0.05 y 3~s,
 muestra además que sin retardo el lazo es estable en todas ellas, y que con el
-retardo en su cota solo pierde la estabilidad con ganancias de planta mayores
+retardo de 0.1~s solo pierde la estabilidad con ganancias de planta mayores
 que 4.4 veces la identificada, o que 2.8 veces en la rueda izquierda si el
-término asociado a $K_{i,L}$ se trata como lineal.
+término asociado a $K_{i,L}$ se trata como lineal. El barrido describe
+sensibilidad en esa rejilla de parámetros; no identifica el rango real de
+variación de la planta.
 
 \paragraph{Condiciones de operación.} En operación,
 \texttt{diff\_drive\_controller} limita la base a 0.13~m/s y 0.35~rad/s
@@ -1031,28 +1038,35 @@ por lo que la salida no se satura fuera de los transitorios. El ensayo a
 los cambios de referencia de la navegación normal, en la que DWB limita la
 aceleración lineal a 0.25~m/s$^2$ (Tabla~\ref{tab:anx_nav2_dwb_params}). Como
 el modelo es lineal, los márgenes no dependen de la velocidad de operación, y
-las variaciones de la ganancia de la planta entre puntos de operación quedan
-cubiertas por el barrido anterior.
+el barrido anterior explora variaciones hipotéticas de la ganancia y de la
+constante de tiempo. La caracterización de esas variaciones entre puntos de
+operación reales queda como trabajo futuro.
 
 \paragraph{Efectos no incluidos en el análisis lineal.} Como el incremento de
 la Ec.~\eqref{eq:pid_fw_incremento} se trunca a un entero, en estado
 estacionario la salida no cambia mientras se cumpla
-$K_{p,j}\,|e_j^{\mathrm{db}}[k]|<K_o$. Esta banda de insensibilidad deja sin
-corregir errores de hasta 3~\textit{ticks/frame} con las ganancias definitivas y
+$|K_{p,j}e_j^{\mathrm{db}}[k]+I_j^{\mathrm{int}}[k]|<K_o$, suponiendo
+medición constante. Con $I_j^{\mathrm{int}}=0$, esta banda de insensibilidad
+deja sin corregir errores de hasta 3~\textit{ticks/frame} con las ganancias definitivas y
 de hasta 4 con las sugeridas por PSO, es decir, cerca de 0.01~m/s, y el error
 estacionario medido, de 0.002 y 0.000~m/s (Tabla~\ref{tab:pid_performance}),
-queda dentro de ella. El análisis tampoco cubre las velocidades bajas. En un
+queda dentro de esa banda calculada sin el estado adicional. Si dicho estado
+está cargado, el umbral cambia y puede ser asimétrico; por ejemplo, con
+$K_{p,L}=16$, error 3 e $I_L^{\mathrm{int}}=2$, el cociente es
+$(16\cdot3+2)/50=1$ y la salida sí cambia. Asimismo, un estado cargado puede
+disminuir con errores de magnitud menor que 14 por el truncado de la suma
+completa. El análisis tampoco cubre las velocidades bajas. En un
 giro sobre el propio eje a 0.35~rad/s, cada rueda opera cerca de
 10~\textit{ticks/frame}, donde esa banda representa cerca de un 30\% de la
 referencia y la zona muerta del \textit{driver} tiene mayor peso.
 
 \paragraph{Ganancias sugeridas por PSO.} Con el mismo modelo, las ganancias
 sugeridas por PSO dan márgenes de fase de 64$^\circ$ a 71$^\circ$ sin retardo y
-de 53$^\circ$ a 62$^\circ$ con el retardo en su cota, y una sensibilidad máxima
+de 53$^\circ$ a 62$^\circ$ en el escenario de retardo de 0.1~s, y una sensibilidad máxima
 de 1.15 a 1.52, por lo que son más conservadoras que las definitivas. Las
 ganancias por defecto del \textit{firmware} original ($K_p=20$, $K_d=12$ y
 $K_i=0$, \ref{anx:pid_origen}) dan, en cambio, márgenes de fase de 49$^\circ$ a
-50$^\circ$ sin retardo y de 35$^\circ$ con el retardo en su cota, con una
+50$^\circ$ sin retardo y de 35$^\circ$ en el escenario de 0.1~s, con una
 sensibilidad máxima de hasta 2.18, fuera del intervalo típico. La rutina de
 simulación del \textit{script} de sintonización, que
 no aplica el retardo (\ref{anx:planta_sintonizacion}), predice con las ganancias del PSO una
@@ -1173,26 +1187,49 @@ Fin de la secuencia antes del reintento &
 
 \subsection{Parámetros principales de SLAM en \texorpdfstring{\textit{hardware}}{hardware} real}
 
+En el robot real se ejecuta \texttt{async\_slam\_toolbox\_node}, con el archivo
+\texttt{mapper\_\allowbreak{}params\_\allowbreak{}online\_\allowbreak{}async.yaml}
+del directorio de configuración
+(\ref{anx:rutas_software}). La Tabla~\ref{tab:slam_params_ch9} resume los
+marcos de referencia, la entrada sensorial, la resolución, los umbrales de
+movimiento y los intervalos configurados. El nombre del nodo y el archivo
+identifican cómo se inicia el sistema; no son parámetros del algoritmo.
+
 \begin{table}[H]
 \centering
 \caption{Parámetros principales de \texttt{slam\_toolbox} cargados en \textit{hardware} real.}
 \label{tab:slam_params_ch9}
 \small
-\begin{tabular}{p{3.5cm} p{4.5cm} p{6cm}}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}P{4.6cm} P{3.5cm} >{\raggedright\arraybackslash}X@{}}
 \toprule
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Función} \\
 \midrule
-\texttt{solver\_plugin} & \texttt{CeresSolver} & Optimización del grafo \\
-\texttt{odom\_frame} & \texttt{odom} & Marco de odometría \\
-\texttt{map\_frame} & \texttt{map} & Marco global \\
-\texttt{base\_frame} & \texttt{base\_link} & Marco base del robot \\
-\texttt{scan\_topic} & \texttt{/scan} & Entrada del \gls{LIDAR} \\
-\texttt{resolution} & 0.05~m & Resolución del mapa \\
-\texttt{do\_loop\_closing} & \texttt{true} & Cierre de lazo activado \\
-\texttt{mode} & \texttt{mapping} & Modo de operación del nodo \\
-Nodo ejecutado & \texttt{async\_slam\_toolbox\_node} & Variante asíncrona en línea, lanzada con \texttt{mapper\_params\_online\_async.yaml} \\
+\texttt{solver\_plugin} & \texttt{solver\_\allowbreak{}plugins::\allowbreak{}CeresSolver} & Solucionador numérico para optimizar el grafo de poses. \\
+\texttt{mode} & \texttt{mapping} & Construcción del mapa durante el desplazamiento. \\
+\texttt{odom\_frame} & \texttt{odom} & Marco local continuo de la odometría. \\
+\texttt{map\_frame} & \texttt{map} & Marco global en el que se expresa el mapa. \\
+\texttt{base\_frame} & \texttt{base\_link} & Marco del robot usado para transformar los barridos. \\
+\texttt{scan\_topic} & \texttt{/scan} & Tópico de entrada de los barridos del \gls{LIDAR}. \\
+\texttt{resolution} & 0.05~m/celda & Tamaño de celda del mapa de ocupación; no indica su exactitud. \\
+\texttt{max\_laser\_range} & 10.0~m & Alcance máximo de rasterización del mapa de ocupación. \\
+\texttt{use\_scan\_matching} & \texttt{true} & Refina la pose odométrica mediante correspondencia de barridos. \\
+\texttt{minimum\_\allowbreak{}travel\_\allowbreak{}distance} & 0.05~m & Umbral de traslación configurado para incorporar nuevas observaciones. \\
+\texttt{minimum\_\allowbreak{}travel\_\allowbreak{}heading} & 0.05~rad & Umbral angular configurado para incorporar nuevas observaciones. \\
+\texttt{map\_update\_\allowbreak{}interval} & 1.0~s & Intervalo configurado de actualización del mapa de ocupación. \\
+\texttt{transform\_\allowbreak{}publish\_\allowbreak{}period} & 0.02~s & Período configurado de publicación de la transformación \texttt{map}$\to$\texttt{odom}. \\
+\texttt{do\_loop\_closing} & \texttt{true} & Habilita la búsqueda de cierres de lazo en el grafo. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
+\par\smallskip
+\begin{minipage}{\linewidth}
+\footnotesize
+\textit{Nota:} Los intervalos son valores de configuración, no mediciones de
+frecuencia efectiva. Habilitar el cierre de lazo no demuestra que ocurra en
+los ensayos; su detección automática no forma parte de los indicadores
+registrados (Sec.~\ref{sec:resultados_slam}).
+\end{minipage}
 \end{table}
 
 \subsection{Parámetros y flujo operativo de exploración}
@@ -1207,7 +1244,7 @@ Nodo ejecutado & \texttt{async\_slam\_toolbox\_node} & Variante asíncrona en l�
 \textbf{Parámetro} & \textbf{Valor} & \textbf{Función} \\
 \midrule
 \texttt{robot\_base\_frame} & \texttt{base\_link} & Marco base del robot \\
-\texttt{costmap\_topic} & \texttt{/global\_costmap/costmap} & \textit{Costmap} usado para detectar fronteras \\
+\texttt{costmap\_topic} & \texttt{/global\_\allowbreak{}costmap/\allowbreak{}costmap} & \textit{Costmap} usado para detectar fronteras \\
 \texttt{planner\_frequency} & 0.3~Hz & Valor configurado; período efectivo de 3333~ms ($\approx0.30003$~Hz) \\
 \texttt{progress\_timeout} & 10.0~s & Tiempo máximo sin progreso \\
 \texttt{gain\_scale} & 1.0 & Peso de ganancia de información en el costo de frontera (\ref{anx:explore_impl}) \\
@@ -1367,9 +1404,9 @@ cinta métrica y no contra la propia odometría.
 \label{tab:anx_explore_metas}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{ccccccc}
+\begin{tabularx}{\linewidth}{@{}c *{6}{>{\centering\arraybackslash}X}@{}}
 \toprule
-\textbf{Iter.} & \makecell{\textbf{Metas}\\\textbf{generadas}} & \textbf{Abortadas} & \makecell{\textbf{Reemplazadas}\\\textbf{por el}\\\textbf{explorador}} & \textbf{Exitosas} & \makecell{\textbf{Sin estado}\\\textbf{terminal}} & \makecell{\textbf{Tiempo activo}\\\textbf{mediano (s)}} \\
+\textbf{Iter.} & \makecell{\textbf{Metas}\\\textbf{generadas}} & \textbf{Abortadas} & \makecell{\textbf{Abortos}\\\textbf{asociados a}\\\textbf{reemplazos}} & \textbf{Exitosas} & \makecell{\textbf{Sin estado}\\\textbf{terminal}} & \makecell{\textbf{Mediana}\\\textbf{entre metas}\\\textbf{(s)}} \\
 \midrule
 1 & 18 & 17 & 16 & 0 & 1 & 3.3 \\
 3 & 9  & 8  & 8  & 0 & 1 & 3.3 \\
@@ -1379,17 +1416,20 @@ cinta métrica y no contra la propia odometría.
 \midrule
 \textbf{Total} & \textbf{60} & \textbf{54} & \textbf{53} & \textbf{1} & \textbf{5} & --- \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \noindent De las 60 metas, 59 alcanzan el estado de ejecución. La restante es
 la primera meta de la iteración~1, que ya figura abortada en el primer mensaje
-registrado y por eso tampoco puede clasificarse como reemplazada. Las metas sin
+registrado y por eso tampoco cumple el criterio temporal de asociación a
+reemplazo. Las metas sin
 estado terminal son la última de cada ejecución. Al no encontrar fronteras, el
 explorador solicita automáticamente su cancelación, y el \textit{script} de ensayo cierra
-el registro antes de que esa cancelación termine. El tiempo activo es el
-intervalo entre la aceptación de una meta y la aceptación de la meta que la
-reemplaza. Su máximo es de 16.7~s en la iteración~1 y de 6.7~s en las demás.
+el registro antes de que esa cancelación termine. El intervalo informado se
+calcula entre la aceptación de una meta y la de la siguiente en los casos
+asociados a reemplazos; no es una medición independiente del instante de
+finalización de la anterior. Su máximo es de 16.7~s en la iteración~1 y de
+6.7~s en las demás.
 La reconstrucción se obtiene agrupando los mensajes de estado de la acción por el
 identificador de meta de 16 bytes.
 
@@ -1473,9 +1513,14 @@ La tolerancia que informa para el modo real, 0.22~m, no coincide con el valor
 de 0.10~m configurado en Nav2 (Tabla~\ref{tab:anx_nav2_dwb_params}). Ese valor
 solo se imprime en sus salidas y no interviene en la clasificación.
 
-Un protocolo de navegación con metas fijas requiere un mapa almacenado,
-localización activa sobre él y marcas físicas medidas en el recinto, y debería
-informar, para cada meta y repetición, el resultado de la acción, el error de
+Un protocolo de navegación con metas fijas requiere objetivos definidos,
+referencias físicas medidas y localización coherente en el marco del mapa.
+Esta localización puede provenir de SLAM durante el mapeo o de AMCL sobre un
+mapa almacenado; Nav2 admite el envío de metas mientras SLAM publica el mapa y
+la transformación \texttt{map}$\to$\texttt{odom}
+\citep{nav2_foxy_bringup}. El lanzador de Nav2 para Foxy selecciona SLAM o
+localización sobre un mapa y mantiene el arranque de la navegación. El
+protocolo debería informar, para cada meta y repetición, el resultado de la acción, el error de
 posición final respecto de la marca, el tiempo hasta la meta y la longitud
 recorrida. \citet{ngoc2023efficient} miden el tiempo de llegada y el error
 euclidiano entre la meta y la posición final del robot en simulación, y
@@ -1491,12 +1536,15 @@ y Pearson, uno de los más usados para tasas de éxito en la evaluación de robo
 
 Los contadores de texto de \texttt{run\_explore.sh} no permiten calcular una tasa de éxito, por dos motivos distintos. El contador de metas generadas se alimenta de coincidencias de texto en el registro de \texttt{explore\_server} y del eco del tópico de meta de la acción \texttt{NavigateToPose}. La primera fuente no produce coincidencias porque el mensaje de envío de meta está declarado en nivel \textit{debug} en \texttt{explore.cpp} y el nodo se ejecuta en nivel informativo. La segunda tampoco, porque ese tópico no entrega datos y el propio registro conserva la advertencia de tópico no publicado. Por eso el contador de metas generadas queda en cero. Los contadores de éxito y de fallo sí se incrementan, pero lo hacen una vez por cada línea del flujo de estado de la acción, sin conservar ni deduplicar identificadores de meta, de modo que cuentan mensajes de estado y no metas únicas.
 
-Para obtener una medida fiable se descartan esos contadores y se reconstruye el resultado de cada meta a partir del flujo de estado de la acción \texttt{NavigateToPose}, que queda registrado íntegro en cada sesión. Cada meta se identifica por su identificador único de 16 bytes. A cada identificador se le asigna su estado terminal, con la prioridad éxito sobre aborto sobre cancelación, y se cuenta como en ejecución cuando alcanza ese estado en algún momento del registro. El resultado agregado se presenta en la Tabla~\ref{tab:anx_explore_metas}.
+Para obtener una medida fiable se descartan esos contadores y se reconstruye el resultado de cada meta a partir del flujo de estado de la acción \texttt{NavigateToPose}, que queda registrado íntegro en cada sesión. Cada meta se identifica por su identificador único de 16 bytes. El clasificador conserva el primer estado terminal observado de cada identificador y deja sin estado terminal a los que no lo presentan. El indicador de metas ejecutadas registra si una meta alcanza ese estado en algún momento del registro. El resultado agregado se presenta en la Tabla~\ref{tab:anx_explore_metas}.
 
-Para distinguir las metas reemplazadas por el explorador de los fallos de Nav2
-se usa el orden de los mensajes de estado. Una meta abortada se clasifica como
-reemplazada cuando existe un mensaje en el que la meta siguiente ya figura y
-la meta abortada sigue aceptada o en ejecución. No se utiliza la hora escrita
+Para asociar temporalmente los abortos a posibles reemplazos del explorador
+se usa el orden de los mensajes de estado. Una meta abortada cumple el
+criterio cuando existe un mensaje en el que la meta siguiente ya figura y
+la anterior sigue aceptada o en ejecución. El estado de la nueva meta no se
+restringe a ejecución. La coexistencia es compatible con el mecanismo de
+reemplazo, pero no determina por sí sola la causa del aborto ni descarta
+fallos concurrentes de Nav2. No se utiliza la hora escrita
 en cada línea del registro, porque tiene resolución de un segundo y corresponde
 al momento de escritura y no al de publicación del mensaje. Los tiempos se
 calculan con el sello de aceptación que cada meta incluye en el mensaje. El
@@ -1540,10 +1588,9 @@ el 93\% del total.
 {fig:anx_mapas_vs_plano}
 
 La distancia media entre el plano y el mapa es de 3.4~cm, con 3.55, 3.19, 3.72,
-3.53 y 3.17~cm en las iteraciones 1, 3, 4, 5 y 6, del orden de la resolución del
-mapa, ya que al
-representar un muro con celdas de 0.05~m su posición puede diferir hasta
-0.025~m de la real. La Tabla~\ref{tab:exactitud_mapas} compara las distancias
+3.53 y 3.17~cm en las iteraciones 1, 3, 4, 5 y 6, del orden de la
+discretización de 0.05~m/celda. La resolución no establece una cota del error
+geométrico de los muros. La Tabla~\ref{tab:exactitud_mapas} compara las distancias
 del plano con las medidas en los mapas, y la Fig.~\ref{fig:anx_mapas_vs_plano}
 muestra cada mapa alineado con el plano. El alto del recinto, los dos primeros
 pasillos y los pasos que dejan los muros largos coinciden con diferencias de
@@ -1554,6 +1601,48 @@ largos explica a lo sumo 4~cm de esa diferencia, y el resto puede provenir de la
 medición manual o de una distorsión del mapa en esa dirección, causas que estos
 datos no permiten separar. Las mayores diferencias, de 6 a 9~cm, corresponden a
 los tabiques cortos, que quedan representados por pocas celdas ocupadas.
+
+El informe existente
+\texttt{resultados\_\allowbreak{}comparacion\_\allowbreak{}plano.txt}, generado
+por \texttt{comparar\_\allowbreak{}mapa\_\allowbreak{}plano.py}
+(\ref{anx:rutas_software}), también registra distancias en el sentido inverso
+y percentiles. La Tabla~\ref{tab:mapas_bidireccional} transcribe esos
+resultados de las mismas cinco ejecuciones; no añade ensayos ni una nueva
+adquisición de mapas.
+
+\begin{table}[htbp]
+\centering
+\caption{Distancias geométricas en ambos sentidos y percentil 95, transcritos del informe de comparación existente.}
+\label{tab:mapas_bidireccional}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}c *{4}{>{\centering\arraybackslash}X}@{}}
+\toprule
+\textbf{Iter.} &
+\makecell{\textbf{Plano $\to$ mapa}\\\textbf{Media (cm)}} &
+\makecell{\textbf{Plano $\to$ mapa}\\\textbf{p95 (cm)}} &
+\makecell{\textbf{Mapa $\to$ plano}\\\textbf{Media (cm)}} &
+\makecell{\textbf{Mapa $\to$ plano}\\\textbf{p95 (cm)}} \\
+\midrule
+1 & 3.55 & 9.3 & 4.23 & 10.4 \\
+3 & 3.19 & 7.3 & 4.30 & 10.6 \\
+4 & 3.72 & 9.6 & 4.94 & 12.2 \\
+5 & 3.53 & 9.3 & 4.30 & 11.0 \\
+6 & 3.17 & 6.8 & 4.09 & 9.7 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El percentil 95 conjunto plano$\to$mapa registrado es de 8.4~cm; corresponde
+a las distancias de los puntos incluidos, no al promedio de los percentiles
+por mapa. El sentido inverso utiliza las celdas ocupadas dentro de la franja
+definida por \texttt{zona\_evaluada} alrededor de los muros de referencia,
+por lo que no evalúa toda ocupación fuera del recinto. Los percentiles
+describen la distribución espacial de distancias y no son intervalos de
+confianza. Para el intervalo entre ejecuciones se mantiene $n=5$, como en
+la Tabla~\ref{tab:intervalos_confianza}; ni ese intervalo ni los percentiles
+incluyen automáticamente la incertidumbre de la huincha o del alineamiento.
 
 \begingroup
 \small
@@ -1685,15 +1774,21 @@ Los indicadores con baja dispersión, como el error odométrico, el área libre
 mapeada y la distancia al plano, quedan bien acotados aun con cinco
 repeticiones, mientras que la cobertura libre y la desviación angular tienen
 intervalos amplios. Con seis ejecuciones, la proporción de exploraciones
-válidas solo permite afirmar que supera el 35.9\%. Con un nivel de
-significancia de 0.05, tampoco permite afirmar que supere el 50\%, porque la
-prueba binomial exacta de cinco éxitos en seis ejecuciones entrega un valor
-$p$ de 7/64, cercano a 0.11 \citep[Cap.~9]{devore2021modern}. Por eso el
-número de ensayos es bajo, y se adopta como admisible un mínimo de 6 a 10
-repeticiones por ensayo. Ese criterio es coherente con la práctica de validación
-de métodos de medición, en la que se consideran necesarias entre 6 y 15
-repeticiones para obtener una estimación adecuada de la desviación estándar y a
-menudo se recomiendan 10 \citep[Sec.~5.3.2]{cantwell2025eurachem}. Con diez
+válidas tiene un intervalo amplio, de 35.9\% a 99.6\%. Como contraste
+exploratorio, para cinco éxitos en seis ejecuciones bajo la hipótesis nula
+de una proporción de éxito de 50\%, la prueba binomial exacta unilateral entrega
+$p=7/64=0.109375$ \citep[Cap.~9]{devore2021modern}. Al nivel de 0.05 no se
+rechaza esa hipótesis; ese resultado no identifica por sí solo una muestra
+insuficiente. La amplitud de los intervalos y el alcance experimental son
+los que motivan ampliar la campaña.
+
+Como planificación inicial se proponen entre 6 y 10 repeticiones por ensayo,
+con 10 por condición como objetivo de partida. La guía de validación de
+métodos analíticos recomienda entre 6 y 15 para estimar la desviación
+estándar y a menudo utiliza 10
+\citep[Sec.~5.3.2]{cantwell2025eurachem}; se toma como antecedente
+metodológico, no como umbral universal de suficiencia en robótica. El total
+final depende de la dispersión y de la precisión buscada. Con diez
 repeticiones y la misma dispersión, la semiamplitud de los intervalos de la
 Ec.~\eqref{eq:ic_media} se reduciría en cerca de un 42\%, porque el factor
 $t_{0.975,\,n-1}/\sqrt{n}$ baja de 1.24 a 0.72. Metas de precisión más
@@ -1764,8 +1859,11 @@ todos los archivos de código citados en el documento.
 \texttt{prueba\_\allowbreak{}giro.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro/} & Ejecución de la prueba angular en \textit{hardware}. \\
 \texttt{prueba\_\allowbreak{}giro\_\allowbreak{}sim.\allowbreak{}py} & \texttt{test/\allowbreak{}prueba\_\allowbreak{}giro\_\allowbreak{}sim/} & Ejecución de la prueba angular en simulación. \\
 \texttt{run\_\allowbreak{}explore.\allowbreak{}sh} & \texttt{test/\allowbreak{}exploracion/} & Ejecución y registro de exploración. \\
+\texttt{clasificar\_\allowbreak{}metas\_\allowbreak{}exploracion.\allowbreak{}py} & \texttt{test/\allowbreak{}exploracion/} & Clasificación por UUID y asociación temporal de abortos a reemplazos. \\
 \texttt{run\_\allowbreak{}prueba\_\allowbreak{}nav.\allowbreak{}sh} & \texttt{test/\allowbreak{}navegacion/} & Protocolo preparado de navegación con metas fijas, no ejecutado (\ref{anx:resultados_metodologia}). \\
 \texttt{analizar\_\allowbreak{}slam.\allowbreak{}py} & \texttt{test/\allowbreak{}slam/} & Cálculo de métricas de mapeo. \\
+\texttt{comparar\_\allowbreak{}mapa\_\allowbreak{}plano.\allowbreak{}py} & \texttt{test/\allowbreak{}mapas\_\allowbreak{}vs\_\allowbreak{}plano/} & Comparación geométrica de los mapas con el plano medido. \\
+\texttt{resultados\_\allowbreak{}comparacion\_\allowbreak{}plano.\allowbreak{}txt} & \texttt{test/\allowbreak{}mapas\_\allowbreak{}vs\_\allowbreak{}plano/} & Informe existente con distancias en ambos sentidos y percentiles. \\
 \end{longtable}
 \endgroup
 
@@ -1825,6 +1923,7 @@ $e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asign
 $e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta & \textit{ticks/frame} \\
 $\Delta u_j^{\mathrm{long}}[k]$ & Incremento de la salida calculado por el controlador discreto y asignado al tipo \texttt{long} & PWM \\
 $u_j^{\mathrm{raw}}[k]$ & Salida acumulada antes de aplicar la saturación & PWM \\
+$\operatorname{trunc}_0$ & Conversión entera con truncamiento hacia cero, dentro del rango representable del tipo de destino & No aplica \\
 $I_j^{\mathrm{int}}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \texttt{int}; posee la misma escala interna que $K_{p,j}e_j^{\mathrm{db}}[k]$ & esc.\ fw \\
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de \textit{firmware} implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
