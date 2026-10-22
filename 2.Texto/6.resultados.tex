@@ -218,7 +218,10 @@ analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}
 
 La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fija durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantiene un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero del estado integral (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~\textit{ticks/frame}, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~\textit{ticks/frame}, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~\textit{ticks/frame}, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
 
-El PSO entrega un punto de partida heurístico para las tres ganancias. El
+El \hyperref[oe2]{OE2} compromete un controlador PID en lazo cerrado sobre las
+velocidades de las ruedas, y no la optimización de sus ganancias, por lo que el
+PSO se emplea solo como herramienta de apoyo para obtener un punto de partida
+heurístico para las tres ganancias. El
 refinamiento experimental ajusta ese punto de partida, con aumentos de $K_p$ de
 28\% y 63\%, reducciones de $K_d$ de 41\% y 45\% respecto de los valores
 informados y un aumento de varios órdenes de magnitud en $K_i$, hasta lograr el
@@ -486,9 +489,13 @@ odométrico queda entre 3.08\% y 4.18\%, el área libre mapeada entre 3.46 y
 la cobertura libre, de 46.2\% a 78.3\%, y la desviación angular, de
 1.8$^\circ$ a 21.6$^\circ$, quedan poco acotadas. La proporción de
 exploraciones válidas solo permite afirmar con 95\% de confianza que supera el
-35.9\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}. Por esta razón, los resultados se presentan como
+35.9\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}.
+Con el nivel de significancia de 0.05 que corresponde a esa confianza, el número
+de ensayos es bajo. Por esta razón, los resultados se presentan como
 una verificación funcional en el entorno ensayado y no como tasas de desempeño
-generalizables. El cálculo, los intervalos de todos los indicadores, las
+generalizables. Se considera admisible un mínimo de 6 a 10 repeticiones por
+ensayo para obtener intervalos de confianza con una variabilidad aceptable, y
+alcanzarlo queda como trabajo futuro. El cálculo, los intervalos de todos los indicadores, las
 repeticiones necesarias para acotarlos mejor y su comparación con la literatura
 se presentan en el \ref{anx:intervalos_confianza}.
 

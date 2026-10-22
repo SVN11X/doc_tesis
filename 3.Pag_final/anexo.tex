@@ -1555,7 +1555,6 @@ medición manual o de una distorsión del mapa en esa dirección, causas que est
 datos no permiten separar. Las mayores diferencias, de 6 a 9~cm, corresponden a
 los tabiques cortos, que quedan representados por pocas celdas ocupadas.
 
-
 \begingroup
 \small
 \setlength{\tabcolsep}{4pt}
@@ -1628,7 +1627,7 @@ Distancia del tabique corto inferior al muro derecho
 \end{longtable}
 
 \noindent
-\parbox{\linewidth}{%
+\parbox{\linewidth}{
 \footnotesize
 Las distancias de los mapas se miden entre las celdas
 ocupadas de cada muro, después de alinear el plano
@@ -1637,7 +1636,6 @@ con cada mapa. La resolución del mapa es de
 }
 
 \endgroup
-
 
 \FloatBarrier
 
@@ -1687,7 +1685,12 @@ Los indicadores con baja dispersión, como el error odométrico, el área libre
 mapeada y la distancia al plano, quedan bien acotados aun con cinco
 repeticiones, mientras que la cobertura libre y la desviación angular tienen
 intervalos amplios. Con seis ejecuciones, la proporción de exploraciones
-válidas solo permite afirmar que supera el 35.9\%. Reducir a la mitad la
+válidas solo permite afirmar que supera el 35.9\%. Por eso, con un nivel de
+significancia de 0.05, el número de ensayos es bajo, y se considera admisible
+un mínimo de 6 a 10 repeticiones por ensayo. Con diez repeticiones y
+la misma dispersión, la semiamplitud de los intervalos de la
+Ec.~\eqref{eq:ic_media} se reduciría en cerca de un 42\%. Metas de precisión más
+exigentes requieren más ensayos. Reducir a la mitad la
 semiamplitud del intervalo del error odométrico requeriría unas 13
 repeticiones, y afirmar una tasa de éxito superior al 80\% requeriría al menos
 17 ejecuciones consecutivas sin fallas. En la literatura,

@@ -483,18 +483,34 @@ condición, porque su estado integral permanece en cero, y en la izquierda ese
 estado solo crece con errores grandes (Sec.~\ref{sec:resultados_pid}).
 
 Esta ley se conserva en lugar de reemplazarla por otra formulación del PID o
-por una ley escrita desde cero, por dos razones. La interfaz
-\texttt{diffdrive\_arduino}~\citep{newans_diffdrive} usa el protocolo serial de
-este \textit{firmware}, y mantener un algoritmo de velocidad por compatibilidad
-con el equipo existente es una de las razones por las que los fabricantes lo conservan
-\citep[Sec.~13.4]{astrom2009controlpid}. Además, la forma incremental es útil
-aun cuando la integración se realiza dentro del controlador, porque simplifica
-la protección contra el \textit{windup} del integrador y permite realizar la
-mayoría de los cálculos solo con incrementos
-\citep[Secs.~13.1 y 13.4]{astrom2009controlpid}. La elección responde a esas
-razones, a que la ley sigue la referencia en los ensayos y a que su estabilidad
-se verifica con el modelo FOPDT identificado, y no a una comparación de
-desempeño con otras leyes, que queda como trabajo futuro.
+por una ley escrita desde cero, por tres razones. La primera es que corresponde
+a un controlador conocido y con uso documentado en robótica móvil, el PI
+incremental. El PI es el controlador más común
+\citep[Sec.~3.6]{astrom2009controlpid} y el PID, el algoritmo de control más
+usado en sistemas robóticos \citep{raj2024discussion}, también en robots móviles
+\citep{bitria2022optimal}. Su forma incremental, de la que este PI es el caso
+sin acción derivativa, se usa en el lazo de velocidad de robots diferenciales de
+laboratorio \citep{casini2010remote}, de vehículos autoequilibrados de dos
+ruedas \citep{ma2024selfbalancing}, de andadores robóticos controlados con
+Arduino \citep{mori2024walker} y de plataformas con ROS~2 que, como la de este
+trabajo, envían las consignas de velocidad a la placa de control por puerto serie
+\citep{wu2026ros2}. También regula el deslizamiento de las ruedas motrices de
+vehículos agrícolas \citep{sun2022travel} y se usó comúnmente en los primeros
+controladores de motores \citep[Sec.~13.4]{astrom2009controlpid}. La segunda es
+que conservarla permite reutilizar una implementación ya integrada con la
+interfaz \texttt{diffdrive\_arduino}~\citep{newans_diffdrive}, que usa el
+protocolo serial de este \textit{firmware}, y concentrar el desarrollo en la
+navegación y la exploración. Mantener un algoritmo por compatibilidad con el
+equipo existente es, además, una de las razones por las que los fabricantes
+conservan la forma incremental \citep[Sec.~13.4]{astrom2009controlpid}. La
+tercera es que la forma incremental es útil aun cuando la integración se realiza
+dentro del controlador, porque simplifica la protección contra el
+\textit{windup} del integrador y permite realizar la mayoría de los cálculos
+solo con incrementos \citep[Secs.~13.1 y 13.4]{astrom2009controlpid}, propiedad
+por la que también se adopta en implementaciones de referencia del PID
+\citep{sundstrom2024reference}. La elección no responde a una
+comparación de desempeño con otras leyes, que no forma parte de los objetivos
+del trabajo y queda como trabajo futuro.
 
 La ejecución concreta incorpora variables enteras, truncamiento hacia cero,
 bandas muertas distintas por rueda y actualización condicional del integrador.
@@ -550,27 +566,28 @@ $K_o$ & 50 & 50 \\
 \end{algorithmic}
 \end{algorithm}
 
-El Alg.~\ref{alg:pid_firmware} presenta la secuencia de llamadas de la rutina
-de actualización. Las operaciones internas del cálculo por rueda, es decir la
-banda muerta asimétrica, la saturación de la salida acumulada y la
-actualización condicional del integrador, se detallan en el
-\ref{anx:pid_ecuaciones}.
-
-La estabilidad de la ley ejecutada se verifica sobre el lazo discreto que forman
-las Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida} con el modelo
-FOPDT identificado de cada rueda, en un análisis lineal que no incluye la
-saturación, la zona muerta ni los truncamientos enteros
-(\ref{anx:estabilidad_pid}). Como el período de captura de 0.1~s no resuelve el
-retardo, el análisis se realiza sin retardo, que corresponde al modelo que la
-identificación efectivamente ajusta, y con el retardo en su cota de 0.1~s. Sin retardo,
-el lazo es estable en ambas ruedas, con márgenes de fase de 53$^\circ$ a
-57$^\circ$ y una sensibilidad máxima de 1.35 a 1.39. Con el retardo en su cota
-sigue estable, con márgenes de fase de 41$^\circ$ a 44$^\circ$ y una
-sensibilidad máxima de 1.78 a 1.85. En ambos casos la sensibilidad máxima queda
-dentro del intervalo de 1.2 a 2.0 que se considera típico
-\citep[Sec.~5]{wittenmark_ifac_computer}, y el lazo solo pierde la estabilidad
-si el retardo total supera unos 0.42~s. La Tabla~\ref{tab:estabilidad_pid}
-reúne estos resultados.
+Como la forma incremental descrita por \citet[Sec.~13.4]{astrom2009controlpid}
+es el mismo PI reescrito para entregar el incremento de la señal de control
+\citep[Sec.~8]{wittenmark_ifac_computer}, la estabilidad se apoya en las
+propiedades conocidas del PI que establecen esas mismas referencias. El control
+PI es adecuado para procesos de dinámica
+esencialmente de primer orden \citep[Sec.~3.6]{astrom2009controlpid}, como el
+modelo identificado de cada rueda (Sec.~\ref{sec:identificacion_pso}), y el
+período de 33~ms es lo bastante corto para que el controlador digital se comporte
+como el continuo, ya que su producto con la frecuencia de cruce, cercano a 0.07,
+queda dentro del intervalo recomendado de 0.05 a 0.14
+\citep[Secs.~6 y 8]{wittenmark_ifac_computer}. Como
+verificación complementaria, se analiza el lazo discreto de las
+Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida} con el modelo FOPDT
+de cada rueda, en un análisis lineal que no incluye la saturación,
+la zona muerta ni los truncamientos enteros (\ref{anx:estabilidad_pid}). Como el
+período de captura de 0.1~s no resuelve el retardo, se consideran los dos
+extremos, sin retardo y con el retardo en su cota de 0.1~s. En ambos el lazo es
+estable, con márgenes de fase de 53$^\circ$ a 57$^\circ$ y de 41$^\circ$ a
+44$^\circ$, respectivamente, y una sensibilidad máxima de 1.35 a 1.85, dentro
+del intervalo de 1.2 a 2.0 que se considera típico
+\citep[Sec.~5]{wittenmark_ifac_computer}. Solo pierde la estabilidad si el
+retardo total supera unos 0.42~s (Tabla~\ref{tab:estabilidad_pid}).
 
 \subsection{Bucle principal y autodetención}
 \label{sec:bucle_principal}
