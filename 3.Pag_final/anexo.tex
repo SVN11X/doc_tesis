@@ -665,14 +665,14 @@ Ocho valores \\
 
 \noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \textit{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del \textit{firmware}; si no se recibe una nueva orden durante el intervalo de autodetención, definido en el \textit{firmware} como \texttt{AUTO\_STOP\_INTERVAL}$=2000$~ms, los motores se detienen automáticamente y la bandera interna \texttt{moving} vuelve a cero. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados internos; su vigencia se describe en la Sec.~\ref{sec:motorcontrol_pid}.
 
-\subsection{Ecuaciones y estados internos del PID embebido}
+\subsection{Ecuaciones y estados internos del PID incremental embebido}
 \label{anx:pid_ecuaciones}
 
-\noindent La implementación utiliza una ley discreta acumulativa con un término calculado sobre la diferencia de la medición, variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
+La implementación sigue la forma incremental de las Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida}: en cada ciclo calcula un incremento, con un término calculado sobre la diferencia de la medición, y lo suma a la salida anterior. Además, usa variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. Sin el estado integral asociado a $K_i$, esta ley equivale al PI incremental de la Sec.~\ref{sec:motorcontrol_pid}, con las ganancias equivalentes de la Tabla~\ref{tab:ganancias_pid}. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
 
 En cada actualización se leen primero ambos \textit{encoders}. El incremento de conteo de cada rueda, $c_j[k]-c_j[k-1]$, se almacena en una variable de tipo \texttt{int} (16~bits), que conserva solo el valor representable por ese tipo. La referencia \texttt{TargetTicksPerFrame} es de tipo \texttt{double}, mientras que el error de control se almacena en un \texttt{long} con truncamiento hacia cero y, sobre él, se aplica una banda muerta asimétrica ($e_{db,R}=1$, $e_{db,L}=2$~\textit{ticks/frame}). El incremento de salida se calcula en punto flotante a partir de los términos asociados a $K_p$, a $K_d$ y al estado integral (dividido por $K_o$) y se acumula sobre la salida anterior, formando el valor $u_j^{\mathrm{raw}}[k]$ que se satura al rango $[-255,255]$ para obtener la orden \gls{PWM} aplicada $u_j[k]$.
 
-El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$); en caso contrario conserva su valor, implementando un mecanismo simple de \textit{anti-windup} por integración condicional~\citep[Sec.~3.5]{astrom2009controlpid}. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
+El término integral se almacena en un \texttt{int}: la operación compuesta \texttt{ITerm += Ki*Perror} suma $K_{i,j}\,e_j^{\mathrm{db}}[k]$ al valor anterior y vuelve a truncar el resultado hacia cero al tipo entero. El integrador solo se actualiza cuando la salida no está saturada ($-255<u_j^{\mathrm{raw}}[k]<255$). En caso contrario conserva su valor, lo que implementa un mecanismo simple de \textit{anti-windup} por integración condicional~\citep[Sec.~3.5]{astrom2009controlpid}. Por el truncamiento entero, además, puede permanecer sin cambios cuando ese incremento no alcanza una unidad entera. El término $I_j^{\mathrm{int}}$ pertenece a la escala interna del numerador del controlador y no debe interpretarse directamente como una salida PWM.
 
 Las ganancias definitivas se presentan en la
 Tabla~\ref{tab:ganancias_pid}. La secuencia completa de actualización se
@@ -1685,11 +1685,18 @@ Los indicadores con baja dispersión, como el error odométrico, el área libre
 mapeada y la distancia al plano, quedan bien acotados aun con cinco
 repeticiones, mientras que la cobertura libre y la desviación angular tienen
 intervalos amplios. Con seis ejecuciones, la proporción de exploraciones
-válidas solo permite afirmar que supera el 35.9\%. Por eso, con un nivel de
-significancia de 0.05, el número de ensayos es bajo, y se considera admisible
-un mínimo de 6 a 10 repeticiones por ensayo. Con diez repeticiones y
-la misma dispersión, la semiamplitud de los intervalos de la
-Ec.~\eqref{eq:ic_media} se reduciría en cerca de un 42\%. Metas de precisión más
+válidas solo permite afirmar que supera el 35.9\%. Con un nivel de
+significancia de 0.05, tampoco permite afirmar que supere el 50\%, porque la
+prueba binomial exacta de cinco éxitos en seis ejecuciones entrega un valor
+$p$ de 7/64, cercano a 0.11 \citep[Cap.~9]{devore2021modern}. Por eso el
+número de ensayos es bajo, y se adopta como admisible un mínimo de 6 a 10
+repeticiones por ensayo. Ese criterio es coherente con la práctica de validación
+de métodos de medición, en la que se consideran necesarias entre 6 y 15
+repeticiones para obtener una estimación adecuada de la desviación estándar y a
+menudo se recomiendan 10 \citep[Sec.~5.3.2]{cantwell2025eurachem}. Con diez
+repeticiones y la misma dispersión, la semiamplitud de los intervalos de la
+Ec.~\eqref{eq:ic_media} se reduciría en cerca de un 42\%, porque el factor
+$t_{0.975,\,n-1}/\sqrt{n}$ baja de 1.24 a 0.72. Metas de precisión más
 exigentes requieren más ensayos. Reducir a la mitad la
 semiamplitud del intervalo del error odométrico requeriría unas 13
 repeticiones, y afirmar una tasa de éxito superior al 80\% requeriría al menos

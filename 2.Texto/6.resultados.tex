@@ -490,12 +490,16 @@ la cobertura libre, de 46.2\% a 78.3\%, y la desviación angular, de
 1.8$^\circ$ a 21.6$^\circ$, quedan poco acotadas. La proporción de
 exploraciones válidas solo permite afirmar con 95\% de confianza que supera el
 35.9\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}.
-Con el nivel de significancia de 0.05 que corresponde a esa confianza, el número
-de ensayos es bajo. Por esta razón, los resultados se presentan como
-una verificación funcional en el entorno ensayado y no como tasas de desempeño
-generalizables. Se considera admisible un mínimo de 6 a 10 repeticiones por
-ensayo para obtener intervalos de confianza con una variabilidad aceptable, y
-alcanzarlo queda como trabajo futuro. El cálculo, los intervalos de todos los indicadores, las
+Con un nivel de significancia de 0.05, tampoco permite afirmar que supere el
+50\%, porque la prueba binomial exacta entrega un valor $p$ de 0.11
+\citep[Cap.~9]{devore2021modern}. Por ello, el número de ensayos se considera
+bajo, y los resultados se presentan como una verificación funcional en el
+entorno ensayado y no como tasas de desempeño generalizables. Se considera
+admisible un mínimo de 6 a 10 repeticiones por ensayo para obtener intervalos
+de confianza con una variabilidad aceptable, en línea con las 6 a 15
+repeticiones que la validación de métodos de medición considera necesarias
+para estimar una desviación estándar \citep[Sec.~5.3.2]{cantwell2025eurachem}.
+Alcanzar ese número queda como trabajo futuro. El cálculo, los intervalos de todos los indicadores, las
 repeticiones necesarias para acotarlos mejor y su comparación con la literatura
 se presentan en el \ref{anx:intervalos_confianza}.
 

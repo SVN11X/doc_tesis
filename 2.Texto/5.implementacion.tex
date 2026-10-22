@@ -566,6 +566,8 @@ $K_o$ & 50 & 50 \\
 \end{algorithmic}
 \end{algorithm}
 
+El Alg.~\ref{alg:pid_firmware} presenta la secuencia de llamadas de la rutina de actualización. Las operaciones internas del cálculo por rueda, es decir, la banda muerta asimétrica, la saturación de la salida acumulada y la actualización condicional del integrador, se detallan en el \ref{anx:pid_ecuaciones}.
+
 Como la forma incremental descrita por \citet[Sec.~13.4]{astrom2009controlpid}
 es el mismo PI reescrito para entregar el incremento de la señal de control
 \citep[Sec.~8]{wittenmark_ifac_computer}, la estabilidad se apoya en las
