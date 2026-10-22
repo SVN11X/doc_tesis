@@ -5,8 +5,9 @@ Este capítulo describe, de forma general, la solución diseñada antes de entra
 al detalle teórico y de implementación. A partir de las alternativas revisadas
 en el Capítulo~\ref{ch:estado_arte}, se propone un robot móvil diferencial de
 bajo costo que integra percepción láser 2D, odometría por \textit{encoders} y control
-PID embebido, cuyas ganancias se ajustan en el robot a partir de un punto de
-partida obtenido con optimización por enjambre de partículas (PSO), sobre
+PI incremental embebido, una forma clásica del controlador PID, cuyas
+ganancias se ajustan en el robot a partir de un punto de partida obtenido
+con optimización por enjambre de partículas (PSO), sobre
 una arquitectura distribuida en dos entornos: robot y
 estación de trabajo, comunicados mediante \gls{ROS2}. El objetivo es que el
 sistema sea capaz de mapear, navegar y explorar entornos interiores de forma
