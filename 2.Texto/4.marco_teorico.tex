@@ -349,7 +349,7 @@ alimenta al controlador, que ajusta la tensión media entregada al motor. La
 Fig.~\ref{fig:lazo_pid} resume esta estructura.
 
 \utemFigurePropia{2.Texto/Imag/fig_lazo_pid.png}{0.85\textwidth}
-{Lazo de control de velocidad de una rueda con controlador PID.}
+{Lazo de control de velocidad de una rueda con un controlador de la familia PID, que en este trabajo es un PI incremental.}
 {fig:lazo_pid}
 
 El controlador de velocidad se ejecuta de forma independiente para cada rueda en el Arduino Nano. La forma continua del PID de la Ec.~\eqref{eq:pid_continuo}, tomada de la formulación clásica de control realimentado \citep[Sec.~3.2]{astrom2009controlpid}, solo se utiliza como referencia conceptual:
@@ -378,7 +378,7 @@ en la Sec.~\ref{sec:motorcontrol_pid} y en el \ref{anx:pid_ecuaciones}, y la
 forma incremental del PID y los criterios de estabilidad del lazo muestreado,
 en el \ref{anx:estabilidad_pid}.
 
-\section{Sintonización del controlador PID mediante PSO}
+\section{Sintonización del controlador mediante PSO}
 \label{sec:sintonizacion}
 
 Las ganancias del controlador se obtienen mediante un procedimiento híbrido:

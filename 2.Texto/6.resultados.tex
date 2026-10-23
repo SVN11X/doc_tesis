@@ -218,10 +218,11 @@ analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}
 
 La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fija durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantiene un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero del estado integral (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~\textit{ticks/frame}, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~\textit{ticks/frame}, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~\textit{ticks/frame}, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
 
-El \hyperref[oe2]{OE2} compromete un controlador PID en lazo cerrado sobre las
-velocidades de las ruedas, y no la optimización de sus ganancias, por lo que el
-PSO se emplea solo como herramienta de apoyo para obtener un punto de partida
-heurístico para las tres ganancias. El
+El objetivo del trabajo es la navegación y la exploración autónoma, y el
+\hyperref[oe2]{OE2} compromete un controlador PID en lazo cerrado sobre las
+velocidades de las ruedas, y no la optimización de sus ganancias. Por eso el
+PSO es un complemento y se emplea solo como herramienta de apoyo para obtener
+un punto de partida heurístico para las tres ganancias. El
 refinamiento experimental ajusta ese punto de partida, con aumentos de $K_p$ de
 28\% y 63\%, reducciones de $K_d$ de 41\% y 45\% respecto de los valores
 informados y un aumento de varios órdenes de magnitud en $K_i$, hasta lograr el
@@ -508,7 +509,7 @@ eso, y por el alcance de un único recinto, los resultados se presentan como una
 verificación funcional en el entorno ensayado.
 
 Se considera admisible un mínimo de 6 a 10 repeticiones por ensayo para obtener
-intervalos con una variabilidad aceptable, con 10 por condición como objetivo de
+intervalos de confianza con una varianza admisible, con 10 por condición como objetivo de
 partida y un total sujeto a la dispersión y a la precisión requerida. Ese
 criterio es coherente con las 6 a 15 repeticiones que la guía Eurachem considera
 necesarias para estimar una desviación estándar

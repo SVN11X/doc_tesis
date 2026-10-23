@@ -493,17 +493,18 @@ condición, porque su estado integral permanece en cero, y en la izquierda ese
 estado solo crece con errores grandes (Sec.~\ref{sec:resultados_pid}).
 
 Esta ley se conserva en lugar de reemplazarla por otra formulación del PID o
-por una ley escrita desde cero, por tres razones. La primera es que corresponde
-a un controlador conocido y con uso documentado en robótica móvil, el PI
-incremental. El PI es el controlador más común
-\citep[Sec.~3.6]{astrom2009controlpid} y el PID, el algoritmo de control más
-usado en sistemas robóticos \citep{raj2024discussion}, también en robots móviles
-\citep{bitria2022optimal}. Su forma incremental, de la que este PI es el caso
-sin acción derivativa, se usa en el lazo de velocidad de robots diferenciales de
-laboratorio \citep{casini2010remote}, de vehículos autoequilibrados de dos
-ruedas \citep{ma2024selfbalancing}, de andadores robóticos controlados con
-Arduino \citep{mori2024walker} y de plataformas con ROS~2 que, como la de este
-trabajo, envían las consignas de velocidad a la placa de control por puerto serie
+por una ley escrita desde cero, por tres razones. La primera es que el PI incremental utilizado es uno de
+los controladores más usados en robótica móvil. El PI es el controlador más
+común \citep[Sec.~3.6]{astrom2009controlpid} y el PID, familia a la que
+pertenece, es uno de los controladores principales en la navegación de robots
+móviles \citep{raj2024discussion}. El PI y el PID regulan la velocidad de las
+ruedas de robots diferenciales de laboratorio \citep{casini2010remote} y de
+vehículos autoequilibrados de dos ruedas \citep{ma2024selfbalancing}, y en un
+robot móvil con motores DC la sintonía óptima del PID anula la acción
+derivativa y deja un PI \citep{bitria2022optimal}. La forma incremental, de la
+que este PI es el caso sin acción derivativa, se usa en andadores robóticos
+\citep{mori2024walker} y en plataformas con ROS~2 que, como la de este trabajo,
+envían las consignas de velocidad a la placa de control por puerto serie
 \citep{wu2026ros2}. También regula el deslizamiento de las ruedas motrices de
 vehículos agrícolas \citep{sun2022travel} y se usó comúnmente en los primeros
 controladores de motores \citep[Sec.~13.4]{astrom2009controlpid}. La segunda es
@@ -582,7 +583,8 @@ La forma incremental del PI es una realización clásica, que entrega el cambio
 de la señal de control en lugar de su valor
 \citep[Sec.~13.4]{astrom2009controlpid}. Sin saturación, equivale a la forma
 absoluta del mismo PI \citep[Sec.~8]{wittenmark_ifac_computer}, por lo que su
-estabilidad es la de un PI clásico con iguales ganancias. El PI es adecuado
+estabilidad es la de un PI clásico con iguales ganancias y sigue las
+condiciones ya establecidas para él en esas fuentes. El PI es adecuado
 para procesos de dinámica esencialmente de primer orden
 \citep[Sec.~3.6]{astrom2009controlpid}, como el modelo identificado
 (Sec.~\ref{sec:identificacion_pso}). El producto del período de 33~ms por la
