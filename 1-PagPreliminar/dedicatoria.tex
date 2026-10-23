@@ -2,19 +2,135 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{DEDICATORIA}
 
-\vspace*{2cm}
+\begingroup
+\setstretch{1.0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
 
-\begin{flushright}
-\textit{A mi familia,} \\
-\textit{por su apoyo incondicional y por enseñarme que la perseverancia} \\
-\textit{es la llave que abre las puertas de los sueños más grandes.} \\[1.5cm]
+% Iconos vectoriales: todos se dibujan directamente con TikZ.
+% Las definiciones son locales a esta dedicatoria.
+\newcommand{\dedicIcono}[1]{%
+  \tikz[baseline=-0.55ex,x=1em,y=1em,
+    line width=0.45pt,line cap=round,line join=round,
+    color=black!55]{%
+    \useasboundingbox (-0.65,-0.55) rectangle (0.65,0.65);
+    #1
+  }%
+}
 
-\textit{A todos aquellos que, con su dedicación y conocimiento,} \\
-\textit{contribuyen a que la robótica sea una herramienta} \\
-\textit{para transformar la realidad.}
-\end{flushright}
+\newcommand{\dedicCasa}{\dedicIcono{%
+  \draw (-0.55,0.02) -- (0,0.48) -- (0.55,0.02);
+  \draw (-0.38,0.14) -- (-0.38,-0.42)
+    -- (0.38,-0.42) -- (0.38,0.14);
+  \draw (-0.12,-0.42) -- (-0.12,-0.10)
+    -- (0.12,-0.10) -- (0.12,-0.42);
+}}
 
-\vspace*{1cm}
-\noindent\textit{«La máquina puede hacer el trabajo de cincuenta hombres corrientes.}\\
-\textit{\hspace*{1cm}Ninguna máquina puede hacer el trabajo de un hombre extraordinario.»}\\
-\hspace*{6cm}\MakeUppercase{Elbert Hubbard}
+\newcommand{\dedicBrujula}{\dedicIcono{%
+  \draw (0,0) circle (0.49);
+  \draw (0,0.38) -- (0.15,0) -- (0,-0.38)
+    -- (-0.15,0) -- cycle;
+  \fill (0,0.38) -- (0.15,0) -- (0,0) -- cycle;
+}}
+
+\newcommand{\dedicRobot}{\dedicIcono{%
+  \draw[rounded corners=0.7pt]
+    (-0.44,-0.32) rectangle (0.44,0.32);
+  \draw (0,0.32) -- (0,0.51);
+  \fill (0,0.55) circle (0.045);
+  \fill (-0.18,0.08) circle (0.055);
+  \fill (0.18,0.08) circle (0.055);
+  \draw (-0.17,-0.16) -- (0.17,-0.16);
+  \draw (-0.44,0) -- (-0.57,0);
+  \draw (0.44,0) -- (0.57,0);
+}}
+
+\newcommand{\dedicBirrete}{\dedicIcono{%
+  \draw (-0.59,0.10) -- (0,0.40) -- (0.59,0.10)
+    -- (0,-0.18) -- cycle;
+  \draw (-0.32,-0.06) -- (-0.32,-0.31)
+    .. controls (0,-0.49) .. (0.32,-0.31)
+    -- (0.32,-0.06);
+  \draw (0.50,0.14) -- (0.50,-0.36);
+  \fill (0.50,-0.40) circle (0.04);
+}}
+
+\newcommand{\dedicMaletin}{\dedicIcono{%
+  \draw[rounded corners=0.7pt]
+    (-0.50,-0.33) rectangle (0.50,0.30);
+  \draw (-0.20,0.30) -- (-0.20,0.47)
+    -- (0.20,0.47) -- (0.20,0.30);
+  \draw (-0.50,0.03) -- (0.50,0.03);
+  \draw (-0.08,-0.05) rectangle (0.08,0.11);
+}}
+
+% Un icono, una dedicatoria breve y una pausa entre bloques.
+\newcommand{\dedicBloque}[3]{%
+  {\normalfont\bfseries #1\hspace{0.45em}#2}\par
+  \vspace{0.13em}
+  {\itshape #3\par}
+  \vspace{0.68\baselineskip}
+}
+
+\vspace*{0.3cm}
+
+% Dedicatoria alineada a la derecha.
+\noindent\hfill
+\begin{minipage}{0.94\linewidth}
+\raggedleft
+
+\dedicBloque{\dedicCasa}{A mi familia,}{%
+mi apoyo constante\\
+y el lugar al que siempre puedo volver.}
+
+\dedicBloque{\dedicBrujula}{Al Grupo Scout de Don Orione,}{%
+a los lazos que permanecen\\
+y a los valores que llevo conmigo.}
+
+\dedicBloque{\dedicRobot}{Al Club de Robótica,}{%
+a nuestra curiosidad compartida\\
+y al entusiasmo de construir juntos.}
+
+\dedicBloque{\dedicBirrete}{%
+A mis compañeros de la generación 2016\\
+de Ingeniería Civil en Electrónica,}{%
+a los recuerdos y las amistades\\
+de una etapa que siempre será parte de mí.}
+
+\dedicBloque{\dedicMaletin}{A mis compañeros de PwC,}{%
+parte de mi presente\\
+y del profesional en que me sigo convirtiendo.}
+
+\vspace{0.1cm}
+{\itshape
+A todos ustedes dedico este logro,\\
+con el cariño de saber\\
+que cada uno tiene un lugar en esta historia.\par}
+
+\end{minipage}\par
+
+% Las citas cierran la página; la línea marca una pausa visual.
+\vfill
+\vspace{0.35cm}
+\noindent\hfill
+{\color{black!35}\rule{0.22\linewidth}{0.4pt}}\par
+\vspace{0.3cm}
+
+\noindent\hfill
+\begin{minipage}{0.94\linewidth}
+\raggedleft
+\small
+
+\textit{\guillemotleft La máquina puede hacer el trabajo de cincuenta hombres corrientes.\\
+Ninguna máquina puede hacer el trabajo de un hombre extraordinario.\guillemotright}\par
+\vspace{0.12cm}
+{\scriptsize\MakeUppercase{Elbert Hubbard}}\par
+
+\vspace{0.4cm}
+
+\textit{\guillemotleft Traten de dejar este mundo en mejores condiciones de como lo encontraron.\guillemotright}\par
+\vspace{0.12cm}
+{\scriptsize\MakeUppercase{Robert Baden-Powell}}\par
+
+\end{minipage}\par
+\endgroup
