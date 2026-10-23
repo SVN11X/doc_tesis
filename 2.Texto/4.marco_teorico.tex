@@ -370,7 +370,9 @@ K_{d,j}^{\mathrm{cont}}\frac{de_j(t)}{dt}.
 El controlador no se evalúa de forma continua, sino a intervalos regulares en
 el microcontrolador, y puede organizarse en forma incremental, en que cada
 muestra calcula el cambio de la señal de control y lo suma a la salida anterior
-\citep[Sec.~13.4]{astrom2009controlpid}. Su formulación discreta específica, la
+\citep[Sec.~13.4]{astrom2009controlpid}. El controlador que se ejecuta en este
+trabajo tiene esa forma y no usa acción derivativa, por lo que corresponde a un
+PI incremental. Su formulación discreta específica, la
 realización en el \textit{firmware} y las ganancias definitivas se desarrollan
 en la Sec.~\ref{sec:motorcontrol_pid} y en el \ref{anx:pid_ecuaciones}, y la
 forma incremental del PID y los criterios de estabilidad del lazo muestreado,
@@ -379,7 +381,7 @@ en el \ref{anx:estabilidad_pid}.
 \section{Sintonización del controlador PID mediante PSO}
 \label{sec:sintonizacion}
 
-Las ganancias del PID se obtienen mediante un procedimiento híbrido:
+Las ganancias del controlador se obtienen mediante un procedimiento híbrido:
 identificación FOPDT por rueda (Sec.~\ref{sec:fodt}), búsqueda de ganancias
 iniciales mediante optimización por enjambre de partículas y refinamiento
 experimental posterior sobre el \textit{hardware}. Como referencia analítica
@@ -401,7 +403,7 @@ factor global de constricción y la ley lineal del peso de inercia, corresponde
 a la implementación ejecutada en este trabajo.
 
 Cada partícula $i$ representa un candidato de solución, en este caso, un
-conjunto de ganancias PID, mediante una posición $\xi_{i,d}$ y una
+conjunto de ganancias del controlador, mediante una posición $\xi_{i,d}$ y una
 velocidad $V_{i,d}$, ambas adimensionales, con $d\in\{1,2,3\}$ asociado a
 las tres ganancias. En cada generación $g$, la velocidad de cada partícula se
 actualiza combinando la velocidad previa, la atracción hacia su mejor posición

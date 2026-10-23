@@ -1,7 +1,7 @@
 \chapter{RESULTADOS EXPERIMENTALES}
 \label{ch:resultados}
 
-Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización PID se evalúan en simulación y en \textit{hardware} real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evalúan sobre el \textit{hardware} real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}. El equipamiento de la estación de trabajo y las versiones de sistema
+Este capítulo presenta los resultados obtenidos durante la validación del prototipo de robot móvil diferencial. La odometría diferencial y la sintonización del controlador de velocidad se evalúan en simulación y en \textit{hardware} real; el mapeo con \texttt{slam\_toolbox}, la navegación autónoma y la exploración de fronteras se evalúan sobre el \textit{hardware} real, en el entorno físico disponible. Los resultados complementarios de exploración y mapeo se presentan en el \ref{anx:protocolo_resultados}. El equipamiento de la estación de trabajo y las versiones de sistema
 operativo, \textit{middleware} y paquetes con que se ejecutan todos los ensayos se
 consolidan en el \ref{anx:workspace}. El entorno físico en que se realizan las pruebas sobre \textit{hardware} real se muestra en la Fig.~\ref{fig:entorno_experimental}.
 
@@ -499,23 +499,21 @@ la cobertura libre, de 46.2\% a 78.3\%, y la desviación angular, de
 1.8$^\circ$ a 21.6$^\circ$, quedan poco acotadas. La proporción de
 exploraciones válidas solo permite afirmar con 95\% de confianza que supera el
 35.9\%, según el intervalo de Clopper y Pearson \citep{vincent2024generalizable}.
-Como contraste exploratorio, la prueba binomial exacta unilateral de cinco
-éxitos en seis ejecuciones bajo la hipótesis nula de una proporción de éxito
-de 50\% entrega
+Como contraste, la prueba binomial exacta unilateral de cinco éxitos en seis
+ejecuciones, bajo la hipótesis nula de una proporción de éxito de 50\%, entrega
 $p=0.109375$, por lo que no permite rechazar esa hipótesis al nivel de 0.05
-\citep[Cap.~9]{devore2021modern}. Ese valor no determina por sí solo la
-suficiencia de la muestra. Los intervalos amplios y el alcance de un único
-recinto limitan la precisión y la generalización; los resultados se presentan
-como una verificación funcional en el entorno ensayado.
+\citep[Cap.~9]{devore2021modern}. Como con seis ejecuciones solo un resultado
+sin fallas permitiría rechazarla, el número de ensayos se considera bajo. Por
+eso, y por el alcance de un único recinto, los resultados se presentan como una
+verificación funcional en el entorno ensayado.
 
-Como ampliación inicial se proponen entre 6 y 10 repeticiones por ensayo, con
-10 por condición como objetivo de partida y un total final sujeto a la
-dispersión y a la precisión requerida. La recomendación de 6 a 15
-repeticiones de la guía de validación de métodos analíticos es un antecedente
-para estimar una desviación estándar
-\citep[Sec.~5.3.2]{cantwell2025eurachem}, no una garantía de intervalos
-aceptables para cualquier ensayo robótico. La ampliación queda como trabajo
-futuro. El cálculo, los intervalos de todos los indicadores, las
+Se considera admisible un mínimo de 6 a 10 repeticiones por ensayo para obtener
+intervalos con una variabilidad aceptable, con 10 por condición como objetivo de
+partida y un total sujeto a la dispersión y a la precisión requerida. Ese
+criterio es coherente con las 6 a 15 repeticiones que la guía Eurachem considera
+necesarias para estimar una desviación estándar
+\citep[Sec.~5.3.2]{cantwell2025eurachem}, aunque no se refiere a ensayos
+robóticos. Alcanzarlo queda como trabajo futuro. El cálculo, los intervalos de todos los indicadores, las
 repeticiones necesarias para acotarlos mejor y su comparación con la literatura
 se presentan en el \ref{anx:intervalos_confianza}.
 

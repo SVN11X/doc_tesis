@@ -15,7 +15,7 @@ El prototipo corresponde a una plataforma diferencial de bajo costo para interio
 
 La locomoción se implementa mediante dos motorreductores JGA25-370 de 12~V,
 equipados con \textit{encoders} incrementales de cuadratura. El \gls{Arduino} Nano
-realiza la lectura de estos sensores y ejecuta el control PID de velocidad,
+realiza la lectura de estos sensores y ejecuta el control de velocidad PI incremental,
 mientras que el \textit{driver} L298N aplica las señales \gls{PWM} a los motores. La
 Raspberry Pi~4 ejecuta la interfaz de \textit{hardware}, adquiere los barridos del
 RPLidar A1 y se comunica con la estación de trabajo, donde se ejecutan las
@@ -103,7 +103,7 @@ emplean como referencia geométrica común en el robot físico, el modelo
 digital y \texttt{diff\_drive\_controller}. El \textit{backend}
 \texttt{GazeboSystem} entrega directamente los estados de las
 articulaciones, por lo que no utiliza la conversión por \textit{ticks} ni el
-planificador PID del \textit{firmware}. La Fig.~\ref{fig:robot_sim} muestra el modelo
+planificador del controlador de velocidad del \textit{firmware}. La Fig.~\ref{fig:robot_sim} muestra el modelo
 cargado en Gazebo Classic.
 
 \utemFigurePropia{2.Texto/Imag/fig_robot_sim.PNG}{0.55\textwidth}
@@ -271,7 +271,7 @@ velocidad angular mediante las Ecs.~\eqref{eq:posicion_rueda_encoder}
 y~\eqref{eq:w_ruedas}, para $j\in\{R,L\}$, con el intervalo $\Delta t_k$. Las interfaces expuestas y el
 desarrollo de ambas conversiones se conservan en el
 \ref{anx:implementacion_diffdrive}.
-Las ganancias PID no se transmiten en tiempo de ejecución: residen en el
+Las ganancias del controlador no se transmiten en tiempo de ejecución: residen en el
 \textit{firmware} con los valores obtenidos mediante el procedimiento descrito en la
 Sec.~\ref{sec:sintonizacion_pso}.
 
@@ -359,7 +359,7 @@ se documentan en el \ref{anx:hardware_ros2}.
 \section{\texorpdfstring{\textit{Firmware}}{Firmware} de bajo nivel en Arduino Nano}
 \label{ch:setup_arduino}
 
-El \textit{firmware} \texttt{ROSArduinoBridge} parte de un proyecto de código abierto homónimo~\citep{newans_rosarduinobridge} y se adapta para este trabajo, incorporando ganancias PID independientes por rueda, una banda muerta sobre el error y la resolución efectiva de \textit{encoders} del prototipo, sin modificar la estructura de su ley de control. Cumple cuatro funciones principales: comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control}, lectura de \textit{encoders}, control PID de velocidad por rueda y autodetención de seguridad ante pérdida de comandos.
+El \textit{firmware} \texttt{ROSArduinoBridge} parte de un proyecto de código abierto homónimo~\citep{newans_rosarduinobridge} y se adapta para este trabajo, incorporando ganancias independientes por rueda, una banda muerta sobre el error y la resolución efectiva de \textit{encoders} del prototipo, sin modificar la estructura de su ley de control. Cumple cuatro funciones principales: comunicación serial con \gls{ROS2} mediante \texttt{ros2\_control}, lectura de \textit{encoders}, control de velocidad PI incremental por rueda y autodetención de seguridad ante pérdida de comandos.
 
 \subsection{Arquitectura modular y constantes físicas}
 
@@ -382,9 +382,9 @@ pin, cuya rutina actualiza el contador de esa rueda. De este modo el conteo
 avanza mediante interrupciones, en paralelo a la ejecución del programa principal
 y sin depender directamente de su tiempo de ciclo. Este mecanismo permite
 registrar transiciones mientras el bucle atiende el protocolo serial o el control
-PID, sin asumir que todas las transiciones puedan registrarse bajo cualquier
+de velocidad, sin asumir que todas las transiciones puedan registrarse bajo cualquier
 condición temporal. El programa principal solo
-lee el valor acumulado cuando lo necesita: en cada ciclo del PID para calcular
+lee el valor acumulado cuando lo necesita: en cada ciclo del controlador para calcular
 la velocidad de cada rueda, y al responder el comando de lectura de \textit{encoders},
 a partir del cual la Raspberry Pi estima la odometría.
 Los conteos recibidos por el enlace serial se interpretan mediante la
@@ -482,10 +482,10 @@ diferencia hacia atrás, sin acción derivativa y con ponderación nula del punt
 de consigna en la acción proporcional. En esa correspondencia, $K_{d,j}/K_o$
 cumple el papel de la ganancia proporcional y $K_{p,j}/K_o$ el del coeficiente
 integral por muestra, de modo que la ley idealizada es un controlador PI
-incremental. La denominación PID se conserva en los archivos y en los
-identificadores de ganancias por su correspondencia con el \textit{firmware}
-heredado; su interpretación distingue la ley completa del PI equivalente.
-Con ponderación nula, la referencia solo
+incremental, es decir, un PID sin acción derivativa, y así se denomina en este
+trabajo. El nombre PID se conserva para la familia de controladores, para el
+\hyperref[oe2]{OE2} y para los nombres del \textit{firmware} y de sus
+\textit{scripts}, como $K_p$, $K_i$, $K_d$ o \texttt{doPID()}. Con ponderación nula, la referencia solo
 entra en el término integral, lo que evita saltos de la señal de control y
 reduce la sobreelongación ante cambios del punto de consigna
 \citep[Sec.~3.4]{astrom2009controlpid}. La rueda derecha opera en esa
@@ -532,7 +532,7 @@ Alg.~\ref{alg:pid_firmware}.
 
 \begin{table}[htbp]
 \centering
-\caption{Ganancias PID definitivas codificadas en el \textit{firmware}.}
+\caption{Ganancias definitivas del controlador codificadas en el \textit{firmware}.}
 \label{tab:ganancias_pid}
 \small
 \begin{tabular}{lcc}
@@ -550,10 +550,10 @@ $K_o$ & 50 & 50 \\
 \end{table}
 
 \begin{algorithm}[htbp]
-\caption{Rutinas de reinicio y actualización del PID discreto ejecutadas por el \textit{firmware}.}
+\caption{Rutinas de reinicio y actualización del controlador discreto ejecutadas por el \textit{firmware}.}
 \label{alg:pid_firmware}
 \begin{algorithmic}[1]
-\Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; parámetros PID y límites de saturación definidos previamente.
+\Require Conteos $c_L,c_R$; referencias \texttt{TargetTicksPerFrame}; ganancias y límites de saturación definidos previamente.
 \Ensure Salidas PWM y estados internos actualizados.
 \Procedure{resetPID}{}
 \State Cargar las ganancias predeterminadas de ambas ruedas.
@@ -569,8 +569,8 @@ $K_o$ & 50 & 50 \\
 \EndIf
 \State \Return
 \EndIf
-\State \Call{doPID}{PID derecho,$1$}
-\State \Call{doPID}{PID izquierdo,$2$}
+\State \Call{doPID}{controlador derecho,$1$}
+\State \Call{doPID}{controlador izquierdo,$2$}
 \State \Call{setMotorSpeeds}{\texttt{leftPID.output},\texttt{rightPID.output}}
 \EndProcedure
 \end{algorithmic}
@@ -578,18 +578,18 @@ $K_o$ & 50 & 50 \\
 
 El Alg.~\ref{alg:pid_firmware} presenta la secuencia de llamadas de la rutina de actualización. Las operaciones internas del cálculo por rueda, es decir, la banda muerta asimétrica, la saturación de la salida acumulada y la actualización condicional del integrador, se detallan en el \ref{anx:pid_ecuaciones}.
 
-La forma incremental del PI constituye una realización conocida que entrega
-el cambio de la señal de control
-\citep[Sec.~13.4]{astrom2009controlpid}. La equivalencia entre la
-realización incremental y la absoluta también se describe en
-\citet[Sec.~8]{wittenmark_ifac_computer}. Su aplicación se verifica con las
-ganancias y el modelo de cada rueda. El PI es adecuado para procesos de
-dinámica esencialmente de primer orden \citep[Sec.~3.6]{astrom2009controlpid},
-como el modelo identificado (Sec.~\ref{sec:identificacion_pso}). El producto
-del período de 33~ms por la frecuencia de cruce, cercano a 0.07, queda dentro
-del intervalo recomendado de 0.05 a 0.14 para la aproximación al diseño
-continuo \citep[Secs.~6 y 8]{wittenmark_ifac_computer}; la verificación de este
-trabajo se realiza sobre el lazo discreto.
+La forma incremental del PI es una realización clásica, que entrega el cambio
+de la señal de control en lugar de su valor
+\citep[Sec.~13.4]{astrom2009controlpid}. Sin saturación, equivale a la forma
+absoluta del mismo PI \citep[Sec.~8]{wittenmark_ifac_computer}, por lo que su
+estabilidad es la de un PI clásico con iguales ganancias. El PI es adecuado
+para procesos de dinámica esencialmente de primer orden
+\citep[Sec.~3.6]{astrom2009controlpid}, como el modelo identificado
+(Sec.~\ref{sec:identificacion_pso}). El producto del período de 33~ms por la
+frecuencia de cruce, cercano a 0.07, queda dentro del intervalo recomendado de
+0.05 a 0.14 para la aproximación al diseño continuo
+\citep[Secs.~6 y 8]{wittenmark_ifac_computer}. Aun así, la verificación se
+realiza sobre el lazo discreto, con las ganancias y el modelo de cada rueda.
 
 Se analiza la idealización lineal de las
 Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida} con el modelo FOPDT
@@ -608,12 +608,12 @@ el programa no lineal ni una medición del retardo del robot.
 \subsection{Bucle principal y autodetención}
 \label{sec:bucle_principal}
 
-El bucle principal atiende el \textit{parser} serial, programa la ejecución del PID y evalúa la autodetención. Si transcurre el intervalo de autodetención sin recibir comandos de movimiento, el \textit{firmware} detiene los motores, evitando que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación. Ambos intervalos programados se documentan en el \ref{anx:implementacion_diffdrive} y en el \ref{anx:protocolo_serial}.
+El bucle principal atiende el \textit{parser} serial, programa la ejecución del controlador de velocidad y evalúa la autodetención. Si transcurre el intervalo de autodetención sin recibir comandos de movimiento, el \textit{firmware} detiene los motores, evitando que el robot continúe desplazándose ante pérdida de conexión o falla de algún nodo de navegación. Ambos intervalos programados se documentan en el \ref{anx:implementacion_diffdrive} y en el \ref{anx:protocolo_serial}.
 
-\subsection{Sintonización del controlador PID asistida por PSO}
+\subsection{Sintonización del controlador asistida por PSO}
 \label{sec:sintonizacion_pso}
 
-Las ganancias PID se determinan mediante el procedimiento híbrido descrito en
+Las ganancias del controlador se determinan mediante el procedimiento híbrido descrito en
 la Sec.~\ref{sec:sintonizacion}, que encadena identificación FOPDT,
 optimización por PSO y refinamiento experimental, formalizado en el
 Alg.~\ref{alg:sintonizacion}. La configuración del enjambre, las escalas, las
@@ -621,11 +621,11 @@ cotas y las funciones de costo se conservan en el
 \ref{anx:protocolos_sintonizacion}.
 
 \begin{algorithm}[htbp]
-\caption{Sintonización híbrida del PID mediante identificación FOPDT y PSO.}
+\caption{Sintonización híbrida del controlador mediante identificación FOPDT y PSO.}
 \label{alg:sintonizacion}
 \begin{algorithmic}[1]
 \Require Datos de lazo abierto por rueda; período $T_{\mathrm{cap}}$; configuración del PSO.
-\Ensure Ganancias PID definitivas por rueda.
+\Ensure Ganancias definitivas por rueda.
 \State Cargar las señales de entrada, velocidad y tiempo.
 \For{$j\in\{L,R\}$}
 \State $v_j^{\mathrm{filt}}\gets\Call{FiltrarVelocidad}{v_j^{\mathrm{med}}}$
@@ -885,4 +885,4 @@ capacidades del prototipo físico.
 \section*{Conclusión del capítulo}
 \label{sec:conclusion_ch9}
 
-La implementación integra componentes accesibles: plataforma diferencial, \textit{encoders}, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1, con una arquitectura de \textit{software} basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permite validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el \textit{hardware} real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el \textit{plugin} \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PID de ruedas (sintonizado mediante PSO y refinamiento experimental, y con estabilidad verificada sobre el modelo FOPDT identificado) y publicación de odometría, con autodetención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en \textit{hardware} real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.
+La implementación integra componentes accesibles: plataforma diferencial, \textit{encoders}, \gls{Arduino} Nano, Raspberry Pi 4 y RPLidar A1, con una arquitectura de \textit{software} basada en \gls{ROS2}. El gemelo digital, construido sobre los mismos parámetros geométricos del prototipo, permite validar de forma previa la cinemática, los marcos de referencia y la configuración de control, facilitando la transferencia hacia el \textit{hardware} real. La comunicación mediante \texttt{ros2\_control}, \texttt{diff\_drive\_controller} y el \textit{plugin} \texttt{DiffDriveArduino} cierra el ciclo entre comandos de navegación, control PI incremental de ruedas (con ganancias iniciales obtenidas por PSO y refinadas en el robot, y con estabilidad verificada sobre el modelo FOPDT identificado) y publicación de odometría, con autodetención de seguridad ante pérdida de comandos. Sobre esta base, la orquestación de \texttt{slam\_toolbox}, Nav2 y \texttt{explore\_lite} articula percepción, mapeo, navegación y exploración autónoma sobre una misma estructura de tópicos y marcos, tanto en simulación como en \textit{hardware} real. Su desempeño se evalúa en el Capítulo~\ref{ch:resultados}.

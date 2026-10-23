@@ -58,10 +58,11 @@ El cumplimiento de los objetivos específicos se resume de la siguiente forma:
 la estimación de los estados de rueda y el control de velocidad en el \textit{firmware};
 la posición y velocidad de rueda se exportan mediante
 \texttt{DiffDriveArduino}, y la odometría se integra en
-\texttt{diff\_drive\_controller}. La estabilidad de la ley ejecutada se
-verifica sobre su idealización lineal con el modelo FOPDT identificado. Sin embargo, la ley heredada de \texttt{ROSArduinoBridge} opera como un
-controlador PI incremental sin acción derivativa efectiva, su análisis es
-lineal y su desempeño se evalúa en un único punto de operación, como se detalla
+\texttt{diff\_drive\_controller}. La estabilidad de la ley ejecutada, un PI
+incremental heredado de \texttt{ROSArduinoBridge}, se verifica sobre su
+idealización lineal con el modelo FOPDT identificado. Sin embargo, ese
+análisis no incluye los efectos no lineales del \textit{firmware} y el
+desempeño se evalúa en un único punto de operación, como se detalla
 en la Sec.~\ref{sec:motorcontrol_pid} y en la Sec.~\ref{sec:resultados_pid}.
 
 \item[\autoref{oe3} -- Localización, mapeo y navegación:]
@@ -113,7 +114,7 @@ navegación, lo que requiere un protocolo con metas fijas.
 \item \textbf{Espacio de pruebas reducido:} el recinto disponible limita la ejecución de recorridos extensos y condiciona la geometría de los mapas de costo.
 \item \textbf{Registro de navegación:} los contadores automáticos de la sesión no identifican metas únicas, por lo que el resultado de las metas de exploración se reconstruye \textit{a posteriori} desde el flujo de estado de la acción. No se ejecuta un protocolo de navegación dirigida con metas fijas, por lo que no se dispone de tasa de éxito ni de error de posición final para ese caso.
 \item \textbf{Exactitud de los mapas:} se evalúa contra un plano medido con huincha. El espesor de los muros explica a lo sumo 4 de los 12~cm en que los pasillos resultan más anchos, y el resto puede deberse a la medición o al mapa.
-\item \textbf{Métricas PID:} los indicadores de la Tabla~\ref{tab:pid_performance} provienen de la captura experimental en \textit{hardware} real, mientras que los sobreimpulsos de 10.7\% a 15.6\% provienen de una simulación ilustrativa sobre un modelo FOPDT reidentificado. No deben interpretarse como una única prueba.
+\item \textbf{Métricas del control de velocidad:} los indicadores de la Tabla~\ref{tab:pid_performance} provienen de la captura experimental en \textit{hardware} real, mientras que los sobreimpulsos de 10.7\% a 15.6\% provienen de una simulación ilustrativa sobre un modelo FOPDT reidentificado. No deben interpretarse como una única prueba.
 \item \textbf{Modelo y sintonización:} el período de captura de 0.1~s no resuelve el retardo del modelo FOPDT, el único escalón de PWM no representa la zona muerta del \textit{driver} y la simulación del costo del PSO no replica la aritmética entera del \textit{firmware}.
 \item \textbf{Fidelidad de la simulación:} Gazebo Classic no reproduce completamente fricción, zona muerta del \textit{driver}, ruido sensorial ni latencias reales.
 \item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.
@@ -140,6 +141,6 @@ punto flotante y lectura atómica de \textit{encoders}.
 \item Repetir el protocolo angular con un giro controlado a un ángulo fijo y verificar la velocidad angular efectiva registrada en \texttt{/odom}.
 \item Registrar la pose verdadera de Gazebo Classic en los ensayos simulados para separar el error odométrico del error de seguimiento en simulación.
 \item Medir el recinto con un instrumento de mayor precisión y repetir con esas medidas la comparación de los mapas obtenidos en \textit{hardware} real con el plano del recinto.
-\item Ampliar inicialmente a entre 6 y 10 las repeticiones de cada ensayo, con 10 por condición como objetivo de partida, y ajustar el total según la dispersión y la precisión requerida (\ref{anx:intervalos_confianza}).
+\item Alcanzar el mínimo admisible de 6 a 10 repeticiones por ensayo, con 10 por condición como objetivo de partida, y ajustar el total según la dispersión y la precisión requerida (\ref{anx:intervalos_confianza}).
 \item Repetir la identificación FOPDT con un muestreo más rápido y escalones de distinta amplitud, y reformular el PSO con la aritmética entera del \textit{firmware}, salida recortada y semilla fija.
 \end{enumerate}

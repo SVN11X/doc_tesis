@@ -31,8 +31,9 @@ La función general de cada dominio es la siguiente:
 y el \gls{LIDAR} 2D percibe el entorno; son las dos fuentes de información del
 sistema.
 \item[Control de bajo nivel.] El \gls{Arduino} lee los \textit{encoders} y ejecuta el
-control PID de velocidad de cada rueda, accionando los motores DC de tracción
-diferencial. Las ganancias de ese PID se determinan en dos etapas: PSO
+control de velocidad de cada rueda, un PI incremental que acciona los motores
+DC de tracción diferencial. Las ganancias de ese controlador se determinan en
+dos etapas: PSO
 entrega un primer conjunto a partir de un modelo identificado de cada rueda, y
 ese conjunto se refina luego sobre el robot real hasta llegar a los valores
 definitivos.
@@ -76,7 +77,7 @@ paquete base adaptado, disponibles para \gls{ROS2} Foxy sobre Ubuntu 20.04
 (Sec.~\ref{sec:gemelo_digital}).
 
 La sintonización del control de bajo nivel también se resuelve como una
-decisión de diseño. En lugar de buscar las tres ganancias PID por prueba y
+decisión de diseño. En lugar de buscar las tres ganancias del controlador por prueba y
 error desde cero, se identifica un modelo de primer orden con retardo para cada
 rueda y sobre él se aplica PSO, un método de optimización que no requiere
 derivadas ni un modelo exacto de la planta y que permite buscar las tres

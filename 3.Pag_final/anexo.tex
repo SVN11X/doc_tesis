@@ -262,7 +262,7 @@ La misma distribución de \gls{ROS2} se ejecuta en la estación de trabajo y en 
 \midrule
 \texttt{articubot\_one} & Descripción URDF/\texttt{xacro}, configuración de control, SLAM, navegación y simulación. & Adaptado de \citep{newans_articubot} \\
 \texttt{diffdrive\_arduino} & Interfaz \texttt{ros2\_control} entre \gls{ROS2} y el \gls{Arduino}. & Adaptado de \citep{newans_diffdrive} \\
-\texttt{ROSArduinoBridge} & \textit{Firmware} de bajo nivel para \textit{encoders}, motores y PID. & Adaptado de \citep{newans_rosarduinobridge}, bifurcación de \citep{hbrobotics_rosarduinobridge} \\
+\texttt{ROSArduinoBridge} & \textit{Firmware} de bajo nivel para \textit{encoders}, motores y control de velocidad. & Adaptado de \citep{newans_rosarduinobridge}, bifurcación de \citep{hbrobotics_rosarduinobridge} \\
 \texttt{explore\_lite} & Exploración autónoma basada en fronteras (proyecto \texttt{m-explore}). & Adaptado de \citep{alvarez2021mexplore_ros2}, \textit{port} a \gls{ROS2} de \citep{horner_mexplore} \\
 \texttt{pid\_config} & \textit{Scripts} de captura, identificación FOPDT y sintonización PSO. & Elaboración propia \\
 \bottomrule
@@ -505,12 +505,12 @@ Autodetención de seguridad &
 \end{tabular}
 \end{table}
 
-\section{\texorpdfstring{\textit{Firmware}}{Firmware}, \texorpdfstring{\textit{encoders}}{encoders} y sintonización PID}
+\section{\texorpdfstring{\textit{Firmware}}{Firmware}, \texorpdfstring{\textit{encoders}}{encoders} y sintonización del controlador}
 \label{anx:firmware}
 
-Este anexo complementa el capítulo de \textit{firmware} con datos experimentales y parámetros usados durante la sintonización del controlador PID.
+Este anexo complementa el capítulo de \textit{firmware} con datos experimentales y parámetros usados durante la sintonización del controlador de velocidad.
 
-El \textit{firmware} se distribuye en módulos independientes: \texttt{ROSArduinoBridge.ino} contiene el ciclo principal y el analizador serial; \texttt{commands.h}, los identificadores de comandos; \texttt{encoder\_driver.h} y \texttt{encoder\_driver.ino}, la lectura de \textit{encoders}; \texttt{motor\_driver.h} y \texttt{motor\_driver.ino}, el accionamiento del L298N; y \texttt{diff\_controller.h}, el controlador PID discreto y sus ganancias. Su localización se indica en el \ref{anx:rutas_software}.
+El \textit{firmware} se distribuye en módulos independientes: \texttt{ROSArduinoBridge.ino} contiene el ciclo principal y el analizador serial; \texttt{commands.h}, los identificadores de comandos; \texttt{encoder\_driver.h} y \texttt{encoder\_driver.ino}, la lectura de \textit{encoders}; \texttt{motor\_driver.h} y \texttt{motor\_driver.ino}, el accionamiento del L298N; y \texttt{diff\_controller.h}, el controlador discreto y sus ganancias. Su localización se indica en el \ref{anx:rutas_software}.
 
 \subsection{\texorpdfstring{\textit{Ticks}}{Ticks} por vuelta y ganancias finales}
 \label{anx:pid_data}
@@ -616,12 +616,12 @@ Reinicia los conteos de ambos \textit{encoders} y ejecuta \texttt{resetPID()}, q
 
 \texttt{o} &
 \texttt{o PWM\_L PWM\_R} &
-Ejecuta primero \texttt{resetPID()} y luego aplica directamente valores PWM a los motores izquierdo y derecho, sin control PID. Los valores se limitan al intervalo $[-255,255]$. &
+Ejecuta primero \texttt{resetPID()} y luego aplica directamente valores PWM a los motores izquierdo y derecho, sin control en lazo cerrado. Los valores se limitan al intervalo $[-255,255]$. &
 \texttt{OK} \\
 
 \texttt{m} &
 \texttt{m M\_L M\_R} &
-Establece las referencias del controlador PID en \textit{ticks/frame} para las ruedas izquierda y derecha. Si ambas son cero, detiene los motores y ejecuta \texttt{resetPID()}. &
+Establece las referencias del controlador de velocidad en \textit{ticks/frame} para las ruedas izquierda y derecha. Si ambas son cero, detiene los motores y ejecuta \texttt{resetPID()}. &
 \texttt{OK} \\
 
 \texttt{k} &
@@ -631,22 +631,22 @@ Establece las referencias de velocidad lineal de rueda en m/s. El \textit{firmwa
 
 \texttt{j} &
 \texttt{j} &
-Consulta \texttt{PrevInput} de cada PID, es decir, la última medición entera en \textit{ticks/frame} actualizada por el ciclo de control, y la convierte a m/s. El comando no fuerza una nueva actualización del PID. &
+Consulta \texttt{PrevInput} de cada controlador, es decir, la última medición entera en \textit{ticks/frame} actualizada por el ciclo de control, y la convierte a m/s. El comando no fuerza una nueva actualización del controlador. &
 \texttt{V\_L V\_R} \\
 
 \texttt{u} &
 \texttt{u Kp:Kd:Ki:Ko} &
-Carga un conjunto común de ganancias PID para ambas ruedas. &
+Carga un conjunto común de ganancias para ambas ruedas. &
 \texttt{OK} \\
 
 \texttt{z} &
 \texttt{z} $\mathbf{K}_L:\mathbf{K}_R$ &
-Carga ganancias PID independientes para las ruedas izquierda y derecha. &
+Carga ganancias independientes para las ruedas izquierda y derecha. &
 \texttt{OK} \\
 
 \texttt{n} &
 \texttt{n} &
-Consulta las ganancias PID almacenadas. La respuesta conserva el orden izquierda $K_p,K_d,K_i,K_o$ y luego derecha $K_p,K_d,K_i,K_o$. &
+Consulta las ganancias almacenadas. La respuesta conserva el orden izquierda $K_p,K_d,K_i,K_o$ y luego derecha $K_p,K_d,K_i,K_o$. &
 Ocho valores \\
 
 \bottomrule
@@ -665,7 +665,7 @@ Ocho valores \\
 
 \noindent donde $L$ y $R$ representan las ruedas izquierda y derecha, respectivamente; $V_L$ y $V_R$ son sus velocidades lineales [m/s], mientras que $M_L$ y $M_R$ son referencias expresadas en \textit{ticks/frame}. Los comandos de movimiento actualizan el temporizador de seguridad del \textit{firmware}; si no se recibe una nueva orden durante el intervalo de autodetención, definido en el \textit{firmware} como \texttt{AUTO\_STOP\_INTERVAL}$=2000$~ms, los motores se detienen automáticamente y la bandera interna \texttt{moving} vuelve a cero. Las ganancias cargadas mediante \texttt{u} o \texttt{z} modifican los valores almacenados sin reiniciar los estados internos; su vigencia se describe en la Sec.~\ref{sec:motorcontrol_pid}.
 
-\subsection{Ecuaciones y estados internos del PID incremental embebido}
+\subsection{Ecuaciones y estados internos del PI incremental embebido}
 \label{anx:pid_ecuaciones}
 
 La implementación sigue la forma incremental de las Ecs.~\eqref{eq:pid_fw_incremento} a~\eqref{eq:pid_fw_salida}: en cada ciclo calcula un incremento, con un término calculado sobre la diferencia de la medición, y lo suma a la salida anterior. Además, usa variables enteras, truncamientos, banda muerta asimétrica, saturación y actualización condicional del integrador. Su idealización lineal, sin el estado adicional asociado a $K_i$ ni las no linealidades anteriores, equivale al PI incremental de la Sec.~\ref{sec:motorcontrol_pid}, con las ganancias equivalentes de la Tabla~\ref{tab:ganancias_pid}. En el Arduino Nano basado en AVR, \texttt{int} es de 16~bits, \texttt{long} de 32~bits y \texttt{float}/\texttt{double} se representa con 32~bits.
@@ -768,10 +768,10 @@ retardo de 0 y 0.1~s (\ref{anx:estabilidad_pid}). La
 estimación precisa de retardos menores que 0.1~s requiere un muestreo más
 rápido y queda como trabajo futuro.
 
-\subsection{Planta utilizada durante la sintonización PID}
+\subsection{Planta utilizada durante la sintonización del controlador}
 \label{anx:planta_sintonizacion}
 
-Con los parámetros identificados, el \textit{script} simula una planta discreta FOPDT sin aplicar el retardo $L_{d,j}$ (aunque calcula una variable local \texttt{delay\_steps}). La consigna de cada rueda no se fija en 0.13~m/s: se obtiene del promedio de la respuesta experimental en lazo abierto para $t\geq7$~s, tabulada cada 0.1~s e interpolada linealmente (\texttt{np.interp}) al período de simulación $T_{\mathrm{sim}}$. La simulación cuantiza a \textit{ticks/frame} solo la medición que ingresa al PID (redondeo al par más cercano), mientras que sus estados internos permanecen en punto flotante. Durante la optimización se usa una banda muerta común de 2~\textit{ticks/frame} para ambas ruedas, a diferencia del \textit{firmware} final (1~\textit{tick/frame} en la derecha y 2 en la izquierda); por ello la simulación conserva la estructura acumulativa del controlador pero no replica exactamente sus tipos de datos ni sus condiciones por rueda.
+Con los parámetros identificados, el \textit{script} simula una planta discreta FOPDT sin aplicar el retardo $L_{d,j}$ (aunque calcula una variable local \texttt{delay\_steps}). La consigna de cada rueda no se fija en 0.13~m/s: se obtiene del promedio de la respuesta experimental en lazo abierto para $t\geq7$~s, tabulada cada 0.1~s e interpolada linealmente (\texttt{np.interp}) al período de simulación $T_{\mathrm{sim}}$. La simulación cuantiza a \textit{ticks/frame} solo la medición que ingresa al controlador (redondeo al par más cercano), mientras que sus estados internos permanecen en punto flotante. Durante la optimización se usa una banda muerta común de 2~\textit{ticks/frame} para ambas ruedas, a diferencia del \textit{firmware} final (1~\textit{tick/frame} en la derecha y 2 en la izquierda); por ello la simulación conserva la estructura acumulativa del controlador pero no replica exactamente sus tipos de datos ni sus condiciones por rueda.
 
 \subsection{Particularidades de la implementación PSO}
 \label{anx:pso_detalle}
@@ -1774,21 +1774,23 @@ Los indicadores con baja dispersión, como el error odométrico, el área libre
 mapeada y la distancia al plano, quedan bien acotados aun con cinco
 repeticiones, mientras que la cobertura libre y la desviación angular tienen
 intervalos amplios. Con seis ejecuciones, la proporción de exploraciones
-válidas tiene un intervalo amplio, de 35.9\% a 99.6\%. Como contraste
-exploratorio, para cinco éxitos en seis ejecuciones bajo la hipótesis nula
-de una proporción de éxito de 50\%, la prueba binomial exacta unilateral entrega
-$p=7/64=0.109375$ \citep[Cap.~9]{devore2021modern}. Al nivel de 0.05 no se
-rechaza esa hipótesis; ese resultado no identifica por sí solo una muestra
-insuficiente. La amplitud de los intervalos y el alcance experimental son
-los que motivan ampliar la campaña.
+válidas tiene un intervalo amplio, de 35.9\% a 99.6\%. Como contraste, para
+cinco éxitos en seis ejecuciones bajo la hipótesis nula de una proporción de
+éxito de 50\%, la prueba binomial exacta unilateral entrega
+$p=7/64=0.109375$ \citep[Cap.~9]{devore2021modern}, por lo que al nivel de
+0.05 no se rechaza esa hipótesis. Con seis ejecuciones, el único resultado que
+permitiría rechazarla es el de seis éxitos, con $p=1/64$, de modo que una sola
+falla basta para perder la significancia. Por eso el número de ensayos se
+considera bajo, lo que, junto con la amplitud de los intervalos y el alcance
+experimental, motiva ampliar la campaña.
 
-Como planificación inicial se proponen entre 6 y 10 repeticiones por ensayo,
-con 10 por condición como objetivo de partida. La guía de validación de
-métodos analíticos recomienda entre 6 y 15 para estimar la desviación
-estándar y a menudo utiliza 10
-\citep[Sec.~5.3.2]{cantwell2025eurachem}; se toma como antecedente
-metodológico, no como umbral universal de suficiencia en robótica. El total
-final depende de la dispersión y de la precisión buscada. Con diez
+Se considera admisible un mínimo de 6 a 10 repeticiones por ensayo, con 10 por
+condición como objetivo de partida. Ese criterio es coherente con la guía
+Eurachem de validación de métodos analíticos, que considera necesarias entre
+6 y 15 repeticiones para estimar la desviación estándar y señala que a menudo
+se recomiendan 10 \citep[Sec.~5.3.2]{cantwell2025eurachem}, aunque no se
+refiere a ensayos robóticos. El total final depende de la dispersión y de la
+precisión buscada. Con diez
 repeticiones y la misma dispersión, la semiamplitud de los intervalos de la
 Ec.~\eqref{eq:ic_media} se reduciría en cerca de un 42\%, porque el factor
 $t_{0.975,\,n-1}/\sqrt{n}$ baja de 1.24 a 0.72. Metas de precisión más
@@ -1846,7 +1848,7 @@ todos los archivos de código citados en el documento.
 \texttt{obstacles.\allowbreak{}world} & \texttt{articubot\_\allowbreak{}one/\allowbreak{}worlds/} & Mundo empleado en las pruebas de mapeo simulado. \\
 \texttt{ROSArduinoBridge.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Ciclo principal y protocolo serial del \textit{firmware}. \\
 \texttt{commands.\allowbreak{}h} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Identificadores de comandos seriales. \\
-\texttt{diff\_\allowbreak{}controller.\allowbreak{}h} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & PID discreto y ganancias finales. \\
+\texttt{diff\_\allowbreak{}controller.\allowbreak{}h} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Controlador discreto y ganancias finales. \\
 \texttt{encoder\_\allowbreak{}driver.\allowbreak{}h}, \texttt{encoder\_\allowbreak{}driver.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Lectura de \textit{encoders}. \\
 \texttt{motor\_\allowbreak{}driver.\allowbreak{}h}, \texttt{motor\_\allowbreak{}driver.\allowbreak{}ino} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}ROSArduinoBridge/} & Accionamiento del L298N. \\
 \texttt{ControlLazoAbierto.\allowbreak{}py} & \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/} & Captura de la respuesta en lazo abierto. \\
@@ -1918,7 +1920,7 @@ $m_j^{\mathrm{int}}[k]$ & Conversión a \texttt{int} del incremento $c_j[k]-c_j[
 $m_j^{\mathrm{cmd}}[k]$ & Referencia entera en \textit{ticks/frame} enviada al \textit{firmware}; \texttt{DiffDriveArduino} la genera al convertir $\omega_j^{\mathrm{cmd}}$ o $v_j^{\mathrm{cmd}}$ (conversión descrita en el \ref{anx:implementacion_diffdrive}) & \textit{ticks/frame} \\
 $v_j^{\mathrm{cmd}}[k]$ & Velocidad lineal de rueda comandada & m/s \\
 $\omega_j^{\mathrm{cmd}}[k]$ & Velocidad angular de rueda comandada & rad/s \\
-$u_j[k]$ & PWM aplicado al motor $j$: salida del PID en lazo cerrado; entrada de planta (escalón) en identificación FOPDT & PWM \\
+$u_j[k]$ & PWM aplicado al motor $j$: salida del controlador en lazo cerrado; entrada de planta (escalón) en identificación FOPDT & PWM \\
 $e_j^{\mathrm{long}}[k]$ & Error de control después de la conversión por asignación al tipo \texttt{long} & \textit{ticks/frame} \\
 $e_j^{\mathrm{db}}[k]$ & Error de control después de aplicar la banda muerta & \textit{ticks/frame} \\
 $\Delta u_j^{\mathrm{long}}[k]$ & Incremento de la salida calculado por el controlador discreto y asignado al tipo \texttt{long} & PWM \\
