@@ -216,7 +216,7 @@ Ambas ruedas alcanzan la referencia sin sobreimpulso apreciable. La velocidad in
 La comparación completa entre las ganancias del \textit{firmware} y la referencia
 analítica Lambda se conserva en la Fig.~\ref{fig:anx_comparacion_pso_vs_lambda}, con carácter ilustrativo.
 
-La ganancia integral difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fija durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantiene un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero del estado integral (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~\textit{ticks/frame}, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~\textit{ticks/frame}, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~\textit{ticks/frame}, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
+La ganancia $K_i$ difiere entre ruedas, con $K_{i,L}=0.075$ y $K_{i,R}=0.001$. El valor izquierdo se fija durante el refinamiento experimental, porque con las ganancias sugeridas por PSO esa rueda mantiene un error estacionario bajo la referencia (Fig.~\ref{fig:respuesta_escalon_pso}). El efecto de estas ganancias está condicionado por el almacenamiento entero del estado integral (\ref{anx:pid_ecuaciones}). En la rueda derecha, el producto $K_{i,R}e_R^{\mathrm{db}}[k]$ solo alcanzaría una unidad con errores de 1000~\textit{ticks/frame}, muy superiores a los del ensayo, por lo que su estado integral permanece en cero y $K_{i,R}$ no tiene efecto en la ley ejecutada. En la rueda izquierda, el estado integral solo puede crecer en magnitud en ciclos con $|e_L^{\mathrm{db}}[k]|\geq14$~\textit{ticks/frame}, cerca de 0.045~m/s. En el escalón de 0.13~m/s, de unos 41~\textit{ticks/frame}, esto ocurre principalmente durante el arranque, y el valor acumulado queda sumado al numerador del incremento de control. Por ello, la mejora observada con las ganancias definitivas se informa como un resultado empírico del conjunto de ganancias y no como el efecto de una acción integral convencional.
 
 El \hyperref[oe2]{OE2} compromete un controlador PID en lazo cerrado sobre las
 velocidades de las ruedas, y no la optimización de sus ganancias, por lo que el
@@ -507,8 +507,9 @@ sin fallas permitiría rechazarla, el número de ensayos se considera muy bajo. 
 eso, y por el alcance de un único recinto, los resultados se presentan como una
 verificación funcional en el entorno ensayado.
 
-Se considera admisible un mínimo de 6 a 10 repeticiones por ensayo para obtener
-intervalos con una variabilidad aceptable, con 10 por condición como objetivo de
+Se considera admisible un mínimo de 6 a 10 repeticiones válidas por ensayo para
+obtener intervalos de confianza con una variabilidad aceptable, con 10 por
+condición como objetivo de
 partida y un total sujeto a la dispersión y a la precisión requerida. Ese
 criterio es coherente con las 6 a 15 repeticiones que la guía Eurachem considera
 necesarias para estimar una desviación estándar
@@ -531,6 +532,6 @@ Por su parte, el sistema de mapeo con \texttt{slam\_toolbox} genera mapas utiliz
 medio de cobertura libre de 62.2\% ($\sigma=12.9$) en cinco iteraciones, con
 un área libre mapeada media de 3.50~m$^2$, y sus mapas quedan a una distancia
 media de 3.4~cm del plano medido del recinto. La integración funcional y la
-cobertura quedan verificadas con un número reducido de repeticiones. La
+cobertura quedan verificadas con un número muy bajo de repeticiones. La
 navegación hacia metas fijas definidas por el operador queda fuera del alcance
 declarado.

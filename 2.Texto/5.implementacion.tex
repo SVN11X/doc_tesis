@@ -578,11 +578,11 @@ $K_o$ & 50 & 50 \\
 
 El Alg.~\ref{alg:pid_firmware} presenta la secuencia de llamadas de la rutina de actualización. Las operaciones internas del cálculo por rueda, es decir, la banda muerta asimétrica, la saturación de la salida acumulada y la actualización condicional del integrador, se detallan en el \ref{anx:pid_ecuaciones}.
 
-La forma incremental del PI es una realización clásica, que entrega el cambio
-de la señal de control en lugar de su valor
-\citep[Sec.~13.4]{astrom2009controlpid}. Sin saturación, equivale a la forma
-absoluta del mismo PI \citep[Sec.~8]{wittenmark_ifac_computer}, por lo que su
-estabilidad es la de un PI clásico con iguales ganancias. El PI es adecuado
+El PI incremental no es una ley nueva, sino una realización clásica del PI, que
+entrega el cambio de la señal de control en lugar de su valor y que, sin
+saturación, equivale a la forma absoluta del mismo PI
+\parencites[Sec.~13.4]{astrom2009controlpid}[Sec.~8]{wittenmark_ifac_computer}.
+Por eso, su estabilidad es la de un PI clásico con iguales ganancias. El PI es adecuado
 para procesos de dinámica esencialmente de primer orden
 \citep[Sec.~3.6]{astrom2009controlpid}, como el modelo identificado
 (Sec.~\ref{sec:identificacion_pso}). El producto del período de 33~ms por la

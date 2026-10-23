@@ -23,7 +23,7 @@ La selección del \textit{backend} y su trazabilidad se documentan en el
 
 Respecto del control de bajo nivel, el \textit{firmware} ejecuta de forma independiente
 para cada rueda la ley de control heredada del \textit{firmware} original, que
-corresponde a un controlador PI en forma incremental con la acción
+corresponde a un controlador PI incremental con la acción
 proporcional sobre la medición, más un término integral adicional, y cuyas
 ganancias no cumplen la función que indica su nombre. El análisis del lazo
 discreto con el modelo FOPDT identificado muestra estabilidad de los modelos
@@ -119,7 +119,7 @@ navegación, lo que requiere un protocolo con metas fijas.
 \item \textbf{Fidelidad de la simulación:} Gazebo Classic no reproduce completamente fricción, zona muerta del \textit{driver}, ruido sensorial ni latencias reales.
 \item \textbf{Distribución en fin de vida:} \gls{ROS2} Foxy ya no recibe soporte oficial.
 \item \textbf{Validez externa:} los resultados provienen de un único recinto, cuya área libre mapeada media es de 3.50~m$^2$, y de cinco iteraciones, por lo que no se generalizan a entornos mayores o de geometría distinta. Los intervalos de confianza son amplios en la cobertura libre, la desviación angular y la proporción de exploraciones válidas (Tabla~\ref{tab:intervalos_confianza}).
-\item \textbf{Ley de control de bajo nivel:} el \textit{firmware} ejecuta la ley acumulativa heredada de \texttt{ROSArduinoBridge}, en la que $K_p$ actúa como ganancia integral, $K_d$ como ganancia proporcional sobre la medición y $K_i$ como segunda integración (Ec.~\eqref{eq:pid_equivalente}). Su estabilidad se verifica con un análisis lineal, y no se compara con un PID incremental estándar ni se caracteriza a velocidades bajas.
+\item \textbf{Ley de control de bajo nivel:} el \textit{firmware} ejecuta el PI incremental heredado de \texttt{ROSArduinoBridge}, en el que $K_p$ actúa como ganancia integral, $K_d$ como ganancia proporcional sobre la medición y $K_i$ como segunda integración (Ec.~\eqref{eq:pid_equivalente}). Su estabilidad se verifica con un análisis lineal, y no se compara con un PID incremental estándar ni se caracteriza a velocidades bajas.
 \item \textbf{Particularidades de implementación conservadas:} la lectura no atómica de los \textit{encoders}, la posición global del PSO copiada desde la posición actual y sin semilla fija, y el costo de fronteras no homogéneo en unidades se documentan tal como se ejecutan. Su efecto sobre los resultados no se cuantifica, salvo el de la copia de la posición global, que no altera el resultado (\ref{anx:pso_detalle}).
 \item \textbf{Integración entre explorador y Nav2:} el explorador envía una meta nueva sin cancelar la anterior, y Nav2 informa la meta reemplazada como abortada. Por eso el resultado de las metas no mide la tasa de éxito de la navegación, y el explorador agrega a su lista negra fronteras que no fallan. El efecto sobre la duración de la exploración no se cuantifica.
 \end{itemize}
@@ -141,6 +141,6 @@ punto flotante y lectura atómica de \textit{encoders}.
 \item Repetir el protocolo angular con un giro controlado a un ángulo fijo y verificar la velocidad angular efectiva registrada en \texttt{/odom}.
 \item Registrar la pose verdadera de Gazebo Classic en los ensayos simulados para separar el error odométrico del error de seguimiento en simulación.
 \item Medir el recinto con un instrumento de mayor precisión y repetir con esas medidas la comparación de los mapas obtenidos en \textit{hardware} real con el plano del recinto.
-\item Alcanzar el mínimo admisible de 6 a 10 repeticiones por ensayo, con 10 por condición como objetivo de partida, y ajustar el total según la dispersión y la precisión requerida (\ref{anx:intervalos_confianza}).
+\item Alcanzar el mínimo admisible de 6 a 10 repeticiones válidas por ensayo, con 10 por condición como objetivo de partida, y ajustar el total según la dispersión y la precisión requerida (\ref{anx:intervalos_confianza}).
 \item Repetir la identificación FOPDT con un muestreo más rápido y escalones de distinta amplitud, y reformular el PSO con la aritmética entera del \textit{firmware}, salida recortada y semilla fija.
 \end{enumerate}
