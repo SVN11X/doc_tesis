@@ -1,136 +1,194 @@
+% ============================================================
+% DEDICATORIA
+% El título conserva el formato general de la tesis.
+% ============================================================
+
 \chapter*{DEDICATORIA}
 \phantomsection
 \addcontentsline{toc}{chapter}{DEDICATORIA}
 
 \begingroup
+
+% ------------------------------------------------------------
+% Tipografía y colores exclusivos del cuerpo de la dedicatoria
+% ------------------------------------------------------------
+
+\newfontfamily\dedicFuente[
+  Ligatures=TeX
+]{TeX Gyre Pagella}
+
+\definecolor{dedicTinta}{HTML}{293A43}
+\definecolor{dedicAcento}{HTML}{667E87}
+\definecolor{dedicGris}{HTML}{60686B}
+\definecolor{dedicLinea}{HTML}{C8CECF}
+
+\dedicFuente
+\color{dedicTinta}
+
 \setstretch{1.0}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0pt}
 
-% Iconos vectoriales: todos se dibujan directamente con TikZ.
-% Las definiciones son locales a esta dedicatoria.
-\newcommand{\dedicIcono}[1]{%
-  \tikz[baseline=-0.55ex,x=1em,y=1em,
-    line width=0.45pt,line cap=round,line join=round,
-    color=black!55]{%
-    \useasboundingbox (-0.65,-0.55) rectangle (0.65,0.65);
-    #1
-  }%
-}
+\noindent
+\makebox[\linewidth][c]{%
+  \begin{tikzpicture}[
+    x=1cm,
+    y=1cm,
+    line width=0.35pt
+  ]
+    \draw[dedicLinea]
+      (-1.8,0) -- (-0.15,0);
 
-\newcommand{\dedicCasa}{\dedicIcono{%
-  \draw (-0.55,0.02) -- (0,0.48) -- (0.55,0.02);
-  \draw (-0.38,0.14) -- (-0.38,-0.42)
-    -- (0.38,-0.42) -- (0.38,0.14);
-  \draw (-0.12,-0.42) -- (-0.12,-0.10)
-    -- (0.12,-0.10) -- (0.12,-0.42);
-}}
+    \draw[dedicLinea]
+      (0.15,0) -- (1.8,0);
 
-\newcommand{\dedicBrujula}{\dedicIcono{%
-  \draw (0,0) circle (0.49);
-  \draw (0,0.38) -- (0.15,0) -- (0,-0.38)
-    -- (-0.15,0) -- cycle;
-  \fill (0,0.38) -- (0.15,0) -- (0,0) -- cycle;
-}}
+    \fill[dedicAcento]
+      (0,0.055)
+      -- (0.055,0)
+      -- (0,-0.055)
+      -- (-0.055,0)
+      -- cycle;
+  \end{tikzpicture}%
+}\par
 
-\newcommand{\dedicRobot}{\dedicIcono{%
-  \draw[rounded corners=0.7pt]
-    (-0.44,-0.32) rectangle (0.44,0.32);
-  \draw (0,0.32) -- (0,0.51);
-  \fill (0,0.55) circle (0.045);
-  \fill (-0.18,0.08) circle (0.055);
-  \fill (0.18,0.08) circle (0.055);
-  \draw (-0.17,-0.16) -- (0.17,-0.16);
-  \draw (-0.44,0) -- (-0.57,0);
-  \draw (0.44,0) -- (0.57,0);
-}}
+\vspace{0.8cm}
 
-\newcommand{\dedicBirrete}{\dedicIcono{%
-  \draw (-0.59,0.10) -- (0,0.40) -- (0.59,0.10)
-    -- (0,-0.18) -- cycle;
-  \draw (-0.32,-0.06) -- (-0.32,-0.31)
-    .. controls (0,-0.49) .. (0.32,-0.31)
-    -- (0.32,-0.06);
-  \draw (0.50,0.14) -- (0.50,-0.36);
-  \fill (0.50,-0.40) circle (0.04);
-}}
-
-\newcommand{\dedicMaletin}{\dedicIcono{%
-  \draw[rounded corners=0.7pt]
-    (-0.50,-0.33) rectangle (0.50,0.30);
-  \draw (-0.20,0.30) -- (-0.20,0.47)
-    -- (0.20,0.47) -- (0.20,0.30);
-  \draw (-0.50,0.03) -- (0.50,0.03);
-  \draw (-0.08,-0.05) rectangle (0.08,0.11);
-}}
-
-% Un icono, una dedicatoria breve y una pausa entre bloques.
 \newcommand{\dedicBloque}[3]{%
-  {\normalfont\bfseries #1\hspace{0.45em}#2}\par
-  \vspace{0.13em}
-  {\itshape #3\par}
-  \vspace{0.68\baselineskip}
+  \noindent
+  \begin{minipage}[t]{0.065\linewidth}
+    \vspace{2pt}
+    \centering
+    {%
+      \color{dedicAcento}
+      \fontsize{10.8}{12}\selectfont
+      #1\par
+    }
+  \end{minipage}%
+  \hfill
+  \begin{minipage}[t]{0.885\linewidth}
+    \vspace{0pt}
+    \raggedright
+
+    {%
+      \dedicFuente
+      \fontsize{13.2}{16.2}\selectfont
+      \itshape
+      #2\par
+    }
+
+    \vspace{2pt}
+
+    {%
+      \dedicFuente
+      \fontsize{11.8}{15.3}\selectfont
+      \upshape
+      #3\par
+    }
+  \end{minipage}\par
+
+  \vspace{13pt}
 }
 
-\vspace*{0.3cm}
-
-% Dedicatoria alineada a la derecha.
 \noindent\hfill
 \begin{minipage}{0.94\linewidth}
-\raggedleft
 
-\dedicBloque{\dedicCasa}{A mi familia,}{%
-mi apoyo constante\\
-y el lugar al que siempre puedo volver.}
+  \dedicBloque{\faHome}{A mi familia,}{%
+    mi apoyo constante\\
+    y el lugar al que siempre puedo volver.
+  }
 
-\dedicBloque{\dedicBrujula}{Al Grupo Scout de Don Orione,}{%
-a los lazos que permanecen\\
-y a los valores que llevo conmigo.}
+  \dedicBloque{\faCompass}{%
+    Al Grupo Scout de Don Orione,
+  }{%
+    a los lazos que permanecen\\
+    y a los valores que llevo conmigo.
+  }
 
-\dedicBloque{\dedicRobot}{Al Club de Robótica,}{%
-a nuestra curiosidad compartida\\
-y al entusiasmo de construir juntos.}
+  \dedicBloque{\faRobot}{Al Club de Robótica,}{%
+    a nuestra curiosidad compartida\\
+    y al entusiasmo de construir juntos.
+  }
 
-\dedicBloque{\dedicBirrete}{%
-A mis compañeros de la generación 2016\\
-de Ingeniería Civil en Electrónica,}{%
-a los recuerdos y las amistades\\
-de una etapa que siempre será parte de mí.}
+  \dedicBloque{\faGraduationCap}{%
+    A mis compañeros de la generación 2016\\
+    de Ingeniería Civil en Electrónica,
+  }{%
+    a los recuerdos y las amistades\\
+    de una etapa que siempre será parte de mí.
+  }
 
-\dedicBloque{\dedicMaletin}{A mis compañeros de PwC,}{%
-parte de mi presente\\
-y del profesional en que me sigo convirtiendo.}
+  \dedicBloque{\faBriefcase}{A mis compañeros de PwC,}{%
+    parte de mi presente\\
+    y del profesional en que me sigo convirtiendo.
+  }
 
-\vspace{0.1cm}
-{\itshape
-A todos ustedes dedico este logro,\\
-con el cariño de saber\\
-que cada uno tiene un lugar en esta historia.\par}
+\end{minipage}\hfill\mbox{}\par
 
-\end{minipage}\par
 
-% Las citas cierran la página; la línea marca una pausa visual.
+\vspace{0.25cm}
+
+{%
+  \centering
+  \dedicFuente
+  \fontsize{12}{16}\selectfont
+  \itshape
+
+  A todos ustedes dedico este logro,\\
+  con el cariño de saber que cada uno tiene un lugar en esta historia.
+  \par
+}
+
 \vfill
-\vspace{0.35cm}
-\noindent\hfill
-{\color{black!35}\rule{0.22\linewidth}{0.4pt}}\par
-\vspace{0.3cm}
+\vspace{0.55cm}
 
-\noindent\hfill
-\begin{minipage}{0.94\linewidth}
-\raggedleft
-\small
-
-\textit{\guillemotleft La máquina puede hacer el trabajo de cincuenta hombres corrientes.\\
-Ninguna máquina puede hacer el trabajo de un hombre extraordinario.\guillemotright}\par
-\vspace{0.12cm}
-{\scriptsize\MakeUppercase{Elbert Hubbard}}\par
+\noindent
+\textcolor{dedicLinea}{%
+  \rule{\linewidth}{0.3pt}%
+}\par
 
 \vspace{0.4cm}
 
-\textit{\guillemotleft Traten de dejar este mundo en mejores condiciones de como lo encontraron.\guillemotright}\par
-\vspace{0.12cm}
-{\scriptsize\MakeUppercase{Robert Baden-Powell}}\par
+\newcommand{\dedicCita}[2]{%
+  {%
+    \dedicFuente
+    \fontsize{10.4}{13.5}\selectfont
+    \itshape
+    \guillemotleft #1\guillemotright
+    \par
+  }
+
+  \vspace{5pt}
+
+  {%
+    \dedicFuente
+    \fontsize{9}{11}\selectfont
+    \scshape
+    \addfontfeatures{LetterSpace=1.5}
+    \color{dedicGris}
+    #2\par
+  }
+}
+
+\noindent
+\begin{minipage}[t]{0.47\linewidth}
+  \vspace{0pt}
+  \raggedright
+
+  \dedicCita{%
+    La máquina puede hacer el trabajo de cincuenta hombres corrientes.
+    Ninguna máquina puede hacer el trabajo de un hombre extraordinario.
+  }{Elbert Hubbard}
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.47\linewidth}
+  \vspace{0pt}
+  \raggedright
+
+  \dedicCita{%
+    Traten de dejar este mundo en mejores condiciones de como lo encontraron.
+  }{Robert Baden-Powell}
 
 \end{minipage}\par
+
 \endgroup
