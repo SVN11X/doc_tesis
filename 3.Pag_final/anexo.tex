@@ -1781,7 +1781,7 @@ $p=7/64=0.109375$ \citep[Cap.~9]{devore2021modern}, por lo que al nivel de
 0.05 no se rechaza esa hipótesis. Con seis ejecuciones, el único resultado que
 permitiría rechazarla es el de seis éxitos, con $p=1/64$, de modo que una sola
 falla basta para perder la significancia. Por eso el número de ensayos se
-considera bajo, lo que, junto con la amplitud de los intervalos y el alcance
+considera muy bajo, lo que, junto con la amplitud de los intervalos y el alcance
 experimental, motiva ampliar la campaña.
 
 Se considera admisible un mínimo de 6 a 10 repeticiones por ensayo, con 10 por
@@ -1929,9 +1929,9 @@ $\operatorname{trunc}_0$ & Conversión entera con truncamiento hacia cero, dentr
 $I_j^{\mathrm{int}}[k]$ & Término integral acumulado de la rueda $j$, almacenado como \texttt{int}; posee la misma escala interna que $K_{p,j}e_j^{\mathrm{db}}[k]$ & esc.\ fw \\
 $K_{p,j},K_{d,j},K_{i,j}$ & Ganancias PID de \textit{firmware} implementadas (escala interna del algoritmo; las ganancias son \texttt{float}, pero sus productos se asignan a estados enteros). Obtenidas mediante PSO y refinamiento experimental & esc.\ fw \\
 $K_{p,j}^{\mathrm{cont}},K_{i,j}^{\mathrm{cont}},K_{d,j}^{\mathrm{cont}}$ & Ganancias PID continuas ideales (forma ilustrativa, no cuantificadas) & $\mathrm{PWM\cdot s/m}$,\ $\mathrm{PWM/m}$,\ $\mathrm{PWM\cdot s^{2}/m}$ \\
-$K_o$ & Divisor de normalización de la salida PID (común a ambas ruedas, $=50$) & adim. \\
+$K_o$ & Divisor de normalización de la salida del controlador (común a ambas ruedas, $=50$) & adim. \\
 $\kappa_{\mathrm{sim}}$ & Factor de conversión m/s $\to$ \textit{ticks/frame}, igual a $N_e/(2\pi r\,f_{\mathrm{PID,nom}})$ ($\approx313.56$); empleado por \texttt{SintonizacionAutomatica.py}, \texttt{SintonizacionLambda.py} y por el \textit{firmware} en el comando \texttt{k} & $\frac{\textit{ticks/frame}}{\text{m/s}}$ \\
-$T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del PID ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\
+$T_{\mathrm{sim}}$ & Período de la recurrencia de simulación del controlador ($T_{\mathrm{sim}}=1/f_{\mathrm{PID,nom}}=1/30$~s) & s \\
 $S_j^{e}[k]$ & Error acumulado desde el último reinicio, usado en la forma no incremental de la ley (Ec.~\eqref{eq:pid_equivalente}) & \textit{ticks/frame} \\
 $S_j^{I}[k]$ & Acumulación del estado integral desde el último reinicio (Ec.~\eqref{eq:pid_equivalente}) & esc.\ fw \\
 \multicolumn{3}{l}{\textit{Forma incremental y estabilidad del lazo de velocidad}}\\
