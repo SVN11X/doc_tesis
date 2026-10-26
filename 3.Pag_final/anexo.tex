@@ -440,7 +440,7 @@ intervalo $\Delta t_k$ definido a continuación.
 \noindent En la implementación, \texttt{time\_} se inicializa al comienzo de \texttt{configure()}, antes de leer los parámetros y antes de que \texttt{arduino\_.setup()} abra el puerto, espere 3000~ms y vacíe el búfer de entrada. Por eso el denominador $\Delta t_k$ que divide las diferencias finitas no es un valor fijo: en la primera lectura ($k=0$) es el tiempo transcurrido entre esa inicialización de \texttt{time\_} y el comienzo de la primera llamada a \texttt{read()}, e incluye la espera serial de 3000~ms; desde la segunda lectura ($k\geq1$) es el intervalo real medido entre dos llamadas consecutivas a \texttt{read()}. En consecuencia, la primera muestra de velocidad arrastra el tiempo de configuración, y la velocidad de estado entregada a \texttt{ros2\_control} no utiliza un valor fijo $1/30$~s.
 
 La igualdad numérica de las frecuencias configuradas no implica sincronización temporal. El \texttt{controller\_manager} y el parámetro \texttt{loop\_rate} se configuran nominalmente en 30~Hz, mientras que el \textit{firmware} programa un incremento entero de $33$~ms sobre \texttt{nextPID} (\texttt{PID\_INTERVAL}). Este intervalo corresponde a la
-planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PID en el  \textit{firmware}.
+planificación temporal interna del Arduino y no está sincronizado en reloj ni fase con el ciclo de \texttt{ros2\_control}. En consecuencia, se distingue $\Delta t_k$ para el intervalo entre lecturas de velocidad, $f_{\mathrm{loop}}$ para la conversión de consignas y $T_{\mathrm{PID,sched}}$ para el intervalo programado del PI incremental en el \textit{firmware}.
 
 En la fase de escritura de la interfaz, la velocidad angular comandada de la rueda, $\omega_j^{\mathrm{cmd}}$ [rad/s], se convierte en una referencia entera de \textit{ticks/frame} antes de enviar el comando serial. La conversión multiplica esa velocidad angular por un factor que combina la resolución efectiva del \textit{encoder} $N_e$, la frecuencia nominal del lazo de control $f_{\mathrm{loop}}$ y el número de radianes de una vuelta de rueda; de forma equivalente, puede partirse de la consigna lineal de rueda, $v_j^{\mathrm{cmd}}$ [m/s], incorporando además el radio de rueda $r$. El resultado se trunca hacia cero al entero que admite el comando serial.
 
@@ -776,9 +776,9 @@ Con los parámetros identificados, el \textit{script} simula una planta discreta
 \subsection{Particularidades de la implementación PSO}
 \label{anx:pso_detalle}
 
-Después de sumar la velocidad a la posición, el núcleo aplica únicamente una cota inferior de $10^{-4}$ a cada componente del estado almacenado $\xi_{i,d}$; no aplica ninguna cota superior. Para evaluar cada partícula, sus componentes se recortan a $[10^{-4},1]$ y se escalan a los parámetros físicos $\boldsymbol{\theta}_i^{\mathrm{eval}}$ según la etapa: $(K_m,\tau,L_d)$ en la identificación FOPDT y $(K_p,K_d,K_i)$ en la sintonización PID. El recorte superior a 1 existe solo dentro de la función de costo PID.
+Después de sumar la velocidad a la posición, el núcleo aplica únicamente una cota inferior de $10^{-4}$ a cada componente del estado almacenado $\xi_{i,d}$; no aplica ninguna cota superior. Para evaluar cada partícula, sus componentes se recortan a $[10^{-4},1]$ y se escalan a los parámetros físicos $\boldsymbol{\theta}_i^{\mathrm{eval}}$ según la etapa: $(K_m,\tau,L_d)$ en la identificación FOPDT y $(K_p,K_d,K_i)$ en la sintonización de ganancias. El recorte superior a 1 existe solo dentro de la función de costo de las ganancias.
 
-La función de costo PID, asignada al candidato evaluado para la rueda $j$, toma como objetivo el máximo de la señal de referencia $v_j^{\mathrm{ref}}$ y combina dos términos: el error cuadrático medio respecto de esa referencia, ponderado por $w_{\mathrm{mse}}$, más una penalización por sobreimpulso; el cuadrado de cuánto excede la respuesta a la referencia, cuando la excede, ponderada por $w_{\mathrm{OS}}$. Si la simulación genera una excepción o la respuesta contiene valores no finitos, se asigna en su lugar una penalización fija de $10^{6}$. Ambos pesos no se calculan: son constantes de diseño definidas
+La función de costo de las ganancias, asignada al candidato evaluado para la rueda $j$, toma como objetivo el máximo de la señal de referencia $v_j^{\mathrm{ref}}$ y combina dos términos: el error cuadrático medio respecto de esa referencia, ponderado por $w_{\mathrm{mse}}$, más una penalización por sobreimpulso; el cuadrado de cuánto excede la respuesta a la referencia, cuando la excede, ponderada por $w_{\mathrm{OS}}$. Si la simulación genera una excepción o la respuesta contiene valores no finitos, se asigna en su lugar una penalización fija de $10^{6}$. Ambos pesos no se calculan: son constantes de diseño definidas
 localmente en la función \texttt{costFunction\_PID()} de
 \texttt{arduino\_\allowbreak{}firmware/\allowbreak{}pid\_\allowbreak{}config/\allowbreak{}SintonizacionAutomatica.\allowbreak{}py}, con
 $w_{\mathrm{mse}}=1.0$ actuando como escala identidad del MSE y
@@ -798,7 +798,7 @@ Con los coeficientes de la Tabla~\ref{tab:pso_config}, el factor de constricció
 
 La mejor posición personal $P_i$ se actualiza cuando el costo actual es menor que su costo histórico. El almacenamiento global presenta una particularidad: el costo global $J^{*}$ se toma como el mínimo de los costos históricos $J_i^{\mathrm{best}}$, pero la posición global $G$ se copia desde la posición actual de la partícula de menor costo histórico (no desde su posición personal $P_{i^*}$). Esta diferencia se mantiene porque representa el código ejecutado. Su efecto sobre el resultado es nulo, porque el mejor global solo cambia cuando una partícula acaba de mejorar su costo, y en ese instante su posición actual y su mejor posición personal coinciden.
 
-Al finalizar, los parámetros informados se obtienen escalando la posición global final $G^{\mathrm{final}}$ componente a componente, sin aplicar un nuevo recorte superior. En la etapa de identificación FOPDT, las tres componentes se multiplican por 0.01, 2.0 y 0.5 (para $K_m$, $\tau$ y $L_d$, respectivamente); en la etapa de sintonización PID, se multiplican por 40, 25 y 0.05 (para $K_p$, $K_d$ y $K_i$). Como en este paso no hay recorte superior, en la etapa PID la salida puede superar los valores de escala 40, 25 y 0.05 aunque el costo se haya evaluado con una copia recortada de la posición; por tanto, la salida escalada no necesariamente coincide con el candidato que produce el costo almacenado. En la ejecución de la Tabla~\ref{tab:pso_resultados}, la componente de $G$ asociada a $K_d$ termina en 1.39 y 1.47, de modo que el costo evalúa $K_d=25$ en ambas ruedas y el \textit{script} informa 34.69 y 36.70.
+Al finalizar, los parámetros informados se obtienen escalando la posición global final $G^{\mathrm{final}}$ componente a componente, sin aplicar un nuevo recorte superior. En la etapa de identificación FOPDT, las tres componentes se multiplican por 0.01, 2.0 y 0.5 (para $K_m$, $\tau$ y $L_d$, respectivamente); en la etapa de sintonización de ganancias, se multiplican por 40, 25 y 0.05 (para $K_p$, $K_d$ y $K_i$). Como en este paso no hay recorte superior, en esa etapa la salida puede superar los valores de escala 40, 25 y 0.05 aunque el costo se haya evaluado con una copia recortada de la posición; por tanto, la salida escalada no necesariamente coincide con el candidato que produce el costo almacenado. En la ejecución de la Tabla~\ref{tab:pso_resultados}, la componente de $G$ asociada a $K_d$ termina en 1.39 y 1.47, de modo que el costo evalúa $K_d=25$ en ambas ruedas y el \textit{script} informa 34.69 y 36.70.
 
 \subsection{Protocolos de captura, identificación y sintonización}
 \label{anx:protocolos_sintonizacion}
@@ -810,14 +810,14 @@ Al finalizar, los parámetros informados se obtienen escalando la posición glob
 \small
 \begin{tabular}{p{5.2cm} p{4.3cm} p{4.3cm}}
 \toprule
-\textbf{Parámetro} & \textbf{Etapa 1: Identificación FOPDT} & \textbf{Etapa 2: Sintonización PID} \\
+\textbf{Parámetro} & \textbf{Etapa 1: Identificación FOPDT} & \textbf{Etapa 2: Sintonización de ganancias} \\
 \midrule
 Variables optimizadas & $(K_m,\tau,L_d)$ & $(K_p,K_d,K_i)$ \\
 Dimensión del espacio & 3 & 3 \\
 Función de costo & MSE de identificación (\ref{anx:fodt_scripts}) & MSE + penalización por sobreimpulso (\ref{anx:pso_detalle}) \\
 Vector de escala $s_{\mathrm{esc}}$ & $(0.01,\,2.0,\,0.5)$ & $(40,\,25,\,0.05)$ \\
 Cota superior del estado $\xi$ & No aplicada & No aplicada \\
-Recorte superior durante la evaluación & No aplicado & Solo dentro de la función de costo PID (copia evaluada recortada a $[10^{-4},1]$) \\
+Recorte superior durante la evaluación & No aplicado & Solo dentro de la función de costo de las ganancias (copia evaluada recortada a $[10^{-4},1]$) \\
 \midrule
 \multicolumn{3}{l}{\textit{Hiperparámetros comunes del enjambre}} \\
 Número de partículas del enjambre $N_p$ & \multicolumn{2}{c}{50} \\
