@@ -1,9 +1,9 @@
 # decisions
 
-One architecture decision record (ADR) per decision: a short file that says what was decided and why.
+Un registro de decisión de arquitectura (ADR) por decisión: un archivo corto que dice qué se decidió y por qué.
 
-- Goes here: decisions that are hard to undo, add a dependency, introduce or remove a design pattern, or use anything from "Allowed only with a written reason" in `AGENTS.md`.
-- Does not go here: meeting notes, task lists.
-- Naming: `NNNN-short-title.md`, numbered in order, for example `0003-use-medallion-layers.md`. Copy `0000-template.md` to start.
+- Va aquí: decisiones difíciles de deshacer, que agregan una dependencia, que introducen o quitan un patrón de diseño, o que usan algo de "Allowed only with a written reason" en `AGENTS.md`.
+- No va aquí: actas de reuniones ni listas de tareas.
+- Nombres: `NNNN-titulo-corto.md`, numerados en orden, por ejemplo `0003-use-medallion-layers.md`. Para empezar, copia `0000-template.md`.
 
-A record stays proposed until the owner accepts it. Records are never deleted. A newer record supersedes an older one.
+Un registro queda como propuesto hasta que el dueño lo acepta. Los registros nunca se borran. Un registro nuevo reemplaza a uno anterior.

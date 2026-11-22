@@ -1,7 +1,7 @@
 # bibliography
 
-References.
+Las referencias.
 
-- Goes here: A single references.bib or references.json, and citation style files.
-- Does not go here: Full-text PDFs of other authors' work.
-- Naming: references.bib
+- Va aquí: un único `references.bib` o `references.json`, y archivos de estilo de citas.
+- No va aquí: PDFs completos de obras de otros autores.
+- Nombres: `references.bib`.

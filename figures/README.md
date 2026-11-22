@@ -1,9 +1,8 @@
 # figures
 
-Figures with their sources.
+Las figuras con sus fuentes.
 
-- Goes here: Each exported figure next to its source (script, drawing or data) with the same base name.
-- Does not go here: Photos or media that are not figures.
-- Naming: kebab-case, for example robot-architecture.svg next to robot-architecture.drawio.
-
-- One folder per chapter, named like the chapter file, plus `appendix/`. A figure goes in the first chapter that uses it, and a series of parts stays together.
+- Va aquí: cada figura exportada junto a su fuente (script, dibujo o datos) con el mismo nombre base.
+- No va aquí: fotos o medios que no son figuras.
+- Nombres: kebab-case, por ejemplo `robot-architecture.svg` junto a `robot-architecture.drawio`.
+- Carpetas: una por capítulo, con el nombre del archivo del capítulo, más `appendix/`. Cada figura va en el primer capítulo que la usa, y una serie de partes queda junta.

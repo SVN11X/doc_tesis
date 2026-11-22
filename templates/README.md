@@ -1,7 +1,7 @@
 # templates
 
-Institution or publisher templates.
+Plantillas de la institución o de la editorial.
 
-- Goes here: Class files, styles and title page templates, unmodified when possible.
-- Does not go here: Your own content.
-- Naming: Keep the original file names.
+- Va aquí: archivos de clase, estilos y plantillas de portada, sin modificar cuando se pueda.
+- No va aquí: contenido propio.
+- Nombres: se mantienen los nombres originales de los archivos.

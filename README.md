@@ -1,46 +1,48 @@
 # doc_tesis
 
-The LaTeX source of the undergraduate thesis «Navegación y exploración autónoma de interiores utilizando un robot móvil de tracción diferencial», for the degree of Ingeniero Civil Electrónico at Universidad Tecnológica Metropolitana (UTEM), Santiago, Chile, 2026. The thesis is written in Spanish.
+English version: [docs/en/README.md](docs/en/README.md).
 
-## For whom
+Fuente en LaTeX del trabajo de titulación «Navegación y exploración autónoma de interiores utilizando un robot móvil de tracción diferencial», para optar al título de Ingeniero Civil Electrónico en la Universidad Tecnológica Metropolitana (UTEM), Santiago, Chile, 2026.
 
-The examining committee and anyone who wants to read the thesis, and the author, who keeps the thesis and its defense material in one place.
+## Para quién
 
-## Use it
+Para la comisión evaluadora y cualquier persona que quiera leer la tesis, y para el autor, que reúne aquí la tesis y el material de su defensa.
 
-To read it, open the submitted PDF: `docs/submitted/thesis-corrected-v2.pdf`. The defense slides and script are in `docs/defense/`. The large files are stored with Git LFS, so run `git lfs pull` after cloning.
+## Cómo usarlo
 
-To build it you need a TeX distribution with XeLaTeX, biber and makeglossaries (MiKTeX or TeX Live), plus the Arial and TeX Gyre Pagella fonts. From the repository root:
+Para leerla, abre el PDF entregado: `docs/submitted/thesis-corrected-v2.pdf`. La presentación y el guion de la defensa están en `docs/defense/`. Los archivos pesados se guardan con Git LFS, así que después de clonar corre `git lfs pull`.
+
+Para compilarla necesitas una distribución de TeX con XeLaTeX, biber y makeglossaries (MiKTeX o TeX Live), más las fuentes Arial y TeX Gyre Pagella. Desde la raíz del repositorio:
 
 ```bash
 latexmk -r content/latexmkrc -cd content/main.tex
 ```
 
-`content/latexmkrc` selects XeLaTeX and runs biber and makeglossaries. The PDF is written next to the main file, as main.pdf in content/. Inside content/, `latexmk main.tex` is enough, since latexmk reads the latexmkrc of the folder it runs in.
+`content/latexmkrc` elige XeLaTeX y corre biber y makeglossaries. El PDF queda junto al archivo principal, como main.pdf dentro de content/. Dentro de content/ basta con `latexmk main.tex`, porque latexmk lee el latexmkrc de la carpeta donde corre.
 
-## How it works
+## Cómo funciona
 
-`docs/how-it-works.md` explains the main flow from start to finish, each part with its path, where to start reading the code and how to check that it works.
+`docs/how-it-works.md` explica el flujo completo de principio a fin, cada parte con su ruta, por dónde empezar a leer y cómo comprobar que funciona.
 
-## Status
+## Estado
 
-Submitted and corrected after the committee's observations. Defense in preparation.
+Entregada y corregida según las observaciones de la comisión. Defensa en preparación.
 
-## Layout
+## Estructura
 
-- `content/`: The text of the document. `main.tex`, then `front/` (title page to abstract), `chapters/` (01 to 07) and `back/` (glossary and appendix).
-- `figures/`: Figures with their sources, such as the `.pptx` or `.fzz` file next to the exported image. One folder per chapter (`03-implemented-solution/` to `06-results/`, and `appendix/`), named after the first chapter that uses the figure.
-- `bibliography/`: References, cited in APA style through biblatex.
-- `templates/`: The UTEM logo used on the title page.
-- `docs/`: goals, glossary, assumptions, decisions and specs, plus `defense/` and `submitted/`.
+- `content/`: el texto del documento. `main.tex`, luego `front/` (de la portada al resumen), `chapters/` (capítulos 01 a 07) y `back/` (glosario y anexo).
+- `figures/`: las figuras con sus fuentes, como el `.pptx` o `.fzz` junto a la imagen exportada. Una carpeta por capítulo (de `03-implemented-solution/` a `06-results/`, más `appendix/`), según el primer capítulo que usa la figura.
+- `bibliography/`: las referencias, citadas en estilo APA con biblatex.
+- `templates/`: el logo de la UTEM que usa la portada.
+- `docs/`: objetivos, glosario, supuestos, decisiones y especificaciones, más `defense/` (material de la defensa) y `submitted/` (PDF entregado).
 
-## Contributing
+## Cómo contribuir
 
-Tasks use the Task issue form. Pull requests follow `.github/pull_request_template.md`. Rules for people and AI tools are in `AGENTS.md`.
+Las tareas usan el formulario de issue Task. Los pull requests siguen `.github/pull_request_template.md`. Las reglas para personas y herramientas de IA están en `AGENTS.md`.
 
-## Standard
+## Estándar
 
-This repository follows `SVN11X/standards@v1` with the `docs` profile. `AGENTS.md` is generated, so do not edit it by hand. To regenerate it or run the check locally:
+Este repositorio sigue `SVN11X/standards@v1` con el perfil `docs`. `AGENTS.md` se genera automáticamente, así que no lo edites a mano. Para regenerarlo o correr el chequeo en tu equipo:
 
 ```bash
 pip install pyyaml
@@ -49,6 +51,6 @@ python .standards/scripts/standard.py agents .
 python .standards/scripts/standard.py check .
 ```
 
-## License
+## Licencia
 
-Not licensed for reuse. All rights reserved.
+Sin licencia de reutilización. Todos los derechos reservados.

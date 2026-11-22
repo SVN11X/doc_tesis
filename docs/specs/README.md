@@ -1,11 +1,11 @@
 # specs
 
-A specification is only for large changes, such as a new feature or a migration. Small tasks do not need one.
+Una especificación es solo para cambios grandes, como una función nueva o una migración. Las tareas pequeñas no la necesitan.
 
-Create one folder per change, named with the month and a short title, for example `2026-11-sensor-ingestion/`, with three files:
+Crea una carpeta por cambio, con el mes y un título corto, por ejemplo `2026-11-sensor-ingestion/`, con tres archivos:
 
-- `requirements.md`: what must be true when the change is done. Start each requirement with an id and mark the ones that must never break: `R1 (critical): WHEN <condition> THE SYSTEM SHALL <behavior>` (EARS notation), or Given, When, Then. A test covers a requirement when it names it, for example `# covers 2026-11-sensor-ingestion/R1`.
-- `plan.md`: how it will be built, and the decisions it needs.
-- `tasks.md`: small tasks in order, each with its own Done when.
+- `requirements.md`: lo que debe cumplirse cuando el cambio esté listo. Cada requisito empieza con un id, y se marcan los que nunca deben romperse: `R1 (critical): WHEN <condition> THE SYSTEM SHALL <behavior>` (notación EARS), o Given, When, Then. Una prueba cubre un requisito cuando lo nombra, por ejemplo `# covers 2026-11-sensor-ingestion/R1`.
+- `plan.md`: cómo se va a construir y qué decisiones necesita.
+- `tasks.md`: tareas pequeñas en orden, cada una con su propio criterio de terminado.
 
-The owner approves `requirements.md` before any code is written. `python .standards/scripts/readiness.py <folder> --ci green` then says READY, NEEDS_DECISION or BLOCKED. A critical requirement no test names blocks the change even with green CI.
+El dueño aprueba `requirements.md` antes de escribir código. Luego `python .standards/scripts/readiness.py <folder> --ci green` responde READY, NEEDS_DECISION o BLOCKED. Un requisito crítico que ninguna prueba nombra bloquea el cambio aunque el CI esté en verde.
