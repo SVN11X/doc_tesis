@@ -13,9 +13,11 @@ The thesis lived in `1-PagPreliminar/`, `2.Texto/`, `3.Pag_final/` and `2.Texto/
 
 - Use the docs layout of the standard: `content/` (`front/`, `chapters/`, `back/`), `figures/`, `bibliography/` and `templates/`, with English kebab-case names.
 - Inside the TeX files, change only the path strings that point to moved files (47 lines). The owner allowed path lines and nothing else.
-- Store files that can pass 5 MB (`docs/defense/*.pptx`, `docs/defense/*.png`, `docs/submitted/*.pdf`) in Git LFS.
-- Keep `defensa/` (rehearsal recordings, their feedback and the videos) on the owner's computer only. The feedback is private for now.
+- Store files that can pass 5 MB (`docs/defense/*.pptx`, `docs/defense/images/*.png`, `docs/submitted/*.pdf`) in Git LFS.
+- Keep the rehearsal recordings and their feedback in `defense-rehearsals/`, and the YouTube video in `videos/youtube/`, on the owner's computer only. Both folders are ignored. The feedback is private for now.
 - Keep the line endings and whitespace of `.tex` and `.bib` files as they are, through `.gitattributes` and `.editorconfig`.
+- Group the figures in one folder per chapter, named after the first chapter that uses each figure. A series of parts stays together.
+- Keep every image of the defense slides in `docs/defense/images/`, named by the first slide that shows it. Images that existed only inside the presentation are extracted byte for byte.
 
 ## Alternatives considered
 

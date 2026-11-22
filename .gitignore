@@ -28,7 +28,8 @@ _build/
 content/main.pdf
 
 # Private, kept only on the owner's computer
-defensa/
+defense-rehearsals/
+videos/
 *.webm
 
 # standard
