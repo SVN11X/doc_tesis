@@ -6,6 +6,6 @@ Scope agreed with the owner on 2026-11-21: organize the files without changing t
 - [x] Move the thesis to the docs layout: `content/`, `figures/`, `bibliography/`, `templates/`, with English names. Change only the 47 path lines and prove the PDF text is identical.
 - [x] Publish the defense slides, script and images in `docs/defense/` and the corrected PDF in `docs/submitted/`, with files over 5 MB in Git LFS. Keep `defensa/` (rehearsals, feedback, videos) local only.
 - [x] Adopt the standard: `.standard.yml`, `README.md` with the build command, `AGENTS.md` and `docs/`. License none (all rights reserved), citation style APA.
-- [ ] Add CI that runs the standard check and builds the PDF with XeLaTeX. The owner merges it, since workflow changes are theirs.
+- [x] Add CI that runs the standard check and builds the PDF with XeLaTeX. The owner merges it, since workflow changes are theirs.
 - [ ] BLOCKED: write `docs/goals.md` (vision, users, objectives, non-goals, success criteria, priorities, constraints). Only the owner can answer it.
 - [ ] BLOCKED: which commit was submitted to the committee, so it can be tagged `submitted-2026-11`?

@@ -1,0 +1,44 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pdf:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install XeLaTeX, biber and the fonts
+        run: |
+          echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends \
+            latexmk biber texlive-xetex texlive-lang-spanish texlive-latex-extra \
+            texlive-science texlive-pictures texlive-fonts-extra texlive-bibtex-extra \
+            fonts-texgyre ttf-mscorefonts-installer fontconfig
+          fc-cache -f
+          fc-list | grep -E "Arial|TeX Gyre Pagella" | head -3
+
+      - name: Build the PDF
+        run: latexmk -r content/latexmkrc -cd -interaction=nonstopmode -halt-on-error content/main.tex
+
+      - name: Fail on undefined citations or references
+        run: |
+          if grep -E "(Citation|Reference) .* undefined" content/main.log; then exit 1; fi
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: thesis-pdf
+          path: content/main.pdf
+          retention-days: 14
