@@ -53,4 +53,4 @@ python .standards/scripts/standard.py check .
 
 ## Licencia
 
-Sin licencia de reutilización. Todos los derechos reservados.
+[CC BY 4.0](LICENSE): puedes compartir y adaptar el material, incluso con fines comerciales, siempre que cites al autor.

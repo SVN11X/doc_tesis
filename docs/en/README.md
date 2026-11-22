@@ -53,4 +53,4 @@ python .standards/scripts/standard.py check .
 
 ## License
 
-Not licensed for reuse. All rights reserved.
+[CC BY 4.0](../../LICENSE): you may share and adapt the material, even commercially, as long as you credit the author.

@@ -5,7 +5,7 @@ owner: SVN11X
 name: doc_tesis
 profile: docs
 setup: done
-license: none
+license: CC-BY-4.0
 content_language: es
 github:
   description: 'Undergraduate thesis: autonomous indoor navigation and exploration with a differential-drive mobile robot.'
