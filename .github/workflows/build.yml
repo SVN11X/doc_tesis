@@ -25,6 +25,7 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y -q --no-install-recommends \
             latexmk biber texlive-xetex texlive-lang-spanish texlive-latex-extra \
+            texlive-latex-recommended texlive-fonts-recommended texlive-plain-generic \
             texlive-science texlive-pictures texlive-fonts-extra texlive-bibtex-extra \
             fonts-texgyre ttf-mscorefonts-installer fontconfig
           fc-cache -f

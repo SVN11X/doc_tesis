@@ -9,3 +9,4 @@ Scope agreed with the owner on 2026-11-21: organize the files without changing t
 - [x] Add CI that runs the standard check and builds the PDF with XeLaTeX. The owner merges it, since workflow changes are theirs.
 - [ ] BLOCKED: write `docs/goals.md` (vision, users, objectives, non-goals, success criteria, priorities, constraints). Only the owner can answer it.
 - [ ] BLOCKED: which commit was submitted to the committee, so it can be tagged `submitted-2026-11`?
+- [ ] BLOCKED: the standard check in CI fails on a public repository with license none. Choose CC BY 4.0, make the repository private, or accept a red standard check.
