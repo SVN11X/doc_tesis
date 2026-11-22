@@ -5,7 +5,7 @@ Este capítulo presenta los resultados obtenidos durante la validación del prot
 operativo, \textit{middleware} y paquetes con que se ejecutan todos los ensayos se
 consolidan en el \ref{anx:workspace}. El entorno físico en que se realizan las pruebas sobre \textit{hardware} real se muestra en la Fig.~\ref{fig:entorno_experimental}.
 
-\utemFigurePropia{2.Texto/Imag/entorno_experimental.jpg}{0.78\textwidth}
+\utemFigurePropia{../figures/experimental-environment.jpg}{0.78\textwidth}
 {Entorno utilizado para las pruebas experimentales en \textit{hardware} real.}{fig:entorno_experimental}
 
 \section{Evaluación de odometría y control diferencial}
@@ -142,13 +142,13 @@ protocolo angular, en simulación y \textit{hardware} real) se presenta en la
 Fig.~\ref{fig:resultados_odometria_repeticiones}.
 
 \begin{utemMultiFigurePropia}{Resultados por repetición de las pruebas rectilíneas y angulares en simulación y \textit{hardware} real.}{fig:resultados_odometria_repeticiones}
-\addutem{0.48}{2.Texto/Imag/odom_error_barras_sim.png}{Trayectoria rectilínea en simulación.}
+\addutem{0.48}{../figures/odometry-error-bars-sim.png}{Trayectoria rectilínea en simulación.}
 \hfill
-\addutem{0.48}{2.Texto/Imag/odom_error_barras.png}{Trayectoria rectilínea en \textit{hardware} real.}
+\addutem{0.48}{../figures/odometry-error-bars.png}{Trayectoria rectilínea en \textit{hardware} real.}
 \\[0.4cm]
-\addutem{0.48}{2.Texto/Imag/giro_error_barras_sim.png}{Protocolo angular en simulación.}
+\addutem{0.48}{../figures/rotation-error-bars-sim.png}{Protocolo angular en simulación.}
 \hfill
-\addutem{0.48}{2.Texto/Imag/giro_deriva_barras.png}{Protocolo angular en \textit{hardware} real.}
+\addutem{0.48}{../figures/rotation-drift-bars.png}{Protocolo angular en \textit{hardware} real.}
 \end{utemMultiFigurePropia}
 
 La desviación angular observada integra los efectos del límite de
@@ -166,7 +166,7 @@ referencia de 0.13~m/s y el mismo protocolo, conservado en el
 \ref{anx:captura_lazo_cerrado}. La Fig.~\ref{fig:respuesta_escalon_pso}
 presenta la respuesta con las ganancias sugeridas por PSO.
 
-\utemFigurePropia{2.Texto/Imag/respuesta_escalon_final_pso.png}{0.82\textwidth}
+\utemFigurePropia{../figures/final-step-response-pso.png}{0.82\textwidth}
 {Respuesta en lazo cerrado del robot real con las ganancias sugeridas por PSO,
 antes del refinamiento experimental (referencia de 0.13~m/s).}
 {fig:respuesta_escalon_pso}
@@ -179,7 +179,7 @@ torno a 0.11~m/s antes de continuar, y recién se mantiene en la referencia
 después de los 6~s. En ambos casos la subida es más lenta que la obtenida con
 las ganancias definitivas. La Fig.~\ref{fig:respuesta_escalon_final} presenta la respuesta obtenida con las ganancias definitivas, bajo el mismo protocolo y la misma referencia.
 
-\utemFigurePropia{2.Texto/Imag/respuesta_escalon_final.png}{0.82\textwidth}
+\utemFigurePropia{../figures/final-step-response.png}{0.82\textwidth}
 {Respuesta experimental en lazo cerrado del robot real con las ganancias
 definitivas y referencia de 0.13~m/s.}
 {fig:respuesta_escalon_final}
@@ -414,9 +414,9 @@ efecto sobre la duración del recorrido no se cuantifica. En la Fig.~\ref{fig:na
 Un registro en video (\href{https://www.youtube.com/watch?v=iTTC10eGDmc}{\textcolor{blue}{ver en YouTube}}) de una ejecución de demostración de la navegación y la exploración sobre \textit{hardware} real está disponible en línea~\citep{valderas2026video}. Las capturas de la Fig.~\ref{fig:nav_exploracion_real} provienen de ese registro.
 
 \begin{utemMultiFigurePropia}{Ejecución de navegación autónoma y exploración por fronteras sobre \textit{hardware} real: avance desde un mapa parcial hasta una representación de mayor cobertura, con la ruta planificada por Nav2 (trazo verde).}{fig:nav_exploracion_real}
-\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte1.png}{Mapa parcial en una etapa temprana de la exploración.}
+\addutem{0.46}{../figures/real-navigation-exploration-part1.png}{Mapa parcial en una etapa temprana de la exploración.}
 \hfill
-\addutem{0.46}{2.Texto/Imag/prueba_real_navegacion_y_exploracion_parte4.png}{Mayor cobertura con ruta planificada hacia la frontera seleccionada.}
+\addutem{0.46}{../figures/real-navigation-exploration-part4.png}{Mayor cobertura con ruta planificada hacia la frontera seleccionada.}
 \end{utemMultiFigurePropia}
 
 La mejor iteración alcanza un índice de cobertura libre de 82.9\%. El

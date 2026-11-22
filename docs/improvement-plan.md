@@ -3,7 +3,7 @@
 Scope agreed with the owner on 2026-11-21: organize the files without changing the text of the thesis. Only path strings inside TeX files may change.
 
 - [x] Remove the files the owner already deleted (`_sin_uso/`, the observations table, the cleanup notebook) and the unused `_sin_uso/1-PagPreliminar/Logo.jpg`.
-- [ ] Move the thesis to the docs layout: `content/`, `figures/`, `bibliography/`, `templates/`, with English names. Change only the 47 path lines and prove the PDF text is identical.
+- [x] Move the thesis to the docs layout: `content/`, `figures/`, `bibliography/`, `templates/`, with English names. Change only the 47 path lines and prove the PDF text is identical.
 - [ ] Publish the defense slides, script and images in `docs/defense/` and the corrected PDF in `docs/submitted/`, with files over 5 MB in Git LFS. Keep `defensa/` (rehearsals, feedback, videos) local only.
 - [ ] Adopt the standard: `.standard.yml`, `README.md` with the build command, `AGENTS.md` and `docs/`. License none (all rights reserved), citation style APA.
 - [ ] Add CI that runs the standard check and builds the PDF with XeLaTeX. The owner merges it, since workflow changes are theirs.

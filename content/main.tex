@@ -335,7 +335,7 @@ textfont=normalfont
 
 \usepackage[toc]{glossaries}
 \makeglossaries
-\loadglsentries{3.Pag_final/3.glosario.tex}
+\loadglsentries{back/01-glossary.tex}
 \renewcommand{\glossaryname}{GLOSARIO}
 
 \usepackage{csquotes}
@@ -353,7 +353,7 @@ eprint=false,
 url=true
 ]{biblatex}
 
-\addbibresource{referencias.bib}
+\addbibresource{../bibliography/references.bib}
 \DeclareLanguageMapping{spanish}{spanish-apa}
 
 \defbibenvironment{bibnum}
@@ -474,14 +474,14 @@ OE\theobjEsp
 
 
 \pagenumbering{roman}
-\include{1-PagPreliminar/portada.tex}
+\include{front/01-title-page.tex}
 
 \setcounter{page}{2}
 
-\include{1-PagPreliminar/derecho_autor.tex}
-\include{1-PagPreliminar/Nota.tex}
-\include{1-PagPreliminar/dedicatoria.tex}
-\include{1-PagPreliminar/agradecimiento.tex}
+\include{front/02-copyright-authorization.tex}
+\include{front/03-grade-note.tex}
+\include{front/04-dedication.tex}
+\include{front/05-acknowledgements.tex}
 
 \clearpage
 \tableofcontents
@@ -493,18 +493,18 @@ OE\theobjEsp
 \listofalgorithms
 \clearpage
 
-\include{1-PagPreliminar/resumen.tex}
+\include{front/06-abstract.tex}
 
 \cleardoublepage
 \pagenumbering{arabic}
 
-\include{2.Texto/1.Intro.tex}
-\include{2.Texto/2.estado_arte.tex}
-\include{2.Texto/3.solucion_implementada.tex}
-\include{2.Texto/4.marco_teorico.tex}
-\include{2.Texto/5.implementacion.tex}
-\include{2.Texto/6.resultados.tex}
-\include{2.Texto/99.conclusion.tex}
+\include{chapters/01-introduction.tex}
+\include{chapters/02-state-of-the-art.tex}
+\include{chapters/03-implemented-solution.tex}
+\include{chapters/04-theoretical-framework.tex}
+\include{chapters/05-implementation.tex}
+\include{chapters/06-results.tex}
+\include{chapters/07-conclusion.tex}
 
 \begingroup
 \doublespacing
@@ -523,7 +523,7 @@ toctitle={GLOSARIO}
 \begingroup
 \singlespacing
 \setlength{\parskip}{0pt}
-\include{3.Pag_final/anexo.tex}
+\include{back/02-appendix.tex}
 \endgroup
 
 \end{document}
