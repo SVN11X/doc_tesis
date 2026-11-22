@@ -23,7 +23,7 @@
 
 # Files over 5 MB go to Git LFS.
 docs/defense/*.pptx filter=lfs diff=lfs merge=lfs -text
-docs/defense/*.png filter=lfs diff=lfs merge=lfs -text
+docs/defense/images/*.png filter=lfs diff=lfs merge=lfs -text
 docs/submitted/*.pdf filter=lfs diff=lfs merge=lfs -text
 
 # Keep the line endings of the thesis sources as git already checks them out on this computer.
