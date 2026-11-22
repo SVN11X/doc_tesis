@@ -4,3 +4,29 @@
 *.mkv
 src/
 build
+
+# LaTeX build files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.glg
+*.glo
+*.gls
+*.ist
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+_build/
+content/main.pdf
+
+# Private, kept only on the owner's computer
+defensa/
+*.webm
