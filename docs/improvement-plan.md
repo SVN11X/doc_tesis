@@ -6,12 +6,12 @@ Scope agreed with the owner on 2026-11-21: organize the files without changing t
 - [x] Move the thesis to the docs layout: `content/`, `figures/`, `bibliography/`, `templates/`, with English names. Change only the 47 path lines and prove the PDF text is identical.
 - [x] Publish the defense slides, script and images in `docs/defense/` and the corrected PDF in `docs/submitted/`, with files over 5 MB in Git LFS. Keep `defensa/` (rehearsals, feedback, videos) local only.
 - [x] Adopt the standard: `.standard.yml`, `README.md` with the build command, `AGENTS.md` and `docs/`. License none (all rights reserved), citation style APA.
-- [x] Add CI that runs the standard check and builds the PDF with XeLaTeX. The owner merges it, since workflow changes are theirs.
+- [x] Add CI that runs the standard check and builds the PDF with XeLaTeX. The release workflow is left out: it needs write access and this thesis uses `submitted-*` tags, not `v*` releases.
 - [x] Group the figures in one folder per chapter (`figures/03-implemented-solution/` to `figures/06-results/`, `figures/appendix/`). Change only the 30 path lines and prove the PDF is identical.
 - [x] Put every image of the defense slides in `docs/defense/images/`, named by the first slide that shows it, extracting the 38 that exist only inside the `.pptx`, plus an index per slide.
 - [x] Rename the local `defensa/` to `defense-rehearsals/` with recordings named by date, and move the YouTube video to `videos/youtube/`. Both stay ignored by git.
 - [x] Write every README in Spanish and keep an English copy of the main one in `docs/en/README.md` (decision 0002).
 - [x] Delete the four UTEM logos that neither the thesis nor the slides use.
 - [ ] BLOCKED: write `docs/goals.md` (vision, users, objectives, non-goals, success criteria, priorities, constraints). Only the owner can answer it.
-- [ ] BLOCKED: which commit was submitted to the committee, so it can be tagged `submitted-2026-11`?
+- [x] Tag the submitted version: `submitted-2026-10` on 42b5327, whose XeLaTeX build has the same text as `docs/submitted/thesis-corrected-v2.pdf`.
 - [ ] BLOCKED: the standard check in CI fails on a public repository with license none. Choose CC BY 4.0, make the repository private, or accept a red standard check.
