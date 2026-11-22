@@ -18,7 +18,7 @@ Status: draft.
 - `content/front/`: title page, reproduction authorization, grade note, dedication, acknowledgements and abstract.
 - `content/chapters/`: the seven chapters, from introduction to conclusion.
 - `content/back/`: glossary entries and appendix.
-- `figures/`: every figure the chapters include, written as `../figures/<name>` from `content/`.
+- `figures/`: every figure the chapters include, one folder per chapter, written as `../figures/<chapter>/<name>` from `content/`.
 - `bibliography/references.bib`: every cited work.
 - `templates/`: the UTEM logo of the title page.
 - `docs/defense/` and `docs/submitted/`: the defense material and the submitted PDF. The build does not use them.

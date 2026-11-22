@@ -191,7 +191,7 @@ resolución angular y el rango mínimo de ambos entornos tampoco coinciden.
 La auditoría del URDF verifica la jerarquía de eslabones y articulaciones, la ausencia de marcos sueltos y la coherencia de la cadena TF principal (Sec.~\ref{sec:tf-convenciones}). La geometría acotada del modelo, con las dimensiones de chasis, ruedas, rueda loca y sensor, se presenta en la Fig.~\ref{fig:anx_cotas}. Los elementos cinemáticos verificados en esa auditoría se resumen en la
 Tabla~\ref{tab:anx_urdf_evidencia}.
 
-\utemFigurePropia{../figures/digital-twin-dimensions.png}{0.9\textwidth}
+\utemFigurePropia{../figures/appendix/digital-twin-dimensions.png}{0.9\textwidth}
 {Dimensiones del modelo del robot (gemelo digital): vistas lateral, frontal y en planta.}
 {fig:anx_cotas}
 
@@ -577,7 +577,7 @@ señaladas, el simulador aplica banda muerta cero al controlador Lambda. Por
 ello, las curvas y métricas corresponden al \textit{script} comparativo ejecutado y no
 a una validación de controladores equivalentes en \textit{hardware}.
 
-\utemFigurePropia{../figures/pso-vs-lambda-comparison.png}{1.0\textwidth}
+\utemFigurePropia{../figures/appendix/pso-vs-lambda-comparison.png}{1.0\textwidth}
 {Identificación de los modelos FOPDT de ambas ruedas en lazo abierto y comparación simulada de las respuestas en lazo cerrado obtenidas con las ganancias finales asociadas al procedimiento PSO y con la sintonización Lambda.}
 {fig:anx_comparacion_pso_vs_lambda}
 
@@ -1440,13 +1440,13 @@ La Fig.~\ref{fig:anx_nav_exploracion_secuencia} muestra la secuencia completa de
 El video de la ejecución se cita en la Sec.~\ref{sec:resultados_nav2}.
 
 \begin{utemMultiFigurePropia}{Secuencia de una ejecución representativa de exploración por fronteras y navegación autónoma sobre \textit{hardware} real (vista de RViz y cámara cenital del recinto).}{fig:anx_nav_exploracion_secuencia}
-\addutem{0.46}{../figures/real-navigation-exploration-part1.png}{Etapa temprana: pasillo estrecho.}
+\addutem{0.46}{../figures/06-results/real-navigation-exploration-part1.png}{Etapa temprana: pasillo estrecho.}
 \hfill
-\addutem{0.46}{../figures/real-navigation-exploration-part2.png}{Mapa parcial en expansión.}
+\addutem{0.46}{../figures/06-results/real-navigation-exploration-part2.png}{Mapa parcial en expansión.}
 \\[0.4cm]
-\addutem{0.46}{../figures/real-navigation-exploration-part3.png}{Cobertura amplia con ruta planificada activa.}
+\addutem{0.46}{../figures/06-results/real-navigation-exploration-part3.png}{Cobertura amplia con ruta planificada activa.}
 \hfill
-\addutem{0.46}{../figures/real-navigation-exploration-part4.png}{Mayor cobertura alcanzada al cierre de la exploración.}
+\addutem{0.46}{../figures/06-results/real-navigation-exploration-part4.png}{Mayor cobertura alcanzada al cierre de la exploración.}
 \end{utemMultiFigurePropia}
 
 \section{Procedencia y limitaciones de las métricas complementarias}
@@ -1565,7 +1565,7 @@ tienen menos de 2~cm de espesor y se representan como líneas. El largo del
 tabique corto unido al muro inferior no se mide, por lo que la
 Tabla~\ref{tab:exactitud_mapas} solo incluye su posición.
 
-\utemFigurePropia{../figures/site-floor-plan.pdf}{0.62\textwidth}
+\utemFigurePropia{../figures/appendix/site-floor-plan.pdf}{0.62\textwidth}
 {Plano del recinto de ensayo, con las distancias entre muros medidas con huincha de medir.}
 {fig:plano_recinto}
 
@@ -1583,7 +1583,7 @@ celda ocupada más cercana del mapa, que es la métrica de exactitud que emplean
 decir, los que tienen una celda libre a menos de 0.10~m, que son entre el 92\% y
 el 93\% del total.
 
-\utemFigurePropia{../figures/maps-vs-floor-plan.pdf}{0.95\textwidth}
+\utemFigurePropia{../figures/appendix/maps-vs-floor-plan.pdf}{0.95\textwidth}
 {Mapas de las cinco iteraciones válidas alineados con el plano del recinto.}
 {fig:anx_mapas_vs_plano}
 

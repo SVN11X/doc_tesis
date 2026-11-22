@@ -29,7 +29,7 @@ Submitted and corrected after the committee's observations. Defense in preparati
 ## Layout
 
 - `content/`: The text of the document. `main.tex`, then `front/` (title page to abstract), `chapters/` (01 to 07) and `back/` (glossary and appendix).
-- `figures/`: Figures with their sources, such as the `.pptx` or `.fzz` file next to the exported image.
+- `figures/`: Figures with their sources, such as the `.pptx` or `.fzz` file next to the exported image. One folder per chapter (`03-implemented-solution/` to `06-results/`, and `appendix/`), named after the first chapter that uses the figure.
 - `bibliography/`: References, cited in APA style through biblatex.
 - `templates/`: The UTEM logo used on the title page.
 - `docs/`: goals, glossary, assumptions, decisions and specs, plus `defense/` and `submitted/`.

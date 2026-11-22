@@ -28,7 +28,7 @@ diferencial de código abierto
 En la Fig.~\ref{fig:prototipo} se muestra una vista lateral del prototipo
 construido, donde se distinguen el chasis impreso y el LIDAR.
 
-\utemFigurePropia{../figures/prototype-left-side.jpg}{0.5\linewidth}
+\utemFigurePropia{../figures/05-implementation/prototype-left-side.jpg}{0.5\linewidth}
 {Vista lateral del prototipo construido.}
 {fig:prototipo}
 
@@ -106,7 +106,7 @@ articulaciones, por lo que no utiliza la conversión por \textit{ticks} ni el
 planificador del controlador de velocidad del \textit{firmware}. La Fig.~\ref{fig:robot_sim} muestra el modelo
 cargado en Gazebo Classic.
 
-\utemFigurePropia{../figures/robot-simulation.png}{0.55\textwidth}
+\utemFigurePropia{../figures/05-implementation/robot-simulation.png}{0.55\textwidth}
 {Modelo del robot (gemelo digital) cargado en Gazebo Classic.}
 {fig:robot_sim}
 
@@ -179,7 +179,7 @@ Simulación & \texttt{GazeboSystem} & Estados de las articulaciones entregados d
 
 En simulación, el sensor se modela mediante el complemento de simulación correspondiente, publicando datos en \texttt{/scan} con el marco \texttt{laser\_frame}. El modelo reproduce el comportamiento general del RPLidar A1 físico, aunque con diferencias propias de la simulación; estas diferencias se consideran parte de la brecha simulación--realidad y se detallan en el \ref{anx:gemelo_digital}. La Fig.~\ref{fig:gazebo_laser} muestra el barrido del LIDAR simulado dentro del mundo de prueba con obstáculos.
 
-\utemFigurePropia{../figures/gazebo-laser-robot.png}{0.72\textwidth}
+\utemFigurePropia{../figures/05-implementation/gazebo-laser-robot.png}{0.72\textwidth}
 {Barrido del LIDAR 2D simulado en el mundo de prueba con obstáculos.}
 {fig:gazebo_laser}
 
@@ -201,7 +201,7 @@ La Fig.~\ref{fig:prototipo_planta} presenta la vista en planta del prototipo,
 donde se aprecian el montaje del RPLidar A1 y el panel de control con el
 interruptor de encendido y el visualizador de tensión y corriente.
 
-\utemFigurePropia{../figures/prototype-top-view.jpg}{0.4\linewidth}
+\utemFigurePropia{../figures/05-implementation/prototype-top-view.jpg}{0.4\linewidth}
 {Vista en planta del prototipo construido.}
 {fig:prototipo_planta}
 
@@ -221,7 +221,7 @@ identificación persistente se documentan en el \ref{anx:hardware_ros2}. La
 Fig.~\ref{fig:esquema_conexiones} resume las conexiones eléctricas y de
 datos del prototipo.
 
-\utemFigurePropia{../figures/circuit-diagram.png}{0.99\textwidth}
+\utemFigurePropia{../figures/05-implementation/circuit-diagram.png}{0.99\textwidth}
 {Esquema de conexiones eléctricas y de datos del robot diferencial.}
 {fig:esquema_conexiones}
 
@@ -745,7 +745,7 @@ coordina la planificación global y el control local; y los comandos
 resultantes se arbitran en \texttt{twist\_mux} antes de llegar al control
 diferencial de bajo nivel descrito en la Sec.~\ref{sec:diff_drive_params}.
 
-\utemFigurePropia{../figures/autonomous-navigation-diagram.png}{1.0\textwidth}
+\utemFigurePropia{../figures/05-implementation/autonomous-navigation-diagram.png}{1.0\textwidth}
 {Interacción entre los componentes de la navegación autónoma.}
 {fig:interaccion_nav}
 
@@ -792,11 +792,11 @@ global durante una ejecución de navegación y exploración autónomas, desde la
 detección de fronteras hasta la cobertura alcanzada del recinto.
 
 \begin{utemMultiFigurePropia}{Evolución del mapa de costos global durante una ejecución de navegación y exploración autónomas.}{fig:mapa_costos_ejecucion}
-\addutem{0.42}{../figures/map-building-part1.png}{Fronteras detectadas en la fase inicial.}
+\addutem{0.42}{../figures/05-implementation/map-building-part1.png}{Fronteras detectadas en la fase inicial.}
 \hfill
-\addutem{0.42}{../figures/map-building-part2.png}{Ruta planificada por Nav2 hacia una meta.}
+\addutem{0.42}{../figures/05-implementation/map-building-part2.png}{Ruta planificada por Nav2 hacia una meta.}
 \hfill
-\addutem{0.42}{../figures/map-building-part3.png}{Cobertura avanzada del recinto.}
+\addutem{0.42}{../figures/05-implementation/map-building-part3.png}{Cobertura avanzada del recinto.}
 \end{utemMultiFigurePropia}
 
 \subsection{Árbol de comportamiento y recuperación}
