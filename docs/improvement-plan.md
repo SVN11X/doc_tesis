@@ -11,6 +11,7 @@ Scope agreed with the owner on 2026-11-21: organize the files without changing t
 - [x] Put every image of the defense slides in `docs/defense/images/`, named by the first slide that shows it, extracting the 38 that exist only inside the `.pptx`, plus an index per slide.
 - [x] Rename the local `defensa/` to `defense-rehearsals/` with recordings named by date, and move the YouTube video to `videos/youtube/`. Both stay ignored by git.
 - [x] Write every README in Spanish and keep an English copy of the main one in `docs/en/README.md` (decision 0002).
+- [x] Delete the four UTEM logos that neither the thesis nor the slides use.
 - [ ] BLOCKED: write `docs/goals.md` (vision, users, objectives, non-goals, success criteria, priorities, constraints). Only the owner can answer it.
 - [ ] BLOCKED: which commit was submitted to the committee, so it can be tagged `submitted-2026-11`?
 - [ ] BLOCKED: the standard check in CI fails on a public repository with license none. Choose CC BY 4.0, make the repository private, or accept a red standard check.
