@@ -1,0 +1,15 @@
+# Build settings. From the repository root: `latexmk -r content/latexmkrc -cd content/main.tex`. From content/: `latexmk main.tex`.
+# XeLaTeX is required: the thesis uses fontspec with Arial and TeX Gyre Pagella.
+$pdf_mode = 5;
+$bibtex_use = 2;
+
+# The glossary in content/back/01-glossary.tex needs makeglossaries.
+add_cus_dep('glo', 'gls', 0, 'run_makeglossaries');
+sub run_makeglossaries {
+    my ($base_name, $path) = fileparse($_[0]);
+    my @args = ('-q', $base_name);
+    unshift @args, ('-d', $path) if $path ne '' && $path ne './';
+    return system('makeglossaries', @args);
+}
+push @generated_exts, 'glo', 'gls', 'glg';
+$clean_ext .= ' %R.ist %R.xdy';
