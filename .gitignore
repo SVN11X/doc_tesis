@@ -30,3 +30,15 @@ content/main.pdf
 # Private, kept only on the owner's computer
 defensa/
 *.webm
+
+# standard
+.standards/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+build/
+_site/
+.quarto/
