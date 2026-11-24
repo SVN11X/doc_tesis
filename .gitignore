@@ -29,6 +29,11 @@ content/main.pdf
 
 # Private, kept only on the owner's computer
 defense-rehearsals/
+
+# Rehearsal audio and local backups of the defense, regenerated or kept by the owner
+docs/defense/audio_guion/
+docs/defense/*.pre-cierre.*
+docs/defense/*.pre-split-control.*
 videos/
 *.webm
 
