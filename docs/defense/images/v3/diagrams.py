@@ -192,10 +192,10 @@ def lidar_surfaces():
 
 
 def windup():
-    width, height = 520, 250
-    left, right, top, bottom = 44, 500, 40, 214
-    goal_y = 106
-    cap_y = 62
+    width, height = 520, 258
+    left, right, top, bottom = 44, 500, 52, 222
+    goal_y = 114
+    cap_y = 70
     axes = [
         line(left, bottom, right, bottom, GRAY, 2),
         line(left, top, left, bottom, GRAY, 2),
@@ -225,13 +225,13 @@ def windup():
         with_guard.append((x, y_guard))
     lose = [
         path(curve(without), "#F59E0B", 3),
-        line(left + 6, 16, left + 36, 16, "#F59E0B", 4),
-        text(left + 44, 21, "sin protección: se pasa y oscila", 15, "#B45309", anchor="start"),
+        line(left + 6, 14, left + 36, 14, "#F59E0B", 4),
+        text(left + 44, 19, "sin protección: sobreimpulso y oscilación", 15, "#B45309", anchor="start"),
     ]
     win = [
         path(curve(with_guard), BLUE, 3.5),
-        line(left + 262, 16, left + 292, 16, BLUE, 4),
-        text(left + 300, 21, "con protección: llega limpio", 15, BLUE, "bold", "start"),
+        line(left + 6, 38, left + 36, 38, BLUE, 4),
+        text(left + 44, 43, "con protección: sin sobreimpulso", 15, BLUE, "bold", "start"),
     ]
     return svg(width, height, axes), svg(width, height, lose), svg(width, height, win)
 
@@ -273,7 +273,7 @@ def ros2():
     for x, y in ring:
         base += node(x, y, 16, "#DBEAFE", BLUE)
     base += [rect(150, 92, 220, 46, fill="#EEF7E4", stroke=GREEN, width=2, rx=23),
-             text(260, 121, "DDS: se descubren solos", 14, DARK_GREEN, "bold")]
+             text(260, 121, "DDS: descubrimiento automático", 14, DARK_GREEN, "bold")]
     lost = ring[2]
     down = [circle(lost[0], lost[1], 19, fill="white", opacity=0.8)]
     down += cross(lost[0], lost[1], 10)
@@ -325,7 +325,7 @@ def gmapping():
         r = rng.gauss(0, 13)
         a = rng.uniform(0, 2 * math.pi)
         base.append(circle(end[0] + r * math.cos(a), end[1] + 22 + r * math.sin(a) * 0.7, 2.6, fill=BLUE, opacity=0.75))
-    base.append(text(width / 2, height - 30, "cada punto es una hipótesis con su propio mapa", 16, BLUE, "bold"))
+    base.append(text(width / 2, height - 30, "cada punto es una hipótesis de posición con su mapa", 16, BLUE, "bold"))
     return svg(width, height, base)
 
 
@@ -339,7 +339,7 @@ def pose_graph():
         base.append(circle(x, y, 6.5, fill="white", stroke=PURPLE, width=2.5))
     closure = [line(pts[-1][0], pts[-1][1], pts[0][0], pts[0][1], GREEN, 4, "8 6"),
                circle(pts[0][0], pts[0][1], 11, stroke=GREEN, width=3),
-               text(width / 2, height - 30, "cierre de lazo: «ya estuve aquí» y el mapa se corrige", 16, DARK_GREEN, "bold")]
+               text(width / 2, height - 30, "cierre de lazo: reconoce un lugar visitado y corrige el mapa", 16, DARK_GREEN, "bold")]
     return svg(width, height, base), svg(width, height, closure)
 
 
@@ -352,7 +352,7 @@ def hector():
         base.append(path(f"M{x - 10:.1f},{y - 6:.1f} Q{x:.1f},{y - 16:.1f} {x + 10:.1f},{y - 6:.1f}", ORANGE, 1.6, opacity=0.7))
     gap = [circle(pts[0][0], pts[0][1], 9, fill="white", stroke=ORANGE, width=2.5),
            line(pts[-1][0], pts[-1][1], pts[0][0], pts[0][1], RED, 2, "4 5"),
-           text(width / 2, height - 30, "barrido contra barrido: el error se acumula", 16, ORANGE, "bold")]
+           text(width / 2, height - 30, "alineación entre barridos: el error se acumula", 16, ORANGE, "bold")]
     return svg(width, height, base + gap)
 
 
