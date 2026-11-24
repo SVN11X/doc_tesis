@@ -1,10 +1,10 @@
 # Guion de la defensa v3 · Navegación y exploración autónoma de interiores
 
-Va con `slides-v3.pptx`: 34 láminas visibles y 13 ocultas (un índice y 12 respaldos, de la 35 a la 47). El mismo texto está en las notas del orador de cada lámina, para leerlo en la vista del moderador.
+Va con `slides-v3.pptx`: 39 láminas visibles y 17 ocultas (un índice y 16 respaldos, de la 40 a la 56). El mismo texto está en las notas del orador de cada lámina, para leerlo en la vista del moderador.
 
 Cada `[CLIC]` hace aparecer la parte siguiente de la lámina. El número de clics de cada lámina coincide con sus animaciones. El video de la lámina 2 parte solo al entrar. Las seis portadas azules no tienen clics: el ícono del tema viaja solo, con la transición Morph, hasta la cabecera de la lámina siguiente.
 
-Duración estimada de la narración: 25 min 38 s a 130 palabras por minuto (3333 palabras). Con pausas naturales debe quedar bajo el límite de 30 minutos. `generar_audio_guion.py` imprime la duración real del audio de ensayo.
+Duración estimada de la narración: 27 min 16 s a 130 palabras por minuto (3544 palabras). Con pausas naturales debe quedar bajo el límite de 30 minutos. `generar_audio_guion.py` imprime la duración real del audio de ensayo.
 
 Para ensayar con audio: `python generar_audio_guion.py` en esta carpeta crea los MP3 en `audio_guion/`.
 
@@ -28,13 +28,17 @@ Lámina 4 · Portada 01 · Problema (4 s)
 
 Primero, el problema: para qué sirve y qué hay que resolver.
 
-Lámina 5 · ¿Para qué sirve? (65 s)
+Lámina 5 · ¿Para qué sirve? (55 s)
 
-Una pregunta legítima al ver un prototipo de laboratorio es para qué sirve en la práctica. [CLIC] Antes de medir, inspeccionar o trasladar algo, una máquina necesita saber dónde está, dibujar el lugar y decidir adónde ir. [CLIC] El caso más cercano para Chile es la minería subterránea, con frentes donde la norma prohíbe entrar a una persona. En El Teniente, Codelco ya usa un dron con láser que mapea solo y hace en cinco minutos una inspección que antes tomaba medio día. [CLIC] En inspección de plantas, robots como Spot o ANYmal recorren instalaciones de Glencore y Vale. [CLIC] Y una aplicación directa de este trabajo es el levantamiento de planos: los mapas que obtuve quedan a 3,4 cm del plano medido con cinta métrica. Todo parte de la misma base: un robot que se ubica, mapea y decide solo. Eso es lo que construí.
+¿Para qué sirve un prototipo así? [CLIC] Antes de inspeccionar o rescatar, una máquina necesita saber dónde está, dibujar el lugar y decidir adónde ir. [CLIC] Primero, el rescate en edificios dañados: en la liga RoboCup Rescue, robots como los del equipo Hector exploran y mapean solos antes de que entren los rescatistas. [CLIC] Segundo, las plantas después de un accidente: en 2011, dos PackBot entraron a los reactores de Fukushima a medir radiación, donde nadie podía entrar. [CLIC] Y tercero, las zonas con gases o humo: el ExR-2 hace rondas autónomas en plantas con riesgo de explosión. Todo parte de la misma base: un robot que se ubica, mapea y decide solo. Eso es lo que construí.
 
-Lámina 6 · El mercado ya existe (65 s)
+Datos para preguntas (no se leen en voz alta): RoboCup Rescue Robot League: el equipo Hector (TU Darmstadt) publicó su software de mapeo y navegación para ROS. En 2012, 3 de los 4 mejores equipos lo usaban. Los mapas se puntúan por completitud y exactitud. Fuente: Kohlbrecher et al., SSRR 2012. Hector SLAM nace de ese trabajo y la tesis lo compara en el Cap. 1 (R13). Fukushima Daiichi, abril de 2011: dos PackBot de iRobot entraron a las unidades 1 y 3, y al día siguiente a la 2. Midieron radiación, temperatura y oxígeno, operados a distancia. Fuente: IEEE Spectrum, 2011. ExR-2 de ExRobotics: certificado ATEX e IECEx zona 1 para atmósferas explosivas. Hace rondas de inspección autónomas con LIDAR. Fuente: PC&NE, 30-06-2021. SmokeBot: proyecto Horizonte 2020 de la UE (CORDIS 645101), coordinado por la Universidad de Örebro. Radar 3D, cámara térmica y sensores de gases para baja visibilidad. Se demostró en un cuartel de bomberos de Dortmund. Los equipos de minería (Elios 3, Spot, Hovermap, Arkytas) están en la lámina 36, como horizonte del proyecto.
 
-El mercado para esto ya existe, en dos niveles. [CLIC] Arriba están los equipos industriales. Spot, de Boston Dynamics, hace misiones autónomas de inspección y Hovermap mapea en 3D sin GPS en más de treinta minas. En Chile, el robot Arkytas de Kinamics inspecciona frentes en El Teniente, pero lo maneja una persona a distancia. Se venden solo a cotización y su funcionamiento interno no siempre es accesible. [CLIC] En el otro extremo están los robots didácticos, como el TurtleBot 3 Burger, que cuesta 681 dólares sin envío ni impuestos y trae un sensor de giro y motores integrados. [CLIC] Este prototipo se ubica entre ambos: usa piezas separadas, explora solo un recinto desconocido y mide su propio desempeño. No tiene sensor de giro, así que no equivale al Burger. Persigue el mismo objetivo que la industria, con el costo de un kit didáctico.
+Lámina 6 · El mercado ya existe (45 s)
+
+El mercado ya existe, en dos niveles. [CLIC] Arriba, los equipos de inspección y rescate: el PackBot se opera a distancia, el ExR-2 hace rondas autónomas y SmokeBot apoya a bomberos. Son equipos especializados: un PackBot superaba los 125 000 dólares. [CLIC] En el otro extremo, los robots didácticos, como el TurtleBot 3, de 681 dólares. [CLIC] Este prototipo se ubica entre ambos: usa el mismo principio que RoboCup Rescue, explora solo un recinto desconocido y mide su desempeño, con el costo de un kit didáctico.
+
+Datos para preguntas (no se leen en voz alta): PackBot 510: más de 125 000 USD por sistema, según un contrato de 2010 citado por IEEE Spectrum. ExR-2: sin precio público, se cotiza. SmokeBot: prototipo de investigación, no se vende. TurtleBot 3 Burger: 681 USD sin envío ni impuestos (ROBOTIS). Trae IMU y motores con controlador integrados. Este prototipo no tiene IMU, así que no equivale exactamente al Burger. Materiales de este prototipo: 444 643 CLP, unos 462 USD (tesis, Anexo de costos).
 
 Lámina 7 · Cuatro subsistemas (70 s)
 
@@ -52,7 +56,9 @@ Revisé el estado del arte en esos cuatro subsistemas. [CLIC] La tracción difer
 
 Lámina 10 · Comparativa de valor (50 s)
 
-Ahora comparo el valor, no solo el precio. [CLIC] A la izquierda, los equipos industriales. Al centro, el kit didáctico TurtleBot 3. A la derecha, este prototipo. [CLIC] En apertura, aquí el hardware, el firmware y el software se pueden intervenir completos. [CLIC] En autonomía, este prototipo explora solo: 5 de 6 exploraciones terminaron sin ayuda. [CLIC] En precisión, tiene un dato verificado: 3,4 cm frente al plano real. [CLIC] Y en costo, los materiales suman 444 643 pesos, unos 462 dólares, un 32 por ciento menos que el Burger sin envío ni impuestos. Quiero ser transparente: el Burger trae sensor de giro y motores con controlador integrados. Este prototipo cuesta menos, pero no ofrece exactamente lo mismo.
+Ahora comparo el valor, no solo el precio. [CLIC] A la izquierda, los robots de inspección y rescate, al centro el TurtleBot 3 y a la derecha este prototipo. [CLIC] En apertura, aquí el hardware, el firmware y el software se pueden intervenir completos. [CLIC] En autonomía, el PackBot se maneja a distancia y el ExR-2 hace rondas autónomas. Este prototipo explora solo un lugar desconocido: 5 de 6 exploraciones terminaron sin ayuda. [CLIC] En precisión, tiene un dato verificado: 3,4 cm frente al plano real. [CLIC] Y en costo, los materiales suman unos 462 dólares, un 32 por ciento menos que el Burger, que sí trae sensor de giro.
+
+Datos para preguntas (no se leen en voz alta): PackBot 510: más de 125 000 USD (contrato de 2010, IEEE Spectrum). ExR-2: rondas autónomas de inspección (PC&NE, 2021). TurtleBot 3 Burger: 681 USD sin envío ni impuestos. Prototipo: 444 643 CLP, unos 462 USD, un 32 % menos. 3,4 cm: distancia media de los muros del mapa al plano medido (tesis, Sec. 5.3).
 
 ## 03 · Objetivos
 
@@ -60,205 +66,271 @@ Lámina 11 · Portada 03 · Objetivos (4 s)
 
 Tercero, qué me propuse y hasta dónde llega el trabajo.
 
-Lámina 12 · Objetivos (65 s)
+Lámina 12 · Objetivos (55 s)
 
-[CLIC] El objetivo general fue diseñar e implementar un robot diferencial de bajo costo, basado en ROS 2, que es el software estándar para robots, capaz de construir un mapa 2D mediante SLAM y de navegar solo hacia destinos que genera una estrategia de exploración de fronteras. [CLIC] Para lograrlo definí cuatro objetivos específicos. El primero, construir el robot y validarlo antes en un gemelo digital en el simulador Gazebo Classic. El segundo, controlar las ruedas: modelo de movimiento, odometría con encoders y control de velocidad en lazo cerrado. [CLIC] El tercero, mapear, ubicarse y navegar con SLAM Toolbox y Nav2. Y el cuarto, explorar sin ayuda, con metas que se generan automáticamente. [CLIC] El alcance son interiores de piso plano, evaluando la navegación sobre las metas del explorador. Quedaron fuera las metas fijas que marca un operador y la ubicación sobre un mapa guardado.
+[CLIC] El objetivo general fue diseñar e implementar un robot diferencial de bajo costo, basado en ROS 2, que es el software estándar para robots, capaz de construir un mapa 2D mediante SLAM y de navegar solo hacia destinos que genera una estrategia de exploración de fronteras. [CLIC] Para lograrlo definí cuatro objetivos específicos. El primero, construir el robot y validarlo antes en un gemelo digital en el simulador Gazebo Classic. El segundo, controlar las ruedas: modelo de movimiento, odometría con encoders y control de velocidad en lazo cerrado. [CLIC] El tercero, mapear, ubicarse y navegar con SLAM Toolbox y Nav2. Y el cuarto, explorar sin ayuda, con metas que se generan automáticamente.
+
+Lámina 13 · Alcance y contexto de trabajo (55 s)
+
+Antes del diseño, el contexto en que trabaja el robot. [CLIC] Trabaja en interiores de piso plano, como los edificios y plantas del inicio. Construye un mapa 2D en vivo y explora con metas propias, con el mapa calculado en un portátil por Wi-Fi. Se validó en simulación y en un recinto real. [CLIC] Su sentido principal es un LIDAR 2D: barre un plano a la altura del sensor y ahí ve los muros con mucha precisión. [CLIC] Lo que queda fuera de ese plano, como una caja baja o una repisa, no aparece. Y un espejo, un vidrio o algo muy negro confunden a cualquier láser. [CLIC] Por eso la tesis deja oportunidades claras: una cámara 3D o térmica, una IMU, recintos más amplios y ROS 2 vigente. [CLIC] Un contexto acotado y bien medido, con un camino claro para crecer.
+
+Datos para preguntas (no se leen en voz alta): Tesis, Introducción (Alcances y limitaciones): interiores de piso plano, RPLidar A1 y odometría por encoders. Sin IMU, cámara ni fusión sensorial. No orientado a exteriores, suelos irregulares ni obstáculos dinámicos rápidos. Sec. 3.3.1: el LIDAR 2D no detecta objetos fuera de su plano de barrido y se degrada ante superficies muy absorbentes o reflectantes. El vidrio es un ejemplo de superficie difícil, no un ensayo de la tesis. Fuera del alcance: metas fijas de un operador y localización sobre un mapa guardado con AMCL. Validez: un recinto de 3,50 m² de área libre y 5 exploraciones válidas. Los resultados son descriptivos. ROS 2 Foxy y Gazebo Classic 11 ya no tienen soporte. Migrar es trabajo futuro. Red Wi-Fi dedicada con IP estáticas (Anexo de entorno de ejecución).
 
 ## 04 · Diseño
 
-Lámina 13 · Portada 04 · Diseño (4 s)
+Lámina 14 · Portada 04 · Diseño (4 s)
 
 Cuarto, cómo lo construí y cómo funciona.
 
-Lámina 14 · Arquitectura (65 s)
+Lámina 15 · El robot real (30 s)
 
-Para usar hardware de bajo costo, repartí el trabajo en dos equipos. [CLIC] En el robot va lo que no puede esperar: el láser mide distancias en 360 grados y los encoders cuentan las vueltas de cada rueda. [CLIC] Un Arduino Nano controla la velocidad de cada rueda cada 33 milisegundos con un control PI y frena los motores si pasan dos segundos sin órdenes. [CLIC] Sobre él, una Raspberry Pi 4 conecta todo con ROS 2 y calcula la odometría, es decir, cuánto avanzó el robot según sus ruedas. [CLIC] Ambos equipos se comunican por una red Wi-Fi dedicada. [CLIC] En un computador portátil de gama media va lo que exige más cálculo. SLAM Toolbox dibuja el mapa y ubica al robot. [CLIC] Nav2 traza la ruta y ordena las velocidades. [CLIC] El explorador elige la próxima meta. [CLIC] Y RViz2 lo muestra todo en pantalla.
+Empiezo por lo que se puede tocar: el robot real. [CLIC] Es compacto: 24,5 por 23 cm y 17,4 de alto. [CLIC] El chasis está impreso en 3D en PLA+. Tiene dos ruedas con motor y una rueda pivote, por eso gira sobre su eje. Y la energía va separada: 12 volts para los motores y 5 para la electrónica. [CLIC] Todo lo que va a bordo costó unos 462 dólares.
 
-Lámina 15 · Del diagrama al robot real (70 s)
+Datos para preguntas (no se leen en voz alta): Cotas del gemelo digital (Anexo): chasis de 24,5 × 23 cm y 17,4 cm de altura total. Radio de rueda 3,35 cm, separación entre ruedas 18,8 cm. Materiales a bordo: 444 643 CLP, unos 462 USD (Anexo de costos). El chasis toma como referencia una plataforma diferencial abierta (Sec. 4.1).
 
-Este es el robot construido. [CLIC] Arriba va el láser RPLidar A1, con vista libre en 360 grados, y abajo, dos motores de 12 volts con encoder. [CLIC] Dentro van la Raspberry Pi 4 y el Arduino, los mismos bloques del diagrama anterior. [CLIC] A la derecha está su gemelo digital: una copia virtual en el simulador Gazebo Classic, descrita en URDF, el formato estándar para describir las piezas y uniones de un robot. Tiene la misma geometría de ruedas que el real, y con él probé movimiento, sensores y comunicación antes del robot físico. [CLIC] En lo mecánico, el chasis está impreso en 3D en PLA+, a partir de una plataforma abierta de referencia, y se apoya en dos ruedas con motor y una rueda pivote. En lo eléctrico, separé la potencia de 12 volts de los motores del riel regulado de 5 volts que alimenta la electrónica, para evitar interferencias y reinicios.
+Lámina 16 · Por dentro: las piezas (40 s)
 
-Lámina 16 · Cinco decisiones de diseño (70 s)
+Ahora hago zoom hacia adentro: cada pieza cumple un rol, como en un cuerpo. [CLIC] El LIDAR 2D son los ojos: mide distancias en 360 grados. [CLIC] Los encoders son el cuentakilómetros de cada rueda. [CLIC] Los motores son los músculos, y el driver L298N les da la potencia. [CLIC] La Raspberry Pi 4 es el coordinador: junta los datos y conversa con el computador. [CLIC] Y el Arduino Nano son los reflejos: corrige cada rueda cada 33 milisegundos. [CLIC] Elegí un LIDAR 2D porque es barato y suficiente en piso plano.
 
-Estas son las cinco decisiones de la plataforma, pensando en bajo costo, compatibilidad y un computador portátil de gama media. [CLIC] Como software base, ROS 2, que organiza el robot en programas independientes y trae navegación completa, en su versión Foxy. [CLIC] Como sensor, un LIDAR 2D: barato y suficiente en piso plano. [CLIC] Para el mapa, SLAM Toolbox, que lo dibuja en vivo, lo corrige al volver a un lugar conocido y lo guarda. [CLIC] Para navegar, Nav2 con dos piezas. A estrella es el planificador global: recorre la grilla del mapa y encuentra la ruta más corta sumando lo ya recorrido y una estimación de lo que falta, y la recalcula rápido cuando el mapa cambia. DWB es el control local: prueba trayectorias cortas y elige la que sigue la ruta lejos de los obstáculos. [CLIC] Por último, Gazebo Classic para simular y la exploración por fronteras, que elige metas mirando solo el mapa.
+Datos para preguntas (no se leen en voz alta): RPLidar A1: mide por triangulación y cubre 360°. Encoders de cuadratura: 1980 ticks por vuelta (valor unificado). Motorreductores JGA25-370 de 12 V. Driver L298N (respaldo R5). La Raspberry Pi 4 corre ROS 2 Foxy y calcula la odometría. El Arduino Nano corre el control PI cada 33 ms. Tesis, Sec. 3.3, 4.1 y 4.3.
 
-Lámina 17 · Por qué un PI incremental (80 s)
+Lámina 17 · Arquitectura (65 s)
+
+Estas cinco piezas se reparten entre dos equipos. [CLIC] En el robot va lo que no puede esperar: el láser mide distancias en 360 grados y los encoders cuentan las vueltas de cada rueda. [CLIC] Un Arduino Nano controla la velocidad de cada rueda cada 33 milisegundos con un control PI y frena los motores si pasan dos segundos sin órdenes. [CLIC] Sobre él, una Raspberry Pi 4 conecta todo con ROS 2 y calcula la odometría, es decir, cuánto avanzó el robot según sus ruedas. [CLIC] Ambos equipos se comunican por una red Wi-Fi dedicada. [CLIC] En un computador portátil de gama media va lo que exige más cálculo. SLAM Toolbox dibuja el mapa y ubica al robot. [CLIC] Nav2 traza la ruta y ordena las velocidades. [CLIC] El explorador elige la próxima meta. [CLIC] Y RViz2 lo muestra todo en pantalla.
+
+Lámina 18 · ROS 2, el sistema nervioso (45 s)
+
+¿Cómo conversan estas piezas? Con ROS 2, el sistema nervioso del robot. Piensen en una radio con canales. [CLIC] Cada programa es un nodo con una sola tarea: el láser, el control de ruedas, SLAM, el explorador, Nav2 y RViz2. [CLIC] Cada nodo transmite en un canal con nombre, un tópico, y escucha solo los que necesita: el láser publica lo que ve, SLAM publica el mapa y Nav2 envía las velocidades. [CLIC] Por eso, si un módulo se apaga, como RViz2 aquí, el resto sigue. No hay nodo central: el robot y el portátil se encuentran solos en la red. [CLIC] Elegí ROS 2 porque trae SLAM y navegación listos.
+
+Datos para preguntas (no se leen en voz alta): ROS 2 Foxy sobre Ubuntu 20.04, con rmw_cyclonedds_cpp (DDS) y ROS_DOMAIN_ID 0, igual en el robot y en el portátil (Anexo de entorno de ejecución). Tópicos del esquema: /scan, /odom, /map y /cmd_vel. La meta del explorador llega a Nav2 como una acción, no como un tópico. Tesis, Sec. 3.2. Alternativas: respaldos R10 y R11.
+
+Lámina 19 · Gazebo, el campo de pruebas (35 s)
+
+Antes de arriesgar el hardware, lo probé en un campo de pruebas virtual: Gazebo, como un simulador de vuelo para pilotos. [CLIC] A la izquierda, el robot real. [CLIC] A la derecha, su gemelo digital, con el láser simulado. [CLIC] Comparten las mismas medidas, descritas en URDF, y el mismo software ROS 2. [CLIC] El método fue probar en Gazebo, corregir y recién entonces llevarlo al robot. [CLIC] El piso real da el toque final, que es el último paso del control.
+
+Datos para preguntas (no se leen en voz alta): Gazebo Classic 11.11.0 con gazebo_ros_pkgs 3.5.3 (Anexo de entorno de ejecución). Se usa Gazebo Classic porque es el que emplean los complementos de simulación y de ros2_control del paquete base, disponibles para ROS 2 Foxy (Cap. 2). La simulación no reproduce del todo fricción, zona muerta del driver, ruido ni latencias (Conclusiones). Tesis, Sec. 3.1.2 y 4.2.
+
+Lámina 20 · Por qué un PI incremental (80 s)
 
 Un punto central para nuestra especialidad es el control de velocidad de cada rueda. Cada 33 milisegundos, el Arduino ajusta la potencia sumando solo el cambio necesario. [CLIC] Un PID tradicional, posicional, recalcula la potencia total en cada ciclo, y su parte derivativa suele amplificar el ruido de los encoders. El PI incremental de este robot calcula solo el incremento de PWM y lo suma al valor anterior, con la acción proporcional sobre la medición. [CLIC] Lo elegí por tres razones. Primero, sin derivada no amplifica el ruido de los pulsos, y es el esquema probado en robótica móvil. Segundo, la referencia entra solo por la integral: no hay saltos al cambiar la consigna, y al llegar al tope de 255 deja de acumular, un anti-windup natural. Tercero, es liviano y ya viene integrado con diffdrive_arduino en ROS 2. [CLIC] En el robot real, a 0,13 m/s, las ruedas suben en 0,8 y 1,4 segundos, sin sobreimpulso, con error final de hasta 0,002 m/s y un margen de fase entre 41 y 57 grados.
 
-Lámina 18 · Paso 1: medir revela que cada motor es único (40 s)
+Lámina 21 · Paso 1: medir revela que cada motor es único (40 s)
 
 ¿Cómo logré que cada rueda responda tan bien? Con un método de cuatro pasos, automatizado en Python. El primero es medir. [CLIC] Sin controlador, Python aplica el mismo pulso de potencia a los dos motores y los encoders graban cómo acelera cada rueda. [CLIC] Al acercar la vista a la velocidad final aparece algo valioso: son motores económicos del mismo modelo, pero cada uno tiene su propio carácter. [CLIC] La medición lo detecta desde el primer minuto, y por eso cada rueda recibe su propia calibración.
 
 Datos para preguntas (no se leen en voz alta): Pulso fijo de PWM 143 de 255 (≈56 % del máximo) desde t = 1 s, sin controlador. Captura de 10 s, una muestra cada 0,1 s. Velocidad final media (t ≥ 3 s): ≈0,130 m/s la izquierda y ≈0,127 m/s la derecha, unos 2 % de diferencia. La izquierda va más rápido en 86 % de las muestras (chart-control-data.csv). Modelos identificados: Km 0,000913 y 0,000890 m/s por unidad de PWM, τ 0,33 y 0,35 s. Motores JGA25-370 de 12 V con encoder. Tesis, Sec. 4.4.5 (Captura de respuesta en lazo abierto).
 
-Lámina 19 · Paso 2: un gemelo matemático por motor (40 s)
+Lámina 22 · Paso 2: un gemelo matemático por motor (40 s)
 
 Segundo paso: con esa medición construyo un gemelo matemático de cada motor. Python prueba miles de combinaciones hasta que la curva del gemelo calza con la medición real, como una ingeniería inversa. [CLIC] Captura su reacción: arranca casi al instante. [CLIC] Su rapidez: acelera en un tercio de segundo. [CLIC] Y su fuerza: cuánta velocidad entrega con la potencia aplicada. [CLIC] Lo mejor es que cada gemelo captura hasta la diferencia de fuerza entre ruedas. Desde aquí, cada prueba ocurre en el computador y el robot queda intacto.
 
-Datos para preguntas (no se leen en voz alta): Modelo de primer orden con retardo (FOPDT). Izquierda / derecha: Km 0,000913 / 0,000890 m/s por PWM, τ 0,329 / 0,349 s, L 0,0001 / 0,069 s. L es menor que el muestreo de 0,1 s y se cuantiza a cero muestras: en la práctica el modelo es de primer orden. τ es el tiempo en llegar al 63 % de la velocidad final. «Un tercio de segundo» es τ redondeado. 1.er PSO: 50 partículas, 150 generaciones, costo = error cuadrático medio de identificación. Ajusta la medición suavizada con una media móvil de 5 muestras, por eso la curva del gemelo va algo detrás de los puntos al arrancar. No es el gemelo digital de Gazebo de la lámina 15: este modela solo cómo responde cada motor. Tesis, Sec. 4.4.5 y Anexo de identificación FOPDT.
+Datos para preguntas (no se leen en voz alta): Modelo de primer orden con retardo (FOPDT). Izquierda / derecha: Km 0,000913 / 0,000890 m/s por PWM, τ 0,329 / 0,349 s, L 0,0001 / 0,069 s. L es menor que el muestreo de 0,1 s y se cuantiza a cero muestras: en la práctica el modelo es de primer orden. τ es el tiempo en llegar al 63 % de la velocidad final. «Un tercio de segundo» es τ redondeado. 1.er PSO: 50 partículas, 150 generaciones, costo = error cuadrático medio de identificación. Ajusta la medición suavizada con una media móvil de 5 muestras, por eso la curva del gemelo va algo detrás de los puntos al arrancar. No es el gemelo digital de Gazebo de la lámina 19: este modela solo cómo responde cada motor. Tesis, Sec. 4.4.5 y Anexo de identificación FOPDT.
 
-Lámina 20 · Paso 3: la automatización calibra (40 s)
+Lámina 23 · Paso 3: la automatización calibra (40 s)
 
 Tercer paso: dejar que la automatización calibre. [CLIC] El gemelo de cada motor corre con el mismo programa de control del Arduino. [CLIC] Una búsqueda automática evalúa miles de calibraciones y se queda con la que sigue mejor la velocidad pedida sin pasarse. [CLIC] El resultado es una calibración estable para cada rueda, lista para cargar sin riesgo. [CLIC] Y el proyecto gana tres cosas: calibra en el computador, saca lo mejor de motores económicos y se repite con los mismos scripts si mañana cambian motores o ruedas.
 
 Datos para preguntas (no se leen en voz alta): La simulación corre a 30 Hz (período de 33 ms) con la misma ley PI incremental del firmware, sobre el modelo de cada rueda. 2.º PSO: 50 partículas × 150 generaciones = 7 500 evaluaciones por rueda. Costo: error cuadrático medio con peso 1 más sobreimpulso con peso 3. No penaliza el tiempo de subida ni el esfuerzo de control. Semilla entregada: Kp 12,48 / 10,10, Kd 34,69 / 36,70 (el costo evalúa Kd hasta 25), Ki ≈ 0,00001. La tesis no mide el tiempo de cómputo del PSO ni el de un ajuste manual. Por eso la lámina no da tiempos. Tesis, Sec. 4.4.5, Anexo de protocolos de sintonización y Anexo de resultados PSO.
 
-Lámina 21 · Paso 4: ajuste final en el piso (45 s)
+Lámina 24 · Paso 4: ajuste final en el piso (45 s)
 
 Cuarto paso: el toque final en el piso real. [CLIC] El piso aporta lo que ningún modelo simple ve: la fricción del suelo y la zona muerta del driver. Con eso reforcé el arranque y emparejé la respuesta de cada rueda. [CLIC] En gris, la calibración simulada. En color, el ajuste final, que llega antes y limpio a la meta. [CLIC] Ahora cada rueda alcanza la velocidad pedida en menos de un segundo y medio, cerca de un segundo antes y sin sobrepasarse. La simulación entrega la base estable y el piso aporta el toque final.
 
 Datos para preguntas (no se leen en voz alta): Velocidad pedida: 0,13 m/s, misma prueba en el piso antes y después. Con el ajuste final: subida del 10 al 90 % en 0,8 s (izquierda) y 1,4 s (derecha), error final 0,002 y 0,000 m/s, sin sobreimpulso significativo. Margen de fase 41° a 57°. Con la semilla del PSO: la izquierda se queda en 0,12 m/s (error ≈0,01 m/s) y la derecha se detiene cerca de 0,11 m/s y se mantiene en la meta recién después de 6 s. La tesis resume: «la referencia se alcanza cerca de un segundo antes». Cambios: Kp sube 28 % y 63 % (a 16,00 y 16,42), Kd baja 41 % y 45 % (a 20,30 y 20,05), Ki izquierdo a 0,075 (el derecho, 0,001, no tiene efecto en la ley ejecutada). Zona muerta del driver L298N: con poca potencia el motor no gira. La resolución de la medición es 0,01 m/s, por eso la rueda izquierda muestra pequeños saltos. Por qué no «4× más rápido»: comparaba cuándo la rueda se queda en la meta (≈6 s) con el tiempo de subida (1,4 s), dos métricas distintas. Tesis, Sec. 4.4.5 (Refinamiento experimental), Sec. 5.2 y Tabla de indicadores de la respuesta al escalón.
 
-Lámina 22 · Cómo dibuja el mapa (55 s)
+Lámina 25 · Cómo dibuja el mapa (60 s)
 
-Ahora, cómo el robot construye el mapa del video. [CLIC] Mientras se mueve, el láser gira y mide la distancia a cada muro que tiene a la vista. [CLIC] Al mismo tiempo, los encoders dicen cuánto avanzó y giró el robot entre una medición y otra: es la odometría. [CLIC] Como las ruedas pueden resbalar, SLAM Toolbox compara cada nuevo barrido del láser con los anteriores y así corrige la deriva de la odometría. Con eso pinta una grilla de cuadros de 5 cm: blanco libre, negro muro y gris sin explorar. [CLIC] Y si el robot vuelve a ver un lugar por donde ya pasó, reconoce la coincidencia, lo que se llama cierre de lazo, y corrige el error acumulado del recorrido.
+Ahora, cómo el robot construye el mapa del video. Es como dibujar el plano de una casa a oscuras con una huincha láser. [CLIC] Mientras se mueve, el láser gira y mide la distancia a cada muro que tiene a la vista. [CLIC] Al mismo tiempo, los encoders dicen cuánto avanzó y giró el robot entre una medición y otra: es la odometría. [CLIC] Como las ruedas pueden resbalar, SLAM Toolbox compara cada nuevo barrido del láser con los anteriores y así corrige la deriva de la odometría. Con eso pinta una grilla de cuadros de 5 cm: blanco libre, negro muro y gris sin explorar. [CLIC] Y si el robot vuelve a ver un lugar por donde ya pasó, reconoce la coincidencia, lo que se llama cierre de lazo, y corrige el error acumulado del recorrido. [CLIC] Elegí SLAM Toolbox porque corrige y guarda el mapa.
 
-Lámina 23 · Metas y exploración (70 s)
+Datos para preguntas (no se leen en voz alta): Cuadros de 0,05 m. SLAM Toolbox 2.4.1 en modo asíncrono. Tesis, Sec. 3.8 y 4.5.1. Alternativas: respaldos R12 y R13.
 
-Ahora, ¿cómo decide el robot hacia dónde moverse si nadie le entregó un mapa ni una ruta? Aquí entran dos ideas: las fronteras y las metas. [CLIC] Una frontera es el borde entre el espacio libre que ya conoce, en blanco, y lo desconocido, en gris. El explorador las busca en el mapa en vivo. [CLIC] Una meta es un punto con coordenadas x e y sobre una de esas fronteras. El explorador la elige solo, equilibrando cercanía y tamaño de la zona por descubrir. No es una lista de puntos que alguien programó antes. [CLIC] Esa meta pasa a Nav2, que deja un margen de seguridad de 15 cm junto a cada muro, el borde morado del video. A estrella calcula la ruta verde y DWB la recorre con curvas seguras. [CLIC] Cuando el explorador ya no encuentra fronteras alcanzables, da por terminado el recorrido y detiene el robot por sí solo.
+Lámina 26 · Nav2: A* y DWB (40 s)
+
+Con el mapa listo, falta llegar a una meta sin chocar. Eso lo hace Nav2. [CLIC] Primero deja un margen de 15 cm junto a los muros, la zona morada del video. [CLIC] Después, A estrella calcula la ruta completa, como un GPS: avanza por la grilla como una onda y se queda con el camino más corto. [CLIC] Y DWB hace de conductor: si aparece un obstáculo, prueba varias curvas y elige la más segura. [CLIC] Elegí A estrella y DWB porque son simples y suficientes en una grilla 2D.
+
+Datos para preguntas (no se leen en voz alta): Planificador global: NavFn con A* habilitado. Controlador local: DWB (Sec. 4.5.3). Radio de inflación de 0,15 m (Sec. 4.5.4). Tesis, Sec. 3.10. Alternativas: respaldos R14 y R15.
+
+Lámina 27 · Exploración por fronteras (50 s)
+
+¿Cómo decide el robot hacia dónde moverse si nadie le dio un mapa ni una ruta? Como al recorrer una casa nueva: uno va al borde de lo que aún no conoce. [CLIC] Una frontera es ese borde, entre lo libre que ya conoce, en blanco, y lo desconocido, en gris. [CLIC] Una meta es un punto x, y sobre una frontera. El explorador la elige solo, según cercanía y tamaño de la zona por descubrir. Nadie la programa antes. [CLIC] Esa meta pasa a Nav2, que la recorre como vimos recién. [CLIC] Cuando ya no quedan fronteras alcanzables, el robot termina solo. [CLIC] Elegí las fronteras porque son livianas y usan directo el mapa.
+
+Datos para preguntas (no se leen en voz alta): Explorador: explore_lite (proyecto m-explore), adaptado a este robot. Tesis, Sec. 3.11 y 4.5.6. Alternativas: respaldo R16.
 
 ## 05 · Resultados
 
-Lámina 24 · Portada 05 · Resultados (4 s)
+Lámina 28 · Portada 05 · Resultados (4 s)
 
 Quinto, lo que medí en el robot real.
 
-Lámina 25 · En el robot real (65 s)
+Lámina 29 · En el robot real (65 s)
 
 Todas las mediciones que presento se hicieron en el robot físico, en este recinto con pasillos y tabiques internos, pensado para exigir giros y espacios estrechos. Hice seis exploraciones completas. En la segunda el robot no generó mapa, así que la excluí de los promedios. [CLIC] En lo operativo, 5 de 6 exploraciones terminaron solas, deteniéndose al completar el mapa. En total, Nav2 condujo al robot 21,9 metros en 12,7 minutos, con navegación y recuperación autónoma en pasillos estrechos de 58 cm, sin atascos ni intervención humana. [CLIC] ¿Y qué tan fiel es el mapa? Al compararlo con un plano del recinto medido con cinta métrica, la diferencia media en la posición de los muros fue de 3,4 cm, menos que un cuadro del mapa, que mide 5. Además, el área libre mapeada fue muy estable: 3,50 m² en promedio, con una variación de solo 0,03.
 
-Lámina 26 · Tres capas (55 s)
+Lámina 30 · Tres capas (55 s)
 
 Tres capas sostienen esos mapas. [CLIC] La primera es el control estable que vimos: sin sobreimpulso y con margen de fase entre 41 y 57 grados. [CLIC] La segunda es una odometría repetible: en cinco rectas de 2 metros medidas con cinta métrica, el error medio fue de 3,63 por ciento. [CLIC] La tercera es el láser, que corrige los giros. En vueltas de 360° la desviación media fue de 11,7°, porque las ruedas patinan más al girar y no hay sensor de giro. SLAM Toolbox realinea los muros en vivo. [CLIC] El resultado es un plano fiel al real, a 3,4 cm. [CLIC] ¿Y si la odometría falla? SLAM corrige la deriva, pero necesita una base estable: mejor control y odometría significan menos corrección y mapas más firmes.
 
-Lámina 27 · Mapas repetibles (65 s)
+Lámina 31 · Mapas repetibles (65 s)
 
 [CLIC] Este gráfico muestra el área libre mapeada en las cinco exploraciones válidas. El eje parte en 3,40 para que se vean las diferencias: entre la mayor y la menor hay solo 0,06 m². [CLIC] A la derecha están la exploración 1 y la 6. Su índice de cobertura es de 83 y 53 por ciento, lo que podría parecer inconsistente, pero mapearon casi la misma superficie: 3,51 y 3,48 m². [CLIC] De aquí salen dos lecturas. Primero, confiabilidad operativa: con 3,50 ± 0,03 m², el robot mapea el recinto completo igual en cada ejecución. Segundo, el índice no indica error: solo mide qué parte de la imagen es espacio libre, y cada imagen incluye más o menos gris de afuera según cómo quedó orientado el mapa. La evidencia del mapeo es el área y la comparación con el plano real.
 
-Lámina 28 · Navegación adaptativa (60 s)
+Lámina 32 · Navegación adaptativa (60 s)
 
 Al revisar los registros de navegación apareció algo que conviene explicar bien. [CLIC] El robot avanza hacia una meta A. [CLIC] El explorador revisa el mapa cada 3,3 segundos, y aquí el láser descubre una zona mayor. [CLIC] Entonces envía una meta B, mejor, sin cancelar la anterior. [CLIC] Esta versión de Nav2 anota ese reemplazo como «abortado», aunque el robot nunca se detuvo: cambió de destino mientras avanzaba, buscando más mapa en menos recorrido. [CLIC] Por eso, de 60 metas, 54 figuran como abortadas, pero 53 coinciden justo con la llegada de la meta siguiente. Soy cuidadoso en esto: el registro no permite descartar otras causas caso a caso, y por eso no lo uso como tasa de éxito. La síntesis es que los cuatro subsistemas funcionaron juntos en el robot real.
 
 ## 06 · Conclusiones
 
-Lámina 29 · Portada 06 · Conclusiones (4 s)
+Lámina 33 · Portada 06 · Conclusiones (4 s)
 
 Y para cerrar, qué se logró y qué sigue.
 
-Lámina 30 · Cumplimiento de objetivos (65 s)
+Lámina 34 · Cumplimiento de objetivos (65 s)
 
 Reviso ahora los cuatro objetivos específicos. [CLIC] El primero, construir el robot y su gemelo digital, está logrado y verificado antes en Gazebo Classic. [CLIC] El segundo, el control de las ruedas, está logrado en lo ensayado: encoders, odometría y un control PI estable a 0,13 m/s. En la tesis lo marqué parcial porque lo evalué en un solo punto de operación. El próximo paso es probar otras velocidades. [CLIC] El tercero, mapear, ubicarse y navegar, también está logrado en lo ensayado: mapas a 3,4 cm del plano y 21,9 metros autónomos. Lo marqué parcial porque las metas fijas quedaron fuera del alcance. [CLIC] Y el cuarto, explorar sin ayuda, está logrado: la exploración terminó sola en 5 de 6 ensayos. El objetivo general se cumple en lo funcional. Las marcas de parcial son una decisión de rigor, para no inflar los indicadores.
 
-Lámina 31 · De prototipo a solución de campo (55 s)
+Lámina 35 · De prototipo a solución de campo (55 s)
 
-Si quisiera llevar esto a una solución de campo, el precio no basta. La pregunta es qué ya está demostrado y qué falta. [CLIC] La etapa 1 es la base demostrada hoy: mapas a 3,4 cm del plano, 21,9 metros autónomos, 5 de 6 exploraciones cerradas solas y una plataforma abierta. [CLIC] La etapa 2 es el escalamiento técnico: sensor de giro, recintos amplios y metas fijas con 6 a 10 repeticiones. [CLIC] Y la etapa 3 sería la aplicación de campo: sensores de gases, temperatura o láser 3D, un chasis industrial y una versión vigente de ROS 2. Las etapas 2 y 3 son una propuesta. La cadena completa de autonomía ya está medida, y cada brecha se puede cerrar sobre esta misma base.
+Si quisiera llevar esto a una solución de campo, el precio no basta. La pregunta es qué ya está demostrado y qué falta. [CLIC] La etapa 1 es la base demostrada hoy: mapas a 3,4 cm del plano, 21,9 metros autónomos, 5 de 6 exploraciones cerradas solas y una plataforma abierta. [CLIC] La etapa 2 es el escalamiento técnico: sensor de giro, recintos amplios y metas fijas con 6 a 10 repeticiones. [CLIC] Y la etapa 3 sería la aplicación de campo: sensores de gases, temperatura o láser 3D, un chasis industrial y una versión vigente de ROS 2. Las etapas 2 y 3 son una propuesta. La cadena completa de autonomía ya está medida, y cada brecha se puede cerrar sobre esta misma base. Esa etapa 3 apunta a un horizonte concreto, que muestro ahora.
 
-Lámina 32 · Aporte de ingeniería (40 s)
+Lámina 36 · Horizonte: la minería (40 s)
+
+Y hacia dónde puede crecer. [CLIC] El mismo principio de ubicarse, mapear y decidir es el que usa hoy la minería, el terreno más exigente. [CLIC] En El Teniente, Codelco usa un dron con láser que hace en cinco minutos una inspección que tomaba medio día. [CLIC] Spot y ANYmal ya recorren instalaciones de Glencore y Vale. [CLIC] Y Hovermap mapea en 3D más de treinta minas. [CLIC] Para llegar ahí faltan una IMU, un LIDAR 3D, sensores de tarea y un chasis robusto. La base ya está demostrada.
+
+Datos para preguntas (no se leen en voz alta): Codelco (27-03-2026): en El Teniente, el dron Elios 3 hace en 5 minutos una inspección que tomaba medio día. Mining Technology (23-07-2025): Spot y ANYmal operan en instalaciones de Glencore y Vale. CSIRO (2025): Hovermap, de Emesent, mapea en 3D sin GPS en más de 30 minas. Reporte Minero (27-02-2026): Arkytas, de Kinamics, inspecciona frentes en El Teniente operado a distancia. Las etapas 2 y 3 de la lámina 35 son una propuesta de la tesis (Trabajo futuro).
+
+Lámina 37 · Aporte de ingeniería (40 s)
 
 [CLIC] El aporte de ingeniería es la integración completa y publicada: hardware, firmware, modelo URDF y scripts abiertos para replicar y mejorar la plataforma. El firmware y la interfaz del Arduino se adaptaron de proyectos abiertos, debidamente citados. [CLIC] El gemelo digital parametrizado permite probar algoritmos o cambios físicos en simulación antes de tocar el robot, ahorrando tiempo y daños. [CLIC] La sintonización automatizada por rueda calibra motores económicos distintos de forma repetible, sin partir a ciegas. [CLIC] Y la estabilidad del control quedó verificada: las ruedas responden sin oscilar, aun con retardos del sistema.
 
-Lámina 33 · Conclusión (50 s)
+Lámina 38 · Conclusión (50 s)
 
 [CLIC] Vuelvo a la pregunta del inicio. Sí: es viable construir un robot diferencial de bajo costo que mapea, navega y explora interiores de forma autónoma, y lo respaldo con mediciones en el robot real. [CLIC] Todo el trabajo está publicado en nuestro repositorio de GitHub, ros2-indoor-exploration-robot: código ROS 2, firmware, piezas 3D y scripts de ajuste, con licencia MIT, listo para docencia o para sumar sensores de inspección. [CLIC] Me quedo con tres ideas. Un control de ruedas bien ajustado sostiene mapas fieles. Repartir el trabajo entre el robot y el computador hace viable la autonomía con hardware accesible. Y la evidencia está medida en hardware real.
 
-Lámina 34 · Gracias (5 s)
+Lámina 39 · Gracias (5 s)
 
 Muchas gracias por su atención. Quedo atento a sus preguntas y comentarios. [Para mostrar un respaldo: clic en «Respaldo», abajo a la derecha, y elegir el tema.]
 
 ## Láminas de respaldo
 
-Están ocultas: no aparecen al avanzar. Para abrir una, haz clic en «Respaldo» en la lámina 34, o escribe 35 y Enter para ir al índice. Cada respaldo tiene «Volver al índice».
+Están ocultas: no aparecen al avanzar. Para abrir una, haz clic en «Respaldo» en la lámina 39, o escribe 40 y Enter para ir al índice. Cada respaldo tiene «Volver al índice». Cada uno muestra un diagrama de cómo funciona y una animación corta que parte sola al abrirlo.
 
 | Lámina | Código | Grupo | Tema |
 |---|---|---|---|
-| 35 | Índice | | Láminas de respaldo |
-| 36 | R1 | Control | El robot corrige sus ruedas 30 veces por segundo |
-| 37 | R2 | Control | Ley PI estándar: simple, sin ruido y lista para ROS 2 |
-| 38 | R3 | Control | El control se mantiene estable con holgura |
-| 39 | R4 | Control | Sin IMU y sin costo extra, mapas a 3,4 cm del plano |
-| 40 | R5 | Hardware | L298N hoy y DRV8871 para una versión compacta |
-| 41 | R6 | Hardware | Un margen de 15 cm abre paso por pasillos de 58 cm |
-| 42 | R7 | Proyecto | Software abierto probado y piezas clave propias |
-| 43 | R8 | Proyecto | Repartir la carga protege el tiempo real |
-| 44 | R9 | Resultados | Los 5 mapas calzan con el plano real a 3,4 cm |
-| 45 | R10 | Alternativas | Plataforma: ganó ROS 2 |
-| 46 | R11 | Alternativas | Mapeo: ganó SLAM Toolbox |
-| 47 | R12 | Alternativas | Navegación y exploración: ganaron A* + DWB y fronteras |
+| 40 | Índice | | Láminas de respaldo |
+| 41 | R1 | Control | El robot corrige sus ruedas 30 veces por segundo |
+| 42 | R2 | Control | El lazo deja de acumular al tope y cada rueda tiene su calibración |
+| 43 | R3 | Control | El control se mantiene estable con holgura |
+| 44 | R4 | Control | Sin IMU y sin costo extra, mapas a 3,4 cm del plano |
+| 45 | R5 | Hardware | L298N hoy y DRV8871 para una versión compacta |
+| 46 | R6 | Hardware | Un margen de 15 cm abre paso por pasillos de 58 cm |
+| 47 | R7 | Proyecto | Software abierto probado y piezas clave propias |
+| 48 | R8 | Proyecto | Repartir la carga: buenas prácticas y ventajas |
+| 49 | R9 | Resultados | Los 5 mapas calzan con el plano real a 3,4 cm |
+| 50 | R10 | Alternativas | ROS 2 frente a ROS 1 |
+| 51 | R11 | Alternativas | YARP, Orocos RTT y LCM |
+| 52 | R12 | Alternativas | SLAM Toolbox frente a GMapping |
+| 53 | R13 | Alternativas | Hector SLAM y Cartographer |
+| 54 | R14 | Alternativas | A* frente a RRT |
+| 55 | R15 | Alternativas | DWB frente a Pure Pursuit y MPPI |
+| 56 | R16 | Alternativas | Fronteras frente a ganancia de información y SLAM activo |
 
 ## Respuestas breves
 
-R1 · El robot corrige sus ruedas 30 veces por segundo (lámina 36)
+R1 · El robot corrige sus ruedas 30 veces por segundo (lámina 41)
 
 Cada 33 milisegundos, es decir, 30 veces por segundo, el Arduino repite cuatro pasos: mide la velocidad con los encoders, la compara con la pedida, calcula un ajuste pequeño y lo suma a la potencia que el motor ya tenía. Mientras hay error, la potencia sube un poco en cada ciclo. Cuando el error llega a cero, se mantiene sin caer. Por eso corrige de forma suave, sin tirones.
 
 Datos para preguntas (no se leen en voz alta): Ciclo de control de 33 ms en el Arduino Nano, unas 30 veces por segundo. Ley incremental: PWM nuevo = PWM anterior + corrección. La salida se limita a ±255 y el integrador deja de acumular en el tope. Tesis, Sec. 4.4.3.
 
-R2 · Ley PI estándar: simple, sin ruido y lista para ROS 2 (lámina 37)
+R2 · El lazo deja de acumular al tope y cada rueda tiene su calibración (lámina 42)
 
-Es la ley PI estándar en robótica, en su forma incremental. Elimina el error porque acumula ajustes hasta llegar a la velocidad pedida. Frena sin ruido porque no usa derivada, que amplificaría los pulsos del encoder. Y es segura al tope: deja de acumular al llegar al máximo de potencia. Se calibró con una semilla en simulación y un ajuste fino en el piso, y lleva cada rueda a la velocidad pedida en menos de un segundo y medio, sin sobrepasarse. Ya viene integrada con diffdrive_arduino en ROS 2.
+Cada 33 milisegundos, el controlador de cada rueda compara la velocidad pedida con la medida, ignora errores mínimos, suma un ajuste pequeño a la potencia anterior y la limita a más o menos 255. Si la potencia toca ese tope, el acumulador deja de crecer: es la protección anti-saturación, que evita que la rueda se pase de la velocidad al salir del tope. Cada rueda tiene su propia calibración: la izquierda quedaba un paso bajo la meta y recibió más acción integral, la derecha no. Ambas necesitaron un arranque más firme por la zona muerta del driver. Resultado: llegan a la velocidad pedida en menos de 1,5 segundos, sin sobrepasarse.
 
-Datos para preguntas (no se leen en voz alta): Ganancias finales, izquierda / derecha: Kp 16,00 / 16,42 (firmeza del arranque), Kd 20,30 / 20,05 (en esta ley actúa sobre la medición y suaviza la respuesta), Ki 0,075 / 0,001 (solo la izquierda lo usa para quitar el error final), Ko 50 (escala común). Equivalen a un PI clásico con Kc = Kd ÷ Ko ≈ 0,41 / 0,40 y Ti ≈ 42 / 40 ms. Modelo izquierda / derecha: Km 0,000913 / 0,000890 m/s por PWM, τ 0,33 / 0,35 s, L 0,0001 / 0,07 s. Semilla del PSO: Kp 12,48 / 10,10, Kd 34,69 / 36,70, Ki ≈ 0. Tope de salida ±255: al llegar, el integrador deja de acumular (anti-windup natural). En el piso: subida 0,8 / 1,4 s, error final 0,002 / 0,000 m/s, sin sobreimpulso significativo. Tesis, Sec. 4.4.3, 4.4.5 y Anexo de ecuaciones del PID.
+Datos para preguntas (no se leen en voz alta): Ley ejecutada (Sec. 4.4.3): incremento = (Kp·error − Kd·cambio de la medición + estado integral) ÷ Ko. El estado integral solo se actualiza si la salida sin limitar es menor que 255 en valor absoluto. Salida = límite ±255 de la salida anterior más el incremento. Banda muerta sobre el error: 2 ticks/frame en la rueda izquierda y 1 en la derecha (Anexo). Ganancias finales, izquierda / derecha: Kp 16,00 / 16,42, Kd 20,30 / 20,05, Ki 0,075 / 0,001, Ko 50. Sin Ki equivalen a un PI con ganancia proporcional 0,41 / 0,40 PWM por tick/frame. Semilla del PSO: Ki casi nulo y Kp y Kd cercanos a 11 y 35. En el piso: Ki izquierdo a 0,075 por error estacionario, Kp sube por la zona muerta del driver, Kd baja porque la velocidad medida viene cuantizada. El gráfico es un esquema ilustrativo, no una medición. Tesis, Sec. 4.4.3, 4.4.5 y Anexo de ecuaciones del controlador.
 
-R3 · El control se mantiene estable con holgura (lámina 38)
+R3 · El control se mantiene estable con holgura (lámina 43)
 
 Lo probé de tres formas: un análisis discreto a 33 milisegundos sobre el modelo de cada rueda, un barrido de 625 combinaciones y la prueba real. El control se mantiene estable con holgura: tolera al menos 0,3 segundos de retardo extra, admite más de cuatro veces la ganancia sin oscilar y su sensibilidad queda en la zona recomendada, sin sobreimpulso.
 
 Datos para preguntas (no se leen en voz alta): Análisis discreto a 33 ms sobre el modelo de cada rueda, con 0 y 0,1 s de retardo, más la prueba real a 0,13 m/s. Margen de retardo: 0,42 a 0,45 s sin retardo y 0,32 a 0,35 s con 0,1 s. Margen de ganancia: 38,9 a 39,4 dB sin retardo y 13,1 a 13,4 dB (≈4,5 veces) con 0,1 s. Margen de fase: 53° a 57° sin retardo y 41° a 44° con 0,1 s. Sensibilidad máxima Ms 1,35 a 1,85, dentro del rango típico de 1,2 a 2,0. Barrido de 625 combinaciones de ganancia del motor (0,1 a 10 veces) y constante de tiempo (0,05 a 3 s): sin retardo, las 625 son estables. Con 0,1 s se inestabilizan las de ganancia mayor que 4,4 veces (2,8 veces en la rueda izquierda si Ki se trata como lineal), 102 de 625. Son modelos lineales: no incluyen saturación, zona muerta ni aritmética entera, y no son una garantía global. Tesis, Sec. 4.4.3 y Anexo de estabilidad.
 
-R4 · Sin IMU y sin costo extra, mapas a 3,4 cm del plano (lámina 39)
+R4 · Sin IMU y sin costo extra, mapas a 3,4 cm del plano (lámina 44)
 
 Sin sensor de giro, el ángulo sale de las ruedas, que al girar resbalan un poco: cerca de 3 por ciento por vuelta completa. El láser con SLAM Toolbox corrige ese desvío en vivo y deja los muros a 3,4 cm del plano real. Así el prototipo base no necesita hardware extra, y una IMU con filtro de Kalman queda como mejora al escalar a recintos grandes, como bodegas.
 
 Datos para preguntas (no se leen en voz alta): Sin IMU el ángulo sale solo de las ruedas: 11,7° medios por vuelta de 360° (3,24 %, precisión 96,8 %), con repeticiones de 4,0° y 4,3°. SLAM Toolbox corrige ese desvío con el láser: muros a 3,4 cm del plano medido con cinta. Para escalar a recintos grandes: IMU + filtro de Kalman. Tesis, Sec. 3.4, 5.1 y 5.3.
 
-R5 · L298N hoy y DRV8871 para una versión compacta (lámina 40)
+R5 · L298N hoy y DRV8871 para una versión compacta (lámina 45)
 
 El L298N resolvió el prototipo: es robusto, trae borneras, tiene más de cinco veces la corriente que piden los motores en marcha y cuesta unos 3 000 pesos. El TB6612FNG quedó descartado porque queda al límite de voltaje y en los picos de arranque. Para una versión más compacta, dos DRV8871 son la mejora natural: más eficientes, con menos calor y una etapa de potencia más pequeña.
 
 Datos para preguntas (no se leen en voz alta): Consumo del motor JGA25-370: ~0,35 A en marcha y hasta 2,5 A al arrancar. Batería de 12,6 V. L298N: 2 A continuos por canal y 46 V. Frente a 0,35 A en marcha, más de 5 veces de holgura. Costo ≈ $3.000 CLP. TB6612FNG: 1,2 A continuos y 13,5 V recomendados frente a 12,6 V de la batería, al límite. Los picos de arranque superan su corriente continua. DRV8871: 3,6 A y 45 V, caída ≈0,2 V. Menos calor y etapa de potencia más pequeña. Fuentes: hojas de datos de ST, Toshiba y TI, y tesis (Anexo de costos).
 
-R6 · Un margen de 15 cm abre paso por pasillos de 58 cm (lámina 41)
+R6 · Un margen de 15 cm abre paso por pasillos de 58 cm (lámina 46)
 
 Los pasillos miden 58 cm. Con un margen de 15 cm por lado, el robot conserva paso libre y recorre todo el recinto. Si el margen fuera del tamaño de su esquina, las rutas se bloquearían. La próxima mejora es evaluar el contorno completo del robot al girar.
 
 Datos para preguntas (no se leen en voz alta): Radio de inflado: 15 cm desde el centro del robot. La esquina del robot está a 24 cm del centro. Paso libre para el centro: 58 − 2 × 15 = 28 cm. Con 24 cm: 58 − 2 × 24 = 10 cm, y las rutas se bloquean. El planificador revisa el centro y no el contorno: el roce breve del video ocurre en este compromiso. Tesis, Sec. 4.5.4.
 
-R7 · Software abierto probado y piezas clave propias (lámina 42)
+R7 · Software abierto probado y piezas clave propias (lámina 47)
 
 Integré software abierto probado, como ROS 2, Nav2, SLAM Toolbox y Gazebo, y adapté cuatro proyectos abiertos, todos citados. Lo propio está en las piezas clave de ingeniería: el modelo URDF del robot real, el nodo del láser, la identificación de motores con PSO, el análisis de estabilidad y los protocolos de medición. Todo está publicado en el repositorio del proyecto.
 
 Datos para preguntas (no se leen en voz alta): Los 4 proyectos adaptados (articubot_one, diffdrive_arduino, ROSArduinoBridge y explore_lite) se citan en la tesis. Código publicado con licencia MIT. Tesis, Introducción (Justificación) y Anexo de entorno de ejecución.
 
-R8 · Repartir la carga protege el tiempo real (lámina 43)
+R8 · Repartir la carga: buenas prácticas y ventajas (lámina 48)
 
-El robot hace solo lo urgente y el portátil lo pesado. Así el tiempo real queda protegido en el Arduino y la Raspberry Pi 4, el cómputo pesado corre en un portátil de gama media sin encarecer el robot, y RViz2 permite supervisar en vivo por una red Wi-Fi dedicada, con IP fijas.
+El robot hace solo lo urgente y el portátil lo pesado. Es una buena práctica de ingeniería: el tiempo real de las ruedas queda separado del cómputo pesado del mapa, la red es una Wi-Fi dedicada con IP fijas, todo corre sobre ROS 2 con DDS y la observación con RViz2 va aparte de la ejecución. Las ventajas son prácticas: menos costo, peso y consumo a bordo, un pico de cálculo del SLAM no frena las ruedas, se depura en vivo desde el portátil y se puede escalar cambiando el PC por un computador embebido sin rehacer el robot.
 
-Datos para preguntas (no se leen en voz alta): ROS 2 Foxy con CycloneDDS. Red Wi-Fi dedicada con IP fijas. En el robot: Arduino Nano y Raspberry Pi 4 de 8 GB. En el portátil: SLAM Toolbox, Nav2 y el explorador. Tesis, Anexo de entorno de ejecución.
+Datos para preguntas (no se leen en voz alta): ROS 2 Foxy con CycloneDDS, ROS_DOMAIN_ID 0, misma distribución en ambos equipos. Red Wi-Fi dedicada con IP estáticas. En el robot: Arduino Nano y Raspberry Pi 4. En el portátil (Intel Core i7-10610U, 32 GB): SLAM Toolbox, Nav2, el explorador y RViz2. Las ventajas son de diseño: la tesis no mide consumo ni carga de cómputo (Cap. 5). Tesis, Anexo de entorno de ejecución.
 
-R9 · Los 5 mapas calzan con el plano real a 3,4 cm (lámina 44)
+R9 · Los 5 mapas calzan con el plano real a 3,4 cm (lámina 49)
 
 Superpuse los 5 mapas sobre el plano medido con cinta métrica, sin reescalarlos. La distancia media es de 3,4 cm, entre 3,1 y 3,7 por mapa: menos que una celda de 5 cm. La escala es real y el mapa sirve para levantar planos.
 
 Datos para preguntas (no se leen en voz alta): 5 mapas alineados sobre el plano medido con cinta, sin reescalar. Distancia media 3,4 cm, entre 3,1 y 3,7 cm por mapa. Celda del mapa: 5 cm. Tesis, Sec. 5.3 y Anexo de comparación con el plano.
 
-R10 · Plataforma: ganó ROS 2 (lámina 45)
+R10 · ROS 2 frente a ROS 1 (lámina 50)
 
-ROS 1 depende de un nodo maestro: si cae, cae todo. YARP no trae mapeo ni navegación móvil. Orocos RTT es para control de brazos, sin mapeo 2D ni rutas. LCM solo transporta mensajes y obliga a programar todo desde cero. ROS 2 es distribuido y trae Nav2 y SLAM Toolbox listos para integrar.
+ROS 1 depende de un nodo maestro central: cada módulo se registra en él para encontrar a los demás, y si el maestro cae, los módulos ya no pueden encontrarse. ROS 2 es distribuido: con DDS cada módulo descubre a los demás por la red, sin un centro. Por eso no tiene un punto único de falla, y además trae Nav2 y SLAM Toolbox listos para integrar.
 
-Datos para preguntas (no se leen en voz alta): ROS 2 es distribuido y trae Nav2 y SLAM Toolbox listos para integrar. Tesis, Cap. 1 (Estado del arte) y tablas comparativas de plataformas.
+Datos para preguntas (no se leen en voz alta): La tesis elige ROS 2 por su arquitectura distribuida sin nodo maestro y por su ecosistema de mapeo, navegación y exploración. El fin de soporte de ROS 1 no se usa como criterio, porque ROS 2 Foxy también está fuera de soporte. Tesis, Cap. 1 (Plataformas y middleware) y Cap. 2 (Selección de tecnologías).
 
-R11 · Mapeo: ganó SLAM Toolbox (lámina 46)
+R11 · YARP, Orocos RTT y LCM (lámina 51)
 
-GMapping no corrige el mapa al volver a un lugar conocido. Hector SLAM exige un láser más caro y deriva en recintos grandes. Cartographer es más difícil de ajustar y el que más CPU usa entre los métodos 2D comparados. SLAM Toolbox corrige el mapa al volver, lo guarda y corre en un portátil de gama media.
+Las tres son buenas en lo suyo. YARP conecta módulos y abstrae dispositivos, Orocos RTT hace control determinista por componentes y LCM es mensajería de baja latencia. Pero ninguna trae mapeo ni navegación para un robot móvil: habría que programar esas partes desde cero. ROS 2 las trae listas con SLAM Toolbox y Nav2.
 
-Datos para preguntas (no se leen en voz alta): SLAM Toolbox cierra lazos, guarda el mapa y es liviano. Cartographer es el que más CPU usa entre los métodos 2D comparados. Tesis, Cap. 1 (Estado del arte) y Sec. 1.4.
+Datos para preguntas (no se leen en voz alta): YARP: sin pila propia de navegación móvil. Orocos RTT: no distribuye módulos de mapeo ni de planificación. LCM: no incluye percepción, mapeo ni navegación. Tesis, Cap. 1, tabla de plataformas y middleware.
 
-R12 · Navegación y exploración: ganaron A* + DWB y fronteras (lámina 47)
+R12 · SLAM Toolbox frente a GMapping (lámina 52)
 
-En navegación, RRT sirve más en espacios continuos o brazos, y en una grilla 2D A* es más directo. Pure Pursuit responde peor ante obstáculos cercanos y MPPI pide mucho más cómputo que DWB. En exploración, la ganancia de información y el SLAM activo agregan cálculo y complejidad sin beneficio en interiores planos. Las fronteras son livianas y usan directo el mapa.
+GMapping es un filtro de partículas: sigue muchas hipótesis de la ruta, cada una con su propio mapa. Depende de una odometría consistente y no tiene cierre de lazo. SLAM Toolbox arma un grafo de poses: une cada barrido con los anteriores como una red, y al volver a un lugar conocido cierra el lazo y corrige todo el mapa. Además guarda el mapa y está integrado con ROS 2.
 
-Datos para preguntas (no se leen en voz alta): Navegar es trazar y seguir la ruta a una meta. Explorar es elegir la próxima meta. Tesis, Cap. 1 (Estado del arte) y tablas comparativas de navegación y exploración.
+Datos para preguntas (no se leen en voz alta): GMapping: buen desempeño en tiempo real y memoria acotada en escenas pequeñas, pero sin cierre de lazo y con menor portabilidad a ROS 2. SLAM Toolbox: en modo asíncrono puede omitir mediciones si el procesamiento de la anterior se retrasa. Tesis, Cap. 1 (Percepción y mapeo) y Sec. 3.8.
+
+R13 · Hector SLAM y Cartographer (lámina 53)
+
+Hector SLAM alinea cada barrido con el anterior, casi sin usar las ruedas, pero necesita un láser de alta tasa para no derivar y en recintos extensos el lazo no cierra bien. Cartographer, de Google, arma submapas y los optimiza en conjunto, con buena consistencia global, pero es más difícil de ajustar y en una comparación independiente de cinco métodos 2D fue el que más CPU usó.
+
+Datos para preguntas (no se leen en voz alta): Hector SLAM nace del equipo Hector de RoboCup Rescue (lámina 5). Tesis, Cap. 1, tabla de alternativas de SLAM 2D.
+
+R14 · A* frente a RRT (lámina 54)
+
+A estrella recorre la grilla del mapa como una onda que avanza hacia la meta, sumando lo recorrido y una estimación de lo que falta, y se queda con el camino más corto. Trabaja directo sobre el mapa de ocupación y replanificar le cuesta poco. RRT lanza ramas al azar por el espacio hasta tocar la meta. Brilla en espacios continuos de muchas dimensiones o con restricciones de movimiento, como un brazo robótico, no en una grilla 2D.
+
+Datos para preguntas (no se leen en voz alta): En Nav2 se usa el planificador NavFn con A* habilitado (Sec. 4.5.3). Tesis, Cap. 1 (Navegación y exploración) y Sec. 3.10.
+
+R15 · DWB frente a Pure Pursuit y MPPI (lámina 55)
+
+DWB prueba un abanico de curvas posibles según la velocidad actual y elige la mejor, lejos de los obstáculos. Es habitual en robots diferenciales por su bajo costo y su buena respuesta ante obstáculos cercanos. Pure Pursuit persigue un punto que va adelante sobre la ruta: es más simple, pero responde peor ante obstáculos que aparecen. MPPI simula cientos de trayectorias futuras considerando la dinámica del robot, a costa de mucho más cómputo.
+
+Datos para preguntas (no se leen en voz alta): Nav2 permite combinar planificadores como NavFn y Smac con controladores como DWB, Regulated Pure Pursuit y MPPI. Tesis, Cap. 1 (Navegación y exploración).
+
+R16 · Fronteras frente a ganancia de información y SLAM activo (lámina 56)
+
+Las fronteras mandan al robot al borde entre lo conocido y lo desconocido. Son livianas y usan directo el mapa de ocupación con Nav2. La ganancia de información puntúa cada candidato según cuánto podría ver desde ahí, pero requiere modelos y cálculos adicionales. El SLAM activo elige rutas que también mejoran el mapa y la ubicación: decide mejor, pero con mucho más cómputo.
+
+Datos para preguntas (no se leen en voz alta): Explorador usado: explore_lite (proyecto m-explore), port a ROS 2. Tesis, Cap. 1 (Exploración autónoma) y Cap. 2 (Selección de tecnologías).
 
 ## Mini glosario
 
@@ -272,6 +344,11 @@ Una frase por término, para responder sin jerga.
 - **Cierre de lazo:** cuando SLAM reconoce un lugar ya visto y corrige el error acumulado.
 - **Middleware robótico:** software que conecta sensores, motores y algoritmos para que trabajen como un solo sistema.
 - **ROS 2:** middleware estándar para robots, organizado en programas que se envían mensajes.
+- **Nodo:** un programa de ROS 2 con una sola tarea, como ver, mapear o navegar.
+- **Tópico:** un canal con nombre donde un nodo publica mensajes y otros los escuchan.
+- **DDS:** el estándar de comunicación que usa ROS 2 para que los nodos se encuentren solos en la red.
+- **Anti-saturación:** cuando la potencia llega al tope, el controlador deja de acumular error para no pasarse después.
+- **RRT:** planificador que lanza ramas al azar hasta tocar la meta. Sirve en espacios continuos de muchas dimensiones.
 - **Nav2:** el sistema de navegación de ROS 2: traza la ruta y ordena las velocidades.
 - **A\* (A estrella):** busca el camino más corto en la grilla del mapa, sumando lo recorrido y una estimación de lo que falta.
 - **DWB:** prueba trayectorias cortas posibles según la velocidad actual y elige la que sigue la ruta lejos de los obstáculos.
@@ -285,11 +362,3 @@ Una frase por término, para responder sin jerga.
 - **URDF:** formato estándar que describe las piezas y uniones de un robot.
 - **AMCL:** método para ubicarse dentro de un mapa ya guardado. Quedó fuera del alcance.
 - **Gemelo digital:** copia virtual del robot en el simulador.
-
-## Cómo ensayar
-
-1. No memorices palabra por palabra. Fija las ideas clave de cada lámina y la frase de paso a la siguiente.
-2. Escucha `audio_guion/defensa_completa.mp3` una vez siguiendo la presentación, para fijar el orden y los clics.
-3. Ensaya con la presentación corriendo y un cronómetro, al menos tres veces, para calzar cada clic con tu voz.
-4. Repasa las respuestas breves con `audio_guion/respaldos_respuestas.mp3`.
-5. Grábate una vez en audio y escucha si se cuelan muletillas.
