@@ -4,7 +4,7 @@ Va con `slides-v3.pptx`: 34 láminas visibles y 13 ocultas (un índice y 12 resp
 
 Cada `[CLIC]` hace aparecer la parte siguiente de la lámina. El número de clics de cada lámina coincide con sus animaciones. El video de la lámina 2 parte solo al entrar. Las seis portadas azules no tienen clics: el ícono del tema viaja solo, con la transición Morph, hasta la cabecera de la lámina siguiente.
 
-Duración estimada de la narración: 26 min 34 s a 130 palabras por minuto (3463 palabras). Con pausas naturales debe quedar bajo el límite de 30 minutos. `generar_audio_guion.py` imprime la duración real del audio de ensayo.
+Duración estimada de la narración: 25 min 38 s a 130 palabras por minuto (3333 palabras). Con pausas naturales debe quedar bajo el límite de 30 minutos. `generar_audio_guion.py` imprime la duración real del audio de ensayo.
 
 Para ensayar con audio: `python generar_audio_guion.py` en esta carpeta crea los MP3 en `audio_guion/`.
 
@@ -86,21 +86,29 @@ Lámina 17 · Por qué un PI incremental (80 s)
 
 Un punto central para nuestra especialidad es el control de velocidad de cada rueda. Cada 33 milisegundos, el Arduino ajusta la potencia sumando solo el cambio necesario. [CLIC] Un PID tradicional, posicional, recalcula la potencia total en cada ciclo, y su parte derivativa suele amplificar el ruido de los encoders. El PI incremental de este robot calcula solo el incremento de PWM y lo suma al valor anterior, con la acción proporcional sobre la medición. [CLIC] Lo elegí por tres razones. Primero, sin derivada no amplifica el ruido de los pulsos, y es el esquema probado en robótica móvil. Segundo, la referencia entra solo por la integral: no hay saltos al cambiar la consigna, y al llegar al tope de 255 deja de acumular, un anti-windup natural. Tercero, es liviano y ya viene integrado con diffdrive_arduino en ROS 2. [CLIC] En el robot real, a 0,13 m/s, las ruedas suben en 0,8 y 1,4 segundos, sin sobreimpulso, con error final de hasta 0,002 m/s y un margen de fase entre 41 y 57 grados.
 
-Lámina 18 · Paso 1: medir cada rueda (40 s)
+Lámina 18 · Paso 1: medir revela que cada motor es único (40 s)
 
-¿Cómo llegué a esas ganancias? En cuatro pasos, automatizados en Python. El primero es medir cómo responde cada rueda. [CLIC] Sin ningún controlador, Python envía a cada motor un pulso fijo de potencia, cerca del 56 por ciento del máximo, durante 10 segundos. [CLIC] Mientras tanto, los encoders graban la velocidad real de cada rueda cada décima de segundo. Ambas suben rápido y se estabilizan cerca de 0,13 m/s. [CLIC] El hallazgo inmediato es que, aunque los dos motores son del mismo modelo, cada rueda responde distinto. Por eso modelé cada una por separado.
+¿Cómo logré que cada rueda responda tan bien? Con un método de cuatro pasos, automatizado en Python. El primero es medir. [CLIC] Sin controlador, Python aplica el mismo pulso de potencia a los dos motores y los encoders graban cómo acelera cada rueda. [CLIC] Al acercar la vista a la velocidad final aparece algo valioso: son motores económicos del mismo modelo, pero cada uno tiene su propio carácter. [CLIC] La medición lo detecta desde el primer minuto, y por eso cada rueda recibe su propia calibración.
 
-Lámina 19 · Paso 2: los 3 rasgos del motor (60 s)
+Datos para preguntas (no se leen en voz alta): Pulso fijo de PWM 143 de 255 (≈56 % del máximo) desde t = 1 s, sin controlador. Captura de 10 s, una muestra cada 0,1 s. Velocidad final media (t ≥ 3 s): ≈0,130 m/s la izquierda y ≈0,127 m/s la derecha, unos 2 % de diferencia. La izquierda va más rápido en 86 % de las muestras (chart-control-data.csv). Modelos identificados: Km 0,000913 y 0,000890 m/s por unidad de PWM, τ 0,33 y 0,35 s. Motores JGA25-370 de 12 V con encoder. Tesis, Sec. 4.4.5 (Captura de respuesta en lazo abierto).
 
-Segundo paso: de esa curva real extraigo tres rasgos que describen cada motor. Un primer enjambre de partículas, el PSO, prueba combinaciones en Python hasta que la curva simulada calza con la medida. [CLIC] El primer rasgo es el retardo: el motor despega casi al instante, en menos de una décima de segundo. [CLIC] El segundo es la rapidez: llega al 63 por ciento de su velocidad final en unos 0,3 segundos. [CLIC] El tercero es la fuerza, o ganancia: cuánta velocidad final entrega por cada unidad de potencia aplicada. [CLIC] El hallazgo clave: ambas ruedas reaccionan casi al instante y aceleran en un tercio de segundo, pero con distinta fuerza. La copia virtual de cada motor captura esa diferencia, y con ella puedo simular antes de tocar el robot.
+Lámina 19 · Paso 2: un gemelo matemático por motor (40 s)
 
-Lámina 20 · Paso 3: simular y buscar (50 s)
+Segundo paso: con esa medición construyo un gemelo matemático de cada motor. Python prueba miles de combinaciones hasta que la curva del gemelo calza con la medición real, como una ingeniería inversa. [CLIC] Captura su reacción: arranca casi al instante. [CLIC] Su rapidez: acelera en un tercio de segundo. [CLIC] Y su fuerza: cuánta velocidad entrega con la potencia aplicada. [CLIC] Lo mejor es que cada gemelo captura hasta la diferencia de fuerza entre ruedas. Desde aquí, cada prueba ocurre en el computador y el robot queda intacto.
 
-Tercer paso: buscar las ganancias en simulación. [CLIC] Python reemplaza el motor físico por su copia virtual y prueba la misma ley PI del Arduino, a 30 hertz. [CLIC] Un segundo enjambre PSO prueba 7 500 combinaciones de ganancias en segundos: 50 partículas durante 150 rondas. Premia llegar rápido a la velocidad pedida y castiga con peso triple pasarse de ella. [CLIC] El hallazgo: entrega un punto de partida estable para cada rueda, listo para cargar sin vibraciones ni riesgo para los motores. [CLIC] Automatizarlo en Python reduce la prueba y error, compensa las diferencias entre motores económicos, da un punto de partida seguro y se puede repetir si se cambian motores o ruedas.
+Datos para preguntas (no se leen en voz alta): Modelo de primer orden con retardo (FOPDT). Izquierda / derecha: Km 0,000913 / 0,000890 m/s por PWM, τ 0,329 / 0,349 s, L 0,0001 / 0,069 s. L es menor que el muestreo de 0,1 s y se cuantiza a cero muestras: en la práctica el modelo es de primer orden. τ es el tiempo en llegar al 63 % de la velocidad final. «Un tercio de segundo» es τ redondeado. 1.er PSO: 50 partículas, 150 generaciones, costo = error cuadrático medio de identificación. Ajusta la medición suavizada con una media móvil de 5 muestras, por eso la curva del gemelo va algo detrás de los puntos al arrancar. No es el gemelo digital de Gazebo de la lámina 15: este modela solo cómo responde cada motor. Tesis, Sec. 4.4.5 y Anexo de identificación FOPDT.
 
-Lámina 21 · Paso 4: ajuste en el piso real (70 s)
+Lámina 20 · Paso 3: la automatización calibra (40 s)
 
-Cuarto paso: probar esas ganancias en el robot real, a 0,13 m/s. [CLIC] ¿Por qué retocarlas? Porque la copia virtual no ve la fricción del suelo ni la zona muerta del driver L298N, donde con poca potencia el motor no arranca. Por eso subí Kp para un arranque más firme, bajé Kd para un movimiento parejo y subí Ki en la rueda izquierda para quitar el error final. [CLIC] El gráfico compara ambas corridas en el piso. En gris, con la semilla, la rueda izquierda se quedaba corta y la derecha tardaba unos 6 segundos. En color, con el ajuste final, las ruedas llegan en 0,8 y 1,4 segundos. [CLIC] El salto es de cuatro veces: de unos 6 segundos a menos de 1,5, con precisión y sin sobreimpulso. Y la lección práctica: simular ahorra horas, pero la fricción del piso y la zona muerta siempre exigen un ajuste real.
+Tercer paso: dejar que la automatización calibre. [CLIC] El gemelo de cada motor corre con el mismo programa de control del Arduino. [CLIC] Una búsqueda automática evalúa miles de calibraciones y se queda con la que sigue mejor la velocidad pedida sin pasarse. [CLIC] El resultado es una calibración estable para cada rueda, lista para cargar sin riesgo. [CLIC] Y el proyecto gana tres cosas: calibra en el computador, saca lo mejor de motores económicos y se repite con los mismos scripts si mañana cambian motores o ruedas.
+
+Datos para preguntas (no se leen en voz alta): La simulación corre a 30 Hz (período de 33 ms) con la misma ley PI incremental del firmware, sobre el modelo de cada rueda. 2.º PSO: 50 partículas × 150 generaciones = 7 500 evaluaciones por rueda. Costo: error cuadrático medio con peso 1 más sobreimpulso con peso 3. No penaliza el tiempo de subida ni el esfuerzo de control. Semilla entregada: Kp 12,48 / 10,10, Kd 34,69 / 36,70 (el costo evalúa Kd hasta 25), Ki ≈ 0,00001. La tesis no mide el tiempo de cómputo del PSO ni el de un ajuste manual. Por eso la lámina no da tiempos. Tesis, Sec. 4.4.5, Anexo de protocolos de sintonización y Anexo de resultados PSO.
+
+Lámina 21 · Paso 4: ajuste final en el piso (45 s)
+
+Cuarto paso: el toque final en el piso real. [CLIC] El piso aporta lo que ningún modelo simple ve: la fricción del suelo y la zona muerta del driver. Con eso reforcé el arranque y emparejé la respuesta de cada rueda. [CLIC] En gris, la calibración simulada. En color, el ajuste final, que llega antes y limpio a la meta. [CLIC] Ahora cada rueda alcanza la velocidad pedida en menos de un segundo y medio, cerca de un segundo antes y sin sobrepasarse. La simulación entrega la base estable y el piso aporta el toque final.
+
+Datos para preguntas (no se leen en voz alta): Velocidad pedida: 0,13 m/s, misma prueba en el piso antes y después. Con el ajuste final: subida del 10 al 90 % en 0,8 s (izquierda) y 1,4 s (derecha), error final 0,002 y 0,000 m/s, sin sobreimpulso significativo. Margen de fase 41° a 57°. Con la semilla del PSO: la izquierda se queda en 0,12 m/s (error ≈0,01 m/s) y la derecha se detiene cerca de 0,11 m/s y se mantiene en la meta recién después de 6 s. La tesis resume: «la referencia se alcanza cerca de un segundo antes». Cambios: Kp sube 28 % y 63 % (a 16,00 y 16,42), Kd baja 41 % y 45 % (a 20,30 y 20,05), Ki izquierdo a 0,075 (el derecho, 0,001, no tiene efecto en la ley ejecutada). Zona muerta del driver L298N: con poca potencia el motor no gira. La resolución de la medición es 0,01 m/s, por eso la rueda izquierda muestra pequeños saltos. Por qué no «4× más rápido»: comparaba cuándo la rueda se queda en la meta (≈6 s) con el tiempo de subida (1,4 s), dos métricas distintas. Tesis, Sec. 4.4.5 (Refinamiento experimental), Sec. 5.2 y Tabla de indicadores de la respuesta al escalón.
 
 Lámina 22 · Cómo dibuja el mapa (55 s)
 
@@ -167,10 +175,10 @@ Están ocultas: no aparecen al avanzar. Para abrir una, haz clic en «Respaldo»
 | 35 | Índice | | Láminas de respaldo |
 | 36 | R1 | Control | El robot corrige sus ruedas 30 veces por segundo |
 | 37 | R2 | Control | Ley PI estándar: simple, sin ruido y lista para ROS 2 |
-| 38 | R3 | Control | Control probado en 625 escenarios, sin oscilar |
-| 39 | R4 | Control | Sin IMU, el láser logra mapas a 3,4 cm del plano |
-| 40 | R5 | Hardware | L298N hoy y 2 DRV8871 para una versión compacta |
-| 41 | R6 | Hardware | Margen de 15 cm para pasillos de 58 cm |
+| 38 | R3 | Control | El control se mantiene estable con holgura |
+| 39 | R4 | Control | Sin IMU y sin costo extra, mapas a 3,4 cm del plano |
+| 40 | R5 | Hardware | L298N hoy y DRV8871 para una versión compacta |
+| 41 | R6 | Hardware | Un margen de 15 cm abre paso por pasillos de 58 cm |
 | 42 | R7 | Proyecto | Software abierto probado y piezas clave propias |
 | 43 | R8 | Proyecto | Repartir la carga protege el tiempo real |
 | 44 | R9 | Resultados | Los 5 mapas calzan con el plano real a 3,4 cm |
@@ -184,49 +192,73 @@ R1 · El robot corrige sus ruedas 30 veces por segundo (lámina 36)
 
 Cada 33 milisegundos, es decir, 30 veces por segundo, el Arduino repite cuatro pasos: mide la velocidad con los encoders, la compara con la pedida, calcula un ajuste pequeño y lo suma a la potencia que el motor ya tenía. Mientras hay error, la potencia sube un poco en cada ciclo. Cuando el error llega a cero, se mantiene sin caer. Por eso corrige de forma suave, sin tirones.
 
+Datos para preguntas (no se leen en voz alta): Ciclo de control de 33 ms en el Arduino Nano, unas 30 veces por segundo. Ley incremental: PWM nuevo = PWM anterior + corrección. La salida se limita a ±255 y el integrador deja de acumular en el tope. Tesis, Sec. 4.4.3.
+
 R2 · Ley PI estándar: simple, sin ruido y lista para ROS 2 (lámina 37)
 
-Es la ley PI estándar en robótica, en su forma incremental. Elimina el error porque acumula ajustes hasta llegar a la velocidad pedida. Frena sin ruido porque no usa derivada, que amplificaría los pulsos del encoder. Y es segura al tope: deja de acumular al llegar al máximo de potencia. Ya viene integrada con diffdrive_arduino en ROS 2. Las ganancias finales son Kp 16,00 y 16,42, Kd 20,30 y 20,05, y Ko 50. Equivale a un PI clásico con ganancia proporcional de 0,41 y 0,40 y tiempo integral de 42 y 40 milisegundos.
+Es la ley PI estándar en robótica, en su forma incremental. Elimina el error porque acumula ajustes hasta llegar a la velocidad pedida. Frena sin ruido porque no usa derivada, que amplificaría los pulsos del encoder. Y es segura al tope: deja de acumular al llegar al máximo de potencia. Se calibró con una semilla en simulación y un ajuste fino en el piso, y lleva cada rueda a la velocidad pedida en menos de un segundo y medio, sin sobrepasarse. Ya viene integrada con diffdrive_arduino en ROS 2.
 
-R3 · Control probado en 625 escenarios, sin oscilar (lámina 38)
+Datos para preguntas (no se leen en voz alta): Ganancias finales, izquierda / derecha: Kp 16,00 / 16,42 (firmeza del arranque), Kd 20,30 / 20,05 (en esta ley actúa sobre la medición y suaviza la respuesta), Ki 0,075 / 0,001 (solo la izquierda lo usa para quitar el error final), Ko 50 (escala común). Equivalen a un PI clásico con Kc = Kd ÷ Ko ≈ 0,41 / 0,40 y Ti ≈ 42 / 40 ms. Modelo izquierda / derecha: Km 0,000913 / 0,000890 m/s por PWM, τ 0,33 / 0,35 s, L 0,0001 / 0,07 s. Semilla del PSO: Kp 12,48 / 10,10, Kd 34,69 / 36,70, Ki ≈ 0. Tope de salida ±255: al llegar, el integrador deja de acumular (anti-windup natural). En el piso: subida 0,8 / 1,4 s, error final 0,002 / 0,000 m/s, sin sobreimpulso significativo. Tesis, Sec. 4.4.3, 4.4.5 y Anexo de ecuaciones del PID.
 
-Lo probé de tres formas: un análisis discreto a 33 milisegundos sobre el modelo de cada rueda, un barrido de 625 combinaciones de ganancia y rapidez del motor, y la prueba real a 0,13 m/s. Ante demoras, tolera entre 0,32 y 0,45 segundos de retardo extra sin oscilar. Ante cambios de batería o de piso, soporta unas 4,5 veces más ganancia. Y su pico de sensibilidad queda entre 1,35 y 1,85, dentro del rango típico, sin sobreimpulso. Sin retardo, los 625 casos son estables. Con 0,1 segundos de retardo, las combinaciones más extremas sí se inestabilizan, 102 de 625, y por eso el margen que reporto es el de 4,5 veces.
+R3 · El control se mantiene estable con holgura (lámina 38)
 
-R4 · Sin IMU, el láser logra mapas a 3,4 cm del plano (lámina 39)
+Lo probé de tres formas: un análisis discreto a 33 milisegundos sobre el modelo de cada rueda, un barrido de 625 combinaciones y la prueba real. El control se mantiene estable con holgura: tolera al menos 0,3 segundos de retardo extra, admite más de cuatro veces la ganancia sin oscilar y su sensibilidad queda en la zona recomendada, sin sobreimpulso.
 
-Sin sensor de giro, el ángulo sale solo de las ruedas, que al girar resbalan un poco: en vueltas de 360 grados la desviación media fue de 3,24 por ciento, una precisión de 96,8 por ciento. Ese es el compromiso. El láser con SLAM Toolbox corrige ese deslizamiento en vivo y deja los muros a 3,4 cm del plano real. Así no hace falta encarecer el prototipo base. Una IMU con filtro de Kalman conviene al escalar a recintos grandes, como bodegas.
+Datos para preguntas (no se leen en voz alta): Análisis discreto a 33 ms sobre el modelo de cada rueda, con 0 y 0,1 s de retardo, más la prueba real a 0,13 m/s. Margen de retardo: 0,42 a 0,45 s sin retardo y 0,32 a 0,35 s con 0,1 s. Margen de ganancia: 38,9 a 39,4 dB sin retardo y 13,1 a 13,4 dB (≈4,5 veces) con 0,1 s. Margen de fase: 53° a 57° sin retardo y 41° a 44° con 0,1 s. Sensibilidad máxima Ms 1,35 a 1,85, dentro del rango típico de 1,2 a 2,0. Barrido de 625 combinaciones de ganancia del motor (0,1 a 10 veces) y constante de tiempo (0,05 a 3 s): sin retardo, las 625 son estables. Con 0,1 s se inestabilizan las de ganancia mayor que 4,4 veces (2,8 veces en la rueda izquierda si Ki se trata como lineal), 102 de 625. Son modelos lineales: no incluyen saturación, zona muerta ni aritmética entera, y no son una garantía global. Tesis, Sec. 4.4.3 y Anexo de estabilidad.
 
-R5 · L298N hoy y 2 DRV8871 para una versión compacta (lámina 40)
+R4 · Sin IMU y sin costo extra, mapas a 3,4 cm del plano (lámina 39)
 
-El L298N resolvió el prototipo: es robusto, entrega 2 amperes continuos por canal frente a unos 0,35 en marcha, trae borneras y cuesta unos 3 000 pesos. El TB6612FNG quedó descartado porque queda al límite: 13,5 volts recomendados frente a 12,6 de la batería, y picos de arranque sobre su corriente continua. Para una versión más compacta conviene usar dos DRV8871: más eficientes, con solo 0,2 volts de caída, menos calor y una etapa de potencia más pequeña.
+Sin sensor de giro, el ángulo sale de las ruedas, que al girar resbalan un poco: cerca de 3 por ciento por vuelta completa. El láser con SLAM Toolbox corrige ese desvío en vivo y deja los muros a 3,4 cm del plano real. Así el prototipo base no necesita hardware extra, y una IMU con filtro de Kalman queda como mejora al escalar a recintos grandes, como bodegas.
 
-R6 · Margen de 15 cm para pasillos de 58 cm (lámina 41)
+Datos para preguntas (no se leen en voz alta): Sin IMU el ángulo sale solo de las ruedas: 11,7° medios por vuelta de 360° (3,24 %, precisión 96,8 %), con repeticiones de 4,0° y 4,3°. SLAM Toolbox corrige ese desvío con el láser: muros a 3,4 cm del plano medido con cinta. Para escalar a recintos grandes: IMU + filtro de Kalman. Tesis, Sec. 3.4, 5.1 y 5.3.
 
-Los pasillos miden 58 cm. Con un margen de 15 cm por lado quedan 28 cm de paso libre para el centro del robot, y recorre todo el recinto. Con 24 cm, el tamaño de su esquina, quedarían solo 10 cm y las rutas se bloquean. El límite es que el planificador revisa el centro y no el contorno. El siguiente paso es evaluar el contorno rotado completo al girar.
+R5 · L298N hoy y DRV8871 para una versión compacta (lámina 40)
+
+El L298N resolvió el prototipo: es robusto, trae borneras, tiene más de cinco veces la corriente que piden los motores en marcha y cuesta unos 3 000 pesos. El TB6612FNG quedó descartado porque queda al límite de voltaje y en los picos de arranque. Para una versión más compacta, dos DRV8871 son la mejora natural: más eficientes, con menos calor y una etapa de potencia más pequeña.
+
+Datos para preguntas (no se leen en voz alta): Consumo del motor JGA25-370: ~0,35 A en marcha y hasta 2,5 A al arrancar. Batería de 12,6 V. L298N: 2 A continuos por canal y 46 V. Frente a 0,35 A en marcha, más de 5 veces de holgura. Costo ≈ $3.000 CLP. TB6612FNG: 1,2 A continuos y 13,5 V recomendados frente a 12,6 V de la batería, al límite. Los picos de arranque superan su corriente continua. DRV8871: 3,6 A y 45 V, caída ≈0,2 V. Menos calor y etapa de potencia más pequeña. Fuentes: hojas de datos de ST, Toshiba y TI, y tesis (Anexo de costos).
+
+R6 · Un margen de 15 cm abre paso por pasillos de 58 cm (lámina 41)
+
+Los pasillos miden 58 cm. Con un margen de 15 cm por lado, el robot conserva paso libre y recorre todo el recinto. Si el margen fuera del tamaño de su esquina, las rutas se bloquearían. La próxima mejora es evaluar el contorno completo del robot al girar.
+
+Datos para preguntas (no se leen en voz alta): Radio de inflado: 15 cm desde el centro del robot. La esquina del robot está a 24 cm del centro. Paso libre para el centro: 58 − 2 × 15 = 28 cm. Con 24 cm: 58 − 2 × 24 = 10 cm, y las rutas se bloquean. El planificador revisa el centro y no el contorno: el roce breve del video ocurre en este compromiso. Tesis, Sec. 4.5.4.
 
 R7 · Software abierto probado y piezas clave propias (lámina 42)
 
 Integré software abierto probado, como ROS 2, Nav2, SLAM Toolbox y Gazebo, y adapté cuatro proyectos abiertos, todos citados. Lo propio está en las piezas clave de ingeniería: el modelo URDF del robot real, el nodo del láser, la identificación de motores con PSO, el análisis de estabilidad y los protocolos de medición. Todo está publicado en el repositorio del proyecto.
 
+Datos para preguntas (no se leen en voz alta): Los 4 proyectos adaptados (articubot_one, diffdrive_arduino, ROSArduinoBridge y explore_lite) se citan en la tesis. Código publicado con licencia MIT. Tesis, Introducción (Justificación) y Anexo de entorno de ejecución.
+
 R8 · Repartir la carga protege el tiempo real (lámina 43)
 
 El robot hace solo lo urgente y el portátil lo pesado. Así el tiempo real queda protegido en el Arduino y la Raspberry Pi 4, el cómputo pesado corre en un portátil de gama media sin encarecer el robot, y RViz2 permite supervisar en vivo por una red Wi-Fi dedicada, con IP fijas.
+
+Datos para preguntas (no se leen en voz alta): ROS 2 Foxy con CycloneDDS. Red Wi-Fi dedicada con IP fijas. En el robot: Arduino Nano y Raspberry Pi 4 de 8 GB. En el portátil: SLAM Toolbox, Nav2 y el explorador. Tesis, Anexo de entorno de ejecución.
 
 R9 · Los 5 mapas calzan con el plano real a 3,4 cm (lámina 44)
 
 Superpuse los 5 mapas sobre el plano medido con cinta métrica, sin reescalarlos. La distancia media es de 3,4 cm, entre 3,1 y 3,7 por mapa: menos que una celda de 5 cm. La escala es real y el mapa sirve para levantar planos.
 
+Datos para preguntas (no se leen en voz alta): 5 mapas alineados sobre el plano medido con cinta, sin reescalar. Distancia media 3,4 cm, entre 3,1 y 3,7 cm por mapa. Celda del mapa: 5 cm. Tesis, Sec. 5.3 y Anexo de comparación con el plano.
+
 R10 · Plataforma: ganó ROS 2 (lámina 45)
 
 ROS 1 depende de un nodo maestro: si cae, cae todo. YARP no trae mapeo ni navegación móvil. Orocos RTT es para control de brazos, sin mapeo 2D ni rutas. LCM solo transporta mensajes y obliga a programar todo desde cero. ROS 2 es distribuido y trae Nav2 y SLAM Toolbox listos para integrar.
+
+Datos para preguntas (no se leen en voz alta): ROS 2 es distribuido y trae Nav2 y SLAM Toolbox listos para integrar. Tesis, Cap. 1 (Estado del arte) y tablas comparativas de plataformas.
 
 R11 · Mapeo: ganó SLAM Toolbox (lámina 46)
 
 GMapping no corrige el mapa al volver a un lugar conocido. Hector SLAM exige un láser más caro y deriva en recintos grandes. Cartographer es más difícil de ajustar y el que más CPU usa entre los métodos 2D comparados. SLAM Toolbox corrige el mapa al volver, lo guarda y corre en un portátil de gama media.
 
+Datos para preguntas (no se leen en voz alta): SLAM Toolbox cierra lazos, guarda el mapa y es liviano. Cartographer es el que más CPU usa entre los métodos 2D comparados. Tesis, Cap. 1 (Estado del arte) y Sec. 1.4.
+
 R12 · Navegación y exploración: ganaron A* + DWB y fronteras (lámina 47)
 
 En navegación, RRT sirve más en espacios continuos o brazos, y en una grilla 2D A* es más directo. Pure Pursuit responde peor ante obstáculos cercanos y MPPI pide mucho más cómputo que DWB. En exploración, la ganancia de información y el SLAM activo agregan cálculo y complejidad sin beneficio en interiores planos. Las fronteras son livianas y usan directo el mapa.
+
+Datos para preguntas (no se leen en voz alta): Navegar es trazar y seguir la ruta a una meta. Explorar es elegir la próxima meta. Tesis, Cap. 1 (Estado del arte) y tablas comparativas de navegación y exploración.
 
 ## Mini glosario
 

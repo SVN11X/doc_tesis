@@ -29,58 +29,61 @@ z
 " style="fill: none"/>
   </g>
   <g id="axes_1">
-   <g id="line2d_1">
-    <path d="M 53.568 151.803583
-L 183.238809 151.803583
-" clip-path="url(#p67582cc355)" style="fill: none; stroke-dasharray: 5.92,2.56; stroke-dashoffset: 0; stroke: #654a97; stroke-width: 1.6"/>
+   <g id="patch_2">
+    <path d="M 42.8544 268.92
+L 519.6096 268.92
+L 519.6096 44.82
+L 42.8544 44.82
+L 42.8544 268.92
+z
+" style="fill: none"/>
    </g>
-   <g id="line2d_2">
+   <g id="matplotlib.axis_1"/>
+   <g id="matplotlib.axis_2"/>
+   <g id="line2d_1">
     <defs>
-     <path id="m2f8f87ded5" d="M 0 4.5
-C 1.193414 4.5 2.338109 4.025852 3.181981 3.181981
-C 4.025852 2.338109 4.5 1.193414 4.5 0
-C 4.5 -1.193414 4.025852 -2.338109 3.181981 -3.181981
-C 2.338109 -4.025852 1.193414 -4.5 0 -4.5
-C -1.193414 -4.5 -2.338109 -4.025852 -3.181981 -3.181981
-C -4.025852 -2.338109 -4.5 -1.193414 -4.5 0
-C -4.5 1.193414 -4.025852 2.338109 -3.181981 3.181981
-C -2.338109 4.025852 -1.193414 4.5 0 4.5
+     <path id="me6115116fa" d="M 0 5
+C 1.326016 5 2.597899 4.473168 3.535534 3.535534
+C 4.473168 2.597899 5 1.326016 5 0
+C 5 -1.326016 4.473168 -2.597899 3.535534 -3.535534
+C 2.597899 -4.473168 1.326016 -5 0 -5
+C -1.326016 -5 -2.597899 -4.473168 -3.535534 -3.535534
+C -4.473168 -2.597899 -5 -1.326016 -5 0
+C -5 1.326016 -4.473168 2.597899 -3.535534 3.535534
+C -2.597899 4.473168 -1.326016 5 0 5
 z
 " style="stroke: #654a97"/>
     </defs>
-    <g clip-path="url(#p67582cc355)">
-     <use xlink:href="#m2f8f87ded5" x="183.238809" y="151.803583" style="fill: #654a97; stroke: #654a97"/>
+    <g clip-path="url(#p23f7c99500)">
+     <use xlink:href="#me6115116fa" x="175.506147" y="156.261232" style="fill: #654a97; stroke: #654a97"/>
     </g>
    </g>
-   <g id="text_1">
-    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Calibri', 'Carlito', 'DejaVu Sans'; text-anchor: start; fill: #111827" x="59.160499" y="146.425183" transform="rotate(-0 59.160499 146.425183)">63 %</text>
-   </g>
-   <g id="patch_2">
-    <path d="M 284.038119 181.057829
-Q 235.535201 168.034325 187.032283 155.010821
+   <g id="patch_3">
+    <path d="M 267.975029 188.865518
+Q 223.643439 174.276419 179.31185 159.68732
 " style="fill: none; stroke: #654a97; stroke-width: 1.4; stroke-linecap: round"/>
    </g>
-   <g id="text_2">
-    <g id="patch_3">
-     <path d="M 202.701312 206.3269
-L 464.023656 206.3269
-Q 468.573656 206.3269 468.573656 201.7769
-L 468.573656 186.8269
-Q 468.573656 182.2769 464.023656 182.2769
-L 202.701312 182.2769
-Q 198.151312 182.2769 198.151312 186.8269
-L 198.151312 201.7769
-Q 198.151312 206.3269 202.701312 206.3269
+   <g id="text_1">
+    <g id="patch_4">
+     <path d="M 195.416064 212.29125
+L 415.745751 212.29125
+Q 420.295752 212.29125 420.295752 207.74125
+L 420.295752 194.74125
+Q 420.295752 190.19125 415.745751 190.19125
+L 195.416064 190.19125
+Q 190.866064 190.19125 190.866064 194.74125
+L 190.866064 207.74125
+Q 190.866064 212.29125 195.416064 212.29125
 z
 " style="fill: #ffffff; stroke: #654a97; stroke-width: 1.4; stroke-linejoin: miter"/>
     </g>
-    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri', 'Carlito', 'DejaVu Sans'; text-anchor: start; fill: #111827" x="202.701312" y="198.1044" transform="rotate(-0 202.701312 198.1044)">2 · Rapidez (τ): acelera en ~0,3 s (tiempo al 63 %)</text>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri', 'Carlito', 'DejaVu Sans'; text-anchor: start; fill: #111827" x="195.416064" y="204.49125" transform="rotate(-0 195.416064 204.49125)">Rapidez: acelera en un tercio de segundo</text>
    </g>
   </g>
  </g>
  <defs>
-  <clipPath id="p67582cc355">
-   <rect x="53.568" y="44.82" width="466.0416" height="215.136"/>
+  <clipPath id="p23f7c99500">
+   <rect x="42.8544" y="44.82" width="476.7552" height="224.1"/>
   </clipPath>
  </defs>
 </svg>
