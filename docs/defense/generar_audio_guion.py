@@ -4,9 +4,9 @@ Run from docs/defense:  python generar_audio_guion.py
 Requires: pip install edge-tts==7.3.1 and internet access.
 
 Writes to audio_guion/:
-- one MP3 per main slide (01_portada.mp3 ... 30_gracias.mp3),
+- one MP3 per main slide (01_portada.mp3 ... 34_gracias.mp3),
 - defensa_completa.mp3, all main slides with 1.5 s of silence between them,
-- respaldos_respuestas.mp3, the short answers for R1 to R11.
+- respaldos_respuestas.mp3, the short answers for R1 to R12.
 
 script-v3.md is only read. The pronunciation fixes are applied in memory, so the
 script keeps its normal spelling. MP3 files are joined at frame level, so no

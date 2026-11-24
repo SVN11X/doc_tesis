@@ -2,7 +2,7 @@
 
 Material para la defensa de la tesis.
 
-- `slides-v3.pptx`: la presentación vigente. Tiene 32 láminas visibles y 13 ocultas: un índice y 12 respaldos (R1 a R12) para las preguntas. Seis portadas azules separan los temas y su ícono viaja con la transición Morph hasta la cabecera de la lámina siguiente. Trae el video de demostración incrustado, animaciones por clic, transiciones y el guion en las notas del orador.
+- `slides-v3.pptx`: la presentación vigente. Tiene 34 láminas visibles y 13 ocultas: un índice y 12 respaldos (R1 a R12) para las preguntas. Las láminas 18 a 21 explican el ajuste del control en cuatro pasos, con hallazgos en lugar de decimales. Cada respaldo es una tarjeta de respuesta rápida: el título es la conclusión y las cifras exactas van en una franja gris al pie. Seis portadas azules separan los temas y su ícono viaja con la transición Morph hasta la cabecera de la lámina siguiente. Trae el video de demostración incrustado, animaciones por clic, transiciones y el guion en las notas del orador.
 - `slides-v3.pdf`: la misma presentación en PDF, con las láminas ocultas al final. El video aparece como imagen fija.
 - `script-v3.md`: el guion de la v3, lo que se dice en cada lámina, el mapa de las láminas de respaldo con sus respuestas breves y un glosario.
 - `generar_audio_guion.py`: lee `script-v3.md` y genera audio de ensayo con la voz `es-CL-LorenzoNeural` de edge-tts: un MP3 por lámina, `defensa_completa.mp3` y `respaldos_respuestas.mp3`, en `audio_guion/`. Requiere `pip install edge-tts==7.3.1` e internet. Los MP3 no se suben a git porque se regeneran con un comando.
@@ -13,11 +13,11 @@ Material para la defensa de la tesis.
 
 El video de la lámina 2 es una copia comprimida y sin audio del video público del ensayo en YouTube (decisión 0004). El archivo original queda en `videos/`, fuera de git. Las grabaciones de los ensayos y su feedback son privados y quedan solo en el computador del autor.
 
-La v3 se generó con un script de Python que no forma parte del repositorio. `slides-v3.backup.pptx`, `script-v3.backup.md` y los archivos `*.pre-refinamiento.*` `*.pre-cierre.*` y `*.pre-split-control.*` son copias locales de versiones anteriores y no se suben a git, porque el historial ya las guarda.
+La v3 se generó con un script de Python que no forma parte del repositorio. `slides-v3.backup.pptx`, `script-v3.backup.md` y los archivos `*.pre-refinamiento.*`, `*.pre-cierre.*`, `*.pre-split-control.*`, `*.pre-didactico.*` y `*.pre-comercial.*` son copias locales de versiones anteriores y no se suben a git, porque el historial ya las guarda.
 
 ## Imágenes por lámina, v3
 
-Todas las láminas muestran además el logo de la UTEM, `images/logos/utem-logo-color.png`, salvo la 32. Las rutas son relativas a esta carpeta. Las láminas de la 33 a la 45 están ocultas.
+Todas las láminas muestran además el logo de la UTEM, `images/logos/utem-logo-color.png`, salvo la 34. Las rutas son relativas a esta carpeta. Las láminas de la 35 a la 47 están ocultas.
 
 | Lámina | Estado | Imágenes |
 |-------|-------|--------|
@@ -37,35 +37,37 @@ Todas las láminas muestran además el logo de la UTEM, `images/logos/utem-logo-
 | 14 | visible | `images/slide-08-encoder.png`, `images/slide-08-motor.png`, `images/slide-08-robot-car.png`, `images/slide-08-lidar.png`, `images/slide-08-arduino.png`, `images/slide-08-raspberry-pi.png`, `images/slide-08-robot-on-screen.png`, `images/slide-08-navigation-arrow.png`, `images/slide-08-pose-path.png`, `images/slide-08-map-outline.png`, `images/slide-08-desktop-computer.png`, `images/icons/lucide-cpu-ffffff.svg` |
 | 15 | visible | `images/slide-08-encoder.png`, `images/slide-08-lidar.png`, `images/slide-08-arduino.png`, `images/slide-08-motor.png`, `images/slide-08-raspberry-pi.png`, `images/icons/lucide-cpu-ffffff.svg`, `../../figures/05-implementation/prototype-left-side.jpg`, `../../figures/05-implementation/gazebo-laser-robot.png`, `images/v3/logo-gazebo.svg`, `images/icons/lucide-printer-004eaa.svg`, `images/icons/lucide-circle-dot-004eaa.svg`, `images/icons/lucide-zap-004eaa.svg` |
 | 16 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/icons/lucide-layers-004eaa.svg`, `images/icons/simple-icons-ros-172435.svg`, `images/icons/lucide-radar-004eaa.svg`, `images/slide-08-lidar.png`, `images/icons/lucide-map-pinned-004eaa.svg`, `images/slide-08-pose-path.png`, `images/icons/lucide-route-004eaa.svg`, `images/slide-08-navigation-arrow.png`, `images/icons/lucide-box-004eaa.svg`, `images/v3/logo-gazebo.svg` |
-| 17 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/icons/lucide-calculator-6b7280.svg`, `images/icons/lucide-circle-plus-3b6e10.svg`, `images/icons/lucide-audio-waveform-004eaa.svg`, `images/icons/lucide-shield-check-004eaa.svg`, `images/icons/lucide-cpu-004eaa.svg` |
-| 18 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/v3/logo-python.svg`, `images/icons/tabler-wave-square-ffffff.svg`, `images/v3/icon-pso-swarm-white.svg`, `images/v3/chart-control-open-loop.svg`, `images/v3/chart-control-fopdt.svg`, `images/v3/chart-control-fopdt-cotas.svg` |
-| 19 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/v3/logo-python.svg`, `images/icons/lucide-sliders-horizontal-ffffff.svg`, `images/v3/chart-control-closed-loop.svg`, `images/icons/lucide-timer-reset-3b6e10.svg`, `images/icons/lucide-split-3b6e10.svg`, `images/icons/lucide-shield-check-3b6e10.svg`, `images/icons/lucide-repeat-3b6e10.svg` |
-| 20 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/icons/lucide-radar-004eaa.svg`, `images/icons/lucide-rotate-cw-004eaa.svg`, `images/icons/lucide-grid-3x3-004eaa.svg`, `images/icons/lucide-refresh-cw-004eaa.svg` |
-| 21 | visible | `images/icons/lucide-cpu-ffffff.svg` |
-| 22 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg` |
-| 23 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `../../figures/06-results/experimental-environment.jpg`, `images/icons/lucide-circle-check-004eaa.svg`, `images/icons/lucide-route-004eaa.svg`, `images/icons/lucide-ruler-004eaa.svg`, `images/icons/tabler-dimensions-004eaa.svg` |
-| 24 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `images/icons/lucide-gauge-ffffff.svg`, `images/icons/lucide-ruler-ffffff.svg`, `images/icons/lucide-radar-ffffff.svg`, `images/icons/lucide-map-3b6e10.svg` |
-| 25 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `images/slide-14-occupancy-map-82-9.png`, `images/slide-14-occupancy-map-53-4.png`, `images/icons/lucide-repeat-3b6e10.svg`, `images/icons/lucide-frame-004eaa.svg` |
-| 26 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `images/icons/lucide-refresh-cw-004eaa.svg` |
-| 27 | visible | `images/icons/lucide-circle-check-ffffff.svg` |
-| 28 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/lucide-bot-004eaa.svg`, `images/icons/lucide-gauge-004eaa.svg`, `images/icons/lucide-map-pinned-004eaa.svg`, `images/icons/lucide-compass-004eaa.svg` |
-| 29 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/lucide-bot-3b6e10.svg`, `images/icons/lucide-gauge-3b6e10.svg`, `images/icons/lucide-map-pinned-3b6e10.svg`, `images/icons/lucide-compass-3b6e10.svg`, `images/icons/lucide-check-3b6e10.svg`, `images/icons/lucide-trending-up-ffffff.svg`, `images/icons/lucide-compass-004eaa.svg`, `images/icons/lucide-warehouse-004eaa.svg`, `images/icons/lucide-target-004eaa.svg`, `images/icons/lucide-factory-ffffff.svg`, `images/icons/lucide-thermometer-d99a00.svg`, `images/icons/lucide-shield-d99a00.svg`, `images/icons/simple-icons-ros-172435.svg` |
-| 30 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/lucide-puzzle-004eaa.svg`, `images/icons/lucide-box-004eaa.svg`, `images/icons/lucide-sliders-horizontal-004eaa.svg`, `images/icons/lucide-shield-check-004eaa.svg` |
-| 31 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/simple-icons-github-172435.svg`, `images/icons/lucide-gauge-004eaa.svg`, `images/icons/lucide-network-004eaa.svg`, `images/icons/lucide-circle-check-004eaa.svg` |
-| 32 | visible | `images/slide-19-lidar-robot-line-illustration.png` |
-| 33 | oculta | Ninguna |
-| 34 | oculta | `images/icons/lucide-gauge-004eaa.svg`, `images/icons/lucide-target-004eaa.svg`, `images/icons/lucide-sliders-horizontal-004eaa.svg`, `images/icons/lucide-zap-004eaa.svg`, `images/icons/lucide-book-open-text-004eaa.svg` |
-| 35 | oculta | `images/icons/tabler-math-integral-004eaa.svg`, `images/icons/tabler-chart-line-004eaa.svg`, `images/icons/tabler-math-integrals-004eaa.svg`, `images/icons/tabler-engine-004eaa.svg` |
-| 36 | oculta | `images/icons/lucide-timer-004eaa.svg`, `images/icons/lucide-battery-medium-004eaa.svg`, `images/icons/lucide-activity-004eaa.svg`, `images/v3/logo-python.svg`, `images/icons/lucide-grid-3x3-004eaa.svg`, `images/icons/lucide-bot-004eaa.svg` |
-| 37 | oculta | `images/icons/lucide-rotate-ccw-c2410c.svg`, `images/icons/tabler-rotate-360-004eaa.svg`, `images/icons/lucide-telescope-004eaa.svg`, `images/icons/lucide-trophy-3b6e10.svg` |
-| 38 | oculta | `images/v3/backup-circuit-diagram.png`, `images/v3/photo-tb6612fng.jpg`, `images/v3/photo-drv8871.jpg` |
-| 39 | oculta | `images/icons/lucide-circle-check-3b6e10.svg`, `images/icons/lucide-circle-alert-d99a00.svg`, `images/icons/lucide-trending-up-004eaa.svg` |
-| 40 | oculta | `images/icons/lucide-wrench-3b6e10.svg`, `images/icons/simple-icons-github-172435.svg`, `images/icons/simple-icons-ros-172435.svg` |
-| 41 | oculta | `images/slide-08-robot-car.png`, `images/slide-08-raspberry-pi.png`, `images/icons/lucide-wifi-4b5563.svg`, `images/slide-08-desktop-computer.png`, `images/slide-08-robot-on-screen.png`, `images/icons/lucide-shield-check-004eaa.svg`, `images/icons/lucide-piggy-bank-004eaa.svg`, `images/icons/lucide-monitor-004eaa.svg` |
-| 42 | oculta | `images/v3/backup-maps-vs-floor-plan.png`, `images/icons/lucide-ruler-3b6e10.svg`, `images/icons/lucide-grid-3x3-3b6e10.svg`, `images/icons/lucide-scaling-3b6e10.svg`, `images/icons/lucide-map-3b6e10.svg` |
-| 43 | oculta | `images/icons/lucide-book-open-text-004eaa.svg`, `images/icons/lucide-circle-x-c2410c.svg`, `images/icons/lucide-server-004eaa.svg`, `images/icons/lucide-network-004eaa.svg`, `images/icons/lucide-timer-004eaa.svg`, `images/icons/lucide-messages-square-004eaa.svg` |
-| 44 | oculta | `images/icons/lucide-book-open-text-004eaa.svg`, `images/icons/lucide-circle-x-c2410c.svg`, `images/icons/lucide-chart-scatter-004eaa.svg`, `images/icons/lucide-zap-004eaa.svg`, `images/icons/lucide-layout-grid-004eaa.svg` |
-| 45 | oculta | `images/icons/lucide-circle-x-c2410c.svg`, `images/icons/lucide-route-004eaa.svg`, `images/icons/lucide-compass-004eaa.svg`, `images/icons/lucide-git-branch-004eaa.svg`, `images/icons/lucide-crosshair-004eaa.svg`, `images/icons/lucide-waypoints-004eaa.svg`, `images/icons/lucide-eye-004eaa.svg`, `images/icons/lucide-brain-004eaa.svg` |
+| 17 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/icons/lucide-calculator-6b7280.svg`, `images/icons/lucide-circle-plus-3b6e10.svg`, `images/icons/lucide-trending-up-004eaa.svg`, `images/icons/lucide-puzzle-004eaa.svg`, `images/icons/lucide-shield-check-004eaa.svg` |
+| 18 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/v3/logo-python.svg`, `images/icons/tabler-wave-square-ffffff.svg`, `images/v3/chart-control-step-input.svg`, `images/icons/lucide-gauge-ffffff.svg`, `images/v3/chart-control-step-output.svg`, `images/icons/lucide-lightbulb-004eaa.svg` |
+| 19 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/v3/logo-python.svg`, `images/v3/chart-control-fopdt.svg`, `images/v3/chart-control-fopdt-l.svg`, `images/v3/chart-control-fopdt-tau.svg`, `images/v3/chart-control-fopdt-km.svg`, `images/v3/icon-pso-swarm-white.svg`, `images/icons/lucide-lightbulb-004eaa.svg` |
+| 20 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/v3/logo-python.svg`, `images/icons/lucide-cpu-ffffff.svg`, `images/v3/icon-pso-swarm-white.svg`, `images/icons/lucide-check-3b6e10.svg`, `images/icons/lucide-circle-x-c2410c.svg`, `images/icons/lucide-sprout-ffffff.svg`, `images/icons/lucide-timer-reset-3b6e10.svg`, `images/icons/lucide-split-3b6e10.svg`, `images/icons/lucide-shield-check-3b6e10.svg`, `images/icons/lucide-repeat-3b6e10.svg` |
+| 21 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/v3/logo-python.svg`, `images/v3/chart-control-closed-loop.svg`, `images/icons/lucide-trophy-3b6e10.svg` |
+| 22 | visible | `images/icons/lucide-cpu-ffffff.svg`, `images/icons/lucide-radar-004eaa.svg`, `images/icons/lucide-rotate-cw-004eaa.svg`, `images/icons/lucide-grid-3x3-004eaa.svg`, `images/icons/lucide-refresh-cw-004eaa.svg` |
+| 23 | visible | `images/icons/lucide-cpu-ffffff.svg` |
+| 24 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg` |
+| 25 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `../../figures/06-results/experimental-environment.jpg`, `images/icons/lucide-circle-check-004eaa.svg`, `images/icons/lucide-route-004eaa.svg`, `images/icons/lucide-ruler-004eaa.svg`, `images/icons/tabler-dimensions-004eaa.svg` |
+| 26 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `images/icons/lucide-gauge-ffffff.svg`, `images/icons/lucide-ruler-ffffff.svg`, `images/icons/lucide-radar-ffffff.svg`, `images/icons/lucide-map-3b6e10.svg` |
+| 27 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `images/slide-14-occupancy-map-82-9.png`, `images/slide-14-occupancy-map-53-4.png`, `images/icons/lucide-repeat-3b6e10.svg`, `images/icons/lucide-frame-004eaa.svg` |
+| 28 | visible | `images/icons/lucide-bar-chart-3-ffffff.svg`, `images/icons/lucide-refresh-cw-004eaa.svg` |
+| 29 | visible | `images/icons/lucide-circle-check-ffffff.svg` |
+| 30 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/lucide-bot-004eaa.svg`, `images/icons/lucide-gauge-004eaa.svg`, `images/icons/lucide-map-pinned-004eaa.svg`, `images/icons/lucide-compass-004eaa.svg` |
+| 31 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/lucide-bot-3b6e10.svg`, `images/icons/lucide-gauge-3b6e10.svg`, `images/icons/lucide-map-pinned-3b6e10.svg`, `images/icons/lucide-compass-3b6e10.svg`, `images/icons/lucide-check-3b6e10.svg`, `images/icons/lucide-trending-up-ffffff.svg`, `images/icons/lucide-compass-004eaa.svg`, `images/icons/lucide-warehouse-004eaa.svg`, `images/icons/lucide-target-004eaa.svg`, `images/icons/lucide-factory-ffffff.svg`, `images/icons/lucide-thermometer-d99a00.svg`, `images/icons/lucide-shield-d99a00.svg`, `images/icons/simple-icons-ros-172435.svg` |
+| 32 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/lucide-puzzle-004eaa.svg`, `images/icons/lucide-box-004eaa.svg`, `images/icons/lucide-sliders-horizontal-004eaa.svg`, `images/icons/lucide-shield-check-004eaa.svg` |
+| 33 | visible | `images/icons/lucide-circle-check-ffffff.svg`, `images/icons/simple-icons-github-172435.svg`, `images/icons/lucide-gauge-004eaa.svg`, `images/icons/lucide-network-004eaa.svg`, `images/icons/lucide-circle-check-004eaa.svg` |
+| 34 | visible | `images/slide-19-lidar-robot-line-illustration.png` |
+| 35 | oculta | Ninguna |
+| 36 | oculta | `images/icons/lucide-gauge-004eaa.svg`, `images/icons/lucide-target-004eaa.svg`, `images/icons/lucide-sliders-horizontal-004eaa.svg`, `images/icons/lucide-zap-004eaa.svg` |
+| 37 | oculta | `images/icons/tabler-math-integral-004eaa.svg`, `images/icons/tabler-chart-line-004eaa.svg`, `images/icons/lucide-shield-check-004eaa.svg`, `images/icons/tabler-engine-004eaa.svg` |
+| 38 | oculta | `images/icons/lucide-timer-004eaa.svg`, `images/icons/lucide-battery-medium-004eaa.svg`, `images/icons/lucide-activity-004eaa.svg` |
+| 39 | oculta | `images/icons/tabler-rotate-360-004eaa.svg`, `images/icons/lucide-radar-004eaa.svg`, `images/icons/lucide-piggy-bank-004eaa.svg` |
+| 40 | oculta | `images/v3/backup-circuit-diagram.png` |
+| 41 | oculta | `images/icons/lucide-trending-up-004eaa.svg` |
+| 42 | oculta | `images/icons/lucide-wrench-3b6e10.svg`, `images/icons/simple-icons-github-172435.svg`, `images/icons/simple-icons-ros-172435.svg` |
+| 43 | oculta | `images/slide-08-robot-car.png`, `images/slide-08-raspberry-pi.png`, `images/icons/lucide-wifi-4b5563.svg`, `images/slide-08-desktop-computer.png`, `images/slide-08-robot-on-screen.png`, `images/icons/lucide-shield-check-004eaa.svg`, `images/icons/lucide-piggy-bank-004eaa.svg`, `images/icons/lucide-monitor-004eaa.svg` |
+| 44 | oculta | `images/v3/backup-maps-vs-floor-plan.png`, `images/icons/lucide-circle-check-3b6e10.svg` |
+| 45 | oculta | `images/icons/lucide-server-004eaa.svg`, `images/icons/lucide-circle-x-c2410c.svg`, `images/icons/lucide-network-004eaa.svg`, `images/icons/lucide-timer-004eaa.svg`, `images/icons/lucide-messages-square-004eaa.svg` |
+| 46 | oculta | `images/icons/lucide-chart-scatter-004eaa.svg`, `images/icons/lucide-circle-x-c2410c.svg`, `images/icons/lucide-zap-004eaa.svg`, `images/icons/lucide-layout-grid-004eaa.svg` |
+| 47 | oculta | `images/icons/lucide-route-004eaa.svg`, `images/icons/lucide-git-branch-004eaa.svg`, `images/icons/lucide-circle-x-c2410c.svg`, `images/icons/lucide-crosshair-004eaa.svg`, `images/icons/lucide-waypoints-004eaa.svg`, `images/icons/lucide-compass-004eaa.svg`, `images/icons/lucide-eye-004eaa.svg`, `images/icons/lucide-brain-004eaa.svg` |
 
 ## Imágenes por lámina, v2
 

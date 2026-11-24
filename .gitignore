@@ -34,6 +34,8 @@ defense-rehearsals/
 docs/defense/audio_guion/
 docs/defense/*.pre-cierre.*
 docs/defense/*.pre-split-control.*
+docs/defense/*.pre-didactico.*
+docs/defense/*.pre-comercial.*
 videos/
 *.webm
 
