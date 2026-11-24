@@ -15,6 +15,7 @@ Company logos are trademarks of their owners. They appear in `slides-v3.pptx` on
 | `docs/defense/images/v3/logo-emesent.svg` | Emesent | [emesent.com](https://www.emesent.com) | White fill changed to dark gray so it shows on white |
 | `docs/defense/images/v3/logo-kinamics.png` | Kinamics | [kinamics.com](https://www.kinamics.com) | None |
 | `docs/defense/images/v3/logo-robotis.svg` | ROBOTIS | [robotis.us](https://robotis.us) | None |
+| `docs/defense/images/v3/logo-gazebo.svg` | Open Robotics (Gazebo) | [gazebosim.org](https://gazebosim.org/docs/latest/ros2_integration/), file `gazebo_horz_pos.svg` | None |
 | `docs/defense/images/icons/simple-icons-ros-172435.svg` | Open Robotics | [Simple Icons](https://simpleicons.org), CC0 1.0 for the SVG data | Color set to #172435 |
 | `docs/defense/images/icons/simple-icons-github-172435.svg` | GitHub | [Simple Icons](https://simpleicons.org), CC0 1.0 for the SVG data | Color set to #172435 |
 
@@ -25,6 +26,7 @@ Company logos are trademarks of their owners. They appear in `slides-v3.pptx` on
 | `docs/defense/images/v3/photo-elios-3.png` | Elios 3 drone by Flyability | [flyability.com/elios-3](https://www.flyability.com/elios-3), all rights reserved by Flyability | None |
 | `docs/defense/images/v3/photo-spot-inspection.jpg` | Spot inspecting an electrical substation | [bostondynamics.com/products/spot](https://bostondynamics.com/products/spot/), all rights reserved by Boston Dynamics | None |
 | `docs/defense/images/v3/photo-turtlebot3-burger.png` | TurtleBot 3 Burger | [ROBOTIS e-Manual](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/), all rights reserved by ROBOTIS | Cropped to the Burger |
+| `docs/defense/images/v3/photo-drv8871.jpg` | Adafruit DRV8871 DC Motor Driver Breakout | [adafruit.com/product/3190](https://www.adafruit.com/product/3190), product photo by Adafruit Industries, no open license stated on the page | Resized |
 | `docs/defense/images/v3/photo-tb6612fng.jpg` | SparkFun Motor Driver, Dual TB6612FNG | [sparkfun.com/products/14450](https://www.sparkfun.com/products/14450), product photo by SparkFun Electronics, no open license stated on the page | None |
 
 ## Icons
