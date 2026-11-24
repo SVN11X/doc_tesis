@@ -16,6 +16,7 @@ Company logos are trademarks of their owners. They appear in `slides-v3.pptx` on
 | `docs/defense/images/v3/logo-kinamics.png` | Kinamics | [kinamics.com](https://www.kinamics.com) | None |
 | `docs/defense/images/v3/logo-robotis.svg` | ROBOTIS | [robotis.us](https://robotis.us) | None |
 | `docs/defense/images/v3/logo-gazebo.svg` | Open Robotics (Gazebo) | [gazebosim.org](https://gazebosim.org/docs/latest/ros2_integration/), file `gazebo_horz_pos.svg` | None |
+| `docs/defense/images/v3/logo-python.svg` | Python Software Foundation | [Iconify](https://icon-sets.iconify.design/logos/python/), set SVG Logos by Gil Barbara, CC0 1.0 for the SVG data | None |
 | `docs/defense/images/icons/simple-icons-ros-172435.svg` | Open Robotics | [Simple Icons](https://simpleicons.org), CC0 1.0 for the SVG data | Color set to #172435 |
 | `docs/defense/images/icons/simple-icons-github-172435.svg` | GitHub | [Simple Icons](https://simpleicons.org), CC0 1.0 for the SVG data | Color set to #172435 |
 
@@ -39,4 +40,4 @@ The files in `docs/defense/images/icons/` come from the [Iconify API](https://ic
 
 Both licenses allow use and redistribution with this notice: permission to use, copy, modify and distribute these files is granted, provided the copyright notice and the license name above are kept. The files are provided "as is", without warranty of any kind.
 
-The `icon-*.svg` files in `docs/defense/images/v3/` were drawn for these slides and are covered by the repository license.
+The `icon-*.svg` files in `docs/defense/images/v3/` were drawn for these slides. The `chart-control-*.svg` charts are drawn by `chart-control.py` from data recorded on the robot. Both are covered by the repository license.

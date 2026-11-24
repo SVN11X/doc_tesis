@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="535.68pt" height="298.8pt" viewBox="0 0 535.68 298.8" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 298.8
+L 535.68 298.8
+L 535.68 0
+L 0 0
+L 0 298.8
+z
+" style="fill: none"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 146.77632 259.956
+L 159.676351 259.956
+L 159.676351 44.82
+L 146.77632 44.82
+z
+" clip-path="url(#p67582cc355)" style="fill: #654a97; opacity: 0.35"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 181.129636 249.932863
+Q 168.174289 250.840808 155.218942 251.748753
+" style="fill: none; stroke: #654a97; stroke-width: 1.4; stroke-linecap: round"/>
+   </g>
+   <g id="text_1">
+    <g id="patch_4">
+     <path d="M 187.787981 251.6208
+L 441.64345 251.6208
+Q 446.19345 251.6208 446.19345 247.0708
+L 446.19345 234.0708
+Q 446.19345 229.5208 441.64345 229.5208
+L 187.787981 229.5208
+Q 183.237981 229.5208 183.237981 234.0708
+L 183.237981 247.0708
+Q 183.237981 251.6208 187.787981 251.6208
+z
+" style="fill: #ffffff; stroke: #654a97; stroke-width: 1.4; stroke-linejoin: miter"/>
+    </g>
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Calibri', 'Carlito', 'DejaVu Sans'; text-anchor: start; fill: #111827" x="187.787981" y="243.8208" transform="rotate(-0 187.787981 243.8208)">1 · Retardo (L): despega casi al instante (&lt; 0,1 s)</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p67582cc355">
+   <rect x="53.568" y="44.82" width="466.0416" height="215.136"/>
+  </clipPath>
+ </defs>
+</svg>
