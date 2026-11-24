@@ -29,6 +29,10 @@ Company logos are trademarks of their owners. They appear in `slides-v3.pptx` on
 | `docs/defense/images/v3/photo-turtlebot3-burger.png` | TurtleBot 3 Burger | [ROBOTIS e-Manual](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/), all rights reserved by ROBOTIS | Cropped to the Burger |
 | `docs/defense/images/v3/photo-drv8871.jpg` | Adafruit DRV8871 DC Motor Driver Breakout | [adafruit.com/product/3190](https://www.adafruit.com/product/3190), product photo by Adafruit Industries, no open license stated on the page | Resized |
 | `docs/defense/images/v3/photo-tb6612fng.jpg` | SparkFun Motor Driver, Dual TB6612FNG | [sparkfun.com/products/14450](https://www.sparkfun.com/products/14450), product photo by SparkFun Electronics, no open license stated on the page | None |
+| `docs/defense/images/v3/photo-packbot-fukushima.jpg` | iRobot PackBot inside a Fukushima Daiichi reactor building, April 2011 | [IEEE Spectrum, «Robots Enter Fukushima Reactors, Detect High Radiation»](https://spectrum.ieee.org/robots-enter-fukushima-reactors-detect-high-radiation), photo credited to TEPCO, no open license stated | Saved as JPEG without metadata |
+| `docs/defense/images/v3/photo-exr2.png` | ExRobotics ExR-2 inspection robot | [PC&NE, «ATEX certified autonomous robot for plant inspections»](https://pcne.eu/article/atex-certified-autonomous-robot-for-plant-inspections), 30-06-2021, product photo by ExRobotics, no open license stated | Transparent margin cropped |
+| `docs/defense/images/v3/photo-smokebot.jpg` | SmokeBot low-visibility explorer prototype | [CORDIS, project 645101 results article](https://cordis.europa.eu/article/id/241251-stateoftheart-robot-to-better-assist-search-and-rescue-operations-in-lowvisibility-conditions), image published by CORDIS, no open license verified | Saved as JPEG without metadata |
+| `docs/defense/images/v3/photo-hector-rescue.jpg` | Team Hector rescue robots, TU Darmstadt | [TU Darmstadt, Simulation, Systems Optimization and Robotics group](https://www.sim.informatik.tu-darmstadt.de/), photo by cphoxmedia, no open license stated | None |
 
 ## Icons
 
