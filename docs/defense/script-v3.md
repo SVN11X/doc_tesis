@@ -1,22 +1,14 @@
 # Guion de la defensa v3 · Navegación y exploración autónoma de interiores
 
-Va con `slides-v3.pptx`: 40 láminas visibles y 18 ocultas (un índice, 16 respaldos y un glosario, de la 41 a la 58). El mismo texto está en las notas del orador de cada lámina, para leerlo en la vista del moderador.
-
-Cada `[CLIC]` hace aparecer la parte siguiente de la lámina. El número de clics de cada lámina coincide con sus animaciones. El video de la lámina 2 parte solo al entrar. Las seis portadas azules no tienen clics: el ícono del tema viaja solo, con la transición Morph, hasta la cabecera de la lámina siguiente.
-
-Duración estimada de la narración: 28 min 30 s a 130 palabras por minuto (3705 palabras). Con pausas naturales debe quedar bajo el límite de 30 minutos. `generar_audio_guion.py` imprime la duración real del audio de ensayo.
-
-Para ensayar con audio: `python generar_audio_guion.py` en esta carpeta crea los MP3 en `audio_guion/`.
-
 ## Apertura
 
 Lámina 1 · Portada (25 s)
 
-Buenas tardes, profesores. Muchas gracias por su tiempo. Mi nombre es Sebastián Valderas Neculqueo y presento mi trabajo de titulación de Ingeniería Civil Electrónica: Navegación y exploración autónoma de interiores utilizando un robot móvil de tracción diferencial, guiado por el profesor Patricio Galarce Acevedo. Antes de entrar en detalles, quiero mostrarles qué hace este robot.
+Buenas dias, profesores. Muchas gracias por su tiempo. Mi nombre es Sebastián Valderas Neculqueo y presento mi trabajo de titulación de Ingeniería Civil Electrónica: Navegación y exploración autónoma de interiores utilizando un robot móvil de tracción diferencial, guiado por el profesor Patricio Galarce Acevedo. Antes de entrar en detalles, quiero mostrarles una premisa.
 
 Lámina 2 · Video de demostración (65 s)
 
-[El video parte solo al entrar a la lámina. Narrar con calma.] Lo que ven es un ensayo real en el recinto de pruebas. A la izquierda está el robot que diseñé y construí, moviéndose sin control remoto. A la derecha está lo que el computador interpreta en ese momento. Fíjense en tres cosas. [CLIC] Primero, a medida que avanza, el láser de arriba detecta los muros y el mapa crece en pantalla. El borde morado y celeste es un margen de seguridad que el robot respeta junto a los muros. [CLIC] Segundo, la línea verde es la ruta que el robot calcula solo hacia las zonas grises, que todavía no conoce. Tercero, fíjense en la navegación y recuperación autónoma en pasillos estrechos de 58 cm, sin atascos ni intervención humana. Al final, el robot construyó solo el mapa del recinto. Ahora les explico qué problema resuelve, cómo lo construí y qué resultados medí.
+[El video parte solo al entrar a la lámina. Narrar con calma.] Lo que ven es un ensayo real del robot en el recinto de pruebas. A la izquierda está el robot que diseñé. A la derecha está lo que el computador interpreta en el moviemiento y su entorno. Fíjense en tres cosas. [CLIC] Primero, a medida que avanza, el láser de arriba detecta los muros y el mapa crece en pantalla. El borde morado y celeste es un margen de seguridad que el robot respeta junto a los muros. [CLIC] Segundo, la línea verde es la ruta que el robot calcula solo hacia las zonas grises, que todavía no conoce. Tercero, fíjense en la navegación y recuperación autónoma en pasillos estrechos de 58 cm, sin atascos ni intervención humana. Al final, el robot construyó solo el mapa del recinto. Ahora les explico qué problema resuelve, cómo lo construí y qué resultados medí.
 
 Lámina 3 · Estructura (15 s)
 
@@ -78,7 +70,7 @@ Datos para preguntas (no se leen en voz alta): Tesis, Introducción (Alcances y 
 
 Lámina 14 · LIDAR 2D y oportunidades de mejora (50 s)
 
-El sensor principal es un LIDAR 2D, sigla de Light Detection and Ranging: un sensor láser que mide distancias. [CLIC] Gira y mide en un plano horizontal, a la altura del sensor. En ese plano detecta los muros con una diferencia de 3,4 cm respecto del plano real. [CLIC] Los objetos fuera de ese plano, como una caja baja o una repisa en altura, no aparecen en el mapa. [CLIC] Ciertas superficies también dificultan la medición: el espejo y el metal pulido desvían el haz, el vidrio lo deja pasar y las superficies muy oscuras lo absorben. [CLIC] La tesis plantea oportunidades de mejora concretas: una cámara 3D o térmica, una IMU, que es un sensor de giro y aceleración, recintos más amplios con metas fijas y una versión vigente de ROS 2. [CLIC] Es un contexto acotado y medido, con un camino claro de crecimiento.
+El sensor principal es un LIDAR 2D, sigla de Light Detection and Ranging: un sensor láser que mide distancias. [CLIC] Ciertas superficies también dificultan la medición: el espejo y el metal pulido desvían el haz, el vidrio lo deja pasar y las superficies muy oscuras lo absorben. [CLIC] La tesis plantea oportunidades de mejora concretas: una cámara 3D o térmica, una IMU, que es un sensor de giro y aceleración, recintos más amplios con metas fijas y una versión vigente de ROS 2. [CLIC] Es un contexto acotado y medido, con un camino claro de crecimiento.
 
 Datos para preguntas (no se leen en voz alta): Sec. 3.3.1: el LIDAR 2D no detecta objetos fuera de su plano de barrido y se degrada ante superficies muy absorbentes o reflectantes. El vidrio es un ejemplo de superficie difícil, no un ensayo de la tesis. Sin IMU, cámara ni fusión sensorial (Introducción). El láser corrige la deriva de los giros (R4). ROS 2 Foxy y Gazebo Classic 11 ya no tienen soporte. La migración es trabajo futuro (Conclusiones).
 
@@ -112,7 +104,7 @@ Datos para preguntas (no se leen en voz alta): ROS 2 Foxy sobre Ubuntu 20.04, co
 
 Lámina 20 · Gazebo: entorno virtual (40 s)
 
-Antes de usar el hardware, validé el diseño en Gazebo, un simulador 3D de física y sensores. Su función es análoga a la de un simulador de vuelo. [CLIC] A la izquierda, el robot real. [CLIC] A la derecha, su gemelo digital, es decir, su modelo virtual, con el LIDAR simulado. [CLIC] Ambos comparten las mismas medidas, descritas en un archivo URDF, y el mismo software ROS 2. [CLIC] El método fue probar en Gazebo, corregir y luego llevarlo al robot real. [CLIC] La calibración final se realiza en el robot real, como se verá en la lámina 25.
+Antes de usar el hardware, validé el diseño en Gazebo, un modelo virtual, con el LIDAR simulado. [CLIC] se generaron mismas medidas, descritas en un archivo URDF, y el mismo software ROS 2. [CLIC] El método fue probar en Gazebo, corregir y luego llevarlo al robot real. [CLIC] La calibración final se realiza en el robot real, como se verá en la lámina 25.
 
 Datos para preguntas (no se leen en voz alta): Gazebo Classic 11.11.0 con gazebo_ros_pkgs 3.5.3 (Anexo de entorno de ejecución). Se usa Gazebo Classic porque lo emplean los complementos de simulación y de ros2_control del paquete base, disponibles para ROS 2 Foxy (Cap. 2). La simulación no reproduce del todo fricción, zona muerta del driver, ruido ni latencias (Conclusiones). Tesis, Sec. 3.1.2 y 4.2.
 
@@ -122,15 +114,11 @@ Un punto central para nuestra especialidad es el control de velocidad de cada ru
 
 Lámina 22 · Paso 1: medir revela que cada motor es único (40 s)
 
-¿Cómo logré que cada rueda responda tan bien? Con un método de cuatro pasos, automatizado en Python. El primero es medir. [CLIC] Sin controlador, Python aplica el mismo pulso de potencia a los dos motores y los encoders graban cómo acelera cada rueda. [CLIC] Al acercar la vista a la velocidad final aparece algo valioso: son motores económicos del mismo modelo, pero cada uno tiene su propio carácter. [CLIC] La medición lo detecta desde el primer minuto, y por eso cada rueda recibe su propia calibración.
-
-Datos para preguntas (no se leen en voz alta): Pulso fijo de PWM 143 de 255 (≈56 % del máximo) desde t = 1 s, sin controlador. Captura de 10 s, una muestra cada 0,1 s. Velocidad final media (t ≥ 3 s): ≈0,130 m/s la izquierda y ≈0,127 m/s la derecha, unos 2 % de diferencia. La izquierda va más rápido en 86 % de las muestras (chart-control-data.csv). Modelos identificados: Km 0,000913 y 0,000890 m/s por unidad de PWM, τ 0,33 y 0,35 s. Motores JGA25-370 de 12 V con encoder. Tesis, Sec. 4.4.5 (Captura de respuesta en lazo abierto).
+¿Cómo logré que cada rueda responda bien a su ejecucion? Con un método de cuatro pasos, automatizado en Python. El primero es medir. [CLIC] Sin controlador, Python aplica el mismo pulso de potencia a los dos motores y los encoders graban cómo acelera cada rueda. [CLIC] Al acercar la vista a la velocidad final aparece diferencias de valores.
 
 Lámina 23 · Paso 2: un gemelo matemático por motor (40 s)
 
-Segundo paso: con esa medición construyo un gemelo matemático de cada motor. Python prueba miles de combinaciones hasta que la curva del gemelo calza con la medición real, como una ingeniería inversa. [CLIC] Captura su reacción: arranca casi al instante. [CLIC] Su rapidez: acelera en un tercio de segundo. [CLIC] Y su fuerza: cuánta velocidad entrega con la potencia aplicada. [CLIC] Lo mejor es que cada gemelo captura hasta la diferencia de fuerza entre ruedas. Desde aquí, cada prueba ocurre en el computador y el robot queda intacto.
-
-Datos para preguntas (no se leen en voz alta): Modelo de primer orden con retardo (FOPDT). Izquierda / derecha: Km 0,000913 / 0,000890 m/s por PWM, τ 0,329 / 0,349 s, L 0,0001 / 0,069 s. L es menor que el muestreo de 0,1 s y se cuantiza a cero muestras: en la práctica el modelo es de primer orden. τ es el tiempo en llegar al 63 % de la velocidad final. «Un tercio de segundo» es τ redondeado. 1.er PSO: 50 partículas, 150 generaciones, costo = error cuadrático medio de identificación. Ajusta la medición suavizada con una media móvil de 5 muestras, por eso la curva del gemelo va algo detrás de los puntos al arrancar. No es el gemelo digital de Gazebo de la lámina 20: este modela solo cómo responde cada motor. Tesis, Sec. 4.4.5 y Anexo de identificación FOPDT.
+Segundo paso: con esa medición construyo un gemelo matemático de la señal obtenida. Python prueba miles de combinaciones hasta que la curva del gemelo calza con la medición real, como una ingeniería inversa. [CLIC] Captura su reacción: arranca casi al instante. [CLIC] Su rapidez: acelera en un tercio de segundo. [CLIC] Y su fuerza: cuánta velocidad entrega con la potencia aplicada. [CLIC] Lo mejor es que cada gemelo captura hasta la diferencia de fuerza entre ruedas. Desde aquí, cada prueba ocurre en el computador y el robot queda intacto.
 
 Lámina 24 · Paso 3: la automatización calibra (40 s)
 
