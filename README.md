@@ -24,6 +24,12 @@ latexmk -r content/latexmkrc -cd content/main.tex
 
 `docs/how-it-works.md` explica el flujo completo de principio a fin, cada parte con su ruta, por dónde empezar a leer y cómo comprobar que funciona.
 
+## Repositorios relacionados
+
+- [ros2-indoor-exploration-robot](https://github.com/SVN11X/ros2-indoor-exploration-robot): el código del robot, con el espacio de trabajo de ROS 2, el firmware, las piezas 3D y los scripts de ajuste. La tesis cita su código con rutas relativas a `src/`, y [docs/thesis-paths.md](https://github.com/SVN11X/ros2-indoor-exploration-robot/blob/main/docs/thesis-paths.md) dice dónde quedó cada una.
+- [tesis_explain](https://svn11x.github.io/tesis_explain/): una guía abierta e interactiva que explica la tesis.
+- [template_ppt_defensa_utem](https://github.com/SVN11X/template_ppt_defensa_utem): una plantilla para armar una presentación de defensa de la UTEM con Claude Code, a partir de un catálogo de láminas basado en una defensa real.
+
 ## Estado
 
 Entregada y corregida según las observaciones de la comisión. Defendida y aprobada el 25 de noviembre de 2026, con nota final 6,7: 6,6 en el documento y 6,8 en la presentación.
