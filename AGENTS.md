@@ -9,7 +9,7 @@ Instructions for any AI agent working in this repository. People read it too.
 
 ## Goal
 - Vision: Keep the defended thesis readable, buildable and reusable as a public record.
-- Non-goals: Change the thesis text after its approval. Publish the rehearsal recordings.
+- Non-goals: Change the thesis text after its approval. Publish the rehearsal recordings. Hold the signed grade page or the filled authorization form. Both are completed by hand and carry personal data.
 - Priorities: The approved text stays unchanged over any improvement. Clarity for readers over keeping every intermediate version.
 - Full text: docs/goals.md. Read it before planning.
 
