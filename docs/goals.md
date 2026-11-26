@@ -12,7 +12,9 @@ The committee, readers of the thesis, and the author reusing its material.
 
 ## Objectives
 
-TODO(owner): Two to five outcomes.
+- The thesis PDF and the slides open without building anything.
+- The source builds the same PDF with one command, on the owner's computer and in CI.
+- The defense material lives next to the thesis, with its sources and credits.
 
 ## Non-goals
 
@@ -26,8 +28,11 @@ TODO(owner): Two to five outcomes.
 
 ## Priorities
 
-TODO(owner): Ordered trade-offs, for example "clarity over performance".
+1. The approved text stays unchanged over any improvement.
+2. Clarity for readers over keeping every intermediate version.
 
 ## Constraints
 
-TODO(owner): Hardware, deadlines, required tools or languages, budget.
+- XeLaTeX with biber and makeglossaries, and the Arial and TeX Gyre Pagella fonts.
+- Files over 5 MB go to Git LFS.
+- Rehearsal recordings and videos stay private, only on the owner's computer.
