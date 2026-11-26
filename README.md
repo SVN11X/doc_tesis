@@ -10,7 +10,7 @@ Para la comisión evaluadora y cualquier persona que quiera leer la tesis, y par
 
 ## Cómo usarlo
 
-Para leerla, abre el PDF entregado: `docs/submitted/thesis-corrected-v2.pdf`. La presentación y el guion de la defensa están en `docs/defense/`. Los archivos pesados se guardan con Git LFS, así que después de clonar corre `git lfs pull`.
+Para leerla, abre el PDF entregado: `docs/submitted/thesis-corrected-v2.pdf`. La presentación y el guion que se usaron en la defensa están en `docs/defense/final/`. Los archivos pesados se guardan con Git LFS, así que después de clonar corre `git lfs pull`.
 
 Para compilarla necesitas una distribución de TeX con XeLaTeX, biber y makeglossaries (MiKTeX o TeX Live), más las fuentes Arial y TeX Gyre Pagella. Desde la raíz del repositorio:
 

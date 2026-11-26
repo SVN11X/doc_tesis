@@ -8,7 +8,10 @@ Instructions for any AI agent working in this repository. People read it too.
 - Standard: SVN11X/standards@v1. Setup: done.
 
 ## Goal
-- docs/goals.md is not written yet. Before any product decision (what to build, for whom, which trade-off), ask the owner.
+- Vision: Keep the defended thesis readable, buildable and reusable as a public record.
+- Non-goals: Change the thesis text after its approval. Publish the rehearsal recordings.
+- Priorities: The approved text stays unchanged over any improvement. Clarity for readers over keeping every intermediate version.
+- Full text: docs/goals.md. Read it before planning.
 
 ## How to work
 1. Read the task. A task states What, Why, Where, Do not touch, Done when and If unsure.

@@ -10,7 +10,7 @@ The examining committee and anyone who wants to read the thesis, and the author,
 
 ## Use it
 
-To read it, open the submitted PDF: `docs/submitted/thesis-corrected-v2.pdf`. The defense slides and script are in `docs/defense/`. The large files are stored with Git LFS, so run `git lfs pull` after cloning.
+To read it, open the submitted PDF: `docs/submitted/thesis-corrected-v2.pdf`. The slides and script used in the defense are in `docs/defense/final/`. The large files are stored with Git LFS, so run `git lfs pull` after cloning.
 
 To build it you need a TeX distribution with XeLaTeX, biber and makeglossaries (MiKTeX or TeX Live), plus the Arial and TeX Gyre Pagella fonts. From the repository root:
 

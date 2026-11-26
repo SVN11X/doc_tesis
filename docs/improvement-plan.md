@@ -12,7 +12,7 @@ Scope agreed with the owner on 2026-11-21: organize the files without changing t
 - [x] Rename the local `defensa/` to `defense-rehearsals/` with recordings named by date, and move the YouTube video to `videos/youtube/`. Both stay ignored by git.
 - [x] Write every README in Spanish and keep an English copy of the main one in `docs/en/README.md` (decision 0002).
 - [x] Delete the four UTEM logos that neither the thesis nor the slides use.
-- [ ] BLOCKED: write `docs/goals.md` (vision, users, objectives, non-goals, success criteria, priorities, constraints). Only the owner can answer it.
+- [x] Write `docs/goals.md`. Done on 2026-11-26 from the proposal the owner approved.
 - [x] Tag the submitted version: `submitted-2026-10` on 42b5327, whose XeLaTeX build has the same text as `docs/submitted/thesis-corrected-v2.pdf`.
 
 ## Close after the defense
@@ -26,3 +26,12 @@ Scope agreed with the owner on 2026-11-26: the thesis was defended and approved 
 - [x] Archive the two unmerged October branches and the local backup branch as `archive/*` tags, then delete the branches.
 - [x] Tag `defended-2026-11-25` on 6e0f427, the state on the day of the defense, and publish a release with the thesis PDF and the slides PDF.
 - [ ] BLOCKED: confirm `docs/how-it-works.md` by removing its Status line, or say what is wrong in it.
+
+## Organize the defense folder
+
+Scope agreed with the owner on 2026-11-26: make the final deck easy to find and keep the earlier version and the support files apart.
+
+- [x] Write `docs/goals.md` from the proposal the owner approved, and regenerate `AGENTS.md`.
+- [x] Move the slides, PDF and script used in the defense to `docs/defense/final/` as `defense-slides.pptx`, `defense-slides.pdf` and `defense-script.md`.
+- [x] Move the v2 slides, PDF and script to `docs/defense/previous/v2/`, and extend the LFS pattern to `.pptx` files in subfolders.
+- [x] Move the rehearsal audio script to `docs/defense/tools/generate_rehearsal_audio.py`, writing to the ignored `rehearsal-audio/`. `images/` stays, since credits and the slide index point there.

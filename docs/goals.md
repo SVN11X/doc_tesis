@@ -4,28 +4,35 @@
 
 ## Vision
 
-TODO(owner): One sentence. What this repository exists to achieve.
+Keep the defended thesis readable, buildable and reusable as a public record.
 
 ## Users
 
-TODO(owner): Who uses the result, and in what situation.
+The committee, readers of the thesis, and the author reusing its material.
 
 ## Objectives
 
-TODO(owner): Two to five outcomes.
+- The thesis PDF and the slides open without building anything.
+- The source builds the same PDF with one command, on the owner's computer and in CI.
+- The defense material lives next to the thesis, with its sources and credits.
 
 ## Non-goals
 
-TODO(owner): What this repository will deliberately not do.
+- Change the thesis text after its approval.
+- Publish the rehearsal recordings.
 
 ## Success criteria
 
-TODO(owner): How you will know it works. Prefer things you can measure or test.
+- CI builds the PDF with no undefined reference.
+- The standard check passes.
 
 ## Priorities
 
-TODO(owner): Ordered trade-offs, for example "clarity over performance".
+1. The approved text stays unchanged over any improvement.
+2. Clarity for readers over keeping every intermediate version.
 
 ## Constraints
 
-TODO(owner): Hardware, deadlines, required tools or languages, budget.
+- XeLaTeX with biber and makeglossaries, and the Arial and TeX Gyre Pagella fonts.
+- Files over 5 MB go to Git LFS.
+- Rehearsal recordings and videos stay private, only on the owner's computer.
