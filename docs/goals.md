@@ -4,11 +4,11 @@
 
 ## Vision
 
-TODO(owner): One sentence. What this repository exists to achieve.
+Keep the defended thesis readable, buildable and reusable as a public record.
 
 ## Users
 
-TODO(owner): Who uses the result, and in what situation.
+The committee, readers of the thesis, and the author reusing its material.
 
 ## Objectives
 
@@ -16,11 +16,13 @@ TODO(owner): Two to five outcomes.
 
 ## Non-goals
 
-TODO(owner): What this repository will deliberately not do.
+- Change the thesis text after its approval.
+- Publish the rehearsal recordings.
 
 ## Success criteria
 
-TODO(owner): How you will know it works. Prefer things you can measure or test.
+- CI builds the PDF with no undefined reference.
+- The standard check passes.
 
 ## Priorities
 
