@@ -4,9 +4,9 @@ Run from docs/defense:  python tools/generate_rehearsal_audio.py
 Requires: pip install edge-tts==7.3.1 and internet access.
 
 Writes to rehearsal-audio/:
-- one MP3 per main slide (01_portada.mp3 ... 34_gracias.mp3),
+- one MP3 per main slide (01_portada.mp3 ... 40_gracias.mp3),
 - defensa_completa.mp3, all main slides with 1.5 s of silence between them,
-- respaldos_respuestas.mp3, the short answers for R1 to R12.
+- respaldos_respuestas.mp3, the short answers for R1 to R16.
 
 final/defense-script.md is only read. The pronunciation fixes are applied in memory, so the
 script keeps its normal spelling. MP3 files are joined at frame level, so no
