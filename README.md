@@ -26,7 +26,7 @@ latexmk -r content/latexmkrc -cd content/main.tex
 
 ## Estado
 
-Entregada y corregida según las observaciones de la comisión. Defensa en preparación.
+Entregada y corregida según las observaciones de la comisión. Defendida y aprobada el 25 de noviembre de 2026, con nota final 6,7: 6,6 en el documento y 6,8 en la presentación.
 
 ## Estructura
 
