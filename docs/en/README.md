@@ -26,7 +26,7 @@ latexmk -r content/latexmkrc -cd content/main.tex
 
 ## Status
 
-Submitted and corrected after the committee's observations. Defense in preparation.
+Submitted and corrected after the committee's observations. Defended and approved on 25 November 2026, with a final grade of 6.7 on Chile's 1.0 to 7.0 scale: 6.6 for the document and 6.8 for the presentation.
 
 ## Layout
 
