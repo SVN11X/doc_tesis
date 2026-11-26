@@ -44,4 +44,24 @@ The files in `docs/defense/images/icons/` come from the [Iconify API](https://ic
 
 Both licenses allow use and redistribution with this notice: permission to use, copy, modify and distribute these files is granted, provided the copyright notice and the license name above are kept. The files are provided "as is", without warranty of any kind.
 
+## Images from the v2 slides
+
+The files below sit in `docs/defense/images/` and come from the v2 deck. The `slide-08-*` images also appear in the final deck. The owner did not remember their origin, so on 2026-11-26 each one was searched with Google Lens by its public URL in this repository. A source is named only when the same image was found.
+
+| File | Owner or author | Source and license | Status |
+|------|-----------------|--------------------|--------|
+| `slide-08-lidar.png` | Iconjam | Flaticon, [Lidar free icon](https://www.flaticon.com/free-icon/lidar_17785569), Flaticon License: free for personal and commercial use with attribution | Found |
+| `slide-08-motor.png` | Iconcity | Flaticon, [Motor free icon](https://www.flaticon.com/free-icon/motor_11972798), Flaticon License: free with attribution | Found |
+| `slide-08-robot-on-screen.png` | Kiranshastry | Flaticon, [Robot free icon](https://www.flaticon.com/free-icon/robot_1447687), Flaticon License: free with attribution | Found |
+| `slide-08-desktop-computer.png` | Icons Home | Vecteezy, [CPU, computer line icon isolated on white background](https://www.vecteezy.com/vector-art/9781353-cpu-computer-line-icon-isolated-on-white-background), listed under the Vecteezy Pro license | Found, paid license |
+| `slide-08-navigation-arrow.png` | Not confirmed | The same image is the app icon of [Guru Track on Google Play](https://play.google.com/store/apps/details?id=com.gurutrack.gurutrack). No license found | Found, no license |
+| `slide-08-raspberry-pi.png` | Raspberry Pi Ltd | Official Raspberry Pi logo. Raspberry Pi is a trademark of Raspberry Pi Ltd. [Trademark rules](https://www.raspberrypi.com/trademark-rules/) | Trademark |
+| `slide-08-arduino.png` | Arduino SA | Arduino IDE icon, in the long-shadow version that an Instructables guide on installing the Arduino IDE shows. Arduino is a registered trademark of Arduino SA. [Trademark guide](https://www.arduino.cc/en/trademark/guides/trademark-guide-for-websites-and-publications/) | Trademark |
+| `slide-08-encoder.png` | AutomationDirect | Image of the article [What is an Encoder?](https://library.automationdirect.com/encoders-explained-issue-25-2013/) in the AutomationDirect Library, no open license stated | Found |
+| `slide-08-robot-car.png` | Not identified | No exact match online. It looks like a glyph icon from an icon bank | Not found |
+| `slide-08-map-outline.png`, `slide-08-pose-path.png`, `slide-19-lidar-robot-line-illustration.png` | Not identified | No match online. Probably made for the v2 slides | Not found |
+| `slide-04-*.svg`, `slide-06-*.svg`, `slide-12-*.svg`, `slide-24-*.svg`, `slide-26-*.svg`, `slide-27-*.svg`, `slide-28-*.svg` (21 files) | Microsoft | Icons from the Insert > Icons library of Microsoft 365, as their `Icons_*` ids show. [Microsoft](https://support.microsoft.com/office/e2459f17-3996-4795-996e-b9a13486fa79) allows them in Office documents, and its [premium content page](https://support.microsoft.com/office/what-am-i-allowed-to-use-premium-creative-content-for-0de69c76-ff2b-473e-b715-4d245e39e895) asks not to save them as separate image files for use outside Office | Found, use limited to Office files |
+
+The other images in `docs/defense/images/` are photos of the prototype, screenshots and maps from the author's own tests, and the render of the robot's simulation model. They are covered by the repository license.
+
 The `icon-*.svg` files in `docs/defense/images/v3/` were drawn for these slides. The `chart-control-*.svg` charts are drawn by `chart-control.py` from data recorded on the robot. Both are covered by the repository license.
