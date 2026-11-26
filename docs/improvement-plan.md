@@ -25,7 +25,7 @@ Scope agreed with the owner on 2026-11-26: the thesis was defended and approved 
 - [x] Delete the branches of the merged pull requests 2 to 6. GitHub keeps their commits in each pull request.
 - [x] Archive the two unmerged October branches and the local backup branch as `archive/*` tags, then delete the branches.
 - [x] Tag `defended-2026-11-25` on 6e0f427, the state on the day of the defense, and publish a release with the thesis PDF and the slides PDF.
-- [ ] BLOCKED: confirm `docs/how-it-works.md` by removing its Status line, or say what is wrong in it.
+- [x] Confirm `docs/how-it-works.md`. The owner reviewed it on 2026-11-26 and found it correct.
 
 ## Organize the defense folder
 
