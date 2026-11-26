@@ -46,7 +46,7 @@ Both licenses allow use and redistribution with this notice: permission to use, 
 
 ## Images from the v2 slides
 
-The files below sit in `docs/defense/images/` and come from the v2 deck. The `slide-08-*` images also appear in the final deck. The owner did not remember their origin, so on 2026-11-26 each one was searched with Google Lens by its public URL in this repository. A source is named only when the same image was found.
+The files below sit in `docs/defense/images/` and come from the v2 deck. The `slide-08-*` images also appear in the final deck. The owner did not remember their origin, so on 2026-11-26 each one was searched with Google Lens by its public URL in this repository. A source is named only when the same image was found. The owner kept every file, since the decks use them (`docs/decisions/0006-keep-the-credited-v2-images.md`).
 
 | File | Owner or author | Source and license | Status |
 |------|-----------------|--------------------|--------|

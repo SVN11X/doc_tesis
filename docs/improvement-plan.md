@@ -45,5 +45,5 @@ Scope agreed with the owner on 2026-11-26 after a full review. The thesis text s
 - [x] Make the offline build work in VS Code with a workspace setting, document the tested toolchain and discard the build assumption.
 - [x] Match the audio script docstring to the final deck and ignore `*.loa`.
 - [x] Keep the signed grade page and the filled authorization form out of the repository, as a non-goal.
-- [ ] BLOCKED: remove the 21 standalone Microsoft 365 icon SVGs from `docs/defense/images/`? They stay inside the v2 deck, where Microsoft allows them.
-- [ ] BLOCKED: replace `slide-08-desktop-computer.png` (Vecteezy Pro) and `slide-08-navigation-arrow.png` (app icon, no license), or keep them credited?
+- [x] SKIPPED: remove the 21 Microsoft 365 icon SVGs. The owner keeps them with their credit, since the v2 deck uses them (decision 0006).
+- [x] SKIPPED: replace the Vecteezy Pro desktop icon and the arrow app icon. The owner keeps them with their credit (decision 0006).
