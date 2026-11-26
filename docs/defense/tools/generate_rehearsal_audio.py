@@ -1,14 +1,14 @@
-"""Generate rehearsal audio for the defense from script-v3.md with a Chilean Spanish neural voice.
+"""Generate rehearsal audio for the defense from final/defense-script.md with a Chilean Spanish neural voice.
 
-Run from docs/defense:  python generar_audio_guion.py
+Run from docs/defense:  python tools/generate_rehearsal_audio.py
 Requires: pip install edge-tts==7.3.1 and internet access.
 
-Writes to audio_guion/:
+Writes to rehearsal-audio/:
 - one MP3 per main slide (01_portada.mp3 ... 34_gracias.mp3),
 - defensa_completa.mp3, all main slides with 1.5 s of silence between them,
 - respaldos_respuestas.mp3, the short answers for R1 to R12.
 
-script-v3.md is only read. The pronunciation fixes are applied in memory, so the
+final/defense-script.md is only read. The pronunciation fixes are applied in memory, so the
 script keeps its normal spelling. MP3 files are joined at frame level, so no
 ffmpeg is needed.
 """
@@ -259,8 +259,8 @@ async def main():
     parser = argparse.ArgumentParser(
         description="Genera el audio de ensayo de la defensa a partir del guion."
     )
-    parser.add_argument("--script", type=Path, default=here / "script-v3.md")
-    parser.add_argument("--out", type=Path, default=here / "audio_guion")
+    parser.add_argument("--script", type=Path, default=here.parent / "final" / "defense-script.md")
+    parser.add_argument("--out", type=Path, default=here.parent / "rehearsal-audio")
     parser.add_argument("--voice", default=VOICE)
     parser.add_argument("--rate", default=RATE)
     args = parser.parse_args()

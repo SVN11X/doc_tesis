@@ -4,7 +4,7 @@ Third-party assets used by the defense slides in `docs/defense/`. Everything els
 
 ## Logos
 
-Company logos are trademarks of their owners. They appear in `slides-v3.pptx` only to identify the companies named on the slides, as the owner decided in `docs/decisions/0005-official-logos-and-photos-in-the-slides.md`. The repository license does not cover them.
+Company logos are trademarks of their owners. They appear in `docs/defense/final/defense-slides.pptx` only to identify the companies named on the slides, as the owner decided in `docs/decisions/0005-official-logos-and-photos-in-the-slides.md`. The repository license does not cover them.
 
 | File | Owner | Source | Changes |
 |------|-------|--------|---------|
