@@ -36,6 +36,8 @@ docs/defense/*.pre-cierre.*
 docs/defense/*.pre-split-control.*
 docs/defense/*.pre-didactico.*
 docs/defense/*.pre-comercial.*
+docs/defense/*.pre-refinamiento.*
+docs/defense/*.backup.*
 videos/
 *.webm
 
