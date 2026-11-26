@@ -20,6 +20,7 @@ The committee, readers of the thesis, and the author reusing its material.
 
 - Change the thesis text after its approval.
 - Publish the rehearsal recordings.
+- Hold the signed grade page or the filled authorization form. Both are completed by hand and carry personal data.
 
 ## Success criteria
 

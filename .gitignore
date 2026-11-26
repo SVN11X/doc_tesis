@@ -19,6 +19,7 @@ build
 *.lof
 *.log
 *.lot
+*.loa
 *.out
 *.run.xml
 *.synctex.gz

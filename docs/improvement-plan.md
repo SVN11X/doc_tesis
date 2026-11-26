@@ -35,3 +35,15 @@ Scope agreed with the owner on 2026-11-26: make the final deck easy to find and 
 - [x] Move the slides, PDF and script used in the defense to `docs/defense/final/` as `defense-slides.pptx`, `defense-slides.pdf` and `defense-script.md`.
 - [x] Move the v2 slides, PDF and script to `docs/defense/previous/v2/`, and extend the LFS pattern to `.pptx` files in subfolders.
 - [x] Move the rehearsal audio script to `docs/defense/tools/generate_rehearsal_audio.py`, writing to the ignored `rehearsal-audio/`. `images/` stays, since credits and the slide index point there.
+
+## Review after the defense
+
+Scope agreed with the owner on 2026-11-26 after a full review. The thesis text stays frozen, and the "Revalidación v18" never enters it.
+
+- [x] Credit the images of the v2 slides in `docs/credits.md`, searched one by one with Google Lens.
+- [x] Link the code repository, its path map, the explainer guide and the defense template from both READMEs.
+- [x] Make the offline build work in VS Code with a workspace setting, document the tested toolchain and discard the build assumption.
+- [x] Match the audio script docstring to the final deck and ignore `*.loa`.
+- [x] Keep the signed grade page and the filled authorization form out of the repository, as a non-goal.
+- [ ] BLOCKED: remove the 21 standalone Microsoft 365 icon SVGs from `docs/defense/images/`? They stay inside the v2 deck, where Microsoft allows them.
+- [ ] BLOCKED: replace `slide-08-desktop-computer.png` (Vecteezy Pro) and `slide-08-navigation-arrow.png` (app icon, no license), or keep them credited?

@@ -20,9 +20,19 @@ latexmk -r content/latexmkrc -cd content/main.tex
 
 `content/latexmkrc` elige XeLaTeX y corre biber y makeglossaries. El PDF queda junto al archivo principal, como main.pdf dentro de content/. Dentro de content/ basta con `latexmk main.tex`, porque latexmk lee el latexmkrc de la carpeta donde corre.
 
+En Windows se probó con MiKTeX y Strawberry Perl, que latexmk necesita, y el mismo comando funciona en PowerShell. En VS Code con LaTeX Workshop, `.vscode/settings.json` elige la receta «latexmk (xelatex)», que da el mismo PDF. La receta «latexmk», que la extensión trae primero, usa pdfLaTeX y falla, porque la tesis necesita XeLaTeX.
+
+La tesis se escribió en Overleaf. Overleaf exige que el archivo principal y el latexmkrc estén en la raíz del proyecto, así que esta estructura no compila allí sin cambios.
+
 ## Cómo funciona
 
 `docs/how-it-works.md` explica el flujo completo de principio a fin, cada parte con su ruta, por dónde empezar a leer y cómo comprobar que funciona.
+
+## Repositorios relacionados
+
+- [ros2-indoor-exploration-robot](https://github.com/SVN11X/ros2-indoor-exploration-robot): el código del robot, con el espacio de trabajo de ROS 2, el firmware, las piezas 3D y los scripts de ajuste. La tesis cita su código con rutas relativas a `src/`, y [docs/thesis-paths.md](https://github.com/SVN11X/ros2-indoor-exploration-robot/blob/main/docs/thesis-paths.md) dice dónde quedó cada una.
+- [tesis_explain](https://svn11x.github.io/tesis_explain/): una guía abierta e interactiva que explica la tesis.
+- [template_ppt_defensa_utem](https://github.com/SVN11X/template_ppt_defensa_utem): una plantilla para armar una presentación de defensa de la UTEM con Claude Code, a partir de un catálogo de láminas basado en una defensa real.
 
 ## Estado
 
